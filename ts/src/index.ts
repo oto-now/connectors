@@ -23,6 +23,7 @@ import * as heyreach from "./heyreach"
 import * as higgsfield from "./higgsfield"
 import * as hubspot from "./hubspot"
 import * as hunter from "./hunter"
+import * as instantly from "./instantly"
 import * as jefacture from "./jefacture"
 import * as klaviyo from "./klaviyo"
 import * as lemlist from "./lemlist"
@@ -80,6 +81,7 @@ export { heyreach }
 export { higgsfield }
 export { hubspot }
 export { hunter }
+export { instantly }
 export { jefacture }
 export { klaviyo }
 export { lemlist }
@@ -140,6 +142,7 @@ export const connectors: readonly Connector[] = [
   higgsfield.connector,
   hubspot.connector,
   hunter.connector,
+  instantly.connector,
   jefacture.connector,
   klaviyo.connector,
   lemlist.connector,
