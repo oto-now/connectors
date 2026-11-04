@@ -19,9 +19,11 @@ import * as googleCalendar from "./google_calendar"
 import * as googleDrive from "./google_drive"
 import * as googleSheets from "./google_sheets"
 import * as granola from "./granola"
+import * as heyreach from "./heyreach"
 import * as higgsfield from "./higgsfield"
 import * as hubspot from "./hubspot"
 import * as hunter from "./hunter"
+import * as instantly from "./instantly"
 import * as jefacture from "./jefacture"
 import * as klaviyo from "./klaviyo"
 import * as lemlist from "./lemlist"
@@ -75,9 +77,11 @@ export { googleCalendar }
 export { googleDrive }
 export { googleSheets }
 export { granola }
+export { heyreach }
 export { higgsfield }
 export { hubspot }
 export { hunter }
+export { instantly }
 export { jefacture }
 export { klaviyo }
 export { lemlist }
@@ -134,9 +138,11 @@ export const connectors: readonly Connector[] = [
   googleDrive.connector,
   googleSheets.connector,
   granola.connector,
+  heyreach.connector,
   higgsfield.connector,
   hubspot.connector,
   hunter.connector,
+  instantly.connector,
   jefacture.connector,
   klaviyo.connector,
   lemlist.connector,
