@@ -65,6 +65,7 @@ without_description:
   zeendoc: { category: not_describable, reason: "session ouverte par le login d'un compte utilisateur, portée par un cookie ; texte et fichiers servis par des pages de l'application, document absent signalé par une redirection" }
   zohosign: { category: not_describable, reason: "consentement lié au data center : l'adresse d'autorisation change d'hôte par région (accounts.zoho.com.au, accounts.zohocloud.ca), ce qu'aucun gabarit ne dit et qu'aucune table par réglage ne donne pour authorize_url ; création depuis un modèle en corps formulaire, un document JSON dans un champ" }
   google/bigquery: { category: not_describable, reason: "SDK de Google, pas de requête HTTP décrite" }
+  google/youtube: { category: not_describable, reason: "videos.update remplace une partie entière (une propriété omise est effacée) : lecture, fusion puis écriture ; miniature envoyée en corps binaire ; vidéo en envoi reprenable (session, morceaux, 308, reprise)" }
   # De principe : client d'un service d'oto, pas d'un tiers.
   datastore: { category: oto_service, reason: "client d'un service d'oto (son serveur MCP), pas d'un tiers" }
   ninja: { category: oto_service, reason: "client d'un service d'oto (son serveur MCP), pas d'un tiers" }
