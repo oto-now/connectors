@@ -25,14 +25,14 @@
 # that a name is absent from the register.
 #
 # The mutual-termination check was read on 2026-11-05 against the service
-# source at 70416f5. Its 422s (months twice, dates out of order, a bonus above
+# source at 3aa4d5d. Its 422s (months twice, dates out of order, a bonus above
 # the gross pay of its month) are the common invalid_arguments.
 connector:
   name: fod
   label: France Open Data
   namespace: fod
   version: 1.5.0
-  api_version: "france-opendata-service 70416f5 (routes unversioned)"
+  api_version: "france-opendata-service 3aa4d5d (routes unversioned)"
   base_url: https://data.oto.zone
   auth:
     kind: bearer
@@ -1040,6 +1040,8 @@ functions:
         jours_non_comptes_anciennete: { type: integer, minimum: 0, maximum: 36500, default: 0, personal: true, description: "Days of suspension that the law or the agreement excludes from length of service (e.g. half of a parental leave)." }
         date_depot: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", description: "Planned filing date, YYYY-MM-DD. Absent: the earliest possible." }
         alsace_moselle: { type: boolean, default: false, description: "The employee works in Alsace-Moselle: Good Friday and 26 December are public holidays." }
+        categorie: { type: string, enum: [cadre, non_cadre], description: "Category of the employee, from the contract or payroll: needed for the agreement minimum of some IDCCs (e.g. 2264); absent there, that check comes back non_couvert." }
+        anciennete_cadre_mois: { type: integer, minimum: 0, maximum: 1200, personal: true, description: "Months of service as a cadre: needed for the agreement minimum of some IDCCs (e.g. 2264); only a whole career as cadre is computed, otherwise that check comes back non_couvert." }
     examples:
       - title: Seven years of service, a 13th month, one month of sick leave left out
         input:
@@ -1095,4 +1097,6 @@ functions:
         jours_non_comptes_anciennete: jours_non_comptes_anciennete
         date_depot: date_depot
         alsace_moselle: alsace_moselle
+        categorie: categorie
+        anciennete_cadre_mois: anciennete_cadre_mois
     cost: { per: request }

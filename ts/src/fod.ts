@@ -1364,6 +1364,18 @@ export const complianceCheckMutualTermination = defineFunction({
         "type": "boolean",
         "default": false,
         "description": "The employee works in Alsace-Moselle: Good Friday and 26 December are public holidays."
+      },
+      "categorie": {
+        "type": "string",
+        "enum": ["cadre", "non_cadre"],
+        "description": "Category of the employee, from the contract or payroll: needed for the agreement minimum of some IDCCs (e.g. 2264); absent there, that check comes back non_couvert."
+      },
+      "anciennete_cadre_mois": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1200,
+        "personal": true,
+        "description": "Months of service as a cadre: needed for the agreement minimum of some IDCCs (e.g. 2264); only a whole career as cadre is computed, otherwise that check comes back non_couvert."
       }
     }
   },
@@ -1377,7 +1389,7 @@ export const complianceCheckMutualTermination = defineFunction({
     path: "/api/rupture-conventionnelle/controle",
     pathParams: [],
     query: {},
-    body: {"date_entree": "date_entree", "date_signature": "date_signature", "date_rupture_envisagee": "date_rupture_envisagee", "indemnite_convenue": "indemnite_convenue", "idcc": "idcc", "mois": "mois", "jours_non_comptes_anciennete": "jours_non_comptes_anciennete", "date_depot": "date_depot", "alsace_moselle": "alsace_moselle"},
+    body: {"date_entree": "date_entree", "date_signature": "date_signature", "date_rupture_envisagee": "date_rupture_envisagee", "indemnite_convenue": "indemnite_convenue", "idcc": "idcc", "mois": "mois", "jours_non_comptes_anciennete": "jours_non_comptes_anciennete", "date_depot": "date_depot", "alsace_moselle": "alsace_moselle", "categorie": "categorie", "anciennete_cadre_mois": "anciennete_cadre_mois"},
     headers: {},
   },
   cost: { per: "request" },
@@ -1388,7 +1400,7 @@ export const connector = defineConnector({
   label: "France Open Data",
   namespace: "fod",
   version: "1.5.0",
-  apiVersion: "france-opendata-service 70416f5 (routes unversioned)",
+  apiVersion: "france-opendata-service 3aa4d5d (routes unversioned)",
   baseUrl: "https://data.oto.zone",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "FOD API key", "secret": true, "holder": "account"}],
