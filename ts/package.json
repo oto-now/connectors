@@ -1,6 +1,6 @@
 {
   "name": "@otomata_tech/connectors",
-  "version": "1.210.0",
+  "version": "1.211.0",
   "description": "Shared connector definitions generated from connectors/*/connector.yaml by the fabrique. Structural data only: the host runs the requests.",
   "license": "MIT",
   "repository": {
