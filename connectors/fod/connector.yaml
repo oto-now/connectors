@@ -12,8 +12,8 @@
 # (zoning, written regulation of a local plan, natural and technological risks,
 # classified facilities, public services), law_ (consolidated codes and case
 # law), tax_ (BOFiP tax doctrine: the administration's reading, kept apart from
-# the law), compliance_ (asset-freeze screening; a POST that reads, the name
-# kept out of the URL).
+# the law), compliance_ (checks before an act: asset-freeze screening, mutual
+# termination before filing; POSTs that read, the name kept out of the URL).
 #
 # Several lookups answer 200 with null, or with {"error": ...}, when nothing
 # matches; expect turns them into named refusals. A 500 comes back when a
@@ -23,12 +23,16 @@
 # by real calls. A 503 from the asset-freeze register (not loaded, truncated or
 # too old) becomes the refusal register_inconclusive, which forbids concluding
 # that a name is absent from the register.
+#
+# The mutual-termination check was read on 2026-11-05 against the service
+# source at 70416f5. Its 422s (months twice, dates out of order, a bonus above
+# the gross pay of its month) are the common invalid_arguments.
 connector:
   name: fod
   label: France Open Data
   namespace: fod
-  version: 1.4.0
-  api_version: "france-opendata-service 6f69e80 (routes unversioned)"
+  version: 1.5.0
+  api_version: "france-opendata-service 70416f5 (routes unversioned)"
   base_url: https://data.oto.zone
   auth:
     kind: bearer
@@ -983,4 +987,112 @@ functions:
       method: POST
       path: /api/vigilance/gels-avoirs/controle
       body: { nom: nom, prenom: prenom, limit: limit }
+    cost: { per: request }
+
+  # --- Compliance: mutual termination before filing ---------------------------
+  - name: compliance_check_mutual_termination
+    class: read
+    description: >-
+      Check a French mutual termination (rupture conventionnelle) BEFORE
+      filing the request for approval, by fixed rules: reference salary (12 or
+      3 months, bonuses pro rata, months marked neutralise left out), length
+      of service, legal minimum, collective-agreement minimum, withdrawal,
+      filing and earliest termination dates. Returns {verdict: conforme,
+      non_conforme or incomplet, controles: [{controle, statut, valeur,
+      detail, source}], telerc}. statut non_couvert means the agreement
+      minimum of that IDCC is not coded: never present it as compliant, it is
+      to check by hand. telerc holds the fields of the online request on
+      TéléRC (mandatory since April 2022), to copy as given; a null field is
+      to fill in by hand. Read every figure from the payslips, never estimate
+      one. Mark a month neutralise WITHOUT its reason (it would be health
+      data), and send enough earlier months that 12 not neutralised remain.
+      The amounts travel in the request body and FOD keeps nothing.
+    input:
+      type: object
+      additionalProperties: false
+      required: [date_entree, date_signature, date_rupture_envisagee, indemnite_convenue, mois]
+      properties:
+        date_entree: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", personal: true, description: "Date the employee joined, YYYY-MM-DD." }
+        date_signature: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", description: "Date the agreement is signed, YYYY-MM-DD; date_entree <= date_signature <= date_rupture_envisagee." }
+        date_rupture_envisagee: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", description: "Termination date planned in the agreement, YYYY-MM-DD." }
+        indemnite_convenue: { type: number, minimum: 0, personal: true, description: "Specific termination indemnity agreed, gross, in euros." }
+        idcc:
+          type: string
+          pattern: "^[0-9]{1,4}$"
+          description: "IDCC of the collective agreement that applies to the employee. Absent: no agreement, the agreement minimum is not checked."
+        mois:
+          type: array
+          minItems: 1
+          maxItems: 120
+          description: >-
+            Gross pay month by month, read from the payslips: at least the 12
+            months before the month of signature, plus one earlier month for
+            each month marked neutralise. Each month once.
+          items:
+            type: object
+            additionalProperties: false
+            required: [mois, brut]
+            properties:
+              mois: { type: string, pattern: "^[0-9]{4}-(0[1-9]|1[0-2])$", description: "YYYY-MM." }
+              brut: { type: number, minimum: 0, personal: true, description: "Gross pay of the month, bonuses included, in euros." }
+              primes_exceptionnelles: { type: number, minimum: 0, default: 0, personal: true, description: "Part of brut paid as an annual or exceptional bonus (13th month, year-end bonus): counted pro rata in the 3-month formula. Never above brut." }
+              neutralise: { type: boolean, default: false, personal: true, description: "Leave this month out (sick leave, maternity or birth leave, any suspension that lowered the pay). No reason is asked: never give one." }
+        jours_non_comptes_anciennete: { type: integer, minimum: 0, maximum: 36500, default: 0, personal: true, description: "Days of suspension that the law or the agreement excludes from length of service (e.g. half of a parental leave)." }
+        date_depot: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", description: "Planned filing date, YYYY-MM-DD. Absent: the earliest possible." }
+        alsace_moselle: { type: boolean, default: false, description: "The employee works in Alsace-Moselle: Good Friday and 26 December are public holidays." }
+    examples:
+      - title: Seven years of service, a 13th month, one month of sick leave left out
+        input:
+          date_entree: "2019-03-04"
+          date_signature: "2026-11-10"
+          date_rupture_envisagee: "2026-12-31"
+          indemnite_convenue: 7000
+          idcc: "1486"
+          mois:
+            - { mois: "2025-10", brut: 3200 }
+            - { mois: "2025-11", brut: 3200 }
+            - { mois: "2025-12", brut: 6400, primes_exceptionnelles: 3200 }
+            - { mois: "2026-01", brut: 3200 }
+            - { mois: "2026-02", brut: 3200 }
+            - { mois: "2026-03", brut: 3200 }
+            - { mois: "2026-04", brut: 3200 }
+            - { mois: "2026-05", brut: 3200 }
+            - { mois: "2026-06", brut: 1850, neutralise: true }
+            - { mois: "2026-07", brut: 3200 }
+            - { mois: "2026-08", brut: 3200 }
+            - { mois: "2026-09", brut: 3200 }
+            - { mois: "2026-10", brut: 3200 }
+      - title: No collective agreement, a planned filing date
+        input:
+          date_entree: "2023-09-01"
+          date_signature: "2026-11-16"
+          date_rupture_envisagee: "2026-12-15"
+          indemnite_convenue: 2400
+          date_depot: "2026-12-02"
+          mois:
+            - { mois: "2025-11", brut: 2600 }
+            - { mois: "2025-12", brut: 2600 }
+            - { mois: "2026-01", brut: 2600 }
+            - { mois: "2026-02", brut: 2600 }
+            - { mois: "2026-03", brut: 2600 }
+            - { mois: "2026-04", brut: 2600 }
+            - { mois: "2026-05", brut: 2600 }
+            - { mois: "2026-06", brut: 2600 }
+            - { mois: "2026-07", brut: 2600 }
+            - { mois: "2026-08", brut: 2600 }
+            - { mois: "2026-09", brut: 2600 }
+            - { mois: "2026-10", brut: 2600 }
+    call:
+      method: POST
+      path: /api/rupture-conventionnelle/controle
+      body:
+        date_entree: date_entree
+        date_signature: date_signature
+        date_rupture_envisagee: date_rupture_envisagee
+        indemnite_convenue: indemnite_convenue
+        idcc: idcc
+        mois: mois
+        jours_non_comptes_anciennete: jours_non_comptes_anciennete
+        date_depot: date_depot
+        alsace_moselle: alsace_moselle
     cost: { per: request }
