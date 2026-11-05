@@ -135,7 +135,8 @@ def admin_consent_url(client_id: str, redirect_uri: str, state: str, *,
     """The URL a tenant administrator opens to grant `scopes` to the application
     for every person of their organization (e.g. `scopes.TEAMS_ADMIN`).
 
-    Only Graph permissions are sent, as full URIs: the OpenID Connect scopes
+    Only permissions are sent, as full URIs (a short name is a Graph one; a scope of
+    another resource, Power BI, keeps its own URI): the OpenID Connect scopes
     (`offline_access`, `openid`, `profile`, `email`) are not permissions an
     administrator grants, and are dropped. With `tenant="organizations"` the
     administrator signs in and their own tenant is the one consented.
@@ -146,7 +147,7 @@ def admin_consent_url(client_id: str, redirect_uri: str, state: str, *,
     nothing is exchanged afterwards, each person still signs in with
     `authorize_url` to obtain their own token.
     """
-    graph = tuple(s if s.lower().startswith(_scopes.GRAPH) else _scopes.GRAPH + s
+    graph = tuple(s if "://" in s else _scopes.GRAPH + s
                   for s in scopes if s.lower() not in _scopes.OIDC)
     params = {
         "client_id": require(client_id, "MICROSOFT_CLIENT_ID"),

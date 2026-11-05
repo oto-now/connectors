@@ -6,7 +6,8 @@ covers it: `short(FILES) <= normalize(grant.scope)`.
 
 All the scopes below are consentable by the person themselves, except
 `TEAMS_ADMIN` and `DIRECTORY`, which require a tenant administrator (see
-`auth.admin_consent_url`).
+`auth.admin_consent_url`). `POWERBI` names another resource: its scopes keep their
+full URI as short name, so they never collide with a Graph one.
 """
 from __future__ import annotations
 
@@ -33,6 +34,14 @@ NOTES = (GRAPH + "Notes.ReadWrite.All",)
 DIRECTORY = (GRAPH + "Directory.Read.All", GRAPH + "AuditLog.Read.All",
              GRAPH + "Sites.Read.All", GRAPH + "LicenseAssignment.ReadWrite.All",
              GRAPH + "User.EnableDisableAccount.All", GRAPH + "GroupMember.ReadWrite.All")
+#: Power BI, its OWN Entra resource (not Graph): READ the workspaces, reports and
+#: semantic models the person reaches, and query a model in DAX. A token for it is
+#: asked with `POWERBI_REFRESH`, never mixed with Graph scopes in one request.
+POWERBI_API = "https://analysis.windows.net/powerbi/api/"
+POWERBI = (POWERBI_API + "Workspace.Read.All", POWERBI_API + "Report.Read.All",
+           POWERBI_API + "Dataset.Read.All")
+#: A Power BI access token from the same refresh token: what was consented for it.
+POWERBI_REFRESH = (POWERBI_API + ".default", "offline_access")
 #: Reading channel messages: requires a tenant administrator's consent.
 TEAMS_ADMIN = (GRAPH + "ChannelMessage.Read.All",)
 #: On refresh, ask for everything already consented (`.default`) rather than a list:
@@ -52,7 +61,7 @@ def _strip(scope: str) -> str:
 
 _CANONICAL = {_strip(s).lower(): _strip(s)
               for group in (IDENTITY, FILES, MAIL, CALENDAR, TEAMS, NOTES, DIRECTORY, TEAMS_ADMIN,
-                             REFRESH)
+                             REFRESH, POWERBI)
               for s in group}
 _CANONICAL.update({s: s for s in OIDC})
 
