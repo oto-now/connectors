@@ -135,7 +135,7 @@ functions:
 
 ### Le bloc `exposure`
 
-L'exposition est une projection, pas une propriété de la fonction. `mode` vaut `per_action` (un outil `<namespace>_<name>` par fonction), `per_connector` (un outil par connecteur, l'action en paramètre) ou `via_call` (rien n'est exposé, le verbe d'appel lit le registre). Le défaut est `per_connector`, fixé par le consommateur ; `mode` le surcharge pour un connecteur, `tool` nomme l'outil unique en `per_connector`.
+L'exposition est une projection, pas une propriété de la fonction. `mode` vaut `per_action` (un outil `<namespace>_<name>` par fonction), `per_connector` (un outil par connecteur, l'action en paramètre) ou `via_call` (rien n'est exposé, le verbe d'appel lit le registre). Le défaut est `per_connector`, fixé par le consommateur ; `mode` le surcharge pour un connecteur, `tool` nomme l'outil unique en `per_connector`. Les modes côté hôte, et le regroupement par famille proposé pour un ERP : [exposition des fonctions](https://github.com/oto-now/oto-core/blob/main/docs/conception/exposition-des-fonctions.md) (oto-core).
 
 `exposure` et `modes` ne servent qu'à oto 1 : un hôte d'oto 2 sert ses fonctions par des outils fixes et dit qui fournit le compte par son propriétaire. Les deux blocs restent, marqués « oto 1 seulement », et partent quand oto 1 ne lira plus ce dépôt (décidé le 16/10).
 
