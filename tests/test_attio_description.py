@@ -1,4 +1,4 @@
-"""La description `attio` 1.2.0 : celle du client existant (`oto.tools.attio`), ses écritures comprises.
+"""La description `attio` 1.3.0 : celle du client existant (`oto.tools.attio`), ses écritures comprises.
 
 Le client range ses méthodes par ressource (`client.notes.list`, `client.attributes.options`…) : chaque fonction est
 une méthode, nommée de son verbe et de sa ressource (`FUNCTIONS`), avec les arguments que la méthode nomme ; les clés
@@ -336,7 +336,7 @@ def _shaped(answer, paths: list[str]):
 
 def test_the_description_is_version_1_2_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.2.0"
+    assert description["connector"]["version"] == "1.3.0"
     check(description, ATTIO)
 
 

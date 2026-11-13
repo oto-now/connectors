@@ -21,7 +21,7 @@ Une ligne par connecteur décrit, par ordre alphabétique. Le type se déduit de
 | `amplemarket` | Amplemarket | 1.0.0 | clé | non | 48 | 28 | 15 | 5 | oui | 48 | non | 0 |
 | `amplitude` | Amplitude | 1.2.0 | clé | non | 16 | 16 | 0 | 0 | non | 0 | non | 0 |
 | `apollo` | Apollo.io | 1.1.1 | clé | non | 30 | 16 | 10 | 4 | non | 30 | non | 0 |
-| `attio` | Attio | 1.2.0 | clé | non | 47 | 28 | 11 | 8 | oui | 47 | non | 0 |
+| `attio` | Attio | 1.3.0 | clé | non | 47 | 28 | 11 | 8 | oui | 47 | non | 0 |
 | `brevo` | Brevo | 1.0.0 | clé | non | 60 | 36 | 16 | 8 | oui | 60 | non | 0 |
 | `claap` | Claap | 1.0.1 | clé | non | 6 | 5 | 0 | 1 | non | 6 | non | 0 |
 | `crisp` | Crisp | 1.0.0 | clé | non | 20 | 20 | 0 | 0 | oui | 20 | non | 0 |

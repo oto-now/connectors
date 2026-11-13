@@ -61,8 +61,10 @@
 # advances offset itself (no total count; a page shorter than limit is the last). Meetings page by cursor
 # (pagination.next_cursor, null on the last page). The client defaults (limit 50, offset 0 on records/query,
 # entries/query and threads) are not declared: the host sends nothing, Attio applies its own (500 on records/query and
-# entries/query). The transcript and the call recordings of a meeting are read at their first page only: the client
-# takes no cursor.
+# entries/query). The transcript of a call recording pages its speech segments by cursor too, since 1.3.0: the agent
+# passes pagination.next_cursor back as cursor. No pagination block: the response is one transcript (its segments
+# under data.transcript, beside raw_transcript and the recording's id), not a list a host could join page after page.
+# The call recordings of a meeting are read at their first page only: the client takes no cursor.
 #
 # Rate: 100 requests per second for reads, 25 for writes (Attio's rate limiting guide); the lower is declared, which
 # every function accepts. The client does not pace.
@@ -79,7 +81,7 @@ connector:
   name: attio
   label: Attio
   namespace: attio
-  version: 1.2.0
+  version: 1.3.0
   api_version: v2
   base_url: https://api.attio.com/v2
   auth: { kind: bearer, token: api_key }
@@ -871,9 +873,11 @@ functions:
   - name: get_call_recording_transcript
     class: read
     description: >-
-      The transcript of a call recording, first page: segments with speech,
-      start and end times in seconds and the speaker's name, and the raw
-      transcript as text.
+      The transcript of a call recording, one page at a time: segments with
+      speech, start and end times in seconds and the speaker's name, and the
+      raw transcript as text. A long call spans several pages:
+      pagination.next_cursor, passed back as cursor, gives the next one; null
+      on the last page.
     input:
       type: object
       additionalProperties: false
@@ -881,9 +885,14 @@ functions:
       properties:
         meeting_id: *meeting_id
         call_recording_id: *call_recording_id
+        cursor: { type: string, minLength: 1, description: "pagination.next_cursor of the previous page of the transcript." }
     examples:
       - { title: A transcript, input: { meeting_id: 708192a3-b4c5-40d1-a253-6e7f8091a2b3, call_recording_id: 8192a3b4-c5d6-41e2-b364-7f8091a2b3c4 } }
-    call: { method: GET, path: "/meetings/{meeting_id}/call_recordings/{call_recording_id}/transcript" }
+      - { title: The next page of a transcript, input: { meeting_id: 708192a3-b4c5-40d1-a253-6e7f8091a2b3, call_recording_id: 8192a3b4-c5d6-41e2-b364-7f8091a2b3c4, cursor: next-page-cursor } }
+    call:
+      method: GET
+      path: "/meetings/{meeting_id}/call_recordings/{call_recording_id}/transcript"
+      query: { cursor: cursor }
     cost: *request
 
   # --- Schema: objects and attributes --------------------------------------------------

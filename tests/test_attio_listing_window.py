@@ -113,3 +113,24 @@ def test_meetings_list_ne_met_plus_offset_sur_le_fil(wire):
     assert "offset" not in wire["params"]
     with pytest.raises(TypeError):
         _client().meetings.list(offset=2000)
+
+
+# --- transcription d'un appel : cursor (signal d'usage 1226) -------------------
+
+_TRANSCRIPT = "meetings/m-1/call_recordings/cr-1/transcript"
+
+
+def test_transcript_premiere_page_sans_curseur(wire):
+    """Sans curseur, l'appel reste celui d'avant : aucun paramètre sur le fil."""
+    _client().call_recordings.transcript("m-1", "cr-1")
+    assert wire["method"] == "GET" and wire["endpoint"] == _TRANSCRIPT
+    assert "params" not in wire
+
+
+def test_transcript_pagine_au_cursor(wire):
+    """La référence d'Attio pagine les segments d'une transcription au curseur
+    (`cursor` en query, `pagination.next_cursor` en réponse) : sans lui, une
+    longue réunion ne se lisait qu'à sa première page."""
+    _client().call_recordings.transcript("m-1", "cr-1", cursor="cur-2")
+    assert wire["endpoint"] == _TRANSCRIPT
+    assert wire["params"] == {"cursor": "cur-2"}

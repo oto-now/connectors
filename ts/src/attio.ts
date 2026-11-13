@@ -1421,7 +1421,7 @@ export const getCallRecordingTranscript = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The transcript of a call recording, first page: segments with speech, start and end times in seconds and the speaker's name, and the raw transcript as text.",
+  description: "The transcript of a call recording, one page at a time: segments with speech, start and end times in seconds and the speaker's name, and the raw transcript as text. A long call spans several pages: pagination.next_cursor, passed back as cursor, gives the next one; null on the last page.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1436,18 +1436,24 @@ export const getCallRecordingTranscript = defineFunction({
         "type": "string",
         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
         "description": "A call recording id (a UUID), from list_call_recordings."
+      },
+      "cursor": {
+        "type": "string",
+        "minLength": 1,
+        "description": "pagination.next_cursor of the previous page of the transcript."
       }
     }
   },
   examples: [
     { title: "A transcript", input: {"meeting_id": "708192a3-b4c5-40d1-a253-6e7f8091a2b3", "call_recording_id": "8192a3b4-c5d6-41e2-b364-7f8091a2b3c4"} },
+    { title: "The next page of a transcript", input: {"meeting_id": "708192a3-b4c5-40d1-a253-6e7f8091a2b3", "call_recording_id": "8192a3b4-c5d6-41e2-b364-7f8091a2b3c4", "cursor": "next-page-cursor"} },
   ],
   refusals: [],
   request: {
     method: "GET",
     path: "/meetings/{meeting_id}/call_recordings/{call_recording_id}/transcript",
     pathParams: ["meeting_id", "call_recording_id"],
-    query: {},
+    query: {"cursor": "cursor"},
     body: {},
     headers: {},
   },
@@ -1857,7 +1863,7 @@ export const connector = defineConnector({
   name: "attio",
   label: "Attio",
   namespace: "attio",
-  version: "1.2.0",
+  version: "1.3.0",
   apiVersion: "v2",
   baseUrl: "https://api.attio.com/v2",
   auth: {"kind": "bearer", "token": "api_key"},
