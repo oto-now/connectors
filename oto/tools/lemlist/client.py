@@ -19,7 +19,7 @@ import requests
 
 from ..common.credentials import require
 from ..common import raise_for_upstream
-from . import database_views
+from . import activity_views, database_views
 
 _HTTP_TIMEOUT = (10, 60)  # (connect, read) — never wait indefinitely
 
@@ -1376,6 +1376,8 @@ class LemlistClient:
         max_date: str = None,
         start_date: str = None,
         end_date: str = None,
+        fields: List[str] = None,
+        compact: bool = False,
     ) -> List[Dict]:
         """Get activities (lead interactions).
 
@@ -1392,7 +1394,14 @@ class LemlistClient:
             min_date / max_date: Bounds on the activity date
             start_date / end_date: The other documented pair of bounds — lemlist
                 exposes both; kept distinct rather than merged into a guess.
+            fields: Keep only these keys of each activity (names, dotted paths
+                such as `lead.variables.email`).
+            compact: Keep a preset (type, date, campaign, step, lead, sender,
+                subject) and a short excerpt of the body, never HTML. `fields`
+                and `compact` are applied here, never sent to lemlist; neither
+                given, the list is lemlist's own (`activity_views`).
         """
+        view = activity_views.view_of(fields, compact)
         params = {'limit': limit, 'offset': offset, 'version': 'v2'}
         if campaign_id:
             params['campaignId'] = campaign_id
@@ -1403,21 +1412,26 @@ class LemlistClient:
         ):
             if value is not None:
                 params[key] = value
-        return self._request("GET", "activities", params=params)
+        return activity_views.shape_activities(
+            self._request("GET", "activities", params=params), view)
 
     def delete_activity_recording_transcript(self, activity_id: str) -> Dict[str, Any]:
         """Delete the recording transcript attached to a call activity."""
         return self._request(
             "DELETE", f"activities/{activity_id}/recording-transcript")
 
-    def sync_activities(self, campaign_id: str = None, since: str = None, max_pages: int = 50) -> List[Dict]:
+    def sync_activities(self, campaign_id: str = None, since: str = None, max_pages: int = 50,
+                        *, fields: List[str] = None, compact: bool = False) -> List[Dict]:
         """Fetch all activities with pagination.
 
         Args:
             campaign_id: Optional campaign filter
             since: Optional ISO date string to filter activities after this date
             max_pages: Maximum number of pages to fetch (default 50 = 5000 activities)
+            fields / compact: The view of `get_activities`, applied once the
+                pages are read and filtered by `since`.
         """
+        view = activity_views.view_of(fields, compact)
         all_activities = []
         offset = 0
         limit = 100
@@ -1435,7 +1449,7 @@ class LemlistClient:
                 break
             if since and batch and all(a.get('createdAt', '') < since for a in batch):
                 break
-        return all_activities
+        return activity_views.shape_activities(all_activities, view)
 
     #: Channels accepted by the v2 stats endpoints.
     STATS_CHANNELS = ("email", "linkedin", "others")

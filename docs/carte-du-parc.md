@@ -44,7 +44,7 @@ Une ligne par connecteur décrit, par ordre alphabétique. Le type se déduit de
 | `instantly` | Instantly | 1.0.1 | clé | non | 34 | 21 | 5 | 8 | oui | 0 | non | 0 |
 | `jefacture` | jefacture.com | 1.0.0 | connexion d'une personne (OAuth) | non | 11 | 11 | 0 | 0 | non | 11 | non | 0 |
 | `klaviyo` | Klaviyo | 1.0.0 | clé | non | 25 | 19 | 2 | 4 | oui | 25 | non | 0 |
-| `lemlist` | lemlist | 1.3.0 | clé | non | 125 | 57 | 32 | 36 | oui | 125 | non | 0 |
+| `lemlist` | lemlist | 1.4.0 | clé | non | 125 | 57 | 32 | 36 | oui | 125 | non | 0 |
 | `linear` | Linear | 1.0.0 | clé | non | 27 | 12 | 9 | 6 | oui | 0 | non | 0 |
 | `linkedin_unipile` | LinkedIn (Unipile) | 1.3.1 | clé de l'hôte | oui | 28 | 24 | 1 | 3 | oui | 0 | non | 0 |
 | `mailpool` | Mailpool | 1.1.1 | clé | non | 21 | 16 | 5 | 0 | non | 21 | non | 0 |

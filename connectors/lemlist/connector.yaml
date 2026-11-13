@@ -5,6 +5,11 @@
 # The function names, the argument names and the keys sent to lemlist are the client's; the client is not changed
 # (tests/test_lemlist_description.py reads it to keep both equal).
 #
+# 1.4.0: the client's get_activities takes the same kind of view, fields (a keep-list, dotted paths) and compact (a
+# preset: the event, its date, campaign and step, the lead, the sender, the subject and a short excerpt of the body,
+# never HTML), applied to each activity by the client and never sent to lemlist; the function below does not take them.
+# Nothing else changes.
+#
 # 1.3.0: the client's search_people_database and search_companies_database take a view of the answer, fields (a
 # keep-list, dotted paths) and compact (a preset), applied to each result by the client and never sent to lemlist; the
 # functions below do not take them (a view chosen by the call is not an output the format says). Nothing else changes.
@@ -97,14 +102,14 @@
 #   them apart), webhook_url of enrich and enrich_lead (lemlist posts the result to an address of the caller's),
 #   mark_as_read of get_contact_messages (it writes on a read), filename of upload_lead_audio (the host names the
 #   part after the transit file), fields and compact of search_people_database and search_companies_database (a
-#   view of the answer chosen by the call, applied by the client).
+#   view of the answer chosen by the call, applied by the client), and the same two of get_activities.
 # Pagination is by offset or page, without a next cursor in most answers: none is declared, the agent passes the
 # page.
 connector:
   name: lemlist
   label: lemlist
   namespace: lemlist
-  version: 1.3.0
+  version: 1.4.0
   api_version: v1 and v2 routes
   base_url: https://api.lemlist.com/api
   auth:
