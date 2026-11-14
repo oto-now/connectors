@@ -2,8 +2,9 @@
 
 A simple "HTTP node" (like n8n's HTTP Request node / a Zapier action):
 injects the configured auth mode (bearer / key in header or query / basic /
-oauth2 client-credentials) and forwards the requested method (GET by default; POST /
-PUT / PATCH / DELETE with a JSON body) to the target API.
+oauth2 client-credentials, a login session, a visitor session) and forwards the
+requested method (GET by default; POST / PUT / PATCH / DELETE with a JSON body, or a
+raw body of a declared content type) to the target API.
 
 SSRF protection does NOT live here: as in market products (Zapier,
 Make, n8n, GPT Actions…), outbound traffic initiated by a tenant is filtered at
@@ -23,9 +24,9 @@ from urllib.parse import urlsplit
 import requests
 from requests.auth import HTTPBasicAuth
 
-from .session import SessionConfig, SessionLogin
+from .session import SessionConfig, SessionLogin, VisitorSession
 
-AUTH_MODES = ("bearer", "header", "query", "basic", "oauth2", "session", "none")
+AUTH_MODES = ("bearer", "header", "query", "basic", "oauth2", "session", "visitor", "none")
 
 # The modes whose agent only reads: the session mode logs in with a person's password,
 # so its only POST is the login, never the agent's.
@@ -157,7 +158,8 @@ def build_auth(mode: str, fields: dict, *, base_url: str | None = None,
 
     The session mode also takes the base URL, the host's egress `guard` (called on
     each hop of the login, required), the stored cookie `jar` and the `on_jar`
-    callback that receives it to store (see `session.py`).
+    callback that receives it to store (see `session.py`). The visitor mode takes the
+    same, without login nor password: only its `session` field.
 
     Raises `ValueError` (actionable message) if the mode is unknown or a
     required field is missing."""
@@ -190,6 +192,12 @@ def build_auth(mode: str, fields: dict, *, base_url: str | None = None,
         return SessionLogin(base_url, val("username"), fields.get("password") or "",
                             SessionConfig(fields.get("session")), guard=guard, jar=jar,
                             on_jar=on_jar, timeout=timeout)
+    if mode == "visitor":
+        need("session")
+        if not base_url:
+            raise ValueError("auth_mode='visitor' requires the base URL")
+        return VisitorSession(base_url, SessionConfig(fields.get("session"), visitor=True),
+                              guard=guard, jar=jar, on_jar=on_jar, timeout=timeout)
     if mode == "none":
         return NoAuth()
     raise ValueError(f"unknown auth_mode: {mode!r} (expected: {'|'.join(AUTH_MODES)})")
@@ -270,14 +278,20 @@ class HttpConnectorClient:
             self._session = s
         return self._session
 
-    def request(
-        self,
-        method: str,
-        path: str,
-        *,
-        params: dict | None = None,
-        json: dict | list | None = None,
-    ) -> dict:
+    def _reauthed(self, s: requests.Session, send: Callable[[], requests.Response]) -> requests.Response:
+        """Send; on an answer that asks for it, re-authenticate once and replay once."""
+        r = send()
+        if self._auth.needs_login(r):
+            r.close()
+            self._auth.refresh(s)
+            r = send()
+            self._auth.check_replay(r)
+        self._auth.after_response(s)
+        return r
+
+    def _exchange(self, method: str, path: str, *, params: dict | None,
+                  json: dict | list | None, data: str | bytes | None,
+                  content_type: str | None, stream: bool) -> requests.Response:
         method = (method or "").strip().upper()
         if method not in METHODS:
             raise ValueError(f"invalid method: {method!r} (expected: {'|'.join(METHODS)})")
@@ -285,24 +299,69 @@ class HttpConnectorClient:
             raise ValueError(f"the session mode only reads: {'|'.join(READ_METHODS)}, not {method}")
         if not path.startswith("/"):
             raise ValueError("path must start with / (relative to base_url)")
+        if data is not None and json is not None:
+            raise ValueError("a body is either json or data, not both")
+        if (data is None) != (content_type is None):
+            raise ValueError("data and content_type go together: a raw body declares its type")
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+        headers = {"Content-Type": content_type} if content_type else None
         s = self._ready()
         url = self._base_url + path
 
         def _send():
             merged = {**(params or {}), **self._auth.query_params()}
-            return s.request(method, url, params=merged or None, json=json,
-                             timeout=self._timeout, allow_redirects=False)
+            return s.request(method, url, params=merged or None, json=json, data=data,
+                             headers=headers, timeout=self._timeout, allow_redirects=False,
+                             stream=stream)
 
-        r = _send()
-        if self._auth.needs_login(r):
-            r.close()
-            self._auth.refresh(s)
-            r = _send()
-            self._auth.check_replay(r)
-        self._auth.after_response(s)
+        return self._reauthed(s, _send)
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict | None = None,
+        json: dict | list | None = None,
+        data: str | bytes | None = None,
+        content_type: str | None = None,
+    ) -> dict:
+        """Call `path` and return its JSON answer. The body is `json`, or a raw `data`
+        (text sent as UTF-8, or bytes) with its `content_type` — both or neither."""
+        r = self._exchange(method, path, params=params, json=json, data=data,
+                           content_type=content_type, stream=False)
         refuse_redirect(r)
         r.raise_for_status()
         return r.json() if r.content else {}
+
+    def request_raw(
+        self,
+        method: str,
+        path: str,
+        *,
+        max_bytes: int,
+        params: dict | None = None,
+        json: dict | list | None = None,
+        data: str | bytes | None = None,
+        content_type: str | None = None,
+    ) -> dict:
+        """Call `path` and return its answer as is: `{status, content_type, text}`, the
+        body decoded from its declared charset (UTF-8 when none is declared), never
+        parsed. Read as a stream and bounded by `max_bytes`, like `get_raw`. Same body
+        rules as `request`, same auth, same refused redirect; an upstream 4xx/5xx
+        raises `requests.HTTPError`."""
+        r = self._exchange(method, path, params=params, json=json, data=data,
+                           content_type=content_type, stream=True)
+        try:
+            refuse_redirect(r)
+            r.raise_for_status()
+            body = _bounded(r, max_bytes)
+            declared = r.headers.get("Content-Type") or ""
+            return {"status": r.status_code, "content_type": declared,
+                    "text": body.decode(_charset(declared), errors="replace")}
+        finally:
+            r.close()
 
     def get(self, path: str, params: dict | None = None) -> dict:
         return self.request("GET", path, params=params)
@@ -327,28 +386,41 @@ class HttpConnectorClient:
             return s.get(url, params=merged or None, timeout=self._timeout,
                          stream=True, allow_redirects=False)
 
-        r = _send()
-        if self._auth.needs_login(r):
-            r.close()
-            self._auth.refresh(s)
-            r = _send()
-            self._auth.check_replay(r)
-        self._auth.after_response(s)
+        r = self._reauthed(s, _send)
         try:
             refuse_redirect(r)
             r.raise_for_status()
-            declared = r.headers.get("Content-Length")
-            if declared and declared.isdigit() and int(declared) > max_bytes:
-                raise ValueError(f"response of {declared} bytes > limit {max_bytes}")
-            data = bytearray()
-            for chunk in r.iter_content(64 * 1024):
-                data += chunk
-                if len(data) > max_bytes:
-                    raise ValueError(f"response > limit {max_bytes} bytes")
-            return bytes(data), r.headers.get("Content-Type") or ""
+            return _bounded(r, max_bytes), r.headers.get("Content-Type") or ""
         finally:
             r.close()
 
     def post(self, path: str, json: dict | list | None = None,
              params: dict | None = None) -> dict:
         return self.request("POST", path, params=params, json=json)
+
+
+def _bounded(r: requests.Response, max_bytes: int) -> bytes:
+    """The body of a streamed answer, refused above `max_bytes` before being read whole."""
+    declared = r.headers.get("Content-Length")
+    if declared and declared.isdigit() and int(declared) > max_bytes:
+        raise ValueError(f"response of {declared} bytes > limit {max_bytes}")
+    data = bytearray()
+    for chunk in r.iter_content(64 * 1024):
+        data += chunk
+        if len(data) > max_bytes:
+            raise ValueError(f"response > limit {max_bytes} bytes")
+    return bytes(data)
+
+
+def _charset(content_type: str) -> str:
+    """The charset a Content-Type declares, UTF-8 when it declares none; an unknown one raises."""
+    import codecs
+    for part in content_type.split(";")[1:]:
+        key, _, value = part.strip().partition("=")
+        if key.lower() == "charset" and value:
+            name = value.strip().strip('"')
+            try:
+                return codecs.lookup(name).name
+            except LookupError:
+                raise ValueError(f"the answer declares an unknown charset: {name!r}") from None
+    return "utf-8"
