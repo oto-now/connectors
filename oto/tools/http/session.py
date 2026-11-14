@@ -24,6 +24,14 @@ The jar is a secret: a session cookie is worth the password for its lifetime.
 A 401, or a redirect to the login page, triggers one full login and one replay; if the
 replay is refused again, `SessionRejected` (`credential_rejected`). Nothing is retried
 beyond that, nothing falls back to another mode.
+
+The `visitor` mode (`VisitorSession`) reads a site that has no account: no login nor
+password, the "login" is a GET of an entry page whose answer sets the visitor's cookies.
+The card declares its method (`GET`, explicitly: no default) and constant query
+parameters; the node follows that GET's redirects under the same host rules and the
+same guard, keeps the jar the same way, and refuses with `VisitorRefused`
+(`visitor_refused`) when the visit sets no cookie or the session is refused again
+after a fresh visit.
 """
 from __future__ import annotations
 
@@ -38,6 +46,11 @@ import requests
 _KEYS = {"login", "follow", "login_pages", "domain", "hosts", "max_redirects"}
 _LOGIN_KEYS = {"path", "user_field", "password_field", "constants"}
 _FOLLOW_KEYS = {"field", "query"}
+# The visitor mode has no login nor password, and no answer to follow: its visit is a
+# GET whose redirects are followed.
+_VISITOR_KEYS = _KEYS - {"follow"}
+_VISITOR_LOGIN_KEYS = {"path", "method", "query"}
+VISITOR_METHODS = ("GET",)
 MAX_REDIRECTS = 5
 
 
@@ -48,6 +61,14 @@ class SessionRejected(ValueError):
     nor a cookie."""
 
     code = "credential_rejected"
+
+
+class VisitorRefused(ValueError):
+    """The site gave the visitor no session: the visit set no cookie, was refused
+    (401, 403), or the session was refused again right after a fresh visit. No account
+    is involved: `code` (`visitor_refused`) is not a credential mark."""
+
+    code = "visitor_refused"
 
 
 class SessionHopRefused(ValueError):
@@ -84,15 +105,40 @@ class SessionConfig:
     """The `session` field of the card, read strictly: an unknown key, a missing path or
     a wrong type raises `ValueError`, never a default chosen in silence."""
 
-    def __init__(self, raw):
+    def __init__(self, raw, *, visitor: bool = False):
         cfg = _object(raw, "session")
-        _closed(cfg, _KEYS, "session")
+        _closed(cfg, _VISITOR_KEYS if visitor else _KEYS, "session")
         login = _object(cfg.get("login"), "session.login")
-        _closed(login, _LOGIN_KEYS, "session.login")
+        _closed(login, _VISITOR_LOGIN_KEYS if visitor else _LOGIN_KEYS, "session.login")
         path = login.get("path")
         if not isinstance(path, str) or not path.startswith("/"):
             raise ValueError("session.login.path: a path starting with / is required")
         self.login_path = path
+        self.visitor = visitor
+        if visitor:
+            self._visit(cfg, login)
+        else:
+            self._account(cfg, login)
+        self._bounds(cfg)
+
+    def _visit(self, cfg: dict, login: dict) -> None:
+        method = login.get("method")
+        if method not in VISITOR_METHODS:
+            raise ValueError(f"session.login.method: the visitor mode requires an explicit "
+                             f"method ({'|'.join(VISITOR_METHODS)})")
+        self.login_method = method
+        self.login_query = _strings(login.get("query"), "session.login.query")
+        self.user_field = self.password_field = None
+        self.constants: dict = {}
+        self.follow_field: str | None = None
+        self.follow_query: dict = {}
+        # No default login page: the entry page often is `/`, and every redirect would
+        # then read as a return to the login.
+        self.login_pages = self._pages(cfg, [])
+
+    def _account(self, cfg: dict, login: dict) -> None:
+        self.login_method = "POST"
+        self.login_query: dict = {}
         self.user_field = login.get("user_field", "username")
         self.password_field = login.get("password_field", "password")
         if not all(isinstance(f, str) and f for f in (self.user_field, self.password_field)):
@@ -114,11 +160,16 @@ class SessionConfig:
             self.follow_field = field
             self.follow_query = _strings(follow.get("query"), "session.follow.query")
 
-        pages = cfg.get("login_pages", [self.login_path])
+        self.login_pages = self._pages(cfg, [self.login_path])
+
+    @staticmethod
+    def _pages(cfg: dict, default: list) -> tuple:
+        pages = cfg.get("login_pages", default)
         if not isinstance(pages, list) or not all(isinstance(p, str) and p.startswith("/") for p in pages):
             raise ValueError("session.login_pages: a list of paths starting with /")
-        self.login_pages = tuple(pages)
+        return tuple(pages)
 
+    def _bounds(self, cfg: dict) -> None:
         domain = cfg.get("domain")
         if domain is not None and (not isinstance(domain, str) or "." not in domain.strip(".")):
             raise ValueError("session.domain: a registrable domain such as example.org")
@@ -180,11 +231,14 @@ class SessionLogin:
     new login. Built by `build_auth` from the card's `username`, `password` and
     `session` fields, with the host's egress guard and its stored jar."""
 
+    mode = "session"
+    refused = SessionRejected
+
     def __init__(self, base_url: str, username: str, password: str, config: SessionConfig, *,
                  guard: Callable[[str], None], jar: str | None = None,
                  on_jar: Callable[[str], None] | None = None, timeout: int = 45):
         if guard is None:
-            raise ValueError("auth_mode='session' requires the host's egress guard")
+            raise ValueError(f"auth_mode={self.mode!r} requires the host's egress guard")
         self._base_url = base_url
         self._base_host = (urlsplit(base_url).hostname or "").lower()
         self._username, self._password = username, password
@@ -218,7 +272,7 @@ class SessionLogin:
 
     def check_replay(self, r: requests.Response) -> None:
         if self.needs_login(r):
-            raise SessionRejected("the service refused the session right after a fresh login")
+            raise self.refused("the service refused the session right after a fresh login")
 
     def after_response(self, session: requests.Session) -> None:
         self._save(session)
@@ -253,18 +307,23 @@ class SessionLogin:
     def _login(self, session: requests.Session) -> None:
         with self._lock:
             session.cookies.clear()
-            body = {**self._cfg.constants, self._cfg.user_field: self._username,
-                    self._cfg.password_field: self._password}
-            r = self._send(session, "POST", self._base_url + self._cfg.login_path, json=body)
-            if r.status_code in (401, 403):
-                raise SessionRejected(f"the service refused the login ({r.status_code})")
-            if not 200 <= r.status_code < 300:
-                raise ValueError(f"session login: the login answered {r.status_code}")
-            if self._cfg.follow_field:
-                self._follow(session, r)
+            self._authenticate(session)
             if not session.cookies:
-                raise SessionRejected("the login set no session cookie")
+                raise self.refused("the login set no session cookie")
             self._save(session)
+
+    def _authenticate(self, session: requests.Session) -> None:
+        """The account's login: a POST of the login and the password, then the URL its
+        answer names, if the card says to follow it."""
+        body = {**self._cfg.constants, self._cfg.user_field: self._username,
+                self._cfg.password_field: self._password}
+        r = self._send(session, "POST", self._base_url + self._cfg.login_path, json=body)
+        if r.status_code in (401, 403):
+            raise self.refused(f"the service refused the login ({r.status_code})")
+        if not 200 <= r.status_code < 300:
+            raise ValueError(f"session login: the login answered {r.status_code}")
+        if self._cfg.follow_field:
+            self._follow(session, r)
 
     def _follow(self, session: requests.Session, login: requests.Response) -> None:
         field = self._cfg.follow_field
@@ -275,22 +334,29 @@ class SessionLogin:
         target = _dotted(answer, field)
         if not isinstance(target, str) or not target:
             raise ValueError(f"session login: the login answer has no URL in {field}")
-        url = _with_query(urljoin(login.url, target), self._cfg.follow_query)
+        self._get_through(session, _with_query(urljoin(login.url, target), self._cfg.follow_query))
+
+    def _get_through(self, session: requests.Session, url: str) -> None:
+        """GET `url` and follow its redirects, each hop checked, up to the card's bound."""
         r = self._send(session, "GET", url)
         for _ in range(self._cfg.max_redirects):
             if not 300 <= r.status_code < 400:
                 break
-            if self.is_login_redirect(r):
-                raise SessionRejected("the service sent the login back to its login page")
+            if self._back_to_login(r):
+                raise self.refused("the service sent the login back to its login page")
             url = urljoin(r.url, r.headers.get("Location") or "")
             r.close()
             r = self._send(session, "GET", url)
+        r.close()
         if 300 <= r.status_code < 400:
             raise ValueError(f"session login: more than {self._cfg.max_redirects} redirects")
         if r.status_code in (401, 403):
-            raise SessionRejected(f"the service refused the login ({r.status_code})")
+            raise self.refused(f"the service refused the login ({r.status_code})")
         if not 200 <= r.status_code < 300:
             raise ValueError(f"session login: a step answered {r.status_code}")
+
+    def _back_to_login(self, r: requests.Response) -> bool:
+        return self.is_login_redirect(r)
 
     def _save(self, session: requests.Session) -> None:
         text = dump_jar(session.cookies)
@@ -298,3 +364,29 @@ class SessionLogin:
             self._saved = text
             if self._on_jar is not None:
                 self._on_jar(text)
+
+
+class VisitorSession(SessionLogin):
+    """The visitor auth: no account; a GET of the entry page the card declares sets the
+    cookies, which then serve every call like a session's. Built by `build_auth` from
+    the card's `session` field (read with `visitor=True`), with the host's egress guard
+    and its stored jar. Its refusals are `VisitorRefused`, never a credential mark."""
+
+    mode = "visitor"
+    refused = VisitorRefused
+
+    def __init__(self, base_url: str, config: SessionConfig, *,
+                 guard: Callable[[str], None], jar: str | None = None,
+                 on_jar: Callable[[str], None] | None = None, timeout: int = 45):
+        if not config.visitor:
+            raise ValueError("VisitorSession: the session field was not read for the visitor mode")
+        super().__init__(base_url, "", "", config, guard=guard, jar=jar, on_jar=on_jar,
+                         timeout=timeout)
+
+    def _authenticate(self, session: requests.Session) -> None:
+        self._get_through(session, _with_query(self._base_url + self._cfg.login_path,
+                                               self._cfg.login_query))
+
+    def _back_to_login(self, r: requests.Response) -> bool:
+        # The visit goes through the entry page: its own redirects are the visit.
+        return False
