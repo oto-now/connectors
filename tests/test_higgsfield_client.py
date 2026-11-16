@@ -4,7 +4,8 @@ model; asynchronous jobs read back by request id).
 Mocks `requests.Session.request`: paths, bodies and headers as in the vendor's API
 reference, the key in the header only, a fresh idempotency key per submission, the
 202 with no body of a cancel, local refusals, and `price_of` on both shapes of an
-estimate answer (an amount, or a sentence of per-second prices).
+estimate answer (an amount, or a sentence of per-second prices), and GPT Image 2.5's
+per-token sentence priced at its measured charge.
 """
 from __future__ import annotations
 
@@ -19,6 +20,10 @@ RID = "d7e6c0f3-6699-4f6c-bb45-2ad7fd9158ff"
 SEEDANCE = ("For 16:9 video without video input, your request costs roughly $0.2056 per second of generated "
             "video at 480p, $0.4622 at 720p, and $1.1372 at 1080p. Each 1,000 video tokens costs $0.0214 at "
             "480p or 720p and $0.0234 at 1080p.")
+# GPT Image 2.5's estimate, verbatim (marketing-studio/image/flare, 2026-11-09).
+GPT_IMAGE = ("Per 1M tokens: text input $5, cached text input $1.25, text output $10; image input $8, cached "
+             "image input $2, image output $30. Quality defaults to high. Final cost uses actual token usage "
+             "and standard credit rounding. The initial charge is an estimate reconciled on completion.")
 
 
 class _Resp:
@@ -208,3 +213,69 @@ def test_price_of_a_sentence_says_when_it_cannot(params, why):
 @pytest.mark.parametrize("estimate", [None, [], {}, {"usd": "n/a"}, {"pricing_description": "Contact sales"}])
 def test_price_of_nothing_readable(estimate):
     assert hf.price_of(estimate, {"duration": 5})["usd"] is None
+
+
+# --- price_of: GPT Image 2.5, priced at its measured charge --------------------
+
+def _gpt(params):
+    return hf.price_of({"type": "description", "pricing_description": GPT_IMAGE}, params)
+
+
+@pytest.mark.parametrize("quality,resolution,measured", [
+    ("low", "4k", 0.0304), ("medium", "4k", 0.0552), ("high", "4k", 0.1886), ("xhigh", "4k", 0.3269),
+    ("max", "4k", 0.7222), ("high", "1k", 0.0634), ("high", "2k", 0.1177), ("max", "1k", 0.2214),
+])
+def test_gpt_image_is_priced_at_the_measured_charge_with_no_margin(quality, resolution, measured):
+    p = _gpt({"quality": quality, "resolution": resolution})
+    assert p["usd"] == pytest.approx(measured, abs=1e-4) and p["approximate"] is True
+    assert f"quality {quality}" in p["basis"] and resolution in p["basis"]
+    assert "no margin" in p["basis"] and "reports no cost" in p["basis"]
+
+
+def test_gpt_image_price_covers_every_measured_job():
+    # Every job measured on 2026-11-09 (charge read from GET /models/usage),
+    # priced with its own parameters: the price is never below the charge.
+    jobs = [({"quality": "low", "resolution": "4k", "aspect_ratio": "3:2"}, 0.0241),
+            ({"quality": "low", "resolution": "4k", "aspect_ratio": "auto"}, 0.0305),
+            ({"quality": "low", "aspect_ratio": "1:1"}, 0.0226),
+            ({"quality": "high", "resolution": "4k", "aspect_ratio": "21:9"}, 0.0736),
+            ({"quality": "high", "resolution": "4k", "image_urls": ["https://cdn.example.com/a.png"]}, 0.2015),
+            ({"quality": "high", "resolution": "4k", "image_urls": ["https://cdn.example.com/a.png"] * 4}, 0.2406)]
+    for params, charged in jobs:
+        params = dict(params, prompt="A ceramic coffee cup on a wooden table by a window, soft morning light, "
+                                     "product photo")
+        assert _gpt(params)["usd"] >= charged, params
+
+
+def test_gpt_image_defaults_to_high_and_the_dearest_resolution():
+    p = _gpt({"prompt": "a fox"})
+    assert p["usd"] == pytest.approx(0.1886 + 5 / 3 * 5e-6, abs=1e-4)
+    assert "(the default)" in p["basis"] and "no `resolution` given" in p["basis"]
+
+
+def test_gpt_image_an_unmeasured_resolution_takes_the_quality_4k():
+    p = _gpt({"quality": "xhigh", "resolution": "1k"})
+    assert p["usd"] == pytest.approx(0.3269, abs=1e-4) and "1k not measured" in p["basis"]
+
+
+def test_gpt_image_reference_images_and_a_long_prompt_add_to_the_price():
+    base = _gpt({"quality": "high", "resolution": "4k"})["usd"]
+    refs = _gpt({"quality": "high", "resolution": "4k", "image_urls": ["https://cdn.example.com/a.png"] * 16})
+    assert refs["usd"] == pytest.approx(base + 16 * 0.013, abs=1e-4) and "16 reference images" in refs["basis"]
+    assert _gpt({"quality": "high", "resolution": "4k", "prompt": "x" * 30000})["usd"] > base + 0.05
+
+
+@pytest.mark.parametrize("params,why", [
+    ({"quality": "ultra"}, "no measured charge for quality"),
+    ({"quality": "high", "resolution": "8k"}, "no measured charge for resolution"),
+])
+def test_gpt_image_says_when_it_cannot(params, why):
+    p = _gpt(params)
+    assert p["usd"] is None and why in p["basis"]
+
+
+def test_gpt_image_other_token_rates_are_not_priced():
+    # Higgsfield changed its rates: the measures no longer hold.
+    sentence = GPT_IMAGE.replace("image output $30", "image output $40")
+    p = hf.price_of({"pricing_description": sentence}, {"quality": "high"})
+    assert p["usd"] is None and "rates differ" in p["basis"]

@@ -100,6 +100,12 @@ def test_account_alive(monkeypatch):
 
 # ---- reconnect ------------------------------------------------------------
 
+# createAuthLink v2 = anyOf of two `additionalProperties: false` bodies (API 2.67).
+_CREATE_KEYS = {"expires_on", "redirect_uri", "providers", "state", "config", "domain",
+                "account_scope_id"}
+_RECONNECT_KEYS = {"expires_on", "redirect_uri", "account_id", "state", "config", "domain"}
+
+
 def test_hosted_auth_reconnect_type_and_account():
     rec = []
     c = UnipileClient(api_key="k", account_id="acc")
@@ -108,9 +114,31 @@ def test_hosted_auth_reconnect_type_and_account():
         rec.append(json)
         return {"link": "https://auth.unipile.com/?t=x"}
     c._request = fake  # type: ignore[method-assign]
-    c.hosted_auth_link(providers=["LINKEDIN"], premium="recruiter",
+    c.hosted_auth_link(providers=["LINKEDIN"], premium="recruiter", name="nonce",
+                       success_redirect_url="https://x/ok",
                        reconnect_account="acc_existing")
     body = rec[0]
-    assert body["type"] == "reconnect"
-    assert body["reconnect_account"] == "acc_existing"
+    # v2: the variant is picked by `account_id` — no `type`, no `providers`,
+    # no v1 `reconnect_account` (live 400 on 2026-11-11/12).
+    assert body["account_id"] == "acc_existing"
+    assert set(body) <= _RECONNECT_KEYS, set(body) - _RECONNECT_KEYS
+    assert "providers" not in body and "type" not in body
+    assert "state" not in body and "name" not in body
     assert body["config"]["linkedin"]["products"] == ["classic", "recruiter"]
+
+
+def test_hosted_auth_create_body_matches_v2_schema():
+    rec = []
+    c = UnipileClient(api_key="k", account_id="acc")
+
+    def fake(method, path, params=None, json=None, timeout=None):
+        rec.append(json)
+        return {"link": "u"}
+    c._request = fake  # type: ignore[method-assign]
+    c.hosted_auth_link(providers=["LINKEDIN"], name="n", notify_url="https://x/hook",
+                       success_redirect_url="https://x/ok", premium="sales_navigator",
+                       allow_cookies=True)
+    body = rec[0]
+    assert set(body) <= _CREATE_KEYS, set(body) - _CREATE_KEYS
+    assert {"expires_on", "redirect_uri", "providers"} <= set(body)
+    assert "account_id" not in body

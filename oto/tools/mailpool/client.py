@@ -8,10 +8,13 @@ endpoint.
 
 Scope: reading domains, their DNS records and owners, mailboxes, warmup and
 subscription slots; editing a domain's DNS and DMARC settings; running spam
-checks. Everything that is BILLED is deliberately absent: registering,
-transferring or renewing a domain, creating a mailbox, changing subscription
-slots, adding an inbox to warmup, inbox-placement tests. So are exports and the
-platform credentials they rely on.
+checks; creating mailboxes on subscription slots already paid for
+(`_mailboxes.py`: refused, before anything is sent, when no slot of the type
+is free). Everything else that is BILLED is deliberately absent: registering,
+transferring or renewing a domain, buying subscription slots, adding an inbox
+to warmup, inbox-placement tests. Exports to a sending platform are served
+(`_exports.py`: Mailpool sends the mailbox credentials itself); saving the
+platform's own login is not (a secret, typed in the dashboard).
 
 What the caller needs to know, and cannot guess:
 
@@ -67,6 +70,8 @@ import requests
 
 from ..common.credentials import require
 from ..common.errors import UpstreamHTTPError
+from ._exports import MailboxExportMixin
+from ._mailboxes import MailboxCreateMixin
 
 # (connect, read) per attempt — never an unbounded wait.
 HTTP_TIMEOUT = (10, 30)
@@ -174,7 +179,7 @@ class MailpoolDnsWriteError(RuntimeError):
             f"(missing: {[_label(r) for r in missing]}); {state}.")
 
 
-class MailpoolClient:
+class MailpoolClient(MailboxCreateMixin, MailboxExportMixin):
     """Mailpool v1 client (https://app.mailpool.io/v1/api), `X-Api-Authorization` auth."""
 
     BASE_URL = "https://app.mailpool.io/v1/api"

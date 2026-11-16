@@ -1,0 +1,218 @@
+# Common cases of a service account (auth.kind: oauth2_jwt_bearer, RFC 7523), with the semantics of
+# docs/conception/compte.md: the host reads the JSON key file held by the one credential field, signs an assertion in
+# RS256 and exchanges it for an access token at the fixed token_url.
+#
+# Synthetic: no real connector, no vendor; every value is made up and says so. test_key is a THROWAWAY RSA key
+# (2048 bits) generated for these cases alone and used nowhere else: not a secret. It is written as the base64 body of
+# its PKCS#8 DER, 64 characters a line, never framed as a PEM: secret guards of public repositories (the one of
+# oto-core included, which copies the TypeScript output) refuse a private key header and a JWT written in clear. Both
+# sides frame it at run time (credential_value in fabrique/jwt_bearer_cases.py, credentialValue in the output).
+#
+# The fabrique checks each case as the connector block of a description (the schema, then the rules, rule 2 included:
+# a single credential field, secret, named by auth.key), then writes ts/src/jwt-bearer-cases.ts for the host package
+# (`@otomata_tech/connectors/jwt-bearer-cases`). tests/test_jwt_bearer_cases.py plays the cases against the engine
+# of the Python lib (oto.connectors.engine), before a fake token endpoint, and against a reference written in the test,
+# cross-checked by google-auth.
+#
+# A case:
+# - auth, credential: the connector's blocks, in source form;
+# - key_file: the fields of the key file, private_key aside; private_key: how it is added, last (test_key: the test key
+#   framed as a PEM; absent; truncated: a PEM framing only the first line of the test key; not_pem: a text that is not a
+#   PEM); or key_text, the value as is. The value is the key file as compact JSON;
+# - access_level: with auth.access_levels, the level of the account; absent, auth.default_level, else full. The scope
+#   claim of the assertion is the scopes of that level joined by spaces: a service account consents to nothing, its
+#   level only decides what the assertion asks for;
+# - now: the clock, in seconds since the epoch;
+# - assertion: header (alg, typ, then kid when the key has a private_key_id) and claims (iss, scope, aud, iat, exp), each
+#   serialized as compact JSON in this key order, UTF-8, base64url without padding, joined by a dot; then the RS256
+#   signature (RSASSA-PKCS1-v1_5, SHA-256: deterministic) of that text, base64url without padding;
+# - token_request: the one request sent (POST, never a redirect followed), {assertion} standing for the assertion in its
+#   body; the assertion is never in a query;
+# - token_answer: the simulated answer; outcome: the header of the call and the expiry (now + expires_in), or a refusal:
+#   credential_rejected (invalid_grant: the key is refused), upstream_error (any other refusal, a redirect included).
+# A refused key is refused before anything is sent, in this order: service_account_key_not_json (not a JSON object),
+# service_account_key_incomplete (client_email or private_key missing or empty), service_account_key_foreign_token_uri
+# (a token_uri that is not token_url), service_account_key_unreadable (not an RSA private key in a PKCS#8 PEM).
+test_key: |
+  MIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQCfze04zCZLcKCi
+  ZGE7MukU0fdu9znHRM0h+JvZBeUdmO+bMqEiWgin3xf2SLhQfoJoxR1ej+uHbzqi
+  qcLf8iRyu92IBR6tOdTGiFjmH3XG7qc9IolQzX4oB8wxR/DmrjVtLD5zDpn/6c+j
+  eXbYANYVUlJHj95aPSRAfHFwWT7FGL2+Cr1vkSoRof40sPED57YhvxDZ3mz9LfwD
+  K89xTjLgjT4UfQYbHFB8JpQuzHXhwpMt/wXiPsHNFvaHzGOpou53mFQJ5sQ9Bh/d
+  GFq5zYBC7fwW7qgQ8vqrhShEqruYHIiXAB/pxe+iNic/TQG2UgBXuugOpErPl5CG
+  rN0bnqFtAgMBAAECgf8WKPg8aBLnYzbjTggtrWGlAXjOanoYp/HKRC9YaPjcodiY
+  LO0rVlDc9pLcFDl68BAldzAbbNm8bjAzXlcntuxW/LY7pnoai2p2HXI2dyZd77pB
+  QAjKq7RS2MH4E4HUe1PtT7VZPy0bz9B7WtygF32Yd1HxmoG7Ab+FMbyJV9bcfdl2
+  zKDgttuIAEZZt1YwlFMDSu9o/zf8ZUnUruhRY4fsoisVAiczPaTa/9fwBCIzBSFq
+  mW+sH68dy1Zs9xySuZOu5+SpNcsN3WkTC/oTRNeS2jPCyBb5iYhLo3303/pqA6Zo
+  Eer7RWBE70zkcYGmXPDPl3WZ/gFwXMdCtBMpavMCgYEA3rPO7rSEQS4ySfnYiuh4
+  /A0U97eLs1SuGXa6+6Wq8un4qEcTCjxBLuQ2BZdFPd/ow0cxNl6YHlkDPOfwOMRX
+  pIFNu/APmWuTZlys9VA7YYIX20O1YumL2ZYXkl7paxfd28b7bDioTB9zpvPZWsgn
+  +gKvYdL/XShXy5I6ANLzGssCgYEAt7KgGSv1lDAsmHSZwO0qHl+KBaSdg7J96CB5
+  7QbMAGjGZV/4g2FsewpJQ1QIgiwCs4PLRIpt+9zL8bqFXRjzq/oFiTJVse0nQvQb
+  s9stwiRkXU3uoQ0/amcfy0usJsEzZUVq7QKu5B8qj/bDtK40MFhq7WdCzbMEgyqq
+  IcNQlacCgYEAysTeufsEnDBKu45P+pIWbjAfEjk9aofEiQzQzQWXc9tSey1TibM5
+  Ck/hXA/SjLbNQNgWV9GjIaacSx1HXPhwcCkHNQIrwd3v9HiXRjjKCEsiG5M3mRra
+  Kb/+MFhYoRi2+T/gdjXUDpNogu9tzLmHpJxDQYeS2Sg9X+4A//USQicCgYB31Fbp
+  dKqTC0XcAZvWpR7nh00i1zpFEadeR+khPGDRF4fr00nqch/wt0oJWITgXVM5xQxQ
+  3rhWJrcHLbQXgdJaahM4ZxRNp7UH0PNNRPm5fkHWN6Mlfd3TTAgKdoeLFFaxhjH0
+  /94UQ1xhYwhREZ5LtzGxQb3rLw8PfUJUGfO0WwKBgA0/HHwotwZdaadjXos6rk4N
+  e6yOVuCEkTTrpxeFBuV6BVqSb8gB8hFY+vzljzZ5sqaSdXjEg8SR6GbjV2n8zulM
+  vLlfdYwe58PYpCEb3eOT+NmobeM6BXKJDy5J+BvtltUvub+EXSoTH/cxEfEs3A69
+  QMZKTvJd1hsPKJhdxIS3
+cases:
+  - name: assertion_with_key_id
+    auth: &auth_one { kind: oauth2_jwt_bearer, token_url: https://oauth2.example.test/token, scopes: [https://api.example.test/auth/read], key: service_account_key }
+    credential: &credential
+      - { name: service_account_key, label: Service account key (JSON), secret: true }
+    key_file: &key_file
+      type: service_account
+      project_id: test-project-not-real
+      private_key_id: test-key-id-not-real
+      client_email: reader@test-project-not-real.example.test
+      client_id: "100000000000000000001"
+      token_uri: https://oauth2.example.test/token
+    private_key: test_key
+    now: 1767225600
+    assertion: &assertion_one
+      header: { alg: RS256, typ: JWT, kid: test-key-id-not-real }
+      claims: { iss: reader@test-project-not-real.example.test, scope: https://api.example.test/auth/read, aud: https://oauth2.example.test/token, iat: 1767225600, exp: 1767229200 }
+      signature: "H5Gm6GIpKnChyX4j5W_f-PWP2BedNB8GMT0VzI5zHoRQwd8WnHtxcg9nV-FnsokEMPcI_ZtaqHVCgG_UhKcyVBAhb0D2fC_DP6i0sA3tvtK4sp3GRWSDGp7paCEFBAqmlQUqQZvTsElLXge8zFtNZWKHOaHMENOtheuviIlEaS0ZG6bUqr62uPn_HVwngGTG8_Uo8kjwdZzwdUURmdUT_9p05BQy-_iKwYE3VVZOBcJSkEUt9uVlGq849eo7PQ2O3GUzHeoVi2OBAJJ3sef9GSMKc36kAgq_V30mWqaDT4RetiXZRC6dOgrJD0CsUYgenqfr-OKIHjkCQ9JDn5Et6A"
+    token_request: &token_request
+      url: https://oauth2.example.test/token
+      content_type: application/x-www-form-urlencoded
+      body: "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion={assertion}"
+    token_answer: { status: 200, headers: {}, body: { access_token: test-access-token-not-real, expires_in: 3599, token_type: Bearer } }
+    outcome: { headers: { authorization: Bearer test-access-token-not-real }, expires_at: 1767229199 }
+
+  - name: assertion_without_key_id_two_scopes
+    auth: { kind: oauth2_jwt_bearer, token_url: https://oauth2.example.test/token, scopes: [https://api.example.test/auth/read, https://api.example.test/auth/write], key: service_account_key }
+    credential: *credential
+    key_file:
+      type: service_account
+      client_email: writer@test-project-not-real.example.test
+    private_key: test_key
+    now: 1767312000
+    assertion:
+      header: { alg: RS256, typ: JWT }
+      claims: { iss: writer@test-project-not-real.example.test, scope: https://api.example.test/auth/read https://api.example.test/auth/write, aud: https://oauth2.example.test/token, iat: 1767312000, exp: 1767315600 }
+      signature: "Fq6fg9J3mks1KJrpSZILNPEg-ImMu-YrdpnzAcsbyfuvPofBfV7WTCI49_Dc0oee0x-Yye455xghVA1FIbsQ1A3Y-yZoyxdR0pkXTBtp35OID9OFEjnvbtUyUCJf59BsivxmTC81PvgcIs_g_lf1-3K1QVvBwFQTrx7pEaGLnvNfJFgRYBRLCtSgPqx2SIHkWuuWXY1DNK5dtEyCh4lxxcx-RmOOXLZwDaziaCaMP8_WVwfzC8VJ4ojwAEBGpxEiqen3-wGM5kq-AMYrUdvqygJEileF81rrBXaCOdA5qPWV0Llm_C_Gf91LgCuMeShyKC5NuHpc6yWEn_eKr-72sg"
+    token_request: *token_request
+    token_answer: { status: 200, headers: {}, body: { access_token: test-access-token-two-not-real, expires_in: 3600, token_type: Bearer } }
+    outcome: { headers: { authorization: Bearer test-access-token-two-not-real }, expires_at: 1767315600 }
+
+  - name: assertion_at_default_level
+    auth: &auth_levels
+      kind: oauth2_jwt_bearer
+      token_url: https://oauth2.example.test/token
+      access_levels:
+        read: { scopes: [https://api.example.test/auth/read] }
+        full: { scopes: [https://api.example.test/auth/write] }
+      scope_implies: { "https://api.example.test/auth/write": [https://api.example.test/auth/read] }
+      default_level: read
+      key: service_account_key
+    credential: *credential
+    key_file: *key_file
+    private_key: test_key
+    now: 1767225600
+    # The level read, by default_level: the very assertion of assertion_with_key_id.
+    assertion: *assertion_one
+    token_request: *token_request
+    token_answer: { status: 200, headers: {}, body: { access_token: test-access-token-read-not-real, expires_in: 3600, token_type: Bearer } }
+    outcome: { headers: { authorization: Bearer test-access-token-read-not-real }, expires_at: 1767229200 }
+
+  - name: assertion_at_level_full
+    auth: *auth_levels
+    credential: *credential
+    access_level: full
+    key_file: *key_file
+    private_key: test_key
+    now: 1767225600
+    assertion:
+      header: { alg: RS256, typ: JWT, kid: test-key-id-not-real }
+      claims: { iss: reader@test-project-not-real.example.test, scope: https://api.example.test/auth/write, aud: https://oauth2.example.test/token, iat: 1767225600, exp: 1767229200 }
+      signature: "F6QvDpqaDR_enQQccnB1-bffnBw3fHifDrfbFVqoNkAkt78KADkrqE4tq_CIiDQyp5u7AgdVHz0xIUlQqZJvN4OaqctKDbm4MFOwolON7SqYswV3IqAHvvgISQ-Zac6h8QjDH2sAOf-bYASEcBYyFtQWuFPcljJ3EkTy-6xsN75DUBrSoq_pn7jGYmoHi4QeGxqtJha6F_xfF_-Q_Qq876j6vaNAyYSEXgOUxc8fZEP3HIMbzP_eVoJlrCbDf7zQEthbdbDyyufraDXKN-x5omgLk2-jPM8hseo3EhA2kzmN_ntFLiluwA5M3zi9u6wE82DeXEzUSx10MQOOzqgXZA"
+    token_request: *token_request
+    token_answer: { status: 200, headers: {}, body: { access_token: test-access-token-full-not-real, expires_in: 3600, token_type: Bearer } }
+    outcome: { headers: { authorization: Bearer test-access-token-full-not-real }, expires_at: 1767229200 }
+
+  - name: token_refused_invalid_grant
+    auth: *auth_one
+    credential: *credential
+    key_file: *key_file
+    private_key: test_key
+    now: 1767225600
+    assertion: *assertion_one
+    token_request: *token_request
+    token_answer: { status: 400, headers: {}, body: { error: invalid_grant, error_description: Invalid JWT Signature. } }
+    outcome: { refusal: credential_rejected }
+
+  - name: token_refused_invalid_scope
+    auth: *auth_one
+    credential: *credential
+    key_file: *key_file
+    private_key: test_key
+    now: 1767225600
+    assertion: *assertion_one
+    token_request: *token_request
+    token_answer: { status: 400, headers: {}, body: { error: invalid_scope, error_description: Invalid OAuth scope. } }
+    outcome: { refusal: upstream_error }
+
+  - name: token_redirect_not_followed
+    auth: *auth_one
+    credential: *credential
+    key_file: *key_file
+    private_key: test_key
+    now: 1767225600
+    assertion: *assertion_one
+    token_request: *token_request
+    token_answer: { status: 307, headers: { location: https://elsewhere.example.test/token }, body: null }
+    outcome: { refusal: upstream_error }
+
+refused:
+  - name: key_not_json
+    auth: *auth_one
+    credential: *credential
+    key_text: "{ this is not JSON"
+    refusal: service_account_key_not_json
+
+  - name: key_not_an_object
+    auth: *auth_one
+    credential: *credential
+    key_text: "[\"not\", \"an\", \"object\"]"
+    refusal: service_account_key_not_json
+
+  - name: key_without_private_key
+    auth: *auth_one
+    credential: *credential
+    key_file: *key_file
+    private_key: absent
+    refusal: service_account_key_incomplete
+
+  - name: key_without_client_email
+    auth: *auth_one
+    credential: *credential
+    key_file: { type: service_account, private_key_id: test-key-id-not-real, token_uri: https://oauth2.example.test/token }
+    private_key: test_key
+    refusal: service_account_key_incomplete
+
+  - name: key_with_foreign_token_uri
+    auth: *auth_one
+    credential: *credential
+    key_file: { type: service_account, client_email: reader@test-project-not-real.example.test, token_uri: https://elsewhere.example.test/token }
+    private_key: test_key
+    refusal: service_account_key_foreign_token_uri
+
+  - name: key_truncated
+    auth: *auth_one
+    credential: *credential
+    key_file: *key_file
+    private_key: truncated
+    refusal: service_account_key_unreadable
+
+  - name: key_not_pem
+    auth: *auth_one
+    credential: *credential
+    key_file: *key_file
+    private_key: not_pem
+    refusal: service_account_key_unreadable

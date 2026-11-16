@@ -225,7 +225,7 @@ def _shaped(answer, paths: list[str], items: str | None = None):
 
 def test_the_description_is_version_1_3_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.3.0"
+    assert description["connector"]["version"] == "1.3.2"
     check(description, LINKEDIN)
 
 

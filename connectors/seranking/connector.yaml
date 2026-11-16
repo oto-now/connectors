@@ -1,0 +1,693 @@
+# yaml-language-server: $schema=../connector.schema.json
+# SE Ranking API v1, Data API and Project API (https://seranking.com/api/data/getting-started/,
+# https://seranking.com/api/data/reference/, https://seranking.com/api/data/domain-analysis/,
+# https://seranking.com/api/data/backlinks/, https://seranking.com/api/data/keyword-research/,
+# https://seranking.com/api/project/getting-started/, https://seranking.com/api/project/project-management/,
+# https://seranking.com/api/project/competitors/, https://seranking.com/api/project/audit/, read on 2026-11-09).
+# No Python client: this description is new, its values come from the reference only.
+#
+# Qualification.
+# - Who holds the access: the organization or the person who owns the SE Ranking subscription, by an API key made in
+#   the SE Ranking account (API > Dashboard). One key opens both APIs ("There is no separate Project key and Data
+#   key"): the plan decides which endpoints answer. Hence one connector, one credential.
+# - Authentication: the key in the Authorization header, "Token <key>". The reference also admits it in the query
+#   (apikey, token): never used, a query string lands in error messages.
+# - What a key allows: fixed rights, those of the plan; the API does not list them. A plan without Data API credits, or
+#   without project tracking, refuses the other side's endpoints (403).
+# - Cost: Data API calls spend credits, billed on 2xx answers only (a 4xx or 5xx is not billed), per request and per
+#   record returned (getting-started, credits table): domain overview, history, keywords and competitors 100 per
+#   request; backlinks summary 100 per target; backlinks list and referring domains 1 per row; keyword metrics
+#   (keywords/export) and similar, related and question keywords 10 per keyword returned; account/subscription free.
+#   Project API calls spend no credits ("use your subscription limits"). No answer says the credits consumed: nothing
+#   is settled.
+# - Engagement: nothing sends, pays or deletes. Rechecking positions and starting an audit use the plan's checks: a
+#   write, on the act side. Every call that spends Data credits is a write on the act side too, like any call that
+#   spends credits on a company (hunter.domain_search).
+# - What the agent must not see: the project list carries guest_link, a share link that opens the project's rankings
+#   without a login: stripped.
+# - Limits: 10 requests per second on the Data API, 5 on the Project API, per key; the lowest is declared. Repeated
+#   excess on the Project API blocks the key for 10 minutes, then longer.
+# - Address: one host for every account, https://api.seranking.com, version in the path.
+# - Owner of the access: a commercial product sold to companies.
+#
+# Scope. Data API: the account's credits, a domain's overview and history, its organic or paid keywords, its
+# competitors, its backlinks summary, backlinks and referring domains, keyword metrics, and similar, related and
+# question keywords, for one regional database (source: an ISO 3166-1 alpha-2 code, uk for the United Kingdom).
+# Project API: the projects, their search engines, keywords, summary and positions, their competitors and the
+# competitors' positions, the site audits (list, status, report), rechecking positions and starting an audit.
+# Not described: adding keywords to a project (its body is a JSON array, which the format does not describe), adding
+# or deleting projects and competitors, keyword groups, tags, analytics, sub-accounts, the asynchronous exports, the
+# Data API site audit, AI search, the backlinks history, anchors, authority and batch targets (one target per call
+# keeps the worst case at one record), and the many filter[...] parameters of the keyword lists.
+#
+# Cost declared: a request quantity in credits where the price per request is fixed; for a price per record, the
+# argument that bounds the records is bounded so that one request is never under the real cost (limit at most 100:
+# 100 credits for backlinks, 1000 for similar, related and question keywords), and keyword metrics counts the
+# keywords sent (10 credits each: the price stays to the billing service).
+#
+# Output: the lists that page are cut to what an agent reads (1.1.0). Backlinks and referring domains: the list
+# itself, its main keys (alt text and image flag dropped). The domain's keywords: the SERP block type and position and
+# the number of sites in the SERP dropped. The keyword research keeps its total and drops the monthly volume trend of
+# each keyword. The audits: the list itself, its summary keys. Key names from the reference, not yet read in a real
+# answer.
+#
+# Pagination: the keyword lists take page or offset and limit, and answer the current page (and a total for the
+# keyword research); no answer gives the next page: nothing is declared, the agent passes page or offset itself.
+#
+# Errors. The Project API answers {"message": "..."} (getting-started: 403 {"message":"No token"}); the Data API
+# says only that "an error description is included in the response body". A 400 is either an invalid parameter or
+# "Insufficient funds" (no credits left); a 403 is "Incorrect token", "No access" or "License expired". The account is
+# marked only on the text, under the message key: a body of another shape falls through to the generic entry, which
+# does not mark. The message key on the Data API is not verified yet: to confirm on the first real call. The special
+# status 244 (a huge site such as google.com, unavailable through the API) is a 2xx without a condition on its body,
+# which the format refuses: not declared, the functions' descriptions say it. "No token" (the header missing) is a
+# fault of the call, not of the key: not marked. A 5xx is not retried: SE Ranking bills only 2xx answers, but a
+# write (a recheck, an audit) may have gone through.
+#
+# Probe: get_subscription, a read without argument, free (credits table: account subscription, 0 and 0). Its balance
+# is the credits left, subscription_info.units_left, healthy at one credit or more. A Project-only plan with no Data
+# credits then reads as not healthy: to confirm on the first real call whether such a plan answers this endpoint.
+connector:
+  name: seranking
+  label: SE Ranking
+  namespace: seranking
+  version: 1.1.0
+  api_version: v1
+  base_url: https://api.seranking.com/v1
+  auth:
+    kind: api_key
+    in: header
+    name: Authorization
+    prefix: "Token "
+    key: api_key
+  credential:
+    - { name: api_key, label: API key, secret: true }
+  # oto 1 only: the user's or organization's own key, no platform key.
+  modes: [byo_user, byo_org]
+  timeout_s: 60
+  rate_limit: { requests: 5, seconds: 1 }
+  probe: { function: get_subscription, balance: { path: subscription_info.units_left, min: 1, unit: credits } }
+  errors:
+    - { status: 400, body: { path: message, contains: [insufficient funds] }, code: credits_exhausted, retryable: false,
+        marks_account: quota_exhausted,
+        message: "The SE Ranking account behind this key has no Data API credits left. Retrying frees nothing: top up the credits." }
+    - { status: 400, code: invalid_request, retryable: false,
+        message: "SE Ranking rejected the request: a parameter is missing or invalid (source, domain, keyword, ids, dates), or the account has no credits left." }
+    - { status: 403, body: { path: message, contains: [incorrect token] }, code: key_refused, retryable: false,
+        marks_account: credential_rejected,
+        message: "SE Ranking refused the API key. A key is made in the SE Ranking account, API > Dashboard." }
+    - { status: 403, body: { path: message, contains: [license expired] }, code: subscription_expired, retryable: false,
+        message: "The SE Ranking subscription behind this key has expired: renew it in the SE Ranking account." }
+    - { status: 403, code: access_denied, retryable: false,
+        message: "SE Ranking denied access: the key is refused, the subscription has expired, or the plan does not open this endpoint or this project." }
+    - { status: 404, code: not_found, retryable: false,
+        message: "Not found in SE Ranking: check the project, search engine, keyword, competitor or audit id." }
+    - { status: 429, code: rate_limited, retryable: true,
+        message: "SE Ranking rate limit reached: space out the calls, then retry. Repeated excess blocks the key for 10 minutes." }
+    - { status: [500, 502, 503, 504], code: upstream_unavailable, retryable: false,
+        message: "SE Ranking failed or is overloaded. Do not repeat the call blindly." }
+
+functions:
+  # Data API: account.
+  - name: get_subscription
+    class: read
+    description: >-
+      The SE Ranking subscription behind this key: status (active, inactive,
+      expired, disabled), start and expiration dates, and the Data API credits:
+      units_limit and units_left. Free.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: The subscription and its credits left, input: {} }
+    call: { method: GET, path: /account/subscription }
+
+  # Data API: domain analysis.
+  - name: domain_overview
+    class: write
+    description: >-
+      SEO overview of a domain (or one URL) in one regional database, for the
+      current month: organic and paid (adv) keyword count, estimated traffic and
+      its value, new, improved, declined and lost keywords, and keywords by
+      position band (top 1-5 to 51-100). Spends 100 SE Ranking credits. A 244
+      answer means the site is too large to be served by the API.
+    input:
+      type: object
+      additionalProperties: false
+      required: [source, domain]
+      properties:
+        source: &source { type: string, pattern: "^[a-z]{2}$", description: "Regional database: an ISO 3166-1 alpha-2 country code in lowercase, e.g. us, fr, de; uk for the United Kingdom." }
+        domain: &domain { type: string, minLength: 1, description: "The domain to analyse, e.g. example.com, without protocol." }
+        with_subdomains: &with_subdomains { type: integer, enum: [0, 1], description: "1 (SE Ranking's default) to include the subdomains, 0 for the domain alone." }
+    examples:
+      - { title: A domain in the French database, input: { source: fr, domain: example.com } }
+      - { title: Without its subdomains, input: { source: us, domain: example.com, with_subdomains: 0 } }
+    call:
+      method: GET
+      path: /domain/overview/db
+      query: { source: source, domain: domain, with_subdomains: with_subdomains }
+    cost: &domain_cost { per: request, quantity: 100, unit: credits }
+
+  - name: domain_overview_history
+    class: write
+    description: >-
+      Monthly history of a domain in one regional database: for each month,
+      keyword count, estimated traffic and its value, and keywords by position
+      band. type picks organic (default) or paid (adv) search. Spends 100 SE
+      Ranking credits.
+    input:
+      type: object
+      additionalProperties: false
+      required: [source, domain]
+      properties:
+        source: *source
+        domain: *domain
+        type: &search_type { type: string, enum: [organic, adv], description: "organic (default) or adv, the paid search ads." }
+        with_subdomains: *with_subdomains
+    examples:
+      - { title: Organic history of a domain, input: { source: fr, domain: example.com } }
+      - { title: Paid search history, input: { source: us, domain: example.com, type: adv } }
+    call:
+      method: GET
+      path: /domain/overview/history
+      query: { source: source, domain: domain, type: type, with_subdomains: with_subdomains }
+    cost: *domain_cost
+
+  - name: domain_keywords
+    class: write
+    description: >-
+      The keywords a domain ranks for in one regional database: keyword,
+      position and previous position, search volume, CPC, competition,
+      difficulty, intents, SERP features, estimated traffic and its share, and
+      the ranking URL. Sorted by traffic by default. year and month together
+      read a past month. One page per call: page reads further, limit sets its
+      size (100 by default, up to 1000). Spends 100 SE Ranking credits per call,
+      whatever the page size.
+    input:
+      type: object
+      additionalProperties: false
+      required: [source, domain]
+      dependentRequired: { year: [month], month: [year] }
+      properties:
+        source: *source
+        domain: *domain
+        type: *search_type
+        with_subdomains: *with_subdomains
+        year: { type: integer, minimum: 2015, maximum: 2100, description: "Year of a past month to read, with month." }
+        month: { type: integer, minimum: 1, maximum: 12, description: "Month (1-12) of a past month to read, with year." }
+        order_field: { type: string, enum: [traffic, volume, position, cpc, competition, kei, difficulty, traffic_percent, price], description: "Sort field, traffic by default." }
+        order_type: &order_type { type: string, enum: [asc, desc], description: "Sort direction." }
+        page: { type: integer, minimum: 1, description: "Page number, 1 by default." }
+        limit: { type: integer, minimum: 1, maximum: 1000, description: "Keywords per page, 100 by default, at most 1000." }
+    examples:
+      - { title: The top keywords of a domain, input: { source: fr, domain: example.com } }
+      - { title: Second page by volume, input: { source: us, domain: example.com, order_field: volume, order_type: desc, page: 2, limit: 200 } }
+      - { title: January 2026, input: { source: fr, domain: example.com, year: 2026, month: 1 } }
+    call:
+      method: GET
+      path: /domain/keywords
+      query:
+        source: source
+        domain: domain
+        type: type
+        with_subdomains: with_subdomains
+        year: year
+        month: month
+        order_field: order_field
+        order_type: order_type
+        page: page
+        limit: limit
+    cost: *domain_cost
+    output: { strip: [block_type, block_position, total_sites] }
+
+  - name: domain_competitors
+    class: write
+    description: >-
+      The competitors of a domain in one regional database, by shared keywords:
+      for each, the domain, common keywords, relevance, total and missing
+      keywords, estimated traffic and its value. Up to 500 competitors, in one
+      answer. type picks organic (default) or paid (adv) search. Spends 100 SE
+      Ranking credits.
+    input:
+      type: object
+      additionalProperties: false
+      required: [source, domain]
+      properties:
+        source: *source
+        domain: *domain
+        type: *search_type
+    examples:
+      - { title: Organic competitors, input: { source: fr, domain: example.com } }
+    call:
+      method: GET
+      path: /domain/competitors
+      query: { source: source, domain: domain, type: type }
+    cost: *domain_cost
+
+  # Data API: backlinks.
+  - name: backlinks_summary
+    class: write
+    description: >-
+      Backlink profile of one target: backlinks, referring domains, subnets and
+      IPs, dofollow and nofollow counts, InLink Rank, and the top anchors, pages,
+      TLDs and countries. mode reads the target as a host (default), a whole
+      domain or one URL. A negative value means unknown. Spends 100 SE Ranking
+      credits.
+    input:
+      type: object
+      additionalProperties: false
+      required: [target]
+      properties:
+        target: &target { type: string, minLength: 1, description: "The domain, host or URL to analyse." }
+        mode: &mode { type: string, enum: [host, domain, url], description: "host (default), domain (subdomains included) or url." }
+    examples:
+      - { title: Backlink profile of a domain, input: { target: example.com, mode: domain } }
+    call:
+      method: GET
+      path: /backlinks/summary
+      query: { target: target, mode: mode }
+    cost: { per: request, quantity: 100, unit: credits }
+
+  - name: list_backlinks
+    class: write
+    description: >-
+      The backlinks of one target: for each, the linking URL and page title,
+      the target URL, anchor, alt text, nofollow and image flags, InLink Rank of
+      the page and of its domain, first seen and last visited dates. limit sets
+      how many (100 by default and at most here); per_domain caps the links
+      kept per linking domain. Spends 1 SE Ranking credit per backlink returned.
+    input:
+      type: object
+      additionalProperties: false
+      required: [target]
+      properties:
+        target: *target
+        mode: *mode
+        limit: &rows { type: integer, minimum: 1, maximum: 100, description: "Rows to return, 100 by default and at most." }
+        per_domain: { type: integer, minimum: 1, description: "At most this many backlinks per linking domain." }
+        order_by: { type: string, enum: [date_found, domain_inlink_rank, inlink_rank], description: "Sort field." }
+    examples:
+      - { title: Fifty backlinks of a domain, input: { target: example.com, mode: domain, limit: 50 } }
+      - { title: "One link per domain, best first", input: { target: example.com, per_domain: 1, order_by: domain_inlink_rank } }
+    call:
+      method: GET
+      path: /backlinks/all
+      query: { target: target, mode: mode, limit: limit, per_domain: per_domain, order_by: order_by }
+    cost: &rows_cost { per: request, quantity: 100, unit: credits }
+    output: { items: backlinks, projection: [url_from, url_to, title, anchor, nofollow, inlink_rank, domain_inlink_rank, first_seen, last_visited] }
+
+  - name: list_referring_domains
+    class: write
+    description: >-
+      The domains linking to one target: for each, the referring domain, its
+      backlinks and dofollow backlinks to the target, its InLink Rank and when
+      it was first seen. limit sets how many (100 by default and at most here).
+      Spends 1 SE Ranking credit per domain returned.
+    input:
+      type: object
+      additionalProperties: false
+      required: [target]
+      properties:
+        target: *target
+        mode: *mode
+        limit: *rows
+        order_by: { type: string, enum: [date_found, new_lost_date, domain_inlink_rank, inlink_rank], description: "Sort field." }
+    examples:
+      - { title: The referring domains of a domain, input: { target: example.com, mode: domain } }
+    call:
+      method: GET
+      path: /backlinks/refdomains
+      query: { target: target, mode: mode, limit: limit, order_by: order_by }
+    cost: *rows_cost
+    output: { items: refdomains, projection: [refdomain, backlinks, dofollow_backlinks, domain_inlink_rank, first_seen] }
+
+  # Data API: keyword research.
+  - name: keyword_metrics
+    class: write
+    description: >-
+      Metrics of a list of keywords in one regional database: whether data was
+      found, monthly search volume, CPC, competition (0-1), difficulty (0-100),
+      intents and the volume trend. history_from and history_to (within the last
+      12 months) add the monthly history. Spends 10 SE Ranking credits per
+      keyword returned; up to 100 keywords per call here.
+    input:
+      type: object
+      additionalProperties: false
+      required: [source, keywords]
+      properties:
+        source: *source
+        keywords: { type: array, minItems: 1, maxItems: 100, items: { type: string, minLength: 1 }, description: "The keywords to measure." }
+        sort: { type: string, enum: [volume, cpc, difficulty, competition], description: "Sort field, cpc by default." }
+        sort_order: *order_type
+        history_from: &day { type: string, pattern: "^\\d{4}-\\d{2}-\\d{2}$", description: "Day, YYYY-MM-DD." }
+        history_to: *day
+    examples:
+      - { title: Volume and difficulty of two keywords, input: { source: fr, keywords: [logiciel crm, crm gratuit] } }
+      - { title: With the monthly history, input: { source: us, keywords: [crm software], history_from: "2026-01-01", history_to: "2026-10-31" } }
+    call:
+      method: POST
+      path: /keywords/export
+      query: { source: source }
+      body: { keywords: keywords, sort: sort, sort_order: sort_order, history_from: history_from, history_to: history_to }
+    cost: { per: item, items: keywords, unit: keywords }
+
+  - name: similar_keywords
+    class: write
+    description: >-
+      Keywords similar to a seed keyword in one regional database, with the
+      total found: for each, volume, CPC, difficulty, competition, intents and
+      SERP features. limit sets how many (100 by default and at most here),
+      offset skips the first ones to read further. Spends 10 SE Ranking credits
+      per keyword returned.
+    input: &research_input
+      type: object
+      additionalProperties: false
+      required: [source, keyword]
+      properties:
+        source: *source
+        keyword: { type: string, minLength: 1, description: "The seed keyword." }
+        limit: *rows
+        offset: { type: integer, minimum: 0, description: "Keywords to skip, 0 by default: offset 100 reads the second hundred." }
+        sort: { type: string, enum: [volume, cpc, difficulty, competition], description: "Sort field." }
+        sort_order: *order_type
+    examples:
+      - { title: Similar keywords, input: { source: fr, keyword: logiciel crm, limit: 50 } }
+    call:
+      method: GET
+      path: /keywords/similar
+      query: { source: source, keyword: keyword, limit: limit, offset: offset, sort: sort, sort_order: sort_order }
+    cost: &research_cost { per: request, quantity: 1000, unit: credits }
+    output:
+      strip: [keywords.history_trend]
+      sample: { total: 1, keywords: [{ keyword: crm, volume: 10, cpc: 1.5, difficulty: 20, competition: 0.3, history_trend: { "2026-01-01": 10 } }] }
+
+  - name: related_keywords
+    class: write
+    description: >-
+      Keywords related to a seed keyword in one regional database (same topic,
+      other words), with the total found: for each, relevance, volume, CPC,
+      difficulty, competition, intents and SERP features. limit sets how many
+      (100 by default and at most here), offset skips the first ones. Spends 10
+      SE Ranking credits per keyword returned.
+    input: *research_input
+    examples:
+      - { title: Related keywords, input: { source: fr, keyword: logiciel crm, limit: 50 } }
+    call:
+      method: GET
+      path: /keywords/related
+      query: { source: source, keyword: keyword, limit: limit, offset: offset, sort: sort, sort_order: sort_order }
+    cost: *research_cost
+    output:
+      strip: [keywords.history_trend]
+      sample: { total: 1, keywords: [{ keyword: crm, volume: 10, cpc: 1.5, difficulty: 20, competition: 0.3, history_trend: { "2026-01-01": 10 } }] }
+
+  - name: question_keywords
+    class: write
+    description: >-
+      Questions people search around a seed keyword in one regional database,
+      with the total found: for each, volume, CPC, difficulty, competition,
+      intents and SERP features. limit sets how many (100 by default and at
+      most here), offset skips the first ones. Spends 10 SE Ranking credits per
+      question returned.
+    input: *research_input
+    examples:
+      - { title: Questions around a keyword, input: { source: us, keyword: crm software, limit: 20 } }
+    call:
+      method: GET
+      path: /keywords/questions
+      query: { source: source, keyword: keyword, limit: limit, offset: offset, sort: sort, sort_order: sort_order }
+    cost: *research_cost
+    output:
+      strip: [keywords.history_trend]
+      sample: { total: 1, keywords: [{ keyword: crm, volume: 10, cpc: 1.5, difficulty: 20, competition: 0.3, history_trend: { "2026-01-01": 10 } }] }
+
+  # Project API: the projects tracked in the account. No credits.
+  - name: list_sites
+    class: read
+    description: >-
+      The projects (sites) tracked in the SE Ranking account: id, name (the
+      site's address), title, group, active flag, check frequency and day,
+      search depth and keyword count. The id is the site_id of the other
+      project functions. Free.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: The tracked projects, input: {} }
+    call: { method: GET, path: /project-management/sites }
+    output: { strip: [guest_link] }
+
+  - name: list_site_search_engines
+    class: read
+    description: >-
+      The search engines a project tracks: for each, site_engine_id (used by
+      the positions functions), search engine id, region, language and keyword
+      count. Free.
+    input:
+      type: object
+      additionalProperties: false
+      required: [site_id]
+      properties:
+        site_id: &site_id { type: integer, minimum: 1, description: "The project id, from list_sites." }
+    examples:
+      - { title: The engines of a project, input: { site_id: 123 } }
+    call:
+      method: GET
+      path: /project-management/sites/search-engines
+      query: { site_id: site_id }
+
+  - name: list_site_keywords
+    class: read
+    description: >-
+      The keywords a project tracks: id, keyword, group, target URL, tags and
+      the search engines that track it; site_engine_id narrows to one engine and
+      adds the first check date. Free.
+    input:
+      type: object
+      additionalProperties: false
+      required: [site_id]
+      properties:
+        site_id: *site_id
+        site_engine_id: &site_engine_id { type: integer, minimum: 1, description: "One search engine of the project, from list_site_search_engines." }
+    examples:
+      - { title: The keywords of a project, input: { site_id: 123 } }
+    call:
+      method: GET
+      path: /project-management/keywords
+      query: { site_id: site_id, site_engine_id: site_engine_id }
+
+  - name: get_site_summary
+    class: read
+    description: >-
+      Summary of a project's rankings: average position today and yesterday,
+      keywords up and down, keywords in the top 5, 10 and 30, visibility and its
+      percentage, domain authority and pages indexed by Google. Free.
+    input:
+      type: object
+      additionalProperties: false
+      required: [site_id]
+      properties:
+        site_id: *site_id
+    examples:
+      - { title: Summary of a project, input: { site_id: 123 } }
+    call:
+      method: GET
+      path: /project-management/sites/summary
+      query: { site_id: site_id }
+
+  - name: get_site_positions
+    class: read
+    description: >-
+      The positions of a project's keywords over a period, by search engine:
+      for each keyword and day, the position, its change, and map and paid
+      positions, with volume and competition. The last 7 days by default.
+      in_top keeps the keywords in the top N at the last check; flags add the
+      landing pages, SERP features or content score. Free; long periods on
+      large projects answer large.
+    input:
+      type: object
+      additionalProperties: false
+      required: [site_id]
+      properties:
+        site_id: *site_id
+        date_from: *day
+        date_to: *day
+        site_engine_id: *site_engine_id
+        in_top: { type: integer, minimum: 1, maximum: 100, description: "Keep the keywords ranked in the top N at the last check." }
+        with_landing_pages: &flag { type: integer, const: 1, description: "1 to add this detail." }
+        with_serp_features: *flag
+        with_content_score: *flag
+    examples:
+      - { title: The last week, input: { site_id: 123 } }
+      - { title: October in the top 10, input: { site_id: 123, date_from: "2026-10-01", date_to: "2026-10-31", in_top: 10, with_landing_pages: 1 } }
+    call:
+      method: GET
+      path: /project-management/sites/positions
+      query:
+        site_id: site_id
+        date_from: date_from
+        date_to: date_to
+        site_engine_id: site_engine_id
+        in_top: in_top
+        with_landing_pages: with_landing_pages
+        with_serp_features: with_serp_features
+        with_content_score: with_content_score
+
+  - name: recheck_positions
+    class: write
+    description: >-
+      Schedule a fresh position check of a project: of every keyword of one
+      search engine (site_engine_id), or of the listed keyword and engine pairs.
+      Uses the plan's checks; answers the number of keywords scheduled. Results
+      appear later in get_site_positions.
+    input:
+      type: object
+      additionalProperties: false
+      required: [site_id]
+      oneOf:
+        - { required: [site_engine_id] }
+        - { required: [keywords] }
+      properties:
+        site_id: *site_id
+        site_engine_id: *site_engine_id
+        keywords:
+          type: array
+          minItems: 1
+          description: "The keyword and engine pairs to recheck."
+          items:
+            type: object
+            additionalProperties: false
+            required: [site_engine_id, keyword_id]
+            properties:
+              site_engine_id: *site_engine_id
+              keyword_id: { type: integer, minimum: 1, description: "A keyword id, from list_site_keywords." }
+    examples:
+      - { title: Recheck a whole engine, input: { site_id: 123, site_engine_id: 1 } }
+      - { title: Recheck two keywords, input: { site_id: 123, keywords: [{ site_engine_id: 1, keyword_id: 2 }, { site_engine_id: 1, keyword_id: 3 }] } }
+    call:
+      method: POST
+      path: /project-management/sites/positions/recheck
+      query: { site_id: site_id }
+      body: { site_engine_id: site_engine_id, keywords: keywords }
+
+  # Project API: competitors.
+  - name: list_competitors
+    class: read
+    description: >-
+      The competitors a project tracks: id, name, URL and domain trust. The id
+      is the competitor_id of get_competitor_positions. Free.
+    input:
+      type: object
+      additionalProperties: false
+      required: [site_id]
+      properties:
+        site_id: *site_id
+    examples:
+      - { title: The competitors of a project, input: { site_id: 123 } }
+    call:
+      method: GET
+      path: /project-management/competitors
+      query: { site_id: site_id }
+
+  - name: get_competitor_positions
+    class: read
+    description: >-
+      The positions of a tracked competitor on the project's keywords over a
+      period, by search engine. The last 7 days by default. Free.
+    input:
+      type: object
+      additionalProperties: false
+      required: [competitor_id]
+      properties:
+        competitor_id: { type: integer, minimum: 1, description: "A competitor id, from list_competitors." }
+        date_from: *day
+        date_to: *day
+        site_engine_id: *site_engine_id
+        with_serp_features: *flag
+    examples:
+      - { title: A competitor this month, input: { competitor_id: 45, date_from: "2026-11-01", date_to: "2026-11-09" } }
+    call:
+      method: GET
+      path: /project-management/competitors/positions
+      query: { competitor_id: competitor_id, date_from: date_from, date_to: date_to, site_engine_id: site_engine_id, with_serp_features: with_serp_features }
+
+  # Project API: site audits.
+  - name: list_audits
+    class: read
+    description: >-
+      The site audits of the account: id, URL, title, status, stats and last
+      update. search filters by URL or title, date_start and
+      date_end by date. limit sets how many (100 by default), offset skips the
+      first ones to read further: fewer than limit means the last page. Free.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        limit: { type: integer, minimum: 1, maximum: 100, description: "Audits to return, 100 by default." }
+        offset: { type: integer, minimum: 0, description: "Audits to skip, 0 by default." }
+        search: { type: string, minLength: 1, description: "Text searched in the audit URL or title." }
+        date_start: *day
+        date_end: *day
+    examples:
+      - { title: The audits, input: {} }
+      - { title: The audits of a site, input: { search: example.com } }
+    call:
+      method: GET
+      path: /project-management/audits
+      query: { limit: limit, offset: offset, search: search, date_start: date_start, date_end: date_end }
+    output: { items: items, projection: [id, url, title, status, stats, last_update] }
+
+  - name: create_audit
+    class: write
+    description: >-
+      Start a technical SEO audit of a domain (crawl of its pages, issues by
+      severity). Uses the plan's audit limits; answers the audit id. The crawl
+      takes minutes to hours: follow it with get_audit_status, then read
+      get_audit_report.
+    input:
+      type: object
+      additionalProperties: false
+      required: [domain]
+      properties:
+        domain: *domain
+        title: { type: string, minLength: 1, maxLength: 300, description: "Name of the audit." }
+    examples:
+      - { title: Audit a domain, input: { domain: example.com, title: Example audit } }
+    call:
+      method: POST
+      path: /project-management/audits
+      body: { domain: domain, title: title }
+
+  - name: get_audit_status
+    class: read
+    description: >-
+      The progress of a site audit: status (queued, processing, finished,
+      cancelled, expired), pages crawled, errors, warnings and passed checks,
+      start time and duration. Free.
+    input:
+      type: object
+      additionalProperties: false
+      required: [audit_id]
+      properties:
+        audit_id: &audit_id { type: integer, minimum: 1, description: "An audit id, from list_audits or create_audit." }
+    examples:
+      - { title: Status of an audit, input: { audit_id: 789 } }
+    call:
+      method: GET
+      path: /project-management/audits/status
+      query: { audit_id: audit_id }
+
+  - name: get_audit_report
+    class: read
+    description: >-
+      The report of a site audit: whether it is finished, the score, the totals
+      of errors, warnings and notices, the domain's properties, and the issues
+      by section with their counts. Free.
+    input:
+      type: object
+      additionalProperties: false
+      required: [audit_id]
+      properties:
+        audit_id: *audit_id
+    examples:
+      - { title: Report of an audit, input: { audit_id: 789 } }
+    call:
+      method: GET
+      path: /project-management/audits/report
+      query: { audit_id: audit_id }

@@ -1,11 +1,11 @@
 # Le corps d'une requête
 
 - **Statut** : validé par le mainteneur le 29/09/2026 (issu du [format de description](format-de-description.md))
-- **Dernière révision** : 2026-11-03
+- **Dernière révision** : 2026-11-11
 
 ## Résumé
 
-`call.body` dit le corps JSON d'une requête sous deux formes : une table qui associe des noms côté API à des arguments, emboîtée au besoin sous des clés du corps (une enveloppe, les variables d'une requête GraphQL), ou le nom d'un seul argument, un objet strict que l'agent compose et qui forme le corps entier. Les constantes de corps (`constants.body`), l'encodage d'un argument (`encode`) et les parties d'un corps multipart (`files`, [fichiers](fichiers.md)) s'y ajoutent selon des règles fixes. Ce que le format ne sait pas dire reste au client, écrit à la main.
+`call.body` dit le corps JSON d'une requête sous deux formes : une table qui associe des noms côté API à des arguments, emboîtée au besoin sous des clés du corps (une enveloppe, les variables d'une requête GraphQL), ou le nom d'un seul argument, un objet strict que l'agent compose et qui forme le corps entier. Les constantes de corps (`constants.body`), l'encodage d'un argument (`encode`) et les parties d'un corps multipart (`files`, [fichiers](fichiers.md)) s'y ajoutent selon des règles fixes ; `call.body_list` envoie le corps construit seul élément d'une liste JSON, pour un tiers dont le corps est un tableau nu d'une tâche. Ce que le format ne sait pas dire reste au client, écrit à la main.
 
 ## Contexte
 
@@ -16,7 +16,7 @@
 
 - Décrire, pour les deux langages et pour l'hôte, la requête exacte qui part de l'entrée validée.
 - Un corps est une table ou un argument, jamais les deux.
-- Hors objectif : une requête bâtie selon les arguments donnés (un champ GraphQL demandé seulement quand un argument le dit), un argument emballé dans une liste, une valeur dérivée d'un argument, un verbe choisi par un argument.
+- Hors objectif : une requête bâtie selon les arguments donnés (un champ GraphQL demandé seulement quand un argument le dit), un argument emballé dans une liste, une valeur dérivée d'un argument, un verbe choisi par un argument, un corps qui est une liste de plusieurs objets.
 
 ## Conception
 
@@ -112,7 +112,29 @@ call:
 - **Sortie TypeScript** : la table telle quelle (`RequestSpec.body`, de type `BodyMap`). Un paquet d'hôte qui n'attend qu'une table plate la refuse à la déclaration (une valeur qui n'est pas un nom d'argument : « request places [object Object], which the schema does not declare »), au lieu d'envoyer un corps faux.
 - La fabrique refuse ce qui précède avec ces codes, dans cet ordre, les mêmes que ceux d'oto-core ; les cas communs (`connectors/_cases/nested_body.yaml`, [fabrique](fabrique.md)) disent, sur des appels simulés, la requête envoyée (pagination comprise), les entrées refusées avant tout envoi et les fonctions refusées.
 
+### Le corps en liste
+
+Décidé par le responsable produit le 2026-11-11 (règle 23 de la [fabrique](fabrique.md)) : `call.body_list: true` dit que le corps construit part seul élément d'une liste JSON, quand le tiers prend pour corps un tableau d'objets dont l'appel n'envoie qu'un (DataForSEO : `[{"keyword": "…", "location_code": 2250}]`, une tâche par requête). Le drapeau ne change pas la façon de construire le corps : une table, emboîtée ou non, après sa constante, ou l'argument du corps entier, tel que validé ; il l'emballe, au dernier geste.
+
+```yaml
+call:
+  method: POST
+  path: /serp/google/organic/live/advanced
+  body: { keyword: keyword, location_code: location_code, depth: depth }
+  body_list: true
+```
+
+- **Ce qui part** : `[ <le corps construit> ]`, en JSON (`Content-Type: application/json`) ; sans aucun argument donné, un corps en table part `[{}]`.
+- **Un drapeau, pas une forme** : `body_list` ne vaut que `true` (le schéma refuse `false`, qui ne dirait rien) ; il se combine avec chacune des trois formes de `body` et avec `constants.body`, la pagination au corps comprise (le curseur se pose dans l'objet, chaque page comme la première).
+- **La fonction a un corps** (`body_list_without_body`) : une table non vide, l'argument du corps entier ou une constante du corps.
+- **La méthode envoie un corps** (`body_list_method`) : jamais `GET`.
+- **Pas de partie fichier** (`body_list_multipart`) : un corps multipart est un formulaire, jamais une liste JSON.
+- **Sortie TypeScript** : `RequestSpec.bodyList: true`. Un paquet d'hôte antérieur ne lit pas la clé et enverrait l'objet nu, un corps faux que le tiers refuse (DataForSEO : `40503 POST Data Is Invalid`) : l'épingle de ce dépôt dont une description s'en sert monte avec celle d'oto-core.
+- La fabrique refuse ce qui précède avec ces codes, dans cet ordre, les mêmes que ceux d'oto-core ; les cas communs (`connectors/_cases/list_body.yaml`, [fabrique](fabrique.md)) disent, sur des appels simulés, la requête envoyée (table, table emboîtée et constante, constante seule, argument entier), les entrées refusées avant tout envoi et les fonctions refusées.
+
 ## Décisions et alternatives écartées
+
+- **Un corps en liste dit par une forme de `body`** (`body: [ { … } ]`, une table dans une liste) : écarté le 2026-11-11. Il aurait fallu doubler chaque forme (table, emboîtée, argument entier) et ses contrôles ; le drapeau les garde toutes, et une table dans une liste laisserait croire qu'une liste de plusieurs tables se dit.
 
 - **Une clé de corps en chemin pointé** (`"variables.input.teamId": team_id`) : écartée le 2026-10-26. Une table emboîtée a la forme du corps envoyé et celle de `constants.body` ; un chemin pointé demanderait une syntaxe, ses refus (segment vide, chemins qui se chevauchent) et une clé qui contient un point ne se dirait plus ; et un paquet d'hôte antérieur enverrait la clé pointée telle quelle, un corps faux, là où il refuse une table emboîtée à la déclaration.
 - **Un corps qui serait à la fois table et argument** : écarté le 2026-10-22, le schéma ne connaît qu'une clé `body`.
@@ -126,11 +148,12 @@ call:
 ## Écart avec le code
 
 - Oto-core exécute le corps entier (`body-argument.ts`) et le corps emboîté (`body-table.ts`) à partir des commits qui les écrivent ; un paquet antérieur refuse à la déclaration un corps qui n'est pas une table plate, et avec lui toute la déclaration de l'hôte : l'épingle de ce dépôt dont une description s'en sert monte avec celle d'oto-core.
-- La lib n'envoie la requête d'aucune description : `tests/test_body_cases.py` et `tests/test_nested_body_cases.py` jouent les cas communs contre une référence écrite dans le test.
+- Le moteur Python de la lib (`oto/connectors/engine/request.py`) envoie les trois formes et le corps en liste : `tests/test_body_cases.py`, `tests/test_nested_body_cases.py` et `tests/test_list_body_cases.py` jouent les cas communs contre lui, devant un faux tiers.
+- Oto-core envoie le corps en liste (`engine.ts`) et refuse à la déclaration, avec les codes de la règle 23, un drapeau sans corps, en `GET` ou avec une partie fichier (`body-list.ts`), à partir du commit qui les écrit.
 
 ## Questions ouvertes
 
-- Un corps qui est un tableau nu (les membres d'une liste, les catégories d'une écriture comptable), un corps en formulaire (`meta_ads`, les groupes d'utilisateurs de `slack`).
+- Un corps qui est un tableau nu de plusieurs éléments ou de valeurs simples (les membres d'une liste, les catégories d'une écriture comptable), un corps en formulaire (`meta_ads`, les groupes d'utilisateurs de `slack`). Le tableau d'un seul objet se dit par `body_list`.
 - Un argument emballé dans une liste d'objets (`filterGroups: [{filters}]`), un argument scalaire emballé en liste d'un élément, deux arguments fusionnés en une liste, un argument dans une liste (l'assigné d'une tâche) ; un argument envoyé à deux places (chemin et query) ; un objet formé depuis un argument (`entity: {id}` depuis un identifiant nu) ; une valeur dérivée (une échéance complétée à minuit) ; un second appel ; un corps qui est un dictionnaire auquel le client ajoute l'identifiant.
 - Un attribut à choix multiple (une liste de textes) parmi des clés libres à valeur simple, que la règle 20 refuse ; une liste d'enregistrements dont chacun porte un `attributes: {type}` que pose le client.
 - Un argument qui est un secret de tiers (mots de passe d'une boîte), que l'hôte journaliserait.
@@ -143,3 +166,4 @@ call:
 - 2026-10-22 : le corps entier à clés libres à valeur simple (`{ type: [string, number, boolean], personal: true }`, les trois types dans cet ordre) — décidé par le mainteneur.
 - 2026-10-26 : le corps emboîté : dans un corps en table, la valeur d'une clé est un argument ou une table de même forme ; constante et table ne se rejoignent que par des objets (`body_key_twice`) ; règle 22 et cas communs `connectors/_cases/nested_body.yaml` — décidé par le mainteneur.
 - 2026-11-03 : sorti de la note « Format de description » lors de son redécoupage en documents par sujet ; les résumés par connecteur sortent pour la carte du parc et l'en-tête de chaque description — décidé par le responsable produit (source : demande de rationalisation des connecteurs).
+- 2026-11-11 : le corps en liste : `call.body_list: true`, le corps construit seul élément d'une liste JSON ; jamais sans corps, en `GET` ni avec une partie fichier ; règle 23 de la fabrique et cas communs `connectors/_cases/list_body.yaml` — décidé par le responsable produit (source : demande de description de DataForSEO, « tout décrire »).

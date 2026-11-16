@@ -612,7 +612,7 @@ export const connector = defineConnector({
   name: "mailpool",
   label: "Mailpool",
   namespace: "mailpool",
-  version: "1.0.1",
+  version: "1.1.1",
   apiVersion: "v1",
   baseUrl: "https://app.mailpool.io/v1/api",
   auth: {"kind": "api_key", "in": "header", "name": "X-Api-Authorization", "key": "api_key"},

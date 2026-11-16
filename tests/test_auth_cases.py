@@ -1,40 +1,47 @@
 """Les cas communs de l'authentification (`connectors/_cases/auth.yaml`), joués côté Python, une ligne par cas.
 
-La lib ne signe la requête d'aucune description : seul le moteur du paquet de l'hôte le fait. Les cas se jouent donc ici
-contre une référence écrite dans le test, qui dit la sémantique du format (`docs/conception/compte.md`) ; le paquet de l'hôte joue les
-mêmes cas, sortis par la fabrique dans `ts/src/auth-cases.ts`, contre son moteur.
+Ils se jouent contre le moteur de la lib (`oto.connectors.engine`), qui signe la requête d'une fonction sans argument et
+l'envoie à un faux tiers (`engine_fake`), à la sémantique du format (`docs/conception/compte.md`) ; le paquet de l'hôte
+joue les mêmes cas, sortis par la fabrique dans `ts/src/auth-cases.ts`, contre son moteur.
 """
 from __future__ import annotations
 
-import base64
 import pathlib
 
 import pytest
 import yaml
 
+import engine_fake
 from fabrique import auth_cases
 from fabrique.descriptions import DescriptionError
 
 LOADED = auth_cases.load()
+BASE_URL = "https://api.example.test/v1"
+#: Ce que pose le transport, hors de l'authentification : `authorization` est l'en-tête d'une authentification.
+TRANSPORT = engine_fake.TRANSPORT_HEADERS - {"authorization"}
 
 
-def signed(auth: dict, values: dict) -> tuple[dict, dict]:
-    """La référence : les en-têtes (noms en minuscules) et la query qu'ajoute l'authentification."""
-    kind = auth["kind"]
-    if kind == "basic":
-        username = values[auth["username"]] if "username" in auth else ""
-        token = base64.b64encode(f"{username}:{values[auth['password']]}".encode("utf-8")).decode("ascii")
-        return {"authorization": f"Basic {token}"}, {}
-    if kind == "bearer":
-        return {"authorization": f"Bearer {values[auth['token']]}"}, {}
-    if auth["in"] == "query":
-        return {}, {auth["name"]: values[auth["key"]]}
-    return {auth["name"].lower(): auth.get("prefix", "") + values[auth["key"]]}, {}
+def described(case: dict) -> dict:
+    """Une description d'une fonction sans argument, au bloc `auth` et `credential` du cas."""
+    connector = {"name": "auth_cases", "label": "Auth cases", "base_url": BASE_URL, "auth": case["auth"],
+                 "credential": case["credential"], "errors": []}
+    function = {"name": "get_records", "class": "read", "call": {"method": "GET", "path": "/records"}}
+    return {"connector": connector, "functions": [function]}
+
+
+def signed(case: dict) -> tuple[dict, dict]:
+    """Les en-têtes (noms en minuscules) et la query qu'ajoute le moteur à la requête."""
+    _, vendor = engine_fake.play(described(case), "get_records", {}, credential=case["values"])
+    (request,) = vendor.requests
+    parts = engine_fake.sent(request, BASE_URL)
+    assert parts["path"] == "/records"
+    headers = {name: value for name, value in parts["headers"].items() if name not in TRANSPORT}
+    return headers, dict(parts["query"])
 
 
 @pytest.mark.parametrize("case", LOADED.cases, ids=[case["name"] for case in LOADED.cases])
 def test_auth_case(case):
-    assert signed(case["auth"], case["values"]) == (case["headers"], case["query"])
+    assert signed(case) == (case["headers"], case["query"])
 
 
 def test_the_cases_cover_basic_without_username():

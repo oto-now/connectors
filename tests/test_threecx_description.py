@@ -1,4 +1,5 @@
-"""La description `threecx` 1.0.0 : celle du client existant (`oto.tools.threecx`), sans rien y changer.
+"""La description `threecx` 1.1.0 : celle du client existant (`oto.tools.threecx`), sans rien y changer ; 1.1.0 ne dit
+que l'arrivée de la configuration au client, que la description ne décrit pas (`CONFIGURATION`).
 
 Une fonction par méthode du client, sous son nom, avec ses noms d'arguments, le chemin OData et la query qu'il envoie
 à la XAPI du standard (`{adresse}/xapi/v1`), l'adresse du standard étant un réglage `url` du compte. Seul le client
@@ -65,8 +66,13 @@ def _functions() -> dict[str, dict]:
     return {f["name"]: f for f in _description()["functions"]}
 
 
+# La configuration du standard : un accès générique, guidé par le `$metadata` du standard lui-même (`Schema`), qui ne se
+# décrit pas fonction par fonction. Liste fermée : une méthode publique nouvelle est décrite, ou ajoutée ici.
+CONFIGURATION = {"schema", "read", "create", "update", "delete", "invoke"}
+
+
 def _public_methods() -> set[str]:
-    return {n for n, _ in inspect.getmembers(ThreeCXClient, inspect.isfunction) if not n.startswith("_")}
+    return {n for n, _ in inspect.getmembers(ThreeCXClient, inspect.isfunction) if not n.startswith("_")} - CONFIGURATION
 
 
 class _Answer:
@@ -99,11 +105,12 @@ def _sent_by_the_client(monkeypatch, name: str, arguments: dict, answer: _Answer
     """L'adresse, la query et l'en-tête Accept que la méthode du client envoie, sans réseau ; et ce qu'elle rend."""
     sent = []
 
-    def get(self, url, params=None, headers=None, **kwargs):
+    def request(self, method, url, params=None, headers=None, **kwargs):
+        assert method == "GET", method
         sent.append({"url": url, "params": params or {}, "accept": headers["Accept"]})
         return answer or _Answer({"value": []})
 
-    monkeypatch.setattr("requests.Session.get", get)
+    monkeypatch.setattr("requests.Session.request", request)
     returned = getattr(_client(), name)(**arguments)
     assert len(sent) == 1, name
     return {**sent[0], "returned": returned}
@@ -123,14 +130,15 @@ def _described(function: dict, arguments: dict, write_instant=lambda value: valu
     return base + path, query
 
 
-def test_the_description_is_version_1_0_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_1_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.0"
+    assert description["connector"]["version"] == "1.1.0"
     check(description, THREECX)
 
 
 def test_each_method_of_the_client_is_a_function_of_the_same_name():
     assert set(_functions()) == _public_methods()
+    assert CONFIGURATION <= {n for n, _ in inspect.getmembers(ThreeCXClient, inspect.isfunction)}
     for function in _functions().values():
         assert function["call"]["method"] == "GET", function["name"]
         assert function["class"] == "read", function["name"]

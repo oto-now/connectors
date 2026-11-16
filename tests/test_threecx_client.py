@@ -2,7 +2,7 @@
 body, process-wide token cache, refusals typed 401, renewal on 401, call-log
 paging and recorded-only filter, recording download.
 
-Transport stubbed (`requests.post` for the token, `Session.get` for the API):
+Transport stubbed (`requests.post` for the token, `Session.request` for the API):
 no network, no real credential.
 """
 import json
@@ -76,14 +76,16 @@ def token(monkeypatch):
 
 @pytest.fixture
 def api(monkeypatch):
-    """API stub on `Session.get`; queue responses in `replies`."""
+    """API stub on `Session.request`; queue responses in `replies`."""
     calls, replies = [], []
 
-    def fake_get(self, url, params=None, headers=None, timeout=None, **kw):
-        calls.append({"url": url, "params": params, "headers": headers})
+    def fake_request(self, method, url, params=None, headers=None, timeout=None, json=None,
+                     **kw):
+        calls.append({"method": method, "url": url, "params": params, "headers": headers,
+                      "json": json})
         return replies.pop(0) if replies else _Resp({"value": []})
 
-    monkeypatch.setattr("requests.Session.get", fake_get)
+    monkeypatch.setattr("requests.Session.request", fake_request)
     return calls, replies
 
 
@@ -316,7 +318,7 @@ def test_redirections_non_suivies(monkeypatch):
     monkeypatch.setattr(threecx_auth.requests, "post",
                         lambda url, **kw: seen.append(kw) or _Resp(
                             {"Status": "AuthSuccess", "Token": {"access_token": "t"}}))
-    monkeypatch.setattr("requests.Session.get",
-                        lambda self, url, **kw: seen.append(kw) or _Resp({"value": []}))
+    monkeypatch.setattr("requests.Session.request",
+                        lambda self, method, url, **kw: seen.append(kw) or _Resp({"value": []}))
     _user().list_calls("2026-01-01", "2026-01-02")
     assert len(seen) == 2 and all(kw["allow_redirects"] is False for kw in seen)

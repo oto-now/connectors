@@ -649,11 +649,18 @@ class AttioCallRecordings:
             self.client._request("GET", f"meetings/{meeting_id}/call_recordings/{call_recording_id}"),
             VIDEO_ADDRESS_FIELDS)
 
-    def transcript(self, meeting_id: str, call_recording_id: str) -> Dict[str, Any]:
-        """Get the transcript for a call recording."""
+    def transcript(self, meeting_id: str, call_recording_id: str, cursor: str = None) -> Dict[str, Any]:
+        """Get one page of the transcript of a call recording.
+
+        Attio pages the speech segments by cursor: pass the response's
+        `pagination.next_cursor` back as `cursor` for the next page; a null
+        `next_cursor` is the last page.
+        """
+        kwargs = {"params": {"cursor": cursor}} if cursor is not None else {}
         return self.client._request(
             "GET",
             f"meetings/{meeting_id}/call_recordings/{call_recording_id}/transcript",
+            **kwargs,
         )
 
 

@@ -23,7 +23,9 @@ Two ways to obtain an access token:
 
 Same guards as the lib's other auth modules: secrets go in **`data=`**, never
 in `params=`, no redirect is followed, and no `raise_for_status()` (its
-message embeds the URL).
+message embeds the URL). ⚠️ Every request carries `USER_AGENT`: the platform's
+firewall answers `/oauth2/token` with an HTML 403 when the User-Agent is the
+default one of `requests` (measured: same body, explicit UA → OAuth answer).
 """
 from __future__ import annotations
 
@@ -43,6 +45,8 @@ TOKEN_URL = f"{OAUTH_BASE}/token"
 REFRESH_URL = f"{OAUTH_BASE}/refresh"
 CLIENT_CREDENTIALS_URL = f"{OAUTH_BASE}/client_credential/gettoken"
 SCOPES = ("openid",)
+# Explicit User-Agent: `python-requests/*` is refused (HTML 403) on the token endpoint.
+USER_AGENT = "oto-jefacture/1 (+https://oto.cx)"
 # Lifetime announced when a token response gives none.
 DEFAULT_EXPIRES_IN = 3600
 
@@ -89,7 +93,8 @@ def authorize_url(client_id: str, redirect_uri: str, state: str) -> str:
 def _token(url: str, data: dict, *, keep_refresh: str = "") -> Grant:
     # Never follow a redirect: a 307/308 would replay the body — client secret,
     # code or refresh token — to the host named by `Location`.
-    resp = requests.post(url, data=data, timeout=_HTTP_TIMEOUT, allow_redirects=False)
+    resp = requests.post(url, data=data, headers={"User-Agent": USER_AGENT},
+                         timeout=_HTTP_TIMEOUT, allow_redirects=False)
     refuse_redirect(resp)
     try:
         payload = resp.json()

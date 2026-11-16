@@ -30,8 +30,14 @@ from ..common.credentials import require
 from ..common import FieldFilter
 from ..common.errors import raise_for_upstream
 from .analytics import AnalyticsMixin
+from .bank import BankMixin
+from .documents import DocumentsMixin
+from .exports import ExportsMixin
+from .invoicing import InvoicingMixin
 from .ledger import LedgerMixin
+from .parties import PartiesMixin
 from .quotes import QuotesMixin
+from .reference import ReferenceMixin
 from .supplier_invoices import SupplierInvoicesMixin
 
 
@@ -50,15 +56,26 @@ def _is_outstanding(transaction) -> bool:
         return True
 
 
-class PennylaneClient(AnalyticsMixin, LedgerMixin, QuotesMixin, SupplierInvoicesMixin):
+class PennylaneClient(AnalyticsMixin, BankMixin, DocumentsMixin, ExportsMixin, InvoicingMixin,
+                      LedgerMixin, PartiesMixin, QuotesMixin, ReferenceMixin,
+                      SupplierInvoicesMixin):
     """Client for Pennylane API v2.
 
     The general ledger (entries, journals, line matching) lives in
     `LedgerMixin` — same split as `brevo`, see `ledger.py`; quotes in
     `QuotesMixin` (`quotes.py`); import, correction and validation of
     supplier invoices in `SupplierInvoicesMixin` (`supplier_invoices.py`);
-    analytical groups and categories, and categorizing an invoice or a
-    ledger entry line, in `AnalyticsMixin` (`analytics.py`).
+    analytical groups and categories, and categorizing an invoice, a
+    ledger entry line, a transaction, a customer or a supplier, in
+    `AnalyticsMixin` (`analytics.py`); bank accounts, transactions and
+    changelogs in `BankMixin` (`bank.py`); the follow-up of an invoice
+    (payments, installments, matched transactions) in `InvoicingMixin`
+    (`invoicing.py`); reference data written in `ReferenceMixin`
+    (`reference.py`); customers, contacts and suppliers in `PartiesMixin`
+    (`parties.py`); exports in `ExportsMixin` (`exports.py`); subscriptions,
+    commercial documents, purchase requests, mandates and the ledger lines
+    in `DocumentsMixin` (`documents.py`). Their methods carry the names and
+    arguments of the functions of `connectors/pennylane/connector.yaml`.
     """
 
     BASE_URL = "https://app.pennylane.com/api/external/v2"

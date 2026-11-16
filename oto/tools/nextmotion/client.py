@@ -32,10 +32,13 @@ The API also serves medical content — medical history, photos and media,
 prescriptions and their signature, consent-form uploads, clinical
 treatments, consultations, visits (clinical notes), and the quotes or
 invoices created under a consultation — and a chat whose contacts are
-patients. **None of those endpoints has a method here** — one exception, cut
+patients. **None of those endpoints has a method here** — two exceptions, cut
 down at the source: `list_appointment_billed_counts` reads an appointment's
 care rows and keeps only what was counted against which quote or invoice (ids,
-quantity, date), to count the sessions consumed from a sold package. Neither do the
+quantity, date), to count the sessions consumed from a sold package; and
+`get_treatment_provider` reads an invoiced treatment and keeps only its id, its
+invoice and its practitioner's id and name, to split the takings by
+practitioner (a payment does not name the practitioner). Neither do the
 technical endpoints (VPS, shell runs, AI-assistant skills, the schema), nor
 the deletion of a patient, an invoice or a payment.
 
@@ -68,7 +71,8 @@ patient list only — not on leads nor journeys (`search`, `order=patient_name`)
   are NOT paginated (statistics, user accounting distributions): `{data}`.
 - Almost every resource hangs under a clinic: `list_clinics` gives the ids.
 - `list_invoices` accepts no filter at all (no date, no patient), and the
-  order of the list is not documented.
+  order of the list is not documented. `list_payments` filters by payment day
+  (`paid_from`, `paid_to`).
 - The product stock is not linked to invoices nor to treatments: no endpoint
   says which lot an invoice consumed.
 - Writes answer `{data: {...}}` (201 on creation); a deletion answers 204,

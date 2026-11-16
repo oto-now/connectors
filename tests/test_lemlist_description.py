@@ -1,4 +1,4 @@
-"""La description `lemlist` 1.2.2 : celle du client existant (`oto.tools.lemlist`), sans rien y changer.
+"""La description `lemlist` 1.4.0 : celle du client existant (`oto.tools.lemlist`), sans rien y changer.
 
 Une fonction par méthode du client qui envoie une seule requête à `api.lemlist.com/api`, sous son nom, avec ses noms
 d'arguments et les clés que le client envoie à lemlist (chemin, query, corps, parties d'un multipart). Depuis la 1.1.0,
@@ -8,7 +8,10 @@ les méthodes dont le corps est un argument entier, un dictionnaire envoyé tel 
 variables d'un lead, les champs personnalisés du CRM), `additionalProperties: {type: string, personal: true}` ; depuis
 la 1.2.1, les champs personnalisés du CRM, que lemlist type, sont des valeurs simples,
 `additionalProperties: {type: [string, number, boolean], personal: true}` ; depuis la 1.2.2, le texte servi dit que
-l'audio d'un lead est un fichier en transit ou un fichier joint à une page que lit l'appelant. Restent
+l'audio d'un lead est un fichier en transit ou un fichier joint à une page que lit l'appelant ; depuis la 1.3.0,
+les deux recherches de la base partagée prennent au client une vue de la réponse (`fields`, `compact`), hors du
+fichier ; depuis la 1.4.0, la lecture des activités aussi, et `list_all_campaigns` ne se dit plus tronquée quand
+la liste est complète (client seul). Restent
 hors du fichier, au client écrit à la main : les corps formés à partir d'un argument (un identifiant ajouté, un email
 retiré), le corps en tableau nu, les query à clés libres (les variables d'un lead), les compositions et aides locales,
 les routes choisies selon un argument, la relève d'enrichissement (un 404 y est une réponse), les exports CSV et la
@@ -95,6 +98,12 @@ ARGUMENTS_LEFT_OUT = {
     "get_contact_messages": {"mark_as_read": "it writes on a read"},
     "export_campaign_leads": {"format": "the constant json: the CSV form is an export"},
     "upload_lead_audio": {"filename": "the host names the part after the transit file"},
+    "search_people_database": {"fields": "a view of the answer chosen by the call, applied by the client: the format "
+                                         "projects only declared keys", "compact": "goes with fields"},
+    "search_companies_database": {"fields": "a view of the answer chosen by the call, applied by the client: the "
+                                            "format projects only declared keys", "compact": "goes with fields"},
+    "get_activities": {"fields": "a view of the answer chosen by the call, applied by the client: the format projects "
+                                 "only declared keys", "compact": "goes with fields"},
 }
 # Les clés qu'un corps entier ne prend pas, bien que le client les documente, et pourquoi.
 BODY_KEYS_LEFT_OUT = {
@@ -141,7 +150,7 @@ CLASSES = {
         "search_people_database", "search_companies_database", "get_database_filters", "list_personas", "get_team",
         "get_team_credits", "get_team_senders", "get_user", "get_user_channels", "get_team_crm_users",
         "get_crm_filters", "list_fields", "get_lemwarm_settings", "list_deliverability_alerts",
-        "get_deliverability_alert", "list_webhooks",
+        "get_deliverability_alert", "list_webhooks", "get_campaign_senders",
     },
     "write": {
         "create_campaign", "pause_campaign", "duplicate_campaign", "create_schedule", "associate_schedule",
@@ -150,6 +159,7 @@ CLASSES = {
         "create_task", "ignore_tasks", "create_persona", "test_email_account", "start_lemwarm", "pause_lemwarm",
         "create_deliverability_alert", "update_campaign", "update_ab_variant", "update_schedule", "update_lead",
         "update_draft", "update_lemwarm_settings", "update_deliverability_alert", "upsert_contact", "upsert_company",
+        "add_campaign_senders", "replace_campaign_senders",
     },
     "sensitive": {
         # Envoie, ou lance ce qui envoie, à une vraie personne.
@@ -220,6 +230,8 @@ VALUES = {
     "scope_entities": ["mbx_example1"], "channel_config": {"email": {"enabled": False}}, "recheck_delay_hours": 6,
     "target_url": "https://hooks.example.test/lemlist", "secret": "signing-text", "zap_id": "z1",
     "hook_id": "hok_example1",
+    "senders": [{"userId": "usr_example1", "channels": [{"type": "email", "id": "usm_example1"},
+                                                        {"type": "email", "id": "usm_example2", "alias": "a@example.test"}]}],
 }
 # Un argument du même nom qui n'a pas le même vocabulaire d'une fonction à l'autre.
 VALUES_OF = {
@@ -413,9 +425,9 @@ def _values(name: str, function: dict) -> dict:
     return {argument: values[argument] for argument in function["input"]["properties"]}
 
 
-def test_the_description_is_version_1_2_2_and_passes_the_fabrique():
+def test_the_description_is_version_1_5_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.2.2"
+    assert description["connector"]["version"] == "1.5.0"
     check(description, LEMLIST)
 
 

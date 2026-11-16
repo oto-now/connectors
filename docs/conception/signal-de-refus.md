@@ -1,7 +1,7 @@
 # Erreurs et signal de refus du service
 
 - **Statut** : validé par le mainteneur le 29/09/2026 (issu du [format de description](format-de-description.md))
-- **Dernière révision** : 2026-11-03
+- **Dernière révision** : 2026-11-06
 
 ## Résumé
 
@@ -72,7 +72,7 @@ La fabrique refuse (règle 10, [fabrique](fabrique.md)) : `body` ou `marks_accou
 ## Écart avec le code
 
 - Oto-core exécute la table et le signal (relu à son commit d26f513 : `error-table.ts`, `signal-declaration.ts`, `engine.ts`) : les refus à statut de la fonction, puis la table du connecteur, la première ligne dont un statut couvre la réponse et dont la condition tient ; une ligne qui marque rend le code de sa marque et pose la marque du compte, levée au premier appel réussi. Un paquet antérieur au commit qui écrit l'état d'un compte lit une entrée à condition comme une entrée sans condition (il rendrait tout 400 de `meta_ads` comme `authorization_expired`) ; un paquet antérieur à d26f513 refuse `contains` à la déclaration.
-- La lib ne lit la table d'erreurs d'aucune description : `contains` n'y a pas d'exécution, et les clients écrits à la main nomment leurs refus à leur façon.
+- La lib lit la table pour un hôte qui sert la description (`oto/connectors/serve.py`, `refusal` : les refus à statut de la fonction, puis la table du connecteur, conditions `equals` et `contains` comprises), jouée contre les cas communs (`tests/test_error_cases.py`). Les clients écrits à la main nomment toujours leurs refus à leur façon : c'est l'hôte qui traduit leur erreur HTTP en refus nommé.
 
 ## Questions ouvertes
 

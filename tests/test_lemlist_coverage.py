@@ -16,6 +16,11 @@ tests de payload dans `test_lemlist_client.py`.
 ⚠️ Deux routes documentées SÉPARÉMENT partagent un (verbe, chemin) :
 `DELETE /campaigns/{id}/leads/{id}` sert la suppression ET la désinscription,
 départagées par le paramètre `action`. D'où 141 lignes pour 142 pages.
+
+Retouche du 2026-11-15 : `GET /unsubscribes` (la liste v1) sort de la doc et
+répond 404 — `list_unsubscribes` lit la liste v2 ; trois routes du pool
+d'expéditeurs d'une campagne (`GET`/`POST`/`PUT /campaigns/{id}/senders`)
+entrent. 143 lignes.
 """
 from __future__ import annotations
 
@@ -57,6 +62,9 @@ DOCUMENTED: tuple[tuple[str, str], ...] = (
     ("GET", "campaigns/reports"),  # campaigns_get-campaign-reports
     ("GET", "campaigns/{}"),  # campaigns_get-campaign
     ("PATCH", "campaigns/{}"),  # campaigns_update-campaign
+    ("GET", "campaigns/{}/senders"),  # senders_get-campaign-senders (2026-11-15)
+    ("POST", "campaigns/{}/senders"),  # senders_add-campaign-senders (2026-11-15)
+    ("PUT", "campaigns/{}/senders"),  # senders_replace-campaign-senders (2026-11-15)
     ("POST", "campaigns/{}/duplicate"),  # campaigns_duplicate-campaign
     ("GET", "campaigns/{}/export/leads"),  # campaigns_export-campaign-leads
     ("GET", "campaigns/{}/export/start"),  # campaigns_start-campaign-export
@@ -159,7 +167,6 @@ DOCUMENTED: tuple[tuple[str, str], ...] = (
     ("GET", "team/crmUsers"),  # crm_get-team-crm-users
     ("GET", "team/senders"),  # team_get-team-senders
     ("GET", "unsubs/export"),  # unsubscribes_export-unsubscribes
-    ("GET", "unsubscribes"),  # unsubscribes_get-many-unsubscribes
     ("DELETE", "unsubscribes/{}"),  # unsubscribes_delete-unsubscribe-email
     ("GET", "unsubscribes/{}"),  # unsubscribes_get-unsubscribe-by-email
     ("POST", "unsubscribes/{}"),  # unsubscribes_add-unsubscribe-email-or-domain
@@ -195,9 +202,9 @@ DOCUMENTED: tuple[tuple[str, str], ...] = (
 
 
 def test_l_inventaire_documente_est_complet():
-    """Le relevé lui-même : 141 routes distinctes, aucune ligne en double."""
-    assert len(DOCUMENTED) == 141
-    assert len(set(DOCUMENTED)) == 141
+    """Le relevé lui-même : 143 routes distinctes, aucune ligne en double."""
+    assert len(DOCUMENTED) == 143
+    assert len(set(DOCUMENTED)) == 143
 
 
 def test_chaque_endpoint_documente_a_un_chemin_dans_le_client():

@@ -1,0 +1,994 @@
+# yaml-language-server: $schema=../connector.schema.json
+# HeyReach public API: the Postman collection "HeyReach API" published by HeyReach
+# (documenter.getpostman.com), read on 2026-11-04. Base https://api.heyreach.io,
+# every path under /api/public.
+#
+# Qualification
+# - Who holds the access: the customer's workspace. An API key maps every call to
+#   one HeyReach workspace and acts on all its LinkedIn sender accounts, campaigns,
+#   lists and inbox. Agencies and sales teams that run LinkedIn outreach on HeyReach
+#   bring their own key: modes byo_user and byo_org, never a platform key (these are
+#   the customer's own LinkedIn accounts).
+# - How it authenticates: the key in the X-API-KEY header. Keys never expire but
+#   can be deleted or deactivated. Where the key is created in the HeyReach app is
+#   not said by the reference (its "Finding your API key" section is empty); the
+#   host's help text names the Integrations page.
+# - What a key allows: fixed rights, the whole workspace; no read-only key.
+#   The organization (master) key and its management endpoints are a different key
+#   and stay out of this file.
+# - What a call costs: nothing per call (a HeyReach seat is a subscription), so
+#   no function declares a cost. No balance to read.
+# - Does it engage: yes. Adding leads to a running campaign starts LinkedIn actions
+#   on them (connection requests, messages), resuming a campaign restarts them,
+#   sending a message reaches a person, a webhook sends events to an outside
+#   address: these are `sensitive`. Leads added to a list can be picked up by a
+#   running campaign that uses the list, so adding them is `sensitive` too;
+#   stopping a lead in a campaign cannot be undone here, and replacing a lead's
+#   tags or deleting a webhook drops what was there: `sensitive` as well. Each
+#   sensitive function says its effect: `send` (something leaves towards a
+#   person or an outside address) or `destroy` (stopped or removed for good).
+# - What an agent must not see: a member's picture (`imageUrl`, a LinkedIn media
+#   address that opens without a login) is stripped from every answer that carries
+#   it; the custom headers of a webhook (they carry the receiver's own secrets) are
+#   never requested (includeCustomHeaders false) and stripped as well.
+# - Limits: 300 requests per minute per workspace, every endpoint counted
+#   together; above it, 429. Lists page by offset and limit (up to 100 per page,
+#   1000 for the leads of a list); only the inbox (GetConversationsV3) pages by
+#   cursor. The format does not declare offset paging: the agent passes the next
+#   offset itself. An offset list that strips a path keeps its whole answer (no
+#   `output.items`), totalCount included. The five lists of campaigns, lead
+#   lists and sender accounts (list_campaigns, list_lead_campaigns, list_lists,
+#   list_lead_lists, list_linkedin_accounts) declare `output.items` and a
+#   projection of each item instead (1.0.1): totalCount (and leadFullName of
+#   list_lead_campaigns) no longer reaches the agent, which reads the next page
+#   while a page returns `limit` items.
+# - Per-customer address: none.
+# - Owner of the access: a commercial product sold to many companies.
+#
+# Errors. 400 and 404 answer {errorMessage}; 401 and 429 a problem+json body.
+# 403 is documented on SendMessage and SetSeenStatus only, without saying why: it
+# marks nothing. The reference documents no credits or plan refusal on the
+# endpoints described here (the enrichment and blacklist endpoints, out of scope,
+# have their own limits), so no entry marks quota_exhausted.
+#
+# Choices
+# - The inbox is read with GetConversationsV3, the successor of V2: cursor paging
+#   (no deep-paging limit), and the correspondent's email and custom fields are not
+#   returned (get_lead has them). GetConversationsV2 is left out.
+# - `limit` is required on every offset list: the reference gives no default
+#   (except V3, whose limit defaults to 10). Bounds follow the reference (100 per
+#   page; 1000 for the leads of a list); the leads of a campaign and the lists or
+#   campaigns of a lead give no bound, 100 is kept.
+# - A lead sent to AddLeadsToCampaignV2 / AddLeadsToListV2 requires its profileUrl
+#   (the reference marks no field required; a LinkedIn lead without a profile
+#   cannot be reached). Its keys are HeyReach's own (firstName, profileUrl...):
+#   the objects are sent as given. These lead objects, and the account-lead
+#   pairs (linkedInAccountId, lead), keep HeyReach's camelCase on purpose: they
+#   are passed through to the body untouched, so an agent writes the same keys
+#   it reads in HeyReach's answers, and no key is renamed on the way. A custom field name is letters, digits and `_`
+#   (the reference refuses anything else); at most 100 leads per call.
+# - The V2 add endpoints are used: they answer the added, updated and failed counts.
+# - Webhook addresses are https.
+# - No live call has been made against HeyReach for this description.
+#
+# Left out, and why
+# - LinkedIn account connection, reconnection, PIN, relogin, resync, proxies,
+#   inbox configuration and removal (li_account Connect*, SubmitPin, Relogin*,
+#   Resync, *Proxy*, UpdateInboxConfiguration, RemoveAccount): they handle the
+#   customer's LinkedIn credentials and sessions, a human gesture in the app.
+# - Organization management (workspaces, users, invitations, workspace API keys,
+#   organization LinkedIn accounts): the organization key, admin only.
+# - Campaign creation and editing (Create, CreateCampaignFromTemplate, StartCampaign,
+#   UpdateSettings, UpdateSchedule, UpdateAccounts, UpdateSequence,
+#   GetCampaignSequence, Add/RemoveLinkedInAccounts*, UpdateLeadCustomFields):
+#   building a sequence is done in the app; an agent feeds and steers campaigns.
+# - AddLeadsToCampaign and AddLeadsToList (V1): the V2 endpoints do the same and
+#   answer counts.
+# - Blacklist, email enrichment (EnrichEmail, a reverse-lookup credit), tag
+#   creation with colours (CreateTags; add_lead_tags can create missing tags),
+#   companies of a list, the network of a sender (GetMyNetworkForSender, paged by
+#   page number), webhook update.
+# - Deleting leads from a list (DeleteLeadsFromList, DeleteLeadsFromListByProfileUrl):
+#   a removal of the customer's data; stop_lead_in_campaign is the gesture that
+#   stops contacting a lead.
+connector:
+  name: heyreach
+  label: HeyReach
+  namespace: heyreach
+  version: 1.0.1
+  api_version: public API (Postman collection, 2026-11)
+  base_url: https://api.heyreach.io/api/public
+  auth: { kind: api_key, in: header, name: X-API-KEY, key: api_key }
+  credential:
+    - { name: api_key, label: HeyReach API key, secret: true }
+  modes: [byo_user, byo_org]
+  rate_limit: { requests: 300, seconds: 60 }
+  probe: { function: check_api_key }
+  errors:
+    - { status: 400, code: invalid_request, retryable: false,
+        message: "HeyReach rejected the request: errorMessage says why (an unknown campaign, list, sender or tag, an invalid profile URL or cursor)." }
+    - { status: 401, code: key_refused, retryable: false, marks_account: credential_rejected,
+        message: "HeyReach refused the API key: unknown, deleted or deactivated. Retrying unchanged fails the same way." }
+    - { status: 403, code: forbidden, retryable: false,
+        message: "HeyReach refused this action for this key on this conversation or sender account." }
+    - { status: 404, code: not_found, retryable: false,
+        message: "Not found in this HeyReach workspace: check the id." }
+    - { status: 429, code: rate_limited, retryable: true,
+        message: "HeyReach rate limit reached (300 requests per minute for the whole workspace): wait, then retry." }
+    - { status: [500, 502, 503, 504], code: upstream_unavailable, retryable: false,
+        message: "HeyReach failed. A read can be retried; an add, a send or a change may have been applied: read it back before acting again." }
+
+functions:
+  # --- Key ------------------------------------------------------------------
+
+  - name: check_api_key
+    class: read
+    description: >-
+      Whether the API key works: an empty answer when it does, a 401 when it is
+      unknown, deleted or deactivated. Nothing else is returned.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: Test the key, input: {} }
+    call: { method: GET, path: /auth/CheckApiKey }
+
+  # --- Campaigns ------------------------------------------------------------
+
+  - name: list_campaigns
+    class: read
+    description: >-
+      The workspace's campaigns, one page: totalCount and items {id, name,
+      status (DRAFT, IN_PROGRESS, PAUSED, FINISHED, CANCELED, FAILED, STARTING,
+      SCHEDULED), creationTime, linkedInUserListId and linkedInUserListName (the
+      lead list it draws from), campaignAccountIds (its sender accounts),
+      progressStats {totalUsers, totalUsersInProgress, totalUsersPending,
+      totalUsersFinished, totalUsersFailed}}; get_campaign has its exclusion
+      settings. Next page: offset + limit, while a page returns limit items.
+    input:
+      type: object
+      additionalProperties: false
+      required: [limit]
+      properties:
+        limit: &limit_100 { type: integer, minimum: 1, maximum: 100, description: "Items per page, 1 to 100." }
+        offset: &offset { type: integer, minimum: 0, description: "Items to skip, from 0." }
+        keyword: { type: string, minLength: 1, description: "Part of the campaign name." }
+        statuses:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { enum: [DRAFT, IN_PROGRESS, PAUSED, FINISHED, CANCELED, FAILED, STARTING, SCHEDULED] }
+        account_ids: &account_ids
+          type: array
+          minItems: 1
+          items: { type: integer, minimum: 1 }
+          description: "Sender (LinkedIn account) ids, from list_linkedin_accounts."
+    examples:
+      - { title: Running campaigns, input: { limit: 50, statuses: [IN_PROGRESS] } }
+      - { title: Second page by name, input: { limit: 20, offset: 20, keyword: Q4 } }
+    call:
+      method: POST
+      path: /campaign/GetAll
+      body: { limit: limit, offset: offset, keyword: keyword, statuses: statuses, accountIds: account_ids }
+    output:
+      items: items
+      projection: [id, name, status, creationTime, linkedInUserListId, linkedInUserListName, campaignAccountIds,
+                   progressStats]
+
+  - name: get_campaign
+    class: read
+    description: >-
+      One campaign: id, name, status, creationTime, linkedInUserListId and
+      linkedInUserListName, campaignAccountIds, progressStats (totals of leads
+      in progress, pending, finished, failed, manually stopped, excluded) and
+      its exclusion settings.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: &campaign_id { type: integer, minimum: 1, description: "Campaign id, from list_campaigns." }
+    examples:
+      - { title: One campaign, input: { campaign_id: 1001 } }
+    call: { method: GET, path: /campaign/GetById, query: { campaignId: campaign_id } }
+
+  - name: list_campaign_leads
+    class: read
+    description: >-
+      The leads a campaign is working on (its Lead Analytics), one page:
+      totalCount and items {linkedInUserProfile {linkedin_id, profileUrl,
+      firstName, lastName, headline, location, companyName, position,
+      emailAddress}, leadCampaignStatus (Pending, InSequence, Finished, Paused,
+      Failed), leadConnectionStatus (None, ConnectionSent, ConnectionAccepted),
+      leadMessageStatus (None, MessageSent, MessageReply),
+      leadCampaignStatusMessage (why it failed), lastActionTime, creationTime,
+      linkedInSenderId, linkedInSenderFullName}. Only the pending leads already
+      scheduled appear, not those the campaign will draw later from its list.
+      time_filter picks which date time_from and time_to bound. Next page:
+      offset + limit.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id, limit]
+      properties:
+        campaign_id: *campaign_id
+        limit: *limit_100
+        offset: *offset
+        time_from: &date_time { type: string, format: date-time, pattern: "T.*(Z|z|[+-][0-9]{2}:[0-9]{2})$", description: "ISO 8601 date-time with its offset (Z or +01:00)." }
+        time_to: *date_time
+        time_filter:
+          enum: [CreationTime, Everywhere, LastActionTakenTime, FailedTime, LastActionTakenOrFailedTime]
+          description: "Which date time_from and time_to bound (Everywhere: none, the default)."
+    examples:
+      - { title: Leads of a campaign, input: { campaign_id: 1001, limit: 100 } }
+      - title: Leads that acted this week
+        input: { campaign_id: 1001, limit: 100, time_filter: LastActionTakenTime, time_from: "2026-11-02T00:00:00Z", time_to: "2026-11-04T23:59:59Z" }
+    call:
+      method: POST
+      path: /campaign/GetLeadsFromCampaign
+      body: { campaignId: campaign_id, limit: limit, offset: offset, timeFrom: time_from, timeTo: time_to, timeFilter: time_filter }
+    output:
+      strip: [items.linkedInUserProfile.imageUrl]
+      sample:
+        totalCount: 1
+        items:
+          - { id: 1, linkedInUserProfile: { linkedin_id: "l-0", profileUrl: "https://profiles.example.test/in/l-0", imageUrl: "https://media.example.test/l-0.jpg" }, leadCampaignStatus: InSequence }
+
+  - name: list_lead_campaigns
+    class: read
+    description: >-
+      The campaigns a lead is in, found by its profile URL, its LinkedIn id
+      (linkedin_id in other answers) or its email: items {campaignId,
+      campaignName, campaignStatus, creationTime, leadStatus (Pending,
+      InSequence, Finished, Paused, Failed, Excluded)}. Next page: offset +
+      limit, while a page returns limit items.
+    input:
+      type: object
+      additionalProperties: false
+      required: [limit]
+      anyOf: &one_lead_key
+        - { required: [profile_url] }
+        - { required: [linkedin_id] }
+        - { required: [email] }
+      properties:
+        profile_url: &profile_url { type: string, minLength: 1, personal: true, description: "LinkedIn profile URL, https://www.linkedin.com/in/<slug>/." }
+        linkedin_id: &linkedin_id { type: string, minLength: 1, personal: true, description: "The lead's LinkedIn member id, linkedin_id in other answers." }
+        email: { type: string, minLength: 1, personal: true }
+        limit: *limit_100
+        offset: *offset
+    examples:
+      - { title: Where is this lead, input: { profile_url: "https://www.linkedin.com/in/jane-doe/", limit: 100 } }
+    call:
+      method: POST
+      path: /campaign/GetCampaignsForLead
+      body: { profileUrl: profile_url, linkedinId: linkedin_id, email: email, limit: limit, offset: offset }
+    output: { items: items, projection: [campaignId, campaignName, campaignStatus, creationTime, leadStatus] }
+
+  # --- Lists ----------------------------------------------------------------
+
+  - name: list_lists
+    class: read
+    description: >-
+      The workspace's lead and company lists, one page: items {id, name,
+      totalItemsCount, listType (USER_LIST for leads, COMPANY_LIST),
+      creationTime, campaignIds (campaigns that use it)}. Next page: offset +
+      limit, while a page returns limit items.
+    input:
+      type: object
+      additionalProperties: false
+      required: [limit]
+      properties:
+        limit: *limit_100
+        offset: *offset
+        keyword: { type: string, minLength: 1, description: "Part of the list name." }
+        list_type: &list_type { enum: [USER_LIST, COMPANY_LIST], description: "USER_LIST (leads) or COMPANY_LIST." }
+        campaign_ids: &campaign_ids
+          type: array
+          minItems: 1
+          items: { type: integer, minimum: 1 }
+          description: "Campaign ids, from list_campaigns."
+    examples:
+      - { title: Lead lists, input: { limit: 50, list_type: USER_LIST } }
+    call:
+      method: POST
+      path: /list/GetAll
+      body: { limit: limit, offset: offset, keyword: keyword, listType: list_type, campaignIds: campaign_ids }
+    output: { items: items, projection: [id, name, totalItemsCount, listType, creationTime, campaignIds] }
+
+  - name: get_list
+    class: read
+    description: >-
+      One lead or company list: id, name, totalItemsCount, listType,
+      creationTime, campaignIds.
+    input:
+      type: object
+      additionalProperties: false
+      required: [list_id]
+      properties:
+        list_id: &list_id { type: integer, minimum: 1, description: "List id, from list_lists." }
+    examples:
+      - { title: One list, input: { list_id: 2001 } }
+    call: { method: GET, path: /list/GetById, query: { listId: list_id } }
+
+  - name: list_list_leads
+    class: read
+    description: >-
+      The leads of a lead list, one page of up to 1000: totalCount and items
+      {linkedin_id, profileUrl, firstName, lastName, headline, location,
+      companyName, companyUrl, position, about, tags, emailAddress,
+      customFields [{name, value}]}. Narrow by keyword (name), one lead
+      (lead_profile_url or lead_linkedin_id) or creation date. Next page:
+      offset + limit.
+    input:
+      type: object
+      additionalProperties: false
+      required: [list_id, limit]
+      properties:
+        list_id: *list_id
+        limit: { type: integer, minimum: 1, maximum: 1000, description: "Leads per page, 1 to 1000." }
+        offset: *offset
+        keyword: { type: string, minLength: 1, personal: true, description: "Text searched in the leads, such as a name." }
+        lead_profile_url: *profile_url
+        lead_linkedin_id: *linkedin_id
+        created_from: *date_time
+        created_to: *date_time
+    examples:
+      - { title: First thousand leads, input: { list_id: 2001, limit: 1000 } }
+      - { title: Leads added since Monday, input: { list_id: 2001, limit: 100, created_from: "2026-11-02T00:00:00+01:00" } }
+    call:
+      method: POST
+      path: /list/GetLeadsFromList
+      body: { listId: list_id, limit: limit, offset: offset, keyword: keyword, leadProfileUrl: lead_profile_url, leadLinkedInId: lead_linkedin_id, createdFrom: created_from, createdTo: created_to }
+    output:
+      strip: [items.imageUrl]
+      sample:
+        totalCount: 1
+        items:
+          - { linkedin_id: "l-0", profileUrl: "https://profiles.example.test/in/l-0", imageUrl: "https://media.example.test/l-0.jpg" }
+
+  - name: list_lead_lists
+    class: read
+    description: >-
+      The lists a lead is in, found by its profile URL, its LinkedIn id or its
+      email: items {listId, listName}. Next page: offset + limit, while a page
+      returns limit items.
+    input:
+      type: object
+      additionalProperties: false
+      required: [limit]
+      anyOf: *one_lead_key
+      properties:
+        profile_url: *profile_url
+        linkedin_id: *linkedin_id
+        email: { type: string, minLength: 1, personal: true }
+        limit: *limit_100
+        offset: *offset
+    examples:
+      - { title: Lists of a lead, input: { linkedin_id: "000000000-fake", limit: 100 } }
+    call:
+      method: POST
+      path: /list/GetListsForLead
+      body: { profileUrl: profile_url, linkedinId: linkedin_id, email: email, limit: limit, offset: offset }
+    output: { items: items, projection: [listId, listName] }
+
+  # --- Leads ----------------------------------------------------------------
+
+  - name: get_lead
+    class: read
+    description: >-
+      One lead by its LinkedIn profile URL: linkedin_id, firstName, lastName,
+      fullName, headline, location, summary, about, companyName, companyUrl,
+      position, industry, username, connections, followers, experiences and
+      education (JSON in a string), emailAddress, enrichedEmailAddress,
+      emailEnrichments. Personal data: read only what the task needs.
+    input:
+      type: object
+      additionalProperties: false
+      required: [profile_url]
+      properties:
+        profile_url: *profile_url
+    examples:
+      - { title: One lead, input: { profile_url: "https://www.linkedin.com/in/jane-doe/" } }
+    call: { method: POST, path: /lead/GetLead, body: { profileUrl: profile_url } }
+    output: { strip: [imageUrl] }
+
+  - name: get_lead_tags
+    class: read
+    description: >-
+      The tags of a lead, by its LinkedIn profile URL: {tags}, sorted
+      alphabetically.
+    input:
+      type: object
+      additionalProperties: false
+      required: [profile_url]
+      properties:
+        profile_url: *profile_url
+    examples:
+      - { title: Tags of a lead, input: { profile_url: "https://www.linkedin.com/in/jane-doe/" } }
+    call: { method: POST, path: /lead/GetTags, body: { profileUrl: profile_url } }
+
+  # --- Statistics -----------------------------------------------------------
+
+  - name: get_overall_stats
+    class: read
+    description: >-
+      Outreach statistics over a period, for some senders and campaigns (all
+      of them when a list is empty): overallStats and byDayStats (one entry
+      per day) with profileViews, postLikes, follows, connectionsSent,
+      connectionsAccepted, connectionAcceptanceRate, messagesSent,
+      totalMessageStarted, totalMessageReplies, messageReplyRate,
+      inmailMessagesSent, totalInmailStarted, totalInmailReplies,
+      inMailReplyRate. Rates are fractions (0.22 = 22 %).
+    input:
+      type: object
+      additionalProperties: false
+      required: [start_date, end_date]
+      properties: &stats_input
+        start_date: *date_time
+        end_date: *date_time
+        account_ids:
+          type: array
+          items: { type: integer, minimum: 1 }
+          description: "Sender (LinkedIn account) ids; empty: every sender."
+        campaign_ids:
+          type: array
+          items: { type: integer, minimum: 1 }
+          description: "Campaign ids; empty: every campaign."
+    examples:
+      - { title: Last week for every campaign, input: { start_date: "2026-10-26T00:00:00Z", end_date: "2026-11-01T23:59:59Z", account_ids: [], campaign_ids: [] } }
+    call:
+      method: POST
+      path: /stats/GetOverallStats
+      body: &stats_body { startDate: start_date, endDate: end_date, accountIds: account_ids, campaignIds: campaign_ids }
+
+  - name: get_stats_by_campaign
+    class: read
+    description: >-
+      The same statistics as get_overall_stats, broken down per campaign:
+      overallStats is a list and byDayStats gives a list per day, each entry
+      carrying campaignId, campaignName and isCampaignDeleted with the
+      counters.
+    input:
+      type: object
+      additionalProperties: false
+      required: [start_date, end_date]
+      properties: *stats_input
+    examples:
+      - { title: One campaign over a month, input: { start_date: "2026-10-01T00:00:00Z", end_date: "2026-10-31T23:59:59Z", campaign_ids: [1001] } }
+    call: { method: POST, path: /stats/GetOverallStatsByCampaign, body: *stats_body }
+
+  # --- Inbox ----------------------------------------------------------------
+
+  - name: list_conversations
+    class: read
+    description: >-
+      LinkedIn conversations of the workspace's senders, newest message first:
+      totalCount, nextCursor, hasNextPage and items {id (the conversation id),
+      linkedInAccountId (the sender), read, lastMessageAt, lastMessageText,
+      lastMessageSender (ME or CORRESPONDENT), totalMessages, campaignId (absent
+      outside a campaign), correspondentProfile {linkedin_id, profileUrl,
+      firstName, lastName, headline, companyName, position, tags, autoTags},
+      linkedInAccount, messages [{createdAt, body, subject, isInMail,
+      sender}]}. seen false gives the unread ones. One lead by
+      lead_profile_url or lead_linkedin_id, never both; every tag must exist.
+      Next page: cursor = nextCursor while hasNextPage.
+    input:
+      type: object
+      additionalProperties: false
+      not: { required: [lead_profile_url, lead_linkedin_id] }
+      properties:
+        limit: { type: integer, minimum: 1, maximum: 100, description: "Conversations per page, 1 to 100 (default 10)." }
+        cursor: { type: string, minLength: 1, description: "nextCursor of the previous page, as given." }
+        last_message_from: { type: string, format: date-time, pattern: "T.*(Z|z|[+-][0-9]{2}:[0-9]{2})$", description: "Lower bound on lastMessageAt, ISO 8601 date-time with its offset." }
+        last_message_to: { type: string, format: date-time, pattern: "T.*(Z|z|[+-][0-9]{2}:[0-9]{2})$", description: "Upper bound on lastMessageAt (default now)." }
+        linkedin_account_ids: { type: array, minItems: 1, items: { type: integer, minimum: 1 }, description: "Only these senders." }
+        campaign_ids: *campaign_ids
+        search: { type: string, minLength: 1, personal: true, description: "Text searched in the conversations." }
+        lead_linkedin_id: *linkedin_id
+        lead_profile_url: *profile_url
+        tags: { type: array, minItems: 1, items: { type: string, minLength: 1 }, description: "Leads with at least one of these tags (case-insensitive)." }
+        latest_auto_tag_names: { type: array, minItems: 1, items: { type: string, minLength: 1 }, description: "Leads whose latest auto tag is one of these." }
+        seen: { type: boolean, description: "true: read conversations only; false: unread only." }
+    examples:
+      - { title: Unread conversations, input: { limit: 50, seen: false } }
+      - { title: Replies in a campaign since Monday, input: { limit: 100, campaign_ids: [1001], last_message_from: "2026-11-02T00:00:00Z" } }
+      - { title: The conversation with one lead, input: { lead_profile_url: "https://www.linkedin.com/in/jane-doe/" } }
+    call:
+      method: POST
+      path: /inbox/GetConversationsV3
+      body:
+        limit: limit
+        cursor: cursor
+        from: last_message_from
+        to: last_message_to
+        filters:
+          linkedInAccountIds: linkedin_account_ids
+          campaignIds: campaign_ids
+          searchString: search
+          leadLinkedInId: lead_linkedin_id
+          leadProfileUrl: lead_profile_url
+          tags: tags
+          latestAutoTagNames: latest_auto_tag_names
+          seen: seen
+    pagination: { kind: cursor, request_param: cursor, next: nextCursor, more: hasNextPage, total: totalCount, max_pages: 10 }
+    output:
+      items: items
+      strip: [correspondentProfile.imageUrl]
+      sample:
+        totalCount: 1
+        nextCursor: null
+        hasNextPage: false
+        items:
+          - { id: "c-0", linkedInAccountId: 1, correspondentProfile: { linkedin_id: "l-0", profileUrl: "https://profiles.example.test/in/l-0", imageUrl: "https://media.example.test/l-0.jpg" }, messages: [] }
+
+  - name: get_conversation
+    class: read
+    description: >-
+      One LinkedIn conversation with all its messages, by its sender
+      (linkedInAccountId) and its id (id in list_conversations): read,
+      lastMessageAt, totalMessages, correspondentProfile (profileUrl, names,
+      headline, companyName, position, tags, emailAddress, customFields),
+      linkedInAccount, messages [{createdAt, body, subject, postLink, isInMail,
+      sender}].
+    input:
+      type: object
+      additionalProperties: false
+      required: [linkedin_account_id, conversation_id]
+      properties:
+        linkedin_account_id: &linkedin_account_id { type: integer, minimum: 1, description: "The sender's LinkedIn account id (linkedInAccountId)." }
+        conversation_id: &conversation_id { type: string, minLength: 1, pattern: "[^.]", description: "Conversation id, as list_conversations gives it." }
+    examples:
+      - { title: One thread, input: { linkedin_account_id: 3001, conversation_id: "2-c0nv3rs4t10n" } }
+    call: { method: GET, path: "/inbox/GetChatroom/{linkedin_account_id}/{conversation_id}" }
+    output:
+      strip: [correspondentProfile.imageUrl]
+      sample: { id: "c-0", correspondentProfile: { profileUrl: "https://profiles.example.test/in/l-0", imageUrl: "https://media.example.test/l-0.jpg" }, messages: [] }
+
+  # --- Sender accounts ------------------------------------------------------
+
+  - name: list_linkedin_accounts
+    class: read
+    description: >-
+      The workspace's LinkedIn sender accounts, one page: items {id,
+      firstName, lastName, emailAddress, profileUrl, isActive, authIsValid
+      (false: the session must be reconnected in HeyReach), isValidNavigator,
+      isValidRecruiter, activeCampaigns}; get_linkedin_account has its
+      cooldown flags and daily limits. Next page: offset + limit, while a page
+      returns limit items.
+    input:
+      type: object
+      additionalProperties: false
+      required: [limit]
+      properties:
+        limit: *limit_100
+        offset: *offset
+        keyword: { type: string, minLength: 1, personal: true, description: "Part of the account's name." }
+    examples:
+      - { title: Every sender, input: { limit: 100 } }
+    call:
+      method: POST
+      path: /li_account/GetAll
+      body: { limit: limit, offset: offset, keyword: keyword }
+    output:
+      items: items
+      projection: [id, firstName, lastName, emailAddress, profileUrl, isActive, authIsValid, isValidNavigator,
+                   isValidRecruiter, activeCampaigns]
+
+  - name: get_linkedin_account
+    class: read
+    description: >-
+      One LinkedIn sender account: the fields of list_linkedin_accounts, its
+      session state (authIsValid), its cooldown flags and its daily limits
+      (accountLimits).
+    input:
+      type: object
+      additionalProperties: false
+      required: [account_id]
+      properties:
+        account_id: { type: integer, minimum: 1, description: "Sender account id, from list_linkedin_accounts." }
+    examples:
+      - { title: One sender, input: { account_id: 3001 } }
+    call: { method: GET, path: /li_account/GetById, query: { accountId: account_id } }
+
+  - name: check_connection
+    class: read
+    description: >-
+      Whether a lead is a first-degree connection of a sender: {isConnection}.
+      The lead by lead_profile_url or lead_linkedin_id, exactly one.
+    input:
+      type: object
+      additionalProperties: false
+      required: [sender_account_id]
+      oneOf:
+        - { required: [lead_profile_url] }
+        - { required: [lead_linkedin_id] }
+      properties:
+        sender_account_id: { type: integer, minimum: 1, description: "Sender account id, from list_linkedin_accounts." }
+        lead_profile_url: *profile_url
+        lead_linkedin_id: *linkedin_id
+    examples:
+      - { title: Already connected, input: { sender_account_id: 3001, lead_profile_url: "https://www.linkedin.com/in/jane-doe/" } }
+    call:
+      method: POST
+      path: /MyNetwork/IsConnection
+      body: { senderAccountId: sender_account_id, leadProfileUrl: lead_profile_url, leadLinkedInId: lead_linkedin_id }
+
+  # --- Webhooks -------------------------------------------------------------
+
+  - name: list_webhooks
+    class: read
+    description: >-
+      The workspace's webhooks, one page: totalCount and items {id,
+      webhookName, webhookUrl, eventType, campaignIds (empty: every campaign),
+      isActive}. Their custom headers are never returned. Next page: offset +
+      limit.
+    input:
+      type: object
+      additionalProperties: false
+      required: [limit]
+      properties:
+        limit: *limit_100
+        offset: *offset
+    examples:
+      - { title: Every webhook, input: { limit: 100 } }
+    call:
+      method: POST
+      path: /webhooks/GetAllWebhooks
+      body: { limit: limit, offset: offset }
+      constants: { body: { includeCustomHeaders: false } }
+    output:
+      strip: [items.customHeaders]
+      sample:
+        totalCount: 1
+        items:
+          - { id: 4001, webhookName: Replies, webhookUrl: "https://hooks.example.test/h", customHeaders: { X-Token: t } }
+
+  - name: get_webhook
+    class: read
+    description: >-
+      One webhook: id, webhookName, webhookUrl, eventType, campaignIds,
+      isActive. Its custom headers are never returned.
+    input:
+      type: object
+      additionalProperties: false
+      required: [webhook_id]
+      properties:
+        webhook_id: &webhook_id { type: integer, minimum: 1, description: "Webhook id, from list_webhooks." }
+    examples:
+      - { title: One webhook, input: { webhook_id: 4001 } }
+    call:
+      method: GET
+      path: /webhooks/GetWebhookById
+      query: { webhookId: webhook_id }
+      constants: { query: { includeCustomHeaders: "false" } }
+    output: { strip: [customHeaders] }
+
+  # --- Acting on campaigns --------------------------------------------------
+
+  - name: add_leads_to_campaign
+    class: sensitive
+    effect: send
+    description: >-
+      Add up to 100 leads to a campaign, each {lead, linkedInAccountId?}: the
+      lead with HeyReach's own keys (profileUrl required, firstName, lastName,
+      location, summary, companyName, position, about, emailAddress,
+      customUserFields [{name, value}] for the sequence's variables), and the
+      sender that will contact it (otherwise the campaign distributes leads
+      among its senders). An IN_PROGRESS campaign starts LinkedIn actions on
+      them. resume_paused_campaign / resume_finished_campaign restart a paused
+      or finished campaign. Answers addedLeadsCount, updatedLeadsCount,
+      failedLeadsCount.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id, account_lead_pairs]
+      properties:
+        campaign_id: *campaign_id
+        account_lead_pairs:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: false
+            required: [lead]
+            properties:
+              linkedInAccountId: { type: integer, minimum: 1, description: "The sender for this lead, from list_linkedin_accounts." }
+              lead: &lead
+                type: object
+                additionalProperties: false
+                required: [profileUrl]
+                properties:
+                  profileUrl: { type: string, minLength: 1, personal: true }
+                  firstName: { type: string, personal: true }
+                  lastName: { type: string, personal: true }
+                  location: { type: string, personal: true }
+                  summary: { type: string, personal: true }
+                  companyName: { type: string }
+                  position: { type: string }
+                  about: { type: string, personal: true }
+                  emailAddress: { type: string, personal: true }
+                  customUserFields:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [name, value]
+                      properties:
+                        name: { type: string, pattern: "^[A-Za-z0-9_]+$", description: "Letters, digits and _ only." }
+                        value: { type: string, personal: true }
+        resume_paused_campaign: { type: boolean, description: "true: resume the campaign if it is paused." }
+        resume_finished_campaign: { type: boolean, description: "true: restart the campaign if it has finished." }
+    examples:
+      - title: One lead with a variable
+        input:
+          campaign_id: 1001
+          account_lead_pairs:
+            - { lead: { profileUrl: "https://www.linkedin.com/in/jane-doe/", firstName: Jane, customUserFields: [{ name: opener, value: "Saw your talk" }] } }
+      - title: A lead for a given sender, resuming a paused campaign
+        input:
+          campaign_id: 1001
+          resume_paused_campaign: true
+          account_lead_pairs:
+            - { linkedInAccountId: 3001, lead: { profileUrl: "https://www.linkedin.com/in/john-doe/", firstName: John, lastName: Doe } }
+    call:
+      method: POST
+      path: /campaign/AddLeadsToCampaignV2
+      body: { campaignId: campaign_id, accountLeadPairs: account_lead_pairs, resumePausedCampaign: resume_paused_campaign, resumeFinishedCampaign: resume_finished_campaign }
+    confirm:
+      summary: "Add these leads to HeyReach campaign {campaign_id}: a running campaign starts connecting with and messaging them on LinkedIn."
+
+  - name: stop_lead_in_campaign
+    class: sensitive
+    effect: destroy
+    description: >-
+      Stop a lead's progression in a campaign: no further step runs for it.
+      The lead by its LinkedIn member id (linkedin_id in list_campaign_leads)
+      or its profile URL. Nothing here starts it again.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      anyOf:
+        - { required: [lead_member_id] }
+        - { required: [lead_url] }
+      properties:
+        campaign_id: *campaign_id
+        lead_member_id: *linkedin_id
+        lead_url: *profile_url
+    examples:
+      - { title: Stop a lead who replied elsewhere, input: { campaign_id: 1001, lead_url: "https://www.linkedin.com/in/jane-doe/" } }
+    call:
+      method: POST
+      path: /campaign/StopLeadInCampaign
+      body: { campaignId: campaign_id, leadMemberId: lead_member_id, leadUrl: lead_url }
+    confirm:
+      summary: "Stop this lead in HeyReach campaign {campaign_id}: no further step runs for it, and nothing here starts it again."
+
+  - name: pause_campaign
+    class: write
+    description: >-
+      Pause a campaign: its senders stop acting on its leads until it is
+      resumed.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: *campaign_id
+    examples:
+      - { title: Pause a campaign, input: { campaign_id: 1001 } }
+    call: { method: POST, path: /campaign/Pause, query: { campaignId: campaign_id } }
+
+  - name: resume_campaign
+    class: sensitive
+    effect: send
+    description: >-
+      Resume a paused campaign: its senders start connecting with and
+      messaging its leads again.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: *campaign_id
+    examples:
+      - { title: Resume a campaign, input: { campaign_id: 1001 } }
+    call: { method: POST, path: /campaign/Resume, query: { campaignId: campaign_id } }
+    confirm:
+      summary: "Resume HeyReach campaign {campaign_id}: its senders start contacting its leads on LinkedIn again."
+
+  # --- Acting on lists ------------------------------------------------------
+
+  - name: add_leads_to_list
+    class: sensitive
+    effect: send
+    description: >-
+      Add up to 100 leads to a lead list, each with HeyReach's own keys
+      (profileUrl required, firstName, lastName, location, summary,
+      companyName, position, about, emailAddress, customUserFields [{name,
+      value}]). A running campaign that uses the list may pick them up; a
+      finished one does not (add_leads_to_campaign targets a campaign).
+      Answers addedLeadsCount, updatedLeadsCount, failedLeadsCount.
+    input:
+      type: object
+      additionalProperties: false
+      required: [list_id, leads]
+      properties:
+        list_id: *list_id
+        leads: { type: array, minItems: 1, maxItems: 100, items: *lead }
+    examples:
+      - title: Two leads
+        input:
+          list_id: 2001
+          leads:
+            - { profileUrl: "https://www.linkedin.com/in/jane-doe/", firstName: Jane, companyName: Example }
+            - { profileUrl: "https://www.linkedin.com/in/john-doe/" }
+    call:
+      method: POST
+      path: /list/AddLeadsToListV2
+      body: { listId: list_id, leads: leads }
+    confirm:
+      summary: "Add these leads to HeyReach list {list_id}: a running campaign that uses the list may start contacting them on LinkedIn."
+
+  - name: create_empty_list
+    class: write
+    description: >-
+      Create an empty list: a lead list (USER_LIST, the default) or a company
+      list. Answers the list, with its id.
+    input:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        type: *list_type
+    examples:
+      - { title: A lead list, input: { name: "Webinar attendees" } }
+    call: { method: POST, path: /list/CreateEmptyList, body: { name: name, type: type } }
+
+  # --- Acting in the inbox --------------------------------------------------
+
+  - name: send_message
+    class: sensitive
+    effect: send
+    description: >-
+      Send a message in an existing LinkedIn conversation, from the sender
+      that holds it (linkedInAccountId and id from list_conversations). It
+      reaches the person at once and cannot be unsent. subject applies to an
+      InMail thread.
+    input:
+      type: object
+      additionalProperties: false
+      required: [linkedin_account_id, conversation_id, message]
+      properties:
+        linkedin_account_id: *linkedin_account_id
+        conversation_id: *conversation_id
+        message: { type: string, minLength: 1 }
+        subject: { type: string, minLength: 1 }
+    examples:
+      - { title: Answer a reply, input: { linkedin_account_id: 3001, conversation_id: "2-c0nv3rs4t10n", message: "Thanks Jane, Tuesday 10am works." } }
+    call:
+      method: POST
+      path: /inbox/SendMessage
+      body: { linkedInAccountId: linkedin_account_id, conversationId: conversation_id, message: message, subject: subject }
+    confirm:
+      summary: "Send this LinkedIn message in conversation {conversation_id} from sender {linkedin_account_id}: \"{message}\". It cannot be unsent."
+
+  - name: set_seen_status
+    class: write
+    description: >-
+      Mark a LinkedIn conversation read (seen true) or unread (seen false).
+    input:
+      type: object
+      additionalProperties: false
+      required: [linkedin_account_id, conversation_id, seen]
+      properties:
+        linkedin_account_id: *linkedin_account_id
+        conversation_id: *conversation_id
+        seen: { type: boolean }
+    examples:
+      - { title: Mark read, input: { linkedin_account_id: 3001, conversation_id: "2-c0nv3rs4t10n", seen: true } }
+    call:
+      method: POST
+      path: /inbox/SetSeenStatus
+      body: { linkedInAccountId: linkedin_account_id, conversationId: conversation_id, seen: seen }
+
+  # --- Acting on lead tags --------------------------------------------------
+
+  - name: add_lead_tags
+    class: write
+    description: >-
+      Add tags to a lead, its other tags kept; the lead by lead_profile_url or
+      lead_linkedin_id. A tag that does not exist is refused (400) unless
+      create_tag_if_not_existing is true. Answers newAssignedTags.
+    input:
+      type: object
+      additionalProperties: false
+      required: [tags]
+      anyOf: &tag_lead
+        - { required: [lead_profile_url] }
+        - { required: [lead_linkedin_id] }
+      properties: &tag_input
+        lead_profile_url: *profile_url
+        lead_linkedin_id: *linkedin_id
+        tags: { type: array, minItems: 1, items: { type: string, minLength: 1 } }
+        create_tag_if_not_existing: { type: boolean, description: "true: create the tags that do not exist yet." }
+    examples:
+      - { title: Tag a hot lead, input: { lead_profile_url: "https://www.linkedin.com/in/jane-doe/", tags: [hot], create_tag_if_not_existing: true } }
+    call:
+      method: POST
+      path: /lead/AddTags
+      body: &tag_body { leadProfileUrl: lead_profile_url, leadLinkedInId: lead_linkedin_id, tags: tags, createTagIfNotExisting: create_tag_if_not_existing }
+
+  - name: replace_lead_tags
+    class: sensitive
+    effect: destroy
+    description: >-
+      Replace every tag of a lead with these: the tags it had are removed. The
+      lead by lead_profile_url or lead_linkedin_id; a tag that does not exist
+      is refused (400) unless create_tag_if_not_existing is true. Answers
+      newAssignedTags.
+    input:
+      type: object
+      additionalProperties: false
+      required: [tags]
+      anyOf: *tag_lead
+      properties: *tag_input
+    examples:
+      - { title: Requalify a lead, input: { lead_linkedin_id: "000000000-fake", tags: [nurture] } }
+    call: { method: POST, path: /lead/ReplaceTags, body: *tag_body }
+    confirm:
+      summary: "Replace every tag of this HeyReach lead with the tags given: its current tags are removed."
+
+  # --- Acting on webhooks ---------------------------------------------------
+
+  - name: create_webhook
+    class: sensitive
+    effect: send
+    description: >-
+      Have HeyReach POST an event to an https address: CONNECTION_REQUEST_SENT,
+      CONNECTION_REQUEST_ACCEPTED, MESSAGE_SENT, MESSAGE_REPLY_RECEIVED and
+      INMAIL_REPLY_RECEIVED (the first reply only), EVERY_MESSAGE_REPLY_RECEIVED
+      (every reply, messages and InMails), INMAIL_SENT, FOLLOW_SENT,
+      LIKED_POST, VIEWED_PROFILE, CAMPAIGN_COMPLETED, LEAD_TAG_UPDATED. One
+      event type per webhook; campaign_ids narrows it to these campaigns
+      (empty: every campaign). The event carries the lead's data.
+    input:
+      type: object
+      additionalProperties: false
+      required: [webhook_name, webhook_url, event_type]
+      properties:
+        webhook_name: { type: string, minLength: 1 }
+        webhook_url: { type: string, pattern: "^https://[^\\s]+$", description: "The receiving address, https." }
+        event_type:
+          enum: [CONNECTION_REQUEST_SENT, CONNECTION_REQUEST_ACCEPTED, MESSAGE_SENT, MESSAGE_REPLY_RECEIVED,
+                 INMAIL_SENT, INMAIL_REPLY_RECEIVED, EVERY_MESSAGE_REPLY_RECEIVED, FOLLOW_SENT, LIKED_POST,
+                 VIEWED_PROFILE, CAMPAIGN_COMPLETED, LEAD_TAG_UPDATED]
+        campaign_ids:
+          type: array
+          items: { type: integer, minimum: 1 }
+          description: "Only these campaigns; empty: every campaign."
+    examples:
+      - { title: Every reply to an agent, input: { webhook_name: "Replies to the follow-up agent", webhook_url: "https://hooks.example.com/heyreach", event_type: EVERY_MESSAGE_REPLY_RECEIVED, campaign_ids: [] } }
+    call:
+      method: POST
+      path: /webhooks/CreateWebhook
+      body: { webhookName: webhook_name, webhookUrl: webhook_url, eventType: event_type, campaignIds: campaign_ids }
+    confirm:
+      summary: "Send HeyReach {event_type} events, with the lead's data, to {webhook_url}."
+
+  - name: delete_webhook
+    class: sensitive
+    effect: destroy
+    description: >-
+      Delete a webhook: its events stop being sent.
+    input:
+      type: object
+      additionalProperties: false
+      required: [webhook_id]
+      properties:
+        webhook_id: *webhook_id
+    examples:
+      - { title: Delete a webhook, input: { webhook_id: 4001 } }
+    call: { method: DELETE, path: /webhooks/DeleteWebhook, query: { webhookId: webhook_id } }
+    confirm:
+      summary: "Delete HeyReach webhook {webhook_id}: its events stop."

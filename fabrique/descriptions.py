@@ -11,7 +11,9 @@ pas dire :
    `request_param` d'une pagination est un argument (placé en query ou au corps, emboîté ou non) ;
 2. chaque référence de `auth` (`key`, `token`, `username`, `password`, `client_id`,
    `client_secret`) nomme un champ de `credential` ; en `basic`, `username` est facultatif
-   (absent, l'identifiant est vide), et nomme un champ quand il est déclaré ;
+   (absent, l'identifiant est vide), et nomme un champ quand il est déclaré ; en
+   `oauth2_jwt_bearer`, `credential` n'a qu'un champ, secret, celui que nomme `key` (le
+   fichier JSON entier de la clé du compte de service) ;
 3. un nom côté API reçoit une seule valeur : une constante de query ne reprend pas un
    nom de query (au corps, la règle 22 le dit à toute profondeur), un en-tête constant (du connecteur ou de la
    fonction) ni celui de l'authentification ni un autre en-tête, à la casse près, et
@@ -39,7 +41,8 @@ pas dire :
    l'implication dit la même chose) et chacune de ses clés est un droit d'un
    niveau ; `full` couvre chaque droit d'un niveau restreint et chaque droit exigé
    par une fonction (`full` ne filtre rien) ; l'identité du consentement et la
-   sonde sont servies à chaque niveau ;
+   sonde sont servies à chaque niveau ; `default_level` (compte de service) nomme
+   un niveau déclaré ;
 8. l'identité d'un compte rattaché (`account_identity`, l'identifiant du compte chez
    un tiers qui héberge les comptes de ses utilisateurs) : son nom n'est ni celui
    d'un champ de `credential`, ni d'un réglage, ni d'une valeur de `from_token` ;
@@ -48,7 +51,9 @@ pas dire :
    API de `call` (paramètre du chemin, de query, de corps, en-tête), aucune constante
    ni aucun en-tête constant ne porte son nom : l'agent ne la fournit jamais ;
 9. `act` suit la classe : jamais `false` sur une fonction `sensitive`, jamais `true`
-   sur une fonction `read` ; absent, il vaut `false` pour `read`, `true` sinon ;
+   sur une fonction `read` ; absent, il vaut `false` pour `read`, `true` sinon ; `effect`
+   (`send` ou `destroy`, ce que fait une fonction sensible une fois confirmée) n'est dit
+   que d'une fonction `sensitive` ;
 10. le signal de refus du service (une entrée de `errors` ou un refus qui porte
    `marks_account`, une condition sur le corps `body`) : un refus qui porte l'un ou
    l'autre a un statut pour `when`, jamais une condition en texte ; un statut 2xx
@@ -141,6 +146,11 @@ pas dire :
    emboîtée, ses parties sont des textes (`body_nested_multipart`). Ce que l'hôte envoie : la constante du corps, puis
    chaque argument donné à son chemin, les objets parents créés au besoin, un argument absent ne créant rien. Les codes
    sont ceux des cas communs (`connectors/_cases/nested_body.yaml`), jugés dans cet ordre.
+23. le corps en liste (`call.body_list: true`, décidé par le responsable produit le 2026-11-11) : le corps construit, en
+   table, emboîté ou entier, part seul élément d'une liste JSON. La fonction a un corps (une table non vide, l'argument
+   du corps entier ou une constante du corps : `body_list_without_body`), une méthode qui en envoie un, jamais `GET`
+   (`body_list_method`), et pas de partie fichier, dont le corps est multipart (`body_list_multipart`). Les codes sont
+   ceux des cas communs (`connectors/_cases/list_body.yaml`), jugés dans cet ordre.
 
 Un fichier fautif lève `DescriptionError`, qui nomme le fichier, la fonction et la
 règle : la fabrique ne génère alors rien.
@@ -331,6 +341,26 @@ def body_table_refusal(function: dict) -> tuple[str, str, str] | None:
     return None
 
 
+# Les refus de la règle 23, les mêmes des deux côtés (cas communs `connectors/_cases/list_body.yaml`), dans l'ordre où
+# ils se jugent.
+LIST_BODY_REFUSALS = ("body_list_without_body", "body_list_method", "body_list_multipart")
+
+
+def body_list_refusal(function: dict) -> tuple[str, str] | None:
+    """Le premier défaut d'un corps en liste (`call.body_list`), `(code, raison)`, ou `None` : la règle 23, hors de toute
+    description, que les cas communs rejouent."""
+    call = function["call"]
+    if call.get("body_list") is not True:
+        return None
+    if not (call.get("body") or "body" in (call.get("constants") or {})):
+        return ("body_list_without_body", "sends the body as a list, and the function has no body to put in it")
+    if call["method"] in NO_BODY_METHODS:
+        return ("body_list_method", f"needs a method that sends a body, not {call['method']}")
+    if "files" in call:
+        return ("body_list_multipart", "a multipart body (files) is a form, never a JSON list")
+    return None
+
+
 # Les refus de la règle 21, les mêmes des deux côtés (cas communs `connectors/_cases/background.yaml`), dans l'ordre où
 # ils se jugent.
 BACKGROUND_REFUSALS = ("background_no_timeout", "background_async", "background_collect", "background_paginated")
@@ -422,6 +452,10 @@ def check_arguments(function: dict, where: str) -> None:
     if nested is not None:
         code, path, reason = nested
         raise DescriptionError(f"{where}: function {name}: call.body {path!r}: {code}: {reason}")
+    listed = body_list_refusal(function)
+    if listed is not None:
+        code, reason = listed
+        raise DescriptionError(f"{where}: function {name}: call.body_list: {code}: {reason}")
     for argument in PATH_PARAM.findall(call["path"]):
         place(argument, "the path")
         if argument not in required:
@@ -448,7 +482,8 @@ def check_arguments(function: dict, where: str) -> None:
 
 
 def check_auth(connector: dict, where: str) -> None:
-    """Règle 2 : une référence de `auth` désigne un champ de `credential` existant."""
+    """Règle 2 : une référence de `auth` désigne un champ de `credential` existant ; en `oauth2_jwt_bearer`, le seul
+    champ, secret."""
     auth = connector["auth"]
     fields = {field["name"] for field in connector.get("credential", [])}
     for reference in AUTH_REFERENCES:
@@ -457,12 +492,22 @@ def check_auth(connector: dict, where: str) -> None:
                 f"{where}: auth.{reference} names {auth[reference]!r}, which is not a credential field "
                 f"({', '.join(sorted(fields)) or 'none declared'})"
             )
+    if auth["kind"] == "oauth2_jwt_bearer":
+        others = sorted(fields - {auth["key"]})
+        if others:
+            raise DescriptionError(
+                f"{where}: auth.kind oauth2_jwt_bearer takes a single credential field, the key file named by auth.key "
+                f"({auth['key']!r}); remove {', '.join(others)}"
+            )
+        field = next(f for f in connector["credential"] if f["name"] == auth["key"])
+        if field["secret"] is not True:
+            raise DescriptionError(f"{where}: auth.key names {auth['key']!r}, which must be a secret field (secret: true)")
 
 
 def _auth_header(auth: dict) -> str | None:
     if auth["kind"] == "api_key":
         return auth["name"] if auth["in"] == "header" else None
-    if auth["kind"] in ("bearer", "basic", "oauth2_client_credentials", "oauth2_user"):
+    if auth["kind"] in ("bearer", "basic", "oauth2_client_credentials", "oauth2_user", "oauth2_jwt_bearer"):
         return "Authorization"
     return None
 
@@ -511,12 +556,14 @@ def act(function: dict) -> bool:
 
 
 def check_act(function: dict, where: str) -> None:
-    """Règle 9 : `act` ne contredit pas la classe."""
+    """Règle 9 : `act` ne contredit pas la classe, et `effect` n'est dit que d'une fonction sensible."""
     declared = function.get("act")
     if declared is False and function["class"] == "sensitive":
         raise DescriptionError(f"{where}: function {function['name']}: a sensitive function cannot declare act: false")
     if declared is True and function["class"] == "read":
         raise DescriptionError(f"{where}: function {function['name']}: a read function cannot declare act: true")
+    if "effect" in function and function["class"] != "sensitive":
+        raise DescriptionError(f"{where}: function {function['name']}: effect is said of a sensitive function only")
 
 
 def check_timeout(connector: dict, function: dict, where: str) -> None:
@@ -1183,7 +1230,8 @@ def served(function: dict, scopes: list[str], implies: dict[str, list[str]]) -> 
 
 
 def check_access_levels(data: dict, where: str) -> None:
-    """Règle 7 : implication close et utile, `full` couvre tout, identité et sonde servies à chaque niveau."""
+    """Règle 7 : implication close et utile, `full` couvre tout, identité et sonde servies à chaque niveau, niveau par
+    défaut déclaré."""
     auth = data["connector"]["auth"]
     levels = auth.get("access_levels")
     if levels is None:
@@ -1199,6 +1247,9 @@ def check_access_levels(data: dict, where: str) -> None:
                 f"{where}: auth.scope_implies: {scope!r} implies a scope that implies {', '.join(missing)}, "
                 f"which {scope!r} must then list too"
             )
+    default = auth.get("default_level")
+    if default is not None and default not in levels:
+        raise DescriptionError(f"{where}: auth.default_level {default!r} is not a declared access level")
     full = covered(levels["full"]["scopes"], implies)
     for name, level in levels.items():
         beyond = sorted(set(level["scopes"]) - full)
@@ -1212,11 +1263,12 @@ def check_access_levels(data: dict, where: str) -> None:
             raise DescriptionError(
                 f"{where}: function {function['name']}: scope(s) {', '.join(beyond)} not covered by level 'full'"
             )
-    identity = auth["identity"]
+    # Un compte de service (`oauth2_jwt_bearer`) n'a pas d'identité de consentement : seule la sonde est jugée.
+    identity = auth.get("identity")
     roles = []
-    if "function" in identity:
+    if identity is not None and "function" in identity:
         roles.append(("auth.identity", identity["function"], next(f for f in data["functions"] if f["name"] == identity["function"])))
-    else:
+    elif identity is not None:
         roles.append(("auth.identity", identity["url"], identity))
     if "probe" in data["connector"]:
         name = data["connector"]["probe"]["function"]

@@ -1,6 +1,6 @@
 {
   "name": "@otomata_tech/connectors",
-  "version": "1.211.0",
+  "version": "1.234.0",
   "description": "Shared connector definitions generated from connectors/*/connector.yaml by the fabrique. Structural data only: the host runs the requests.",
   "license": "MIT",
   "repository": {
@@ -22,10 +22,12 @@
     "./file-cases": "./src/file-cases.ts",
     "./strip-cases": "./src/strip-cases.ts",
     "./auth-cases": "./src/auth-cases.ts",
+    "./jwt-bearer-cases": "./src/jwt-bearer-cases.ts",
     "./error-cases": "./src/error-cases.ts",
     "./body-cases": "./src/body-cases.ts",
     "./background-cases": "./src/background-cases.ts",
-    "./nested-body-cases": "./src/nested-body-cases.ts"
+    "./nested-body-cases": "./src/nested-body-cases.ts",
+    "./list-body-cases": "./src/list-body-cases.ts"
   },
   "files": [
     "src",

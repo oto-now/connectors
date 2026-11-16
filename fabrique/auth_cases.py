@@ -5,8 +5,8 @@ ajoute à la requête : ses en-têtes (noms en minuscules) et ses paramètres de
 le bloc `connector` d'une description (le schéma, puis les règles de toute description, la règle 2 comprise), puis écrit
 `ts/src/auth-cases.ts` : `auth` et `credential` convertis comme dans un module de connecteur, et la liste des cas, que les
 tests du paquet de l'hôte jouent contre son moteur. Des données de test : l'index ne le réexporte pas, le paquet `ts/`
-l'expose sous `./auth-cases`. En Python, rien : la lib ne signe la requête d'aucune description ; `tests/test_auth_cases.py`
-joue les cas contre une référence écrite dans le test.
+l'expose sous `./auth-cases`. En Python, rien : `tests/test_auth_cases.py` joue les cas contre le moteur de la lib
+(`oto.connectors.engine`), qui signe chaque requête qu'il envoie à un faux tiers.
 
 `python -m fabrique --check` échoue quand le module TypeScript commité ne suit plus le fichier.
 """

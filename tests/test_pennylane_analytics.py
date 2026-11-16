@@ -59,7 +59,7 @@ def test_une_liste_vide_retire_toutes_les_categories():
 
 
 @pytest.mark.parametrize("cible, categories, motif", [
-    ("transaction", [], "carries no categories"),
+    ("bank_account", [], "carries no categories"),
     ("supplier_invoice", {"id": 1, "weight": "1"}, "list"),
     ("supplier_invoice", [{"id": 1}], "`id` and `weight`"),
     ("supplier_invoice", [{"weight": "1"}], "`id` and `weight`"),

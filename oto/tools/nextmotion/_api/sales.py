@@ -16,6 +16,11 @@ from .._http import _body, _id, _opt_id
 
 _PERIOD_TYPES = ("year", "month", "week", "day")
 
+#: What `get_treatment_provider` keeps of the treatment's `provider` (a staff
+#: member): the id and the name, never the email, the professional numbers, the
+#: photo, the permissions or the clinic.
+PROVIDER_FIELDS = ("id", "first_name", "last_name")
+
 
 class _SalesMixin:
 
@@ -78,14 +83,51 @@ class _SalesMixin:
     # ---- payments ------------------------------------------------------------
 
     def list_payments(self, clinic_id: str, *, invoice_id: Optional[str] = None,
+                      paid_from: Optional[str] = None, paid_to: Optional[str] = None,
                       limit: int = 50, offset: int = 0) -> Any:
         """GET /v4/clinics/{clinic_id}/payments — each payment embeds its invoice.
 
+        A payment carries `payment_time` (date-time) and its amount per means of
+        payment (`cash`, `card`, `check`, `transfer`, `stripe`, `voucher`, `other`,
+        `custom_medium_list`). It does not carry the practitioner: its invoice lines
+        (`invoice.invoiced_treatments`) name their treatment by id, which
+        `get_treatment_provider` turns into the practitioner of the act.
+
         Args:
             invoice_id: payments of that invoice (sent as `invoice`).
+            paid_from / paid_to: `YYYY-MM-DD`, payment days in the clinic's time
+                zone, both inclusive (sent as `payment_time__gte` /
+                `payment_time__lte`): a month is its first and last day.
         """
         return self._list(f"/v4/clinics/{_id(clinic_id, 'clinic_id')}/payments",
-                          limit, offset, invoice=_opt_id(invoice_id, "invoice_id"))
+                          limit, offset, invoice=_opt_id(invoice_id, "invoice_id"),
+                          payment_time__gte=paid_from, payment_time__lte=paid_to)
+
+    def get_treatment_provider(self, treatment_id: str) -> Any:
+        """GET /v4/treatments/{treatment_id}, REDUCED to the practitioner of the act.
+
+        The treatment id comes from a payment's invoice line
+        (`invoice.invoiced_treatments[].treatment`). The answer is cut down HERE to
+        `{data: {id, invoice, provider}}`, `provider` reduced to `PROVIDER_FIELDS`
+        (or `None` when the API names none). The API also sends the
+        practitioner's notes, the treated zone, a free text, the consultation, the
+        consent form, the pricing and the other staff: none of them is kept, and no
+        caller can ask for them — an allow-list, so a field Nextmotion adds never
+        reaches the caller. A staff member's id and name are not health data
+        (decided by the maintainer); nothing of the patient is read.
+        """
+        answer = self._get(f"/v4/treatments/{_id(treatment_id, 'treatment_id')}")
+        row = answer.get("data") if isinstance(answer, dict) else None
+        if not isinstance(row, dict):
+            raise ValueError("unexpected Nextmotion answer: no `data` object.")
+        provider = row.get("provider")
+        if provider is not None and not isinstance(provider, dict):
+            raise ValueError(f"unexpected provider on treatment {row.get('id')}: "
+                             "an object or null.")
+        return {"data": {
+            "id": row.get("id"), "invoice": row.get("invoice"),
+            "provider": None if provider is None
+            else {k: provider.get(k) for k in PROVIDER_FIELDS}}}
 
     def get_payment(self, payment_id: str) -> Any:
         """GET /v4/payments/{payment_id}."""

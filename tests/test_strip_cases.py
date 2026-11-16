@@ -1,68 +1,64 @@
 """Les cas communs de `output.strip` (`connectors/_cases/strip.yaml`), joués côté Python, une ligne par cas.
 
-La lib n'applique la sortie d'aucune description (ni `items`, ni `strip`, ni `projection`) : seul le moteur du paquet de
-l'hôte le fait. Les cas se jouent donc ici contre une référence écrite dans le test, qui dit la sémantique du format
-(`docs/conception/sortie.md`) ; le paquet de l'hôte joue les mêmes cas, sortis par la fabrique dans
-`ts/src/strip-cases.ts`, contre son moteur. Les sorties refusées le sont par la fabrique (règles 18 et 19), avec leur
+Ils se jouent contre le moteur de la lib (`oto.connectors.engine`), qui appelle la fonction du cas devant un faux tiers
+(`engine_fake`) rendant la réponse du cas, et taille sa sortie par `oto.connectors.serve` (`shaped`, `items_of`), à la
+sémantique du format (`docs/conception/sortie.md`) ; le paquet de l'hôte joue les mêmes cas, sortis par la fabrique dans
+`ts/src/strip-cases.ts`, contre son moteur. `shaped` reste la lecture de `serve` seule, que les tests d'une description
+appliquent à son exemple de réponse. Les sorties refusées le sont par la fabrique (règles 18 et 19), avec leur
 code et le chemin qu'elles nomment ; celles de la règle 19 (l'exemple de réponse, `output.sample`) ne valent que pour la
 fabrique et ne sortent pas en TypeScript.
 """
 from __future__ import annotations
 
 import copy
+import json
 import re
 
 import pytest
 from jsonschema import Draft202012Validator
 
+import engine_fake
 from fabrique import strip_cases
 from fabrique.descriptions import DescriptionError, check_rules, schema
+from oto.connectors import serve
 
 LOADED = strip_cases.load()
 
 
-def _at(value, path: str):
-    """La valeur au chemin pointé de `items`, un index de liste en nombre (la lecture du moteur)."""
-    for key in path.split("."):
-        if isinstance(value, list) and key.isdigit():
-            value = value[int(key)] if int(key) < len(value) else None
-        elif isinstance(value, dict):
-            value = value.get(key)
-        else:
-            return None
-    return value
-
-
-def _strip(value, keys: list[str]):
-    """Le chemin retiré : une liste se traverse, le reste du chemin valant pour chaque élément ; une valeur absente,
-    nulle ou scalaire n'a rien à retirer. La valeur reçue n'est pas modifiée."""
-    if isinstance(value, list):
-        return [_strip(element, keys) for element in value]
-    if not isinstance(value, dict) or keys[0] not in value:
-        return value
-    if len(keys) == 1:
-        return {key: inner for key, inner in value.items() if key != keys[0]}
-    return {**value, keys[0]: _strip(value[keys[0]], keys[1:])}
-
-
-def _record(value, output: dict):
-    for path in output.get("strip", []):
-        value = _strip(value, path.split("."))
-    projection = output.get("projection")
-    if projection is not None and isinstance(value, dict):
-        value = {key: inner for key, inner in value.items() if key in projection}
-    return value
-
-
 def shaped(answer, output: dict):
-    """La référence : `strip`, puis `projection`, sur la réponse, ou sur chaque élément de la liste `items`."""
+    """Ce que sert `oto.connectors.serve` : `strip`, puis `projection`, sur la réponse, ou sur chaque élément de la
+    liste `items`."""
     if "items" in output:
-        return [_record(element, output) for element in _at(answer, output["items"])]
-    return _record(answer, output)
+        return serve.items_of({"name": "carrier", "output": output}, [answer])
+    return serve.shaped(answer, output)
+
+
+def served(case: dict):
+    """Ce que le moteur rend de la réponse du cas, appelé avec l'exemple de la fonction : la liste `items` taillée, ou la réponse taillée (`serve.result` :
+    un objet tel quel, `{}` pour rien, `{"value": …}` pour une autre valeur)."""
+    function = case["function"]
+    result, _ = engine_fake.play(LOADED.description.data, function["name"], function["examples"][0]["input"],
+                                 engine_fake.answer(200, text=json.dumps(case["answer"])))
+    if "items" in function["output"]:
+        assert set(result) == {"items", "next_cursor", "pages"}
+        return result["items"]
+    return result
+
+
+def expected(case: dict):
+    shaped_answer = case["shaped"]
+    if "items" in case["function"]["output"] or isinstance(shaped_answer, dict):
+        return shaped_answer
+    return {} if shaped_answer is None else {"value": shaped_answer}
 
 
 @pytest.mark.parametrize("case", LOADED.cases, ids=[case["name"] for case in LOADED.cases])
 def test_strip_case(case):
+    assert served(case) == expected(case)
+
+
+@pytest.mark.parametrize("case", LOADED.cases, ids=[case["name"] for case in LOADED.cases])
+def test_strip_case_by_serve_leaves_the_answer_intact(case):
     answer = copy.deepcopy(case["answer"])
     assert shaped(answer, case["function"]["output"]) == case["shaped"]
     assert answer == case["answer"]

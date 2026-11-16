@@ -8,8 +8,8 @@
 # cases carry into one description, checked with the schema and the rules of every description (rule 20 included), then
 # converts it as it converts a description: ts/src/body-cases.ts for the host package
 # (`@otomata_tech/connectors/body-cases`), whose engine builds each request. tests/test_body_cases.py plays the cases
-# against a reference written in the test: the Python lib sends no request of a description. A function shared by
-# several cases is written once, with a YAML anchor; the same name is always the same function.
+# against the engine of the Python lib (oto.connectors.engine), which sends each request to a fake vendor. A
+# function shared by several cases is written once, with a YAML anchor; the same name is always the same function.
 #
 # A case (`cases`): the arguments of a call (`input`, valid against the function input) and the request the host sends:
 # its path, its query (name and value pairs, in the order of `call.query`), the headers the arguments set (names in

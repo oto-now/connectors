@@ -336,7 +336,110 @@ def test_list_all_campaigns_reports_truncation_rather_than_hiding_it(monkeypatch
 
     assert truncated is True
     assert len(campaigns) == 300
+    # The fourth page is only a look past the ceiling: read, never returned.
+    assert pages == [1, 2, 3, 4]
+
+
+def _walk(monkeypatch, sizes, pagination=lambda page: {"nextPage": page + 1}):
+    """Serve `sizes[page - 1]` campaigns per page (0 past the end) and record
+    the pages asked for."""
+    pages = []
+
+    def fake_request(method, url, headers=None, **kwargs):
+        page = kwargs["params"]["page"]
+        pages.append(page)
+        n = sizes[page - 1] if page <= len(sizes) else 0
+        return _Resp(200, {
+            "campaigns": [{"_id": f"cam_{page}_{i}"} for i in range(n)],
+            "pagination": pagination(page),
+        })
+
+    monkeypatch.setattr(lm.requests, "request", fake_request)
+    return pages
+
+
+def test_list_all_campaigns_a_short_page_ends_the_walk_whatever_nextPage_says(
+        monkeypatch):
+    """lemlist announces a `nextPage` even on its last page
+    (and on the empty pages after it), so the walk spent every allowed page
+    and answered `truncated: true` for a 26-campaign workspace."""
+    pages = _walk(monkeypatch, [26])
+    c = lm.LemlistClient(api_key="k")
+    campaigns, truncated = c.list_all_campaigns(max_pages=10)
+
+    assert truncated is False
+    assert len(campaigns) == 26
+    assert pages == [1]
+
+
+def test_list_all_campaigns_a_full_last_page_then_an_empty_one_is_complete(
+        monkeypatch):
+    pages = _walk(monkeypatch, [100, 100])
+    c = lm.LemlistClient(api_key="k")
+    campaigns, truncated = c.list_all_campaigns(max_pages=5)
+
+    assert truncated is False
+    assert len(campaigns) == 200
     assert pages == [1, 2, 3]
+
+
+def test_list_all_campaigns_exactly_at_the_ceiling_is_not_truncated(monkeypatch):
+    """A workspace of exactly `max_pages` full pages: the look past the ceiling
+    finds nothing, so nothing was cut."""
+    pages = _walk(monkeypatch, [100, 100])
+    c = lm.LemlistClient(api_key="k")
+    campaigns, truncated = c.list_all_campaigns(max_pages=2)
+
+    assert truncated is False
+    assert len(campaigns) == 200
+    assert pages == [1, 2, 3]
+
+
+def test_list_all_campaigns_truncated_when_the_ceiling_cuts_the_list(monkeypatch):
+    pages = _walk(monkeypatch, [100, 100, 19])
+    c = lm.LemlistClient(api_key="k")
+    campaigns, truncated = c.list_all_campaigns(max_pages=2)
+
+    assert truncated is True
+    assert len(campaigns) == 200
+    assert pages == [1, 2, 3]
+
+
+@pytest.mark.parametrize("total, truncated", [(200, False), (300, True)])
+def test_list_all_campaigns_trusts_totalRecords_when_lemlist_gives_it(
+        monkeypatch, total, truncated):
+    """With a total in the answer, no look past the ceiling is needed."""
+    pages = _walk(monkeypatch, [100, 100, 100],
+                  pagination=lambda page: {"nextPage": page + 1,
+                                           "totalRecords": total})
+    c = lm.LemlistClient(api_key="k")
+    campaigns, was_truncated = c.list_all_campaigns(max_pages=2)
+
+    assert was_truncated is truncated
+    assert len(campaigns) == 200
+    assert pages == [1, 2]
+
+
+def test_list_all_campaigns_status_filter_does_not_set_truncated(monkeypatch):
+    """The status filter is sent to lemlist, which pages the FILTERED list: a
+    short page of running campaigns is the end of them, not a gap."""
+    seen = []
+
+    def fake_request(method, url, headers=None, **kwargs):
+        seen.append(dict(kwargs["params"]))
+        return _Resp(200, {
+            "campaigns": [{"_id": f"cam_{i}", "status": "running"}
+                          for i in range(10)],
+            "pagination": {"nextPage": kwargs["params"]["page"] + 1},
+        })
+
+    monkeypatch.setattr(lm.requests, "request", fake_request)
+    c = lm.LemlistClient(api_key="k")
+    campaigns, truncated = c.list_all_campaigns(max_pages=5, status="running")
+
+    assert truncated is False
+    assert len(campaigns) == 10
+    assert [p["status"] for p in seen] == ["running"]
 
 
 def test_list_all_campaigns_stops_on_a_short_page(monkeypatch):
@@ -1006,3 +1109,84 @@ def test_add_webhook_is_first_leaves_lowercase_in_the_url():
     query = _sent_query(lambda c: c.add_webhook(
         "https://example.com/hook", campaign_id="cam_1", is_first=True))
     assert query == [("campaignId", "cam_1"), ("isFirst", "true")]
+
+
+# --- La liste v1 des désinscriptions ne se sert plus (404) ; le pool d'expéditeurs --
+
+
+def _calls_of(monkeypatch, body=None):
+    calls = []
+
+    def fake_request(method, url, headers=None, **kwargs):
+        calls.append({"method": method, "url": url, **kwargs})
+        return _Resp(200, body if body is not None else {})
+
+    monkeypatch.setattr(lm.requests, "request", fake_request)
+    return calls
+
+
+def test_list_unsubscribes_reads_the_v2_list_not_the_withdrawn_v1_route(monkeypatch):
+    rows = [{"_id": "uns_1", "value": "example.test", "source": "api"}]
+    calls = _calls_of(monkeypatch, rows)
+    out = lm.LemlistClient(api_key="k").list_unsubscribes(limit=100, offset=200)
+    assert out == rows
+    assert calls[0]["method"] == "GET"
+    assert calls[0]["url"] == f"{lm.LemlistClient.BASE_URL}/v2/unsubscribes/variables"
+    assert calls[0]["params"] == {"limit": 100, "offset": 200}
+
+
+def test_list_unsubscribes_and_list_unsubscribed_variables_are_the_same_request(monkeypatch):
+    calls = _calls_of(monkeypatch, [])
+    c = lm.LemlistClient(api_key="k")
+    c.list_unsubscribes(limit=10)
+    c.list_unsubscribed_variables(limit=10)
+    assert (calls[0]["method"], calls[0]["url"], calls[0]["params"]) == (
+        calls[1]["method"], calls[1]["url"], calls[1]["params"])
+
+
+SIX_MAILBOXES = [{"userId": "usr_1", "channels": [
+    {"type": "email", "id": f"usm_{i}"} for i in range(1, 7)]}]
+
+
+def test_replace_campaign_senders_puts_every_mailbox(monkeypatch):
+    calls = _calls_of(monkeypatch, {"data": {"senders": []}})
+    lm.LemlistClient(api_key="k").replace_campaign_senders("cam_1", SIX_MAILBOXES)
+    assert calls[0]["method"] == "PUT"
+    assert calls[0]["url"].endswith("/campaigns/cam_1/senders")
+    assert calls[0]["json"] == {"senders": SIX_MAILBOXES}
+    assert len(calls[0]["json"]["senders"][0]["channels"]) == 6
+
+
+def test_add_campaign_senders_posts_and_get_reads_the_pool(monkeypatch):
+    calls = _calls_of(monkeypatch, {"data": {"senders": []}})
+    c = lm.LemlistClient(api_key="k")
+    c.add_campaign_senders("cam_1", [{"userId": "usr_1"}])
+    c.get_campaign_senders("cam_1")
+    assert [(k["method"], k["url"].rsplit("/api/", 1)[1]) for k in calls] == [
+        ("POST", "campaigns/cam_1/senders"), ("GET", "campaigns/cam_1/senders")]
+    assert calls[0]["json"] == {"senders": [{"userId": "usr_1"}]}
+
+
+def test_replace_with_an_empty_list_clears_the_pool_but_add_refuses_it(monkeypatch):
+    calls = _calls_of(monkeypatch)
+    c = lm.LemlistClient(api_key="k")
+    c.replace_campaign_senders("cam_1", [])
+    assert calls[0]["json"] == {"senders": []}
+    with pytest.raises(ValueError, match="empty"):
+        c.add_campaign_senders("cam_1", [])
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("senders, match", [
+    ([{"channels": [{"type": "email"}]}], "userId"),
+    ([{"userId": "usr_1", "mailboxes": ["usm_1"]}], "unknown sender keys"),
+    ([{"userId": "usr_1", "channels": []}], "non-empty"),
+    ([{"userId": "usr_1", "channels": [{"type": "mail", "id": "usm_1"}]}], "channel type"),
+    ([{"userId": "usr_1", "channels": [{"type": "email", "sendUserMailboxId": "usm_1"}]}], "unknown channel keys"),
+    ([{"userId": "usr_1", "channels": [{"type": "email", "alias": "a@example.test"}]}], "alias"),
+])
+def test_the_pool_body_is_checked_before_any_call(monkeypatch, senders, match):
+    calls = _calls_of(monkeypatch)
+    with pytest.raises(ValueError, match=match):
+        lm.LemlistClient(api_key="k").replace_campaign_senders("cam_1", senders)
+    assert calls == []

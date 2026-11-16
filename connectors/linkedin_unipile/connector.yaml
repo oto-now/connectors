@@ -10,6 +10,11 @@
 # - the identity guard of get_profile and get_company: under concurrency the
 #   API was seen answering another member or company; the client compares the
 #   answer to the requested identifier and refuses a mismatch;
+# - the member identifier of get_profile: the client takes the slug
+#   percent-encoded or not, or the profile address, and sends one path for
+#   all of them (a non-ASCII slug in the percent-encoded form of the address,
+#   itself escaped); its identity guard compares both sides decoded, NFC,
+#   case-folded, with or without accents;
 # - the slug resolution of get_company: a 404 on a brand name retried through a
 #   company search (several calls);
 # - the cursor of list_invitations, minted by the client: the endpoint pages by
@@ -59,7 +64,7 @@ connector:
   name: linkedin_unipile
   label: LinkedIn (Unipile)
   namespace: linkedin_unipile
-  version: 1.3.0
+  version: 1.3.2
   api_version: v2
   base_url: https://api.unipile.com/v2/{account_id}
   auth: { kind: api_key, in: header, name: X-API-KEY, key: api_key }

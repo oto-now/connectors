@@ -114,9 +114,18 @@ def worst_case(connector: str, function: str, args: dict) -> dict | None:
     return {"quantity": len(_list(name, args, cost["items"])) * times, "unit": _unit(cost)}
 
 
+def scaled(value: float, scale: int | None) -> float | int:
+    """The value read in the unit of the cost: as is without scale; with scale, the value times scale rounded to six
+    decimals (float noise: 0.0006 x 1e6 reads 600, not 600.0000000000001), then up to an integer."""
+    if scale is None:
+        return value
+    return math.ceil(round(value * scale, 6))
+
+
 def settled_quantity(connector: str, function: str, args: dict, answers: list) -> dict | None:
     """`{quantity, unit, from, exceeded}` after a successful call. With settle, the first finite number of zero or more
-    (a finite double, as the host reads JSON) at its path in `answers` (`from: response`), else the worst case
+    (a finite double, as the host reads JSON) at its path in `answers`, times its scale when declared (`scaled`,
+    `from: response`), else the worst case
     (`from: unreadable`); without settle, the requests sent times the quantity of one (`requests`) or, per item, the
     worst case (`worst_case`).
     `exceeded`: a quantity read above the worst case, settled as is and to be reported. `None` without a cost."""
@@ -129,6 +138,7 @@ def settled_quantity(connector: str, function: str, args: dict, answers: list) -
         read = next((v for v in (value_at(a, path) for a in answers) if _finite(v) and v >= 0), None)
         if read is None:
             return {**worst, "from": "unreadable", "exceeded": False}
+        read = scaled(read, cost["settle"].get("scale"))
         return {"quantity": read, "unit": worst["unit"], "from": "response", "exceeded": read > worst["quantity"]}
     if cost["per"] == "item":
         return {**worst, "from": "worst_case", "exceeded": False}

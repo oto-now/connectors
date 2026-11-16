@@ -1,4 +1,4 @@
-"""`python -m fabrique` régénère `ts/src/`, `oto/connectors/declared.py` et `docs/carte-du-parc.md` ; `--check` échoue si la sortie commitée n'est pas à jour."""
+"""`python -m fabrique` régénère `ts/src/`, `oto/connectors/declared.py`, `oto/connectors/descriptions/` et `docs/carte-du-parc.md` ; `--check` échoue si la sortie commitée n'est pas à jour."""
 from __future__ import annotations
 
 import argparse

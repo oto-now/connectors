@@ -9,6 +9,7 @@ import * as attio from "./attio"
 import * as brevo from "./brevo"
 import * as claap from "./claap"
 import * as crisp from "./crisp"
+import * as dataforseo from "./dataforseo"
 import * as dropcontact from "./dropcontact"
 import * as elevenlabs from "./elevenlabs"
 import * as fod from "./fod"
@@ -17,11 +18,14 @@ import * as fullenrich from "./fullenrich"
 import * as gmail from "./gmail"
 import * as googleCalendar from "./google_calendar"
 import * as googleDrive from "./google_drive"
+import * as googleSearchConsole from "./google_search_console"
 import * as googleSheets from "./google_sheets"
 import * as granola from "./granola"
+import * as heyreach from "./heyreach"
 import * as higgsfield from "./higgsfield"
 import * as hubspot from "./hubspot"
 import * as hunter from "./hunter"
+import * as instantly from "./instantly"
 import * as jefacture from "./jefacture"
 import * as klaviyo from "./klaviyo"
 import * as lemlist from "./lemlist"
@@ -37,6 +41,7 @@ import * as modjo from "./modjo"
 import * as mux from "./mux"
 import * as nextmotion from "./nextmotion"
 import * as notion from "./notion"
+import * as openai from "./openai"
 import * as origami from "./origami"
 import * as pappers from "./pappers"
 import * as pennylane from "./pennylane"
@@ -45,6 +50,7 @@ import * as pipecorn from "./pipecorn"
 import * as qonto from "./qonto"
 import * as salesforce from "./salesforce"
 import * as sellsy from "./sellsy"
+import * as seranking from "./seranking"
 import * as serper from "./serper"
 import * as sivan from "./sivan"
 import * as slack from "./slack"
@@ -65,6 +71,7 @@ export { attio }
 export { brevo }
 export { claap }
 export { crisp }
+export { dataforseo }
 export { dropcontact }
 export { elevenlabs }
 export { fod }
@@ -73,11 +80,14 @@ export { fullenrich }
 export { gmail }
 export { googleCalendar }
 export { googleDrive }
+export { googleSearchConsole }
 export { googleSheets }
 export { granola }
+export { heyreach }
 export { higgsfield }
 export { hubspot }
 export { hunter }
+export { instantly }
 export { jefacture }
 export { klaviyo }
 export { lemlist }
@@ -93,6 +103,7 @@ export { modjo }
 export { mux }
 export { nextmotion }
 export { notion }
+export { openai }
 export { origami }
 export { pappers }
 export { pennylane }
@@ -101,6 +112,7 @@ export { pipecorn }
 export { qonto }
 export { salesforce }
 export { sellsy }
+export { seranking }
 export { serper }
 export { sivan }
 export { slack }
@@ -124,6 +136,7 @@ export const connectors: readonly Connector[] = [
   brevo.connector,
   claap.connector,
   crisp.connector,
+  dataforseo.connector,
   dropcontact.connector,
   elevenlabs.connector,
   fod.connector,
@@ -132,11 +145,14 @@ export const connectors: readonly Connector[] = [
   gmail.connector,
   googleCalendar.connector,
   googleDrive.connector,
+  googleSearchConsole.connector,
   googleSheets.connector,
   granola.connector,
+  heyreach.connector,
   higgsfield.connector,
   hubspot.connector,
   hunter.connector,
+  instantly.connector,
   jefacture.connector,
   klaviyo.connector,
   lemlist.connector,
@@ -152,6 +168,7 @@ export const connectors: readonly Connector[] = [
   mux.connector,
   nextmotion.connector,
   notion.connector,
+  openai.connector,
   origami.connector,
   pappers.connector,
   pennylane.connector,
@@ -160,6 +177,7 @@ export const connectors: readonly Connector[] = [
   qonto.connector,
   salesforce.connector,
   sellsy.connector,
+  seranking.connector,
   serper.connector,
   sivan.connector,
   slack.connector,

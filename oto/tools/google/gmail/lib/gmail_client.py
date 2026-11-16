@@ -22,15 +22,16 @@ def _markdown_to_html_fragment(text: str) -> str:
     """Render markdown to an HTML fragment suitable for Gmail's text/html part.
 
     No <html>/<body> wrapping — Gmail accepts the fragment directly inside a
-    multipart/alternative message. Warns (no auto-fix) on markdown pitfalls
-    such as a list glued to the preceding paragraph; supports tables, fenced
+    multipart/alternative message. A list glued to the preceding paragraph
+    gets its missing blank line (`fix_glued_lists`): the author of a mail body
+    is often an agent, who never sees a server-side warning, and the draft
+    would otherwise show its bullets run together. Supports tables, fenced
     code, inline attributes.
     """
     import markdown as _md
-    from oto.tools.markdown_lint import warn_markdown
-    warn_markdown(text, source='corps du mail')
+    from oto.tools.markdown_lint import fix_glued_lists
     return _md.markdown(
-        text,
+        fix_glued_lists(text),
         extensions=['tables', 'fenced_code', 'sane_lists', 'attr_list'],
         output_format='html',
     )

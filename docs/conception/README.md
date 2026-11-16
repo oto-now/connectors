@@ -21,14 +21,14 @@ Les documents de conception de ce dépôt : pour chaque sujet, **comment** c'est
 |---|---|---|
 | [Concevoir un connecteur](concevoir-un-connecteur.md) | Dans quel ordre conçoit-on un connecteur partagé, de la qualification du service à sa publication ? Le point d'entrée pour ajouter un connecteur. | proposé |
 | [Format de description](format-de-description.md) | Comment décrit-on un connecteur partagé, et que doit contenir son fichier ? Document d'entrée du format, qui renvoie au document de chaque bloc. | validé avec Alexis le 29/09/2026 ; révisé le 03/11/2026 |
-| [Le compte d'un connecteur](compte.md) | Comment une description dit-elle les champs, réglages et l'authentification d'un compte, consentement OAuth et compte rattaché compris ? | validé avec Alexis le 29/09/2026 ; révisé le 03/11/2026 |
+| [Le compte d'un connecteur](compte.md) | Comment une description dit-elle les champs, réglages et l'authentification d'un compte, consentement OAuth, compte de service et compte rattaché compris ? | validé avec Alexis le 29/09/2026 ; révisé le 06/11/2026 |
 | [Le corps d'une requête](corps-de-requete.md) | Comment les arguments forment-ils le corps JSON : en table, emboîté ou entier ? | validé avec Alexis le 29/09/2026 ; révisé le 03/11/2026 |
 | [La sortie d'une fonction](sortie.md) | Que reçoit l'agent de la réponse, et que perd-elle avant de l'atteindre ? | validé avec Alexis le 29/09/2026 ; révisé le 03/11/2026 |
 | [Fichiers envoyés et rendus](fichiers.md) | Comment une fonction envoie-t-elle ou rend-elle un fichier sans que l'agent en voie les octets ni l'adresse ? | validé avec Alexis le 29/09/2026 ; révisé le 03/11/2026 |
 | [Erreurs et signal de refus](signal-de-refus.md) | Comment une description nomme-t-elle les refus d'un service, et quand marque-t-elle le compte ? | validé avec Alexis le 29/09/2026 ; révisé le 03/11/2026 |
 | [Coût d'un appel et sonde à solde](cout-et-solde.md) | Que coûte un appel, avant et après, et comment la sonde lit-elle le solde d'un compte payant ? | validé avec Alexis le 29/09/2026 ; révisé le 03/11/2026 |
 | [Travaux longs](travaux-longs.md) | Comment dire un travail asynchrone tenu par le tiers, ou un appel synchrone de plusieurs minutes ? | validé avec Alexis le 29/09/2026 ; révisé le 03/11/2026 |
-| [La fabrique](fabrique.md) | Comment un fichier de description devient-il des définitions TypeScript que le paquet d'oto 2 adapte, puis un client Python ? | proposé |
+| [La fabrique](fabrique.md) | Comment un fichier de description devient-il des définitions TypeScript que le paquet d'oto 2 adapte, et une description que le moteur Python de la lib exécute pour oto 1 ? | proposé |
 | [Niveaux d'accès](niveaux-d-acces.md) | Comment ouvrir un connecteur OAuth en lecture seule, ou à un sous-ensemble de ses droits ? | validé avec Alexis le 14/10/2026 |
 
 ## Anciens identifiants → document

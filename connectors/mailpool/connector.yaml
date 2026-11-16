@@ -3,17 +3,24 @@
 #
 # Not described here: update_domain_dns (its body is an array of records, which
 # this format cannot declare). It REPLACES the whole record set of a domain.
+# Nor create_mailboxes (POST /mailboxes, an array of mailboxes): it takes a
+# paid subscription slot per mailbox, so the Python client checks the free
+# slots, the domains and the existing addresses first (plan_mailboxes) and
+# refuses before sending anything. Mailbox exports to a sending platform
+# (export_mailboxes, export_credentials_status, list/get_export_batch) live in
+# the Python client too: export_mailboxes checks the platform login is saved
+# and every mailbox is active first; the login itself is never read back.
 #
 # Mailbox payloads carry the mailbox, IMAP/SMTP and admin passwords and the
 # admin secret; the Python client removes them (strip_secrets) and every
-# function returning a mailbox strips them below, with a closed output schema. Billed endpoints (domain
-# registration, transfer, renewal, mailbox creation, subscription slots,
-# warmup enrolment, inbox placement) are deliberately absent.
+# function returning a mailbox strips them below, with a closed output schema. The other billed
+# endpoints (domain registration, transfer, renewal, buying subscription
+# slots, warmup enrolment, inbox placement) are deliberately absent.
 connector:
   name: mailpool
   label: Mailpool
   namespace: mailpool
-  version: 1.0.1
+  version: 1.1.1
   api_version: v1
   base_url: https://app.mailpool.io/v1/api
   auth:

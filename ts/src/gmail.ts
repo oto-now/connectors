@@ -528,7 +528,7 @@ export const connector = defineConnector({
   name: "gmail",
   label: "Gmail",
   namespace: "gmail",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v1",
   baseUrl: "https://gmail.googleapis.com/gmail/v1",
   auth: {

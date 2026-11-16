@@ -87,8 +87,8 @@ export type AccessLevel = { readonly scopes: readonly string[] }
  * porte `full` (il ne filtre rien) et au moins un niveau restreint (`read`, `support`…), et `scopeImplies`, un droit qui
  * en couvre d'autres, tel que le fournisseur le définit (jamais une règle devinée ; close : un droit impliqué n'en
  * implique pas d'autres que la clé ne liste pas). L'hôte choisit un niveau par organisation, puis par équipe, qui le
- * restreint sans jamais l'élargir ; `full` par défaut. Une fonction est servie à un niveau quand chacun de ses `scopes`
- * est un droit du niveau ou impliqué par l'un d'eux ; sinon elle sort de ce que voit l'agent et l'appel est refusé par
+ * restreint sans jamais l'élargir ; `full` par défaut (un compte de service peut en nommer un autre, `defaultLevel`).
+ * Une fonction est servie à un niveau quand chacun de ses `scopes` est un droit du niveau ou impliqué par l'un d'eux ; sinon elle sort de ce que voit l'agent et l'appel est refusé par
  * `access_level_denied`, qui nomme le niveau et l'opération. Le consentement demande les droits du niveau en vigueur au
  * départ, signé dans l'état du flux ; passer d'un niveau restreint à `full` demande un nouveau consentement.
  */
@@ -97,6 +97,19 @@ export type OAuthScopes =
   | {
       readonly accessLevels: { readonly full: AccessLevel; readonly [level: string]: AccessLevel }
       readonly scopeImplies?: { readonly [scope: string]: readonly string[] }
+      readonly scopes?: never
+    }
+
+/**
+ * Les droits d'un compte de service : `scopes` (le niveau `full`), ou des niveaux d'accès comme ceux d'un consentement
+ * (`OAuthScopes`), dont `defaultLevel`, le niveau d'un compte sans réglage, qui doit être un niveau déclaré.
+ */
+export type ServiceAccountScopes =
+  | { readonly scopes: readonly string[]; readonly accessLevels?: never; readonly scopeImplies?: never; readonly defaultLevel?: never }
+  | {
+      readonly accessLevels: { readonly full: AccessLevel; readonly [level: string]: AccessLevel }
+      readonly scopeImplies?: { readonly [scope: string]: readonly string[] }
+      readonly defaultLevel?: string
       readonly scopes?: never
     }
 
@@ -156,6 +169,19 @@ export type Auth =
       readonly expiresInDefault?: number
     } & TokenEndpoint)
   | OAuthUser
+  /**
+   * Un compte de service (JWT bearer, RFC 7523). `key` nomme le seul champ de `credential`, secret : le fichier JSON entier
+   * de la clé du compte de service, dont l'hôte exige `client_email` et `private_key` (PEM PKCS#8) ; `private_key_id`,
+   * facultatif, devient le `kid` de l'en-tête ; une clé dont `token_uri` diffère de `tokenUrl` est refusée. L'hôte signe
+   * en RS256 l'assertion `{ iss: client_email, scope: scopes joints par des espaces, aud: tokenUrl, iat, exp: iat + 3600 }`,
+   * l'échange à `tokenUrl` (POST en formulaire, `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer`, `assertion`,
+   * aucune redirection suivie) contre un jeton envoyé en `Authorization: Bearer`. Cas communs : `./jwt-bearer-cases`.
+   * Les droits : `scopes`, ou des niveaux d'accès (`accessLevels`, `scopeImplies`, comme un consentement) ; le `scope` de
+   * l'assertion est alors celui du niveau du compte, et `defaultLevel` nomme le niveau d'un compte dont l'organisation
+   * ou l'équipe n'a choisi aucun (`full` sans lui). Aucun consentement : changer de niveau change seulement les droits de
+   * la prochaine assertion (le jeton gardé est indexé par ses droits).
+   */
+  | ({ readonly kind: "oauth2_jwt_bearer"; readonly tokenUrl: string; readonly key: string } & ServiceAccountScopes)
   | { readonly kind: "none" }
 
 /**
@@ -235,6 +261,12 @@ export type RequestSpec = {
    * constante de corps, sans fichier, sans pagination, jamais en `GET` (règle 20 de la fabrique).
    */
   readonly body: BodyMap | string
+  /**
+   * `true` : le corps construit (table, emboîtée ou non, constantes comprises, ou argument entier) part seul élément
+   * d'une liste JSON, pour un tiers dont le corps est un tableau nu d'un objet. Exige un corps ; jamais en `GET` ni avec
+   * `files` (règle 23 de la fabrique).
+   */
+  readonly bodyList?: true
   readonly headers: ArgumentMap
   /**
    * Nom de partie → argument qui porte l'identifiant d'un fichier en transit de l'appelant (un texte). Présent, le corps
@@ -350,8 +382,12 @@ export type Check = {
  */
 export type Expectation = { readonly kind: "non_empty"; readonly refusal: string; readonly path: string }
 
-/** Où lire, dans la réponse d'un appel, la quantité réelle qu'il a coûté : un nombre JSON fini, positif ou nul, au chemin pointé `path`. */
-export type CostSettle = { readonly path: string }
+/**
+ * Où lire, dans la réponse d'un appel, la quantité réelle qu'il a coûté : un nombre JSON fini, positif ou nul, au chemin
+ * pointé `path`. `scale` (un entier de deux ou plus) : le facteur de la valeur lue à `unit`, la quantité réglée étant la
+ * valeur fois `scale`, arrondie à six décimales puis à l'entier supérieur (un coût lu en dollars, réglé en microdollars).
+ */
+export type CostSettle = { readonly path: string; readonly scale?: number }
 
 /**
  * Le poids d'une valeur, à la place de `times` : chaque élément de `items` compte la somme des poids des valeurs que

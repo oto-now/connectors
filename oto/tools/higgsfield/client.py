@@ -28,7 +28,10 @@ returned unchanged.
   same body, free. It answers either `{"usd": "0.004", "credits": …}` or, for
   some models, only a sentence of per-second prices by resolution
   (`{"type": "description", "pricing_description": …}`). `price_of` reads a
-  dollar amount out of either, or says it cannot.
+  dollar amount out of either, or says it cannot. GPT Image 2.5
+  (`marketing-studio/image/flare`, `/sunburst`) gives only per-1M-token rates:
+  `price_of` answers the charge measured per quality and resolution, with no
+  margin, not the job's own charge, which no endpoint reports per job.
 - **A submission carries an `Idempotency-Key`** (a fresh UUID unless the caller
   gives one): repeating it with the same key returns the original request
   instead of a second job; the same key with other parameters answers 422. The
@@ -78,6 +81,31 @@ _IDEMPOTENCY_KEY = re.compile(r"^[\x21-\x7e]{1,255}$")
 # "$0.2056 per second of generated video at 480p, $0.4622 at 720p, and $1.1372 at 1080p"
 _RATE = re.compile(r"\$(\d+(?:\.\d+)?)(?: per second of generated video)? at (\d{3,4}p)")
 
+# GPT Image 2.5 (`marketing-studio/image/flare` and `/sunburst`) answers its
+# estimate with per-1M-token rates and no amount, and no job status says what
+# was charged. Its charge was MEASURED instead, job by job, from Higgsfield's
+# usage report (`GET /models/usage`) on 2026-11-09, 17 jobs: the same
+# parameters cost the same to the hundredth of a cent; sunburst bills like
+# flare; a square output is the dearest shape (3:2 and 21:9 cost less, `auto`
+# and no `aspect_ratio` cost what 1:1 does); each reference image adds $0.0130.
+# The sentence is recognised by these exact rates: if Higgsfield changes them,
+# the measures no longer hold and the job is not priced.
+_TOKEN_RATES = {"text input": 5.0, "image input": 8.0, "image output": 30.0}
+_TOKEN_RATE = re.compile(r"(?<!cached )(text input|text output|image input|image output) \$(\d+(?:\.\d+)?)")
+# quality -> resolution -> USD charged for one 1:1 image with a short prompt.
+# A resolution not measured for a quality is priced at that quality's 4k.
+_GPT_IMAGE_CHARGE = {
+    "low": {"4k": 0.0304},
+    "medium": {"4k": 0.0552},
+    "high": {"1k": 0.0634, "2k": 0.1177, "4k": 0.1886},
+    "xhigh": {"4k": 0.3269},
+    "max": {"1k": 0.2214, "4k": 0.7222},
+}
+_GPT_IMAGE_RESOLUTIONS = ("1k", "2k", "4k")
+_GPT_IMAGE_DEFAULT_QUALITY = "high"  # "Quality defaults to high", in the sentence itself
+_GPT_IMAGE_PER_REFERENCE = 0.0130
+_GPT_IMAGE_MEASURED_ON = "2026-11-09"
+
 
 def model_path(model: Any) -> str:
     """The model slug, checked: lowercase segments, no `..`, not an API endpoint."""
@@ -113,13 +141,53 @@ def _video_input(params: Dict[str, Any]) -> bool:
     return False
 
 
+def _price_of_gpt_image(sentence: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """The measured charge of a GPT Image 2.5 job, or None when `sentence` is
+    not its per-1M-token price sentence (with the rates the measures were made at)."""
+    if not sentence.lstrip().lower().startswith("per 1m tokens"):
+        return None
+    rates = {name: float(rate) for name, rate in _TOKEN_RATE.findall(sentence)}
+    if any(rates.get(name) != rate for name, rate in _TOKEN_RATES.items()):
+        return {"usd": None, "approximate": False,
+                "basis": "a per-token price sentence whose rates differ from the measured GPT Image 2.5 ones"}
+    quality = params.get("quality", _GPT_IMAGE_DEFAULT_QUALITY)
+    if quality not in _GPT_IMAGE_CHARGE:
+        return {"usd": None, "approximate": False,
+                "basis": f"no measured charge for quality {quality!r} (measured: {', '.join(_GPT_IMAGE_CHARGE)})"}
+    resolution = params.get("resolution")
+    if resolution is not None and resolution not in _GPT_IMAGE_RESOLUTIONS:
+        return {"usd": None, "approximate": False,
+                "basis": f"no measured charge for resolution {resolution!r} ({', '.join(_GPT_IMAGE_RESOLUTIONS)})"}
+    charges = _GPT_IMAGE_CHARGE[quality]
+    priced_at = resolution if resolution in charges else "4k"
+    references = params.get("image_urls")
+    references = len(references) if isinstance(references, list) else 0
+    prompt = params.get("prompt")
+    prompt_tokens = len(prompt) / 3 if isinstance(prompt, str) else 0  # generous: ~4 characters a token
+    usd = (charges[priced_at] + references * _GPT_IMAGE_PER_REFERENCE
+           + prompt_tokens * _TOKEN_RATES["text input"] / 1_000_000)
+    how = f"quality {quality}" + ("" if "quality" in params else " (the default)")
+    if resolution is None:
+        how += f", {priced_at} (no `resolution` given: the dearest)"
+    elif resolution != priced_at:
+        how += f", {priced_at} (the dearest; {resolution} not measured at this quality)"
+    else:
+        how += f", {priced_at}"
+    if references:
+        how += f", {references} reference image{'s' if references > 1 else ''}"
+    return {"usd": round(usd, 4), "approximate": True,
+            "basis": (f"GPT Image 2.5 charge measured on {_GPT_IMAGE_MEASURED_ON} at {how}, square output, "
+                      "no margin: Higgsfield bills tokens and reports no cost")}
+
+
 def price_of(estimate: Any, params: Dict[str, Any]) -> Dict[str, Any]:
     """A dollar amount read out of an `estimate` answer for `params`.
 
     Returns `{"usd": float | None, "approximate": bool, "basis": str}`.
     `usd` is None when no amount can be read; `basis` says why, or how it was
     computed. An amount computed from a per-second sentence is approximate:
-    the sentence prices a 16:9 output before any discount.
+    the sentence prices a 16:9 output before any discount. GPT Image 2.5's
+    per-token sentence is priced at its measured charge, also approximate.
     """
     if not isinstance(estimate, dict):
         return {"usd": None, "approximate": False, "basis": "the estimate answer is not an object"}
@@ -131,6 +199,9 @@ def price_of(estimate: Any, params: Dict[str, Any]) -> Dict[str, Any]:
     sentence = estimate.get("pricing_description")
     if not isinstance(sentence, str) or not sentence.strip():
         return {"usd": None, "approximate": False, "basis": "the estimate gives no amount"}
+    gpt_image = _price_of_gpt_image(sentence, params)
+    if gpt_image is not None:
+        return gpt_image
     # The rates are in the first sentence; later ones price video tokens at the
     # same resolutions ("$0.0214 at 480p or 720p") and must not replace them.
     rates: Dict[str, float] = {}

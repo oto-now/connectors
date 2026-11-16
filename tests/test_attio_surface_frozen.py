@@ -88,7 +88,7 @@ EXPECTED_MEMBERS = {
         '__init__': _CLIENT,
         'get': '(self, meeting_id: str, call_recording_id: str) -> Dict[str, Any]',
         'list': '(self, meeting_id: str) -> Dict[str, Any]',
-        'transcript': '(self, meeting_id: str, call_recording_id: str) -> Dict[str, Any]',
+        'transcript': '(self, meeting_id: str, call_recording_id: str, cursor: str = None) -> Dict[str, Any]',
     },
     'AttioObjects': {
         '__init__': _CLIENT,

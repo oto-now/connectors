@@ -1,21 +1,19 @@
 """Les cas communs du corps entier (`connectors/_cases/body.yaml`), joués côté Python, une ligne par cas.
 
-La lib n'envoie la requête d'aucune description : seul le moteur du paquet de l'hôte le fait. Les cas se jouent donc
-ici contre une référence écrite dans le test, qui dit la sémantique du format (`docs/conception/corps-de-requete.md`) ; le paquet de
-l'hôte joue les mêmes cas, sortis par la fabrique dans `ts/src/body-cases.ts`, contre son moteur. Les entrées rejetées
-le sont par le schéma d'entrée, avant tout envoi ; les fonctions refusées le sont par la fabrique (règle 20), avec leur
-code.
+Ils se jouent contre le moteur de la lib (`oto.connectors.engine`), qui compose et envoie la requête à un faux tiers
+(`engine_fake`) ; le paquet de l'hôte joue les mêmes cas, sortis par la fabrique dans `ts/src/body-cases.ts`, contre son
+moteur. Les entrées rejetées le sont par le schéma d'entrée, avant tout envoi ; les fonctions refusées le sont par la
+fabrique (règle 20), avec leur code.
 """
 from __future__ import annotations
 
 import copy
-import json
 import re
-from urllib.parse import quote
 
 import pytest
 from jsonschema import Draft202012Validator
 
+import engine_fake
 from fabrique import body_cases
 from fabrique.descriptions import (BODY_REFUSALS, DescriptionError, _personal_marks, body_argument_refusal,
                                    check_personal, check_rules, free_keys, strict_object)
@@ -24,33 +22,19 @@ LOADED = body_cases.load()
 FUNCTIONS = {function["name"]: function for function in LOADED.description.data["functions"]}
 
 
-def _text(value) -> str:
-    """Une valeur dans un chemin, une query ou un en-tête : texte tel quel, nombre et booléen écrits, le reste en JSON."""
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    if isinstance(value, str):
-        return value
-    if isinstance(value, (int, float)):
-        return str(value)
-    return json.dumps(value, separators=(",", ":"))
-
-
-def request(function: dict, given: dict) -> dict:
-    """La référence : le chemin aux `{param}` encodés (comme `encodeURIComponent`), la query et les en-têtes des seuls
-    arguments donnés, et pour corps l'argument nommé par `call.body`, tel quel."""
-    call = function["call"]
-    path = re.sub(r"\{([^{}]+)\}", lambda m: quote(_text(given[m.group(1)]), safe="!*'()"), call["path"])
-    query = [[name, _text(given[argument])] for name, argument in (call.get("query") or {}).items() if argument in given]
-    headers = {name.lower(): _text(given[argument]) for name, argument in (call.get("headers") or {}).items()
-               if argument in given}
-    return {"path": path, "query": query, "headers": headers, "body": given[call["body"]]}
+def sent(description: dict, function: dict, given: dict) -> dict:
+    """La requête que le moteur envoie pour ces arguments, dans la forme des cas : chemin sous l'adresse de base, query,
+    en-têtes posés par les arguments, corps."""
+    _, vendor = engine_fake.play(description, function["name"], given)
+    (request,) = vendor.requests
+    return engine_fake.placed(engine_fake.sent(request, description["connector"]["base_url"]))
 
 
 @pytest.mark.parametrize("case", LOADED.cases, ids=[case["name"] for case in LOADED.cases])
 def test_body_case(case):
     given = copy.deepcopy(case["input"])
     assert Draft202012Validator(case["function"]["input"]).is_valid(given)
-    assert request(case["function"], given) == case["request"]
+    assert sent(LOADED.description.data, case["function"], given) == case["request"]
     assert given == case["input"]
 
 

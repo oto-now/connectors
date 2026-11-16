@@ -239,6 +239,113 @@ def _unknown_pkce(d):
     _oauth2_user(d, pkce="plain")
 
 
+def _jwt_bearer(d, **changes):
+    """Sellsy en compte de service : un seul champ, le fichier JSON de la clé."""
+    d["connector"]["auth"] = {
+        "kind": "oauth2_jwt_bearer", "token_url": "https://oauth2.example.test/token",
+        "scopes": ["https://api.example.test/auth/read"], "key": "service_account_key",
+    } | changes
+    d["connector"]["credential"] = [{"name": "service_account_key", "label": "Service account key (JSON)", "secret": True}]
+
+
+def _jwt_bearer_without_token_url(d):
+    _jwt_bearer(d)
+    del d["connector"]["auth"]["token_url"]
+
+
+def _jwt_bearer_without_scopes(d):
+    _jwt_bearer(d)
+    del d["connector"]["auth"]["scopes"]
+
+
+def _jwt_bearer_with_empty_scopes(d):
+    _jwt_bearer(d, scopes=[])
+
+
+def _jwt_bearer_without_key(d):
+    _jwt_bearer(d)
+    del d["connector"]["auth"]["key"]
+
+
+def _jwt_bearer_token_url_template(d):
+    _jwt_bearer(d, token_url="https://{tenant}.example.test/token")
+
+
+def _jwt_bearer_token_url_with_query(d):
+    _jwt_bearer(d, token_url="https://oauth2.example.test/token?tenant=x")
+
+
+def _jwt_bearer_token_url_not_https(d):
+    _jwt_bearer(d, token_url="http://oauth2.example.test/token")
+
+
+def _jwt_bearer_with_token_urls(d):
+    _jwt_bearer(d)
+    d["connector"]["auth"]["token_urls"] = {"setting": "region", "values": {"us": "https://us.example.test/token"}}
+
+
+def _jwt_bearer_with_levels(d):
+    """Sellsy en compte de service à niveaux : `read` par défaut, `full` qui implique la lecture."""
+    _jwt_bearer(d)
+    auth = d["connector"]["auth"]
+    del auth["scopes"]
+    auth.update(access_levels={"read": {"scopes": [READ]}, "full": {"scopes": [ALL]}}, scope_implies={ALL: [READ]},
+                default_level="read")
+    for function in d["functions"]:
+        function["scopes"] = [READ]
+
+
+def _jwt_bearer_with_levels_and_scopes(d):
+    _jwt_bearer_with_levels(d)
+    d["connector"]["auth"]["scopes"] = [ALL]
+
+
+def _jwt_bearer_with_levels_without_full(d):
+    _jwt_bearer_with_levels(d)
+    d["connector"]["auth"]["access_levels"] = {"read": {"scopes": [READ]}, "write": {"scopes": [ALL]}}
+
+
+def _jwt_bearer_function_scopes_without_levels(d):
+    _jwt_bearer(d)
+    d["functions"][0]["scopes"] = ["https://api.example.test/auth/read"]
+
+
+def _jwt_bearer_scope_implies_without_levels(d):
+    _jwt_bearer(d, scope_implies={ALL: [READ]})
+
+
+def _jwt_bearer_default_level_without_levels(d):
+    _jwt_bearer(d, default_level="full")
+
+
+def _jwt_bearer_function_without_scopes_with_levels(d):
+    _jwt_bearer_with_levels(d)
+    del d["functions"][1]["scopes"]
+
+
+def _jwt_bearer_with_sub(d):
+    _jwt_bearer(d, sub="someone@example.test")
+
+
+def _jwt_bearer_without_credential(d):
+    _jwt_bearer(d)
+    del d["connector"]["credential"]
+
+
+def test_jwt_bearer_mutation_base_is_valid():
+    """Les variantes `oauth2_jwt_bearer` ci-dessous partent d'une description valide : chacune n'échoue que par sa faute."""
+    description = _sellsy()
+    _jwt_bearer(description)
+    _validate(description)
+
+
+def test_jwt_bearer_with_access_levels_is_valid():
+    """Un compte de service peut déclarer des niveaux d'accès, comme un consentement, et un niveau par défaut."""
+    description = _sellsy()
+    _jwt_bearer_with_levels(description)
+    _validate(description)
+
+
 @pytest.mark.parametrize("auth", [
     {"kind": "basic", "username": "client_id", "password": "client_secret"},
     {"kind": "basic", "password": "client_secret"},
@@ -270,6 +377,12 @@ def test_oauth2_user_mutation_base_is_valid():
     _api_key_without_place, _basic_without_password, _basic_with_empty_username, _oauth2_user_with_token_credential, _oauth2_user_with_client_id,
     _oauth2_user_without_identity, _rotates_without_refresh_token, _exchange_without_its_grant,
     _authorize_param_set_by_the_host, _unknown_pkce,
+    _jwt_bearer_without_token_url, _jwt_bearer_without_scopes, _jwt_bearer_with_empty_scopes, _jwt_bearer_without_key,
+    _jwt_bearer_token_url_template, _jwt_bearer_token_url_with_query, _jwt_bearer_token_url_not_https,
+    _jwt_bearer_with_token_urls, _jwt_bearer_with_sub, _jwt_bearer_without_credential,
+    _jwt_bearer_with_levels_and_scopes, _jwt_bearer_with_levels_without_full, _jwt_bearer_function_scopes_without_levels,
+    _jwt_bearer_scope_implies_without_levels, _jwt_bearer_default_level_without_levels,
+    _jwt_bearer_function_without_scopes_with_levels,
 ], ids=lambda f: f.__name__.lstrip("_"))
 def test_invalid_description_is_rejected(mutate):
     description = _sellsy()
@@ -679,8 +792,9 @@ def _cost(d, **cost):
     {"per": "item", "items": "embed", "weights": {"field": "fields", "values": {"a": 1, "b": 10}}, "unit": "credits", "settle": {"path": "cost.credits"}},
     {"per": "request", "quantity": 3, "unit": "credits"},
     {"per": "page", "quantity": 2, "unit": "credits", "settle": {"path": "credits_used"}},
+    {"per": "request", "quantity": 40000, "unit": "microdollars", "settle": {"path": "tasks.0.cost", "scale": 1000000}},
 ], ids=["request", "page", "request_unit", "request_settle", "item", "item_times_settle", "item_weights_settle",
-        "request_quantity", "page_quantity_settle"])
+        "request_quantity", "page_quantity_settle", "request_settle_scale"])
 def test_cost_base_is_valid(cost):
     """Les variantes ci-dessous partent d'une description valide : chacune n'échoue que par sa faute."""
     description = _sellsy()
@@ -723,6 +837,10 @@ def test_cost_base_is_valid(cost):
     {"per": "request", "quantity": -3, "unit": "credits"},
     {"per": "request", "quantity": 2.5, "unit": "credits"},
     {"per": "request", "quantity": "3", "unit": "credits"},
+    {"per": "request", "unit": "microdollars", "settle": {"path": "cost", "scale": 1}},
+    {"per": "request", "unit": "microdollars", "settle": {"path": "cost", "scale": 0}},
+    {"per": "request", "unit": "microdollars", "settle": {"path": "cost", "scale": 1.5}},
+    {"per": "request", "unit": "microdollars", "settle": {"path": "cost", "scale": "1000000"}},
 ], ids=["unknown_per", "item_without_items", "item_without_unit", "items_per_request", "times_per_request",
         "times_without_items", "settle_without_unit", "settle_without_path", "settle_leading_dot", "settle_space",
         "settle_unknown_key", "empty_unit", "items_not_an_identifier", "unknown_key",
@@ -730,7 +848,7 @@ def test_cost_base_is_valid(cost):
         "weights_without_field", "weights_empty_table", "weight_zero", "weight_negative", "weight_not_an_integer",
         "weight_text", "weight_empty_value", "weights_field_not_an_identifier", "weights_unknown_key",
         "quantity_per_item", "quantity_without_unit", "quantity_one", "quantity_zero", "quantity_negative",
-        "quantity_not_an_integer", "quantity_text"])
+        "quantity_not_an_integer", "quantity_text", "scale_one", "scale_zero", "scale_not_an_integer", "scale_text"])
 def test_invalid_cost_is_rejected(cost):
     description = _sellsy()
     _cost(description, **cost)

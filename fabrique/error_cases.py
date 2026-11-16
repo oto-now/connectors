@@ -8,8 +8,8 @@ le schéma et les règles de toute description (la règle 10 comprise), puis la 
 - en TypeScript, `ts/src/error-cases.ts` : le module de ce connecteur (`connector_module`) et la liste des cas, que les
   tests du paquet de l'hôte jouent contre son moteur. Des données de test : l'index ne le réexporte pas, le paquet `ts/`
   l'expose sous `./error-cases` ;
-- en Python, rien : la lib ne lit la table d'erreurs d'aucune description. `tests/test_error_cases.py` joue les cas contre
-  une référence écrite dans le test.
+- en Python, rien : `tests/test_error_cases.py` joue les cas contre le moteur de la lib (`oto.connectors.engine`), un
+  faux tiers rendant la réponse de chaque cas.
 
 `python -m fabrique --check` échoue quand le module TypeScript commité ne suit plus le fichier.
 """

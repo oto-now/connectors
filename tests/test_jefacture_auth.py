@@ -153,3 +153,15 @@ def test_addresses_match_the_description():
     assert auth["token_url"] == ja.TOKEN_URL
     assert tuple(auth["scopes"]) == ja.SCOPES
     assert auth["rotates"] is True
+
+
+def test_chaque_demande_de_jeton_porte_un_user_agent_explicite(token_calls):
+    """Le pare-feu de la plateforme répond 403 (HTML) à `/oauth2/token` quand le
+    User-Agent est celui de `requests` par défaut : chaque demande porte le nôtre."""
+    ja.exchange_code(CID, SECRET, "code", REDIRECT)
+    ja.refresh(CID, SECRET, "RT")
+    ja.client_credentials_token(CID, SECRET)
+    assert len(token_calls) == 3
+    for call in token_calls:
+        assert call["headers"]["User-Agent"] == ja.USER_AGENT
+        assert not call["headers"]["User-Agent"].startswith("python-requests")

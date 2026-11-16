@@ -1,7 +1,7 @@
 # La sortie d'une fonction
 
 - **Statut** : validé par le mainteneur le 29/09/2026 (issu du [format de description](format-de-description.md))
-- **Dernière révision** : 2026-11-03
+- **Dernière révision** : 2026-11-06
 
 ## Résumé
 
@@ -65,7 +65,7 @@ Règles 18 et 19 de la [fabrique](fabrique.md). Le test du schéma fait refuser,
 ## Écart avec le code
 
 - Oto-core applique `items`, `strip` à points et `projection` (relu à son commit f14aa1b, `output.ts`) et refuse à la déclaration un chemin mal formé, en double, sous un autre ou une liste vide ; il ne juge pas qu'un chemin désigne une clé de la réponse (la règle 19 reste à la fabrique). Un paquet antérieur ignore sans bruit un chemin à points, ce qui laisse sortir la clé visée.
-- La lib Python n'applique la sortie d'aucune description (ni `items`, ni `strip`, ni `projection`) : les clients écrits à la main retirent ce qu'ils retirent. `output.sample` n'est lu que par la fabrique.
+- La lib Python applique `items`, `strip` et `projection` pour un hôte qui sert la description (`oto/connectors/serve.py` : `shaped`, `items_of`, `result`), jouée contre les cas communs (`tests/test_strip_cases.py`) ; une page sans sa liste `items` y est refusée (`ServeError`), jamais lue vide, comme dans oto-core. Les clients écrits à la main retirent toujours ce qu'ils retirent. `output.sample` n'est lu que par la fabrique, et ne part pas dans les descriptions servies.
 
 ## Questions ouvertes
 

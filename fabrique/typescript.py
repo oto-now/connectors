@@ -76,7 +76,7 @@ def camel(name: str) -> str:
     return head + "".join(part[:1].upper() + part[1:] for part in rest)
 
 
-def _served_input(function: dict) -> dict:
+def served_input(function: dict) -> dict:
     """L'entrée servie : celle de la description, plus `all_pages` et `max_pages` quand la fonction pagine."""
     served = copy.deepcopy(function["input"])
     if served.get("type") != "object" or served.get("additionalProperties") is not False:
@@ -120,6 +120,8 @@ def _request(call: dict) -> str:
         ("body", js(call.get("body") or {})),
         ("headers", js(call.get("headers") or {})),
     ]
+    if call.get("body_list") is True:
+        entries.append(("bodyList", "true"))
     if "files" in call:
         entries.append(("files", js(call["files"])))
     if "constants" in call:
@@ -160,7 +162,7 @@ def function_definition(connector: str, function: dict) -> str:
     if "handwritten" in function:
         raise NotGenerated("handwritten: the fabrique does not generate it")
     qualified = f"{connector}.{function['name']}"
-    schema = js_block(_served_input(function), 1)
+    schema = js_block(served_input(function), 1)
     examples = [
         "{ title: " + js(example["title"]) + ", input: " + js(example["input"]) + " }"
         for example in function["examples"]
@@ -228,7 +230,8 @@ def _cost(cost: dict) -> str:
     if "unit" in cost:
         parts.append(f"unit: {js(cost['unit'])}")
     if "settle" in cost:
-        parts.append("settle: { path: " + js(cost["settle"]["path"]) + " }")
+        scale = f", scale: {js(cost['settle']['scale'])}" if "scale" in cost["settle"] else ""
+        parts.append("settle: { path: " + js(cost["settle"]["path"]) + scale + " }")
     return "{ " + ", ".join(parts) + " }"
 
 
@@ -257,7 +260,7 @@ def _check(check: dict) -> str:
     return "{ " + ", ".join(f"{key}: {js(value)}" for key, value in check.items()) + " }"
 
 
-def _auth(connector: str, auth: dict) -> str:
+def _auth(connector: str, auth: dict, indent: int = 1) -> str:
     """Les clés du format en camelCase ; les valeurs telles quelles (noms côté API, adresses, noms des niveaux
     d'accès et droits), sauf l'identité lue par une fonction, qualifiée comme la sonde, et les clés de `exchange`."""
     entries = {}
@@ -267,7 +270,7 @@ def _auth(connector: str, auth: dict) -> str:
         elif key == "exchange":
             value = {camel(k): v for k, v in value.items()}
         entries[camel(key)] = value
-    return js_block(entries, 1)
+    return js_block(entries, indent)
 
 
 def _credential_field(field: dict) -> dict:

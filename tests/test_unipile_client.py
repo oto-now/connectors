@@ -834,7 +834,8 @@ def test_hosted_auth_link_v2_body_and_link_key():
     assert "expires_on" in body and "expiresOn" not in body
     assert body["redirect_uri"] == "https://x/ok"     # un seul redirect
     assert "success_redirect_url" not in body and "failure_redirect_url" not in body
-    assert body["name"] == "nonce1" and body["notify_url"] == "https://x/webhook"
+    # v2 rejects v1 leftovers (live 400 since 2026-11-11): none of them is sent
+    assert not {"name", "notify_url", "type", "api_url", "reconnect_account"} & set(body)
 
 
 def test_hosted_auth_link_providers_wildcard_when_none():

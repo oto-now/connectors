@@ -1,58 +1,59 @@
 """Les cas communs de la table d'erreurs (`connectors/_cases/errors.yaml`), joués côté Python, une ligne par cas.
 
-La lib ne lit la table d'erreurs d'aucune description : seul le moteur du paquet de l'hôte le fait. Les cas se jouent
-donc ici contre une référence écrite dans le test, qui dit la sémantique du format (`docs/conception/signal-de-refus.md`) ; le
-paquet de l'hôte joue les mêmes cas, sortis par la fabrique dans `ts/src/error-cases.ts`, contre son moteur.
+Ils se jouent contre le moteur de la lib (`oto.connectors.engine`), qui appelle la fonction des cas devant un faux tiers
+(`engine_fake`) rendant la réponse du cas, à la sémantique du format (`docs/conception/signal-de-refus.md`) : l'entrée
+retenue se lit au refus nommé qu'il lève (`Refused`), un succès à son résultat, un statut que la table ne nomme pas à
+`UpstreamHTTPError`. Le paquet de l'hôte d'oto 2 joue les mêmes cas, sortis par la fabrique dans `ts/src/error-cases.ts`,
+contre son moteur.
 """
 from __future__ import annotations
 
+import json
 import pathlib
 
 import pytest
 import yaml
 
+import engine_fake
 from fabrique import error_cases
 from fabrique.descriptions import DescriptionError
+from oto.connectors import engine
+from oto.connectors.engine import transport
 
 LOADED = error_cases.load()
-ABSENT = object()
 
 
-def _at(value, path: str):
-    """La valeur au chemin pointé, un indice de liste en chiffres ; `ABSENT` quand le chemin ne mène à rien."""
-    for key in path.split("."):
-        if isinstance(value, dict) and key in value:
-            value = value[key]
-        elif isinstance(value, list) and key.isdigit() and int(key) < len(value):
-            value = value[int(key)]
-        else:
-            return ABSENT
-    return value
+@pytest.fixture(autouse=True)
+def _no_wait(monkeypatch):
+    monkeypatch.setattr(transport, "_sleep", lambda seconds: None)
 
 
-def holds(condition: dict, answer: dict) -> bool:
-    """La référence d'une condition sur le corps : `equals`, même type et valeur exacte ; `contains`, un texte qui contient
-    l'un des textes, les deux en minuscules (`str.lower`, comme `toLowerCase`). Un corps qui n'est pas JSON n'a rien."""
-    if "json" not in answer:
-        return False
-    value = _at(answer["json"], condition["path"])
-    if "equals" in condition:
-        return any(type(value) is type(expected) and value == expected for expected in condition["equals"])
-    return isinstance(value, str) and any(text.lower() in value.lower() for text in condition["contains"])
+def _answer(answer: dict) -> dict:
+    """La réponse simulée : un corps JSON (toute valeur), ou un texte."""
+    text = answer["text"] if "text" in answer else json.dumps(answer["json"])
+    return {"status": answer["status"], "headers": {}, "text": text}
 
 
-def selected(errors: list[dict], answer: dict) -> dict | None:
-    """La première entrée dont un statut couvre la réponse et dont la condition tient, quand elle en a une."""
-    for entry in errors:
-        statuses = entry["status"] if isinstance(entry["status"], list) else [entry["status"]]
-        if answer["status"] in statuses and ("body" not in entry or holds(entry["body"], answer)):
-            return {"code": entry["code"], "marks_account": entry.get("marks_account")}
+def selected(answer: dict) -> dict | None:
+    """L'entrée que retient le moteur pour la réponse simulée, en code et marque ; `None` sans entrée (un succès, ou le
+    refus propre du moteur d'un statut que la table ne nomme pas)."""
+    description = LOADED.description.data
+    answers = [_answer(answer)] * (1 + transport.MAX_RETRIES)
+    try:
+        engine_fake.play(description, description["functions"][0]["name"], {"id": "r-1"}, *answers)
+    except engine.Refused as refused:
+        assert refused.status_code == answer["status"]
+        return {"code": refused.code, "marks_account": refused.marks_account}
+    except engine.UpstreamHTTPError as error:
+        assert error.status_code == answer["status"] and not 200 <= answer["status"] < 300
+        return None
+    assert 200 <= answer["status"] < 300
     return None
 
 
 @pytest.mark.parametrize("case", LOADED.cases, ids=[case["name"] for case in LOADED.cases])
 def test_error_case(case):
-    assert selected(LOADED.errors, case["answer"]) == case["entry"]
+    assert selected(case["answer"]) == case["entry"]
 
 
 def test_the_cases_cover_both_operators():

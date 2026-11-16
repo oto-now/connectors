@@ -1,0 +1,192 @@
+# Common cases of the list body: `call.body_list: true`, with the semantics of docs/conception/corps-de-requete.md, the
+# list body (rule 23 of the fabrique, decided 2026-11-11). The host builds the body as it would without the flag (a
+# map, nested or not, after the body constant; or the whole-body argument, as validated), then sends it as the only
+# element of a JSON list: a vendor whose body is a bare array of one task object.
+#
+# Synthetic: no real connector, no vendor, `.test` hosts only. The fabrique assembles `connector` and the functions the
+# cases carry into one description, checked with the schema and the rules of every description (rule 23 included), then
+# converts it as it converts a description: ts/src/list-body-cases.ts for the host package
+# (`@otomata_tech/connectors/list-body-cases`), whose engine builds each request. tests/test_list_body_cases.py plays
+# the cases against the engine of the Python lib (oto.connectors.engine), which sends each request to a fake vendor.
+# A function shared by several cases is written once, with a YAML anchor; the same name is always the same function.
+#
+# A case (`cases`): the arguments of a call (`input`, valid against the function input) and the request the host sends:
+# its path, its query (name and value pairs, in the order of `call.query`), the headers the arguments set (names in
+# lower case) and its JSON body, a list of one object.
+#
+# A rejected input (`rejected`): arguments the input schema of a case function refuses, so that nothing is sent.
+#
+# A refused function (`refused`): a function, valid against the description schema, that rule 23 refuses with this code,
+# and no other rule. The codes, the same on both sides (ts/src/list-body-cases.ts), in the order they are judged:
+# body_list_without_body, body_list_method, body_list_multipart.
+connector:
+  name: list_body_cases
+  label: List body cases
+  namespace: list_body_cases
+  version: 1.0.0
+  api_version: v1
+  base_url: https://api.example.test/v3
+  auth: { kind: basic, username: login, password: password }
+  credential:
+    - { name: login, label: API login, secret: false }
+    - { name: password, label: API password, secret: true }
+  modes: [byo_org]
+  errors:
+    - { status: 429, code: rate_limited, retryable: true, message: "Rate limit reached: retry later." }
+
+cases:
+  # --- A body map, sent as the only element of a list ---------------------------------------------------------------
+  - name: map_in_a_list
+    function: &search_keyword
+      name: search_keyword
+      class: read
+      description: Search the results of one keyword; the vendor takes a list of one task.
+      input:
+        type: object
+        additionalProperties: false
+        required: [engine, keyword]
+        properties:
+          engine: { type: string, enum: [web, maps] }
+          keyword: { type: string }
+          depth: { type: integer, minimum: 1, maximum: 100 }
+          location_code: { type: integer }
+      examples: [{ title: One keyword, input: { engine: web, keyword: alpha } }]
+      call:
+        method: POST
+        path: "/serp/{engine}/live"
+        body: { keyword: keyword, depth: depth, location_code: location_code }
+        body_list: true
+    input: { engine: web, keyword: alpha, depth: 10, location_code: 2250 }
+    request:
+      path: /serp/web/live
+      query: []
+      headers: {}
+      body: [{ keyword: alpha, depth: 10, location_code: 2250 }]
+
+  - name: absent_argument_is_not_sent
+    function: *search_keyword
+    input: { engine: maps, keyword: alpha }
+    request:
+      path: /serp/maps/live
+      query: []
+      headers: {}
+      body: [{ keyword: alpha }]
+
+  # --- A nested map beside a body constant, sent in a list ------------------------------------------------------------
+  - name: nested_map_and_constant_in_a_list
+    function: &find_mentions
+      name: find_mentions
+      class: read
+      description: Find the mentions of a domain; the vendor takes a list of one task, the target nested.
+      input:
+        type: object
+        additionalProperties: false
+        required: [domain]
+        properties:
+          domain: { type: string }
+          limit: { type: integer, minimum: 1, maximum: 1000 }
+      examples: [{ title: One domain, input: { domain: example.test } }]
+      call:
+        method: POST
+        path: /mentions/live
+        body: { target: { domain: domain }, limit: limit }
+        constants: { body: { mode: live } }
+        body_list: true
+    input: { domain: example.test, limit: 20 }
+    request:
+      path: /mentions/live
+      query: []
+      headers: {}
+      body: [{ mode: live, target: { domain: example.test }, limit: 20 }]
+
+  # --- A constant alone is a body -------------------------------------------------------------------------------------
+  - name: constant_alone_in_a_list
+    function:
+      name: read_report
+      class: read
+      description: Read the report of a task; the vendor takes a list of one task, here a constant.
+      input: { type: object, additionalProperties: false, required: [id], properties: { id: { type: string } } }
+      examples: [{ title: One report, input: { id: t-1 } }]
+      call:
+        method: POST
+        path: "/reports/{id}"
+        constants: { body: { all: true } }
+        body_list: true
+    input: { id: t-1 }
+    request:
+      path: /reports/t-1
+      query: []
+      headers: {}
+      body: [{ all: true }]
+
+  # --- The whole-body argument, sent in a list ------------------------------------------------------------------------
+  - name: whole_argument_in_a_list
+    function:
+      name: post_task
+      class: write
+      description: Post one task; the task is the whole body, in a list of one.
+      input:
+        type: object
+        additionalProperties: false
+        required: [task]
+        properties:
+          task:
+            type: object
+            additionalProperties: false
+            required: [target]
+            properties:
+              target: { type: string }
+              max_pages: { type: integer, minimum: 1 }
+      examples: [{ title: One task, input: { task: { target: example.test } } }]
+      call: { method: POST, path: /tasks, body: task, body_list: true }
+    input: { task: { target: example.test, max_pages: 5 } }
+    request:
+      path: /tasks
+      query: []
+      headers: {}
+      body: [{ target: example.test, max_pages: 5 }]
+
+rejected:
+  - name: required_argument_missing
+    function: search_keyword
+    input: { engine: web }
+  - name: argument_out_of_bounds
+    function: search_keyword
+    input: { engine: web, keyword: alpha, depth: 0 }
+
+refused:
+  - name: no_body
+    function:
+      name: list_tasks
+      class: read
+      description: List the tasks.
+      input: { type: object, additionalProperties: false, properties: { tag: { type: string } } }
+      examples: [{ title: All, input: {} }]
+      call: { method: POST, path: /tasks/ready, query: { tag: tag }, body_list: true }
+    refusal: body_list_without_body
+
+  - name: get_sends_no_body
+    function:
+      name: list_tasks
+      class: read
+      description: List the tasks.
+      input: { type: object, additionalProperties: false, properties: { tag: { type: string } } }
+      examples: [{ title: All, input: {} }]
+      call: { method: GET, path: /tasks/ready, body: { tag: tag }, body_list: true }
+    refusal: body_list_method
+
+  - name: with_a_file_part
+    function:
+      name: upload_task
+      class: write
+      description: Upload a file with a task.
+      input:
+        type: object
+        additionalProperties: false
+        required: [file]
+        properties:
+          file: { type: string }
+          title: { type: string }
+      examples: [{ title: One file, input: { file: f-1 } }]
+      call: { method: POST, path: /tasks/upload, body: { title: title }, files: { file: file }, body_list: true }
+    refusal: body_list_multipart

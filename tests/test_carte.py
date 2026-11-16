@@ -26,6 +26,8 @@ KEY_FIELD = {"name": "api_key", "label": "API key", "secret": True}
     ({"auth": {"kind": "oauth2_user"}}, carte.PERSON_OAUTH),
     ({"auth": {"kind": "oauth2_user"}, "credential": [{**KEY_FIELD, "holder": "host"}]}, carte.PERSON_OAUTH),
     ({"auth": {"kind": "oauth2_client_credentials"}, "credential": [KEY_FIELD]}, carte.CLIENT_APPLICATION),
+    ({"auth": {"kind": "oauth2_jwt_bearer"}, "credential": [KEY_FIELD]}, carte.SERVICE_ACCOUNT),
+    ({"auth": {"kind": "oauth2_jwt_bearer"}, "credential": [{**KEY_FIELD, "holder": "host"}]}, carte.SERVICE_ACCOUNT),
     ({"auth": {"kind": "bearer"}, "credential": [{**KEY_FIELD, "holder": "host"}]}, carte.HOST_KEY),
     ({"auth": {"kind": "none"}}, carte.NO_KEY),
     ({"auth": {"kind": "api_key"}, "credential": [KEY_FIELD]}, carte.KEY),

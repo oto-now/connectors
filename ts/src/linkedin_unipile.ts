@@ -1148,7 +1148,7 @@ export const connector = defineConnector({
   name: "linkedin_unipile",
   label: "LinkedIn (Unipile)",
   namespace: "linkedin_unipile",
-  version: "1.3.0",
+  version: "1.3.2",
   apiVersion: "v2",
   baseUrl: "https://api.unipile.com/v2/{account_id}",
   auth: {"kind": "api_key", "in": "header", "name": "X-API-KEY", "key": "api_key"},

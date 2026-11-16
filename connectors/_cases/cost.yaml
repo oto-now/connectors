@@ -2,7 +2,8 @@
 # settled_quantity, collection_of) and in the host package of oto 2 (costOf, settledQuantity, collectionOf), with the
 # semantics of docs/conception/cout-et-solde.md and docs/conception/travaux-longs.md. With quantity,
 # per: request and per: page count quantity units of unit per request sent, in the worst case and in the quantity settled
-# without settle (the requests sent times quantity).
+# without settle (the requests sent times quantity). With settle.scale, the value read times scale, rounded to six
+# decimals then up to an integer, is the quantity settled (a cost read in dollars, settled in microdollars).
 #
 # Synthetic: no real connector, no vendor. The fabrique assembles `connector` and the functions the cases carry
 # (`function`, and `collect` for an asynchronous one) into one description, checked with the schema and the rules of
@@ -458,6 +459,64 @@ cases:
     answers: [{ results: [{ billed: 1 }, { billed: 7 }] }]
     worst_case: { quantity: 2, unit: tags }
     settled: { quantity: 1, unit: tags, from: response, exceeded: false }
+    collection: null
+
+  # --- settle.scale: a decimal amount read, settled in a sub-unit ---------------------------------------------------
+  # The vendor bills in dollars and says the dollars billed as a decimal; the cost counts microdollars: the value read
+  # times scale, rounded to six decimals (float noise), then up to an integer.
+  - name: scale_settles_in_the_sub_unit
+    function: &search_serp
+      name: search_serp
+      class: read
+      description: Search one results page, billed in dollars, the dollars billed in each answer.
+      input: { type: object, additionalProperties: false, required: [q], properties: { q: { type: string } } }
+      examples: [{ title: By text, input: { q: alpha } }]
+      call: { method: POST, path: /serp, body: { q: q } }
+      cost: { per: request, quantity: 2000, unit: microdollars, settle: { path: tasks.0.cost, scale: 1000000 } }
+    args: { q: alpha }
+    answers: [{ tasks: [{ cost: 0.0006 }] }]
+    worst_case: { quantity: 2000, unit: microdollars }
+    settled: { quantity: 600, unit: microdollars, from: response, exceeded: false }
+    collection: null
+
+  - name: scale_float_noise_is_rounded_away
+    function: *search_serp
+    args: { q: alpha }
+    answers: [{ tasks: [{ cost: 1.0000000000000002e-05 }] }]
+    worst_case: { quantity: 2000, unit: microdollars }
+    settled: { quantity: 10, unit: microdollars, from: response, exceeded: false }
+    collection: null
+
+  - name: scale_rounds_up_to_an_integer
+    function: *search_serp
+    args: { q: alpha }
+    answers: [{ tasks: [{ cost: 0.0012345678 }] }]
+    worst_case: { quantity: 2000, unit: microdollars }
+    settled: { quantity: 1235, unit: microdollars, from: response, exceeded: false }
+    collection: null
+
+  - name: scale_zero_is_zero
+    function: *search_serp
+    args: { q: alpha }
+    answers: [{ tasks: [{ cost: 0 }] }]
+    worst_case: { quantity: 2000, unit: microdollars }
+    settled: { quantity: 0, unit: microdollars, from: response, exceeded: false }
+    collection: null
+
+  - name: scale_above_worst_case
+    function: *search_serp
+    args: { q: alpha }
+    answers: [{ tasks: [{ cost: 0.0025 }] }]
+    worst_case: { quantity: 2000, unit: microdollars }
+    settled: { quantity: 2500, unit: microdollars, from: response, exceeded: true }
+    collection: null
+
+  - name: scale_unreadable_settles_the_worst_case
+    function: *search_serp
+    args: { q: alpha }
+    answers: [{ tasks: [{ cost: "0.0006" }] }]
+    worst_case: { quantity: 2000, unit: microdollars }
+    settled: { quantity: 2000, unit: microdollars, from: unreadable, exceeded: false }
     collection: null
 
   # --- weights ---------------------------------------------------------------------------------------------------

@@ -421,7 +421,7 @@
       "required": ["kind"],
       "properties": {
         "kind": {
-          "enum": ["api_key", "bearer", "basic", "oauth2_client_credentials", "oauth2_user", "none"]
+          "enum": ["api_key", "bearer", "basic", "oauth2_client_credentials", "oauth2_user", "oauth2_jwt_bearer", "none"]
         }
       },
       "oneOf": [
@@ -566,6 +566,31 @@
           "additionalProperties": false
         },
         {
+          "description": "A service account (JWT bearer, RFC 7523): the host signs an assertion with the account's private key (RS256) and exchanges it at token_url for an access token, sent as a bearer token. The credential is a single secret field, the service account's whole JSON key file.",
+          "properties": {
+            "kind": { "const": "oauth2_jwt_bearer" },
+            "token_url": { "description": "Fixed https token endpoint, the audience of the assertion: never a template nor a query. A key whose token_uri differs is refused.", "type": "string", "pattern": "^https://[^\\s{}?#]*[^/\\s{}?#]$" },
+            "scopes": { "description": "Joined by spaces in the scope claim of the assertion. Exclusive of access_levels: a connector without levels keeps scopes, and that is its full level.", "$ref": "#/$defs/scope_list" },
+            "access_levels": { "$ref": "#/$defs/access_levels" },
+            "scope_implies": {
+              "description": "With access_levels: a scope that covers others, as the provider defines it. Never a guessed rule: a broad scope covers a narrower one only when this file says so.",
+              "type": "object",
+              "minProperties": 1,
+              "propertyNames": { "minLength": 1 },
+              "additionalProperties": { "$ref": "#/$defs/scope_list" }
+            },
+            "default_level": {
+              "description": "With access_levels: the level of an account whose organisation or team chose none, instead of full. No consent is asked: the level only decides the scope claim of the assertion, so a host that changes it signs the next assertion with the scopes of the new level.",
+              "$ref": "#/$defs/identifier"
+            },
+            "key": { "description": "Credential field holding the whole JSON key file of the service account (client_email, private_key, optional private_key_id and token_uri).", "$ref": "#/$defs/identifier" }
+          },
+          "required": ["kind", "token_url", "key"],
+          "oneOf": [{ "required": ["scopes"] }, { "required": ["access_levels"] }],
+          "dependentRequired": { "scope_implies": ["access_levels"], "default_level": ["access_levels"] },
+          "additionalProperties": false
+        },
+        {
           "properties": { "kind": { "const": "none" } },
           "required": ["kind"],
           "additionalProperties": false
@@ -583,7 +608,7 @@
       "items": { "$ref": "#/$defs/text" }
     },
     "access_levels": {
-      "description": "Named access levels of a consent. full is required and filters nothing; any other name (read, support...) is a restricted level. Each level lists the scopes its consent asks for. The host picks one per organisation or team; a function is served at a level when each of its scopes is a scope of the level or implied by one (scope_implies).",
+      "description": "Named access levels of a consent (oauth2_user) or of a service account (oauth2_jwt_bearer). full is required and filters nothing; any other name (read, support...) is a restricted level. Each level lists the scopes its consent asks for, or that the assertion of a service account claims. The host picks one per organisation or team, full by default unless auth.default_level names another; a function is served at a level when each of its scopes is a scope of the level or implied by one (scope_implies).",
       "type": "object",
       "required": ["full"],
       "minProperties": 2,
@@ -690,6 +715,10 @@
           "description": "Whether the function commits or destroys (send, trash, archive, move): the host serves it as <connector>_act.<function>. Defaults from class: read false, write and sensitive true; a mere preparation, such as a draft, declares false. Never false on a sensitive function, never true on a read one.",
           "type": "boolean"
         },
+        "effect": {
+          "description": "What a sensitive function does once confirmed: send (something leaves towards a third party, a message, leads enrolled in a running campaign) or destroy (deletes, stops for good, replaces without keeping). Sensitive functions only, no default; a host that serves sensitive functions by effect refuses one without it.",
+          "enum": ["send", "destroy"]
+        },
         "description": { "description": "What the agent reads, in English; at most 1000 characters.", "$ref": "#/$defs/text", "maxLength": 1000 },
         "timeout_s": {
           "description": "Timeout of one call of this function, in seconds, in place of the connector's: longer or shorter, never equal to it. Each page of a paginated read is one call.",
@@ -794,6 +823,10 @@
             "body": {
               "description": "JSON body, whatever the method: a DELETE may carry one. A map of API-side names to input arguments, nested maps allowed (rule 22 of the fabrique), or the name of one input argument, a strict object (type: object, additionalProperties: false, properties declared) that is the whole body, sent as validated (rule 20 of the fabrique).",
               "oneOf": [{ "$ref": "#/$defs/body_map" }, { "$ref": "#/$defs/identifier" }]
+            },
+            "body_list": {
+              "description": "true: the JSON body built (a map, nested or not, with its constants, or the whole-body argument) is sent as the only element of a JSON list, for a vendor whose body is a bare array of one object (rule 23 of the fabrique). Requires a body; never with files.",
+              "const": true
             },
             "headers": { "$ref": "#/$defs/argument_map" },
             "files": {
@@ -908,7 +941,12 @@
               "additionalProperties": false,
               "required": ["path"],
               "properties": {
-                "path": { "$ref": "#/$defs/dotted_path" }
+                "path": { "$ref": "#/$defs/dotted_path" },
+                "scale": {
+                  "description": "The factor from the value read to unit, an integer of two or more: the quantity settled is the value times scale, rounded to six decimals then up to an integer (a cost read in dollars, settled in microdollars: scale 1000000).",
+                  "type": "integer",
+                  "minimum": 2
+                }
               }
             }
           },
@@ -945,6 +983,11 @@
         {
           "if": { "properties": { "class": { "const": "sensitive" } } },
           "then": { "required": ["confirm"] }
+        },
+        {
+          "$comment": "effect is said of a sensitive function only.",
+          "if": { "required": ["effect"] },
+          "then": { "properties": { "class": { "const": "sensitive" } } }
         },
         {
           "$comment": "An asynchronous function whose cost is settled says within how long its quantity is collected, or that the vendor sets no deadline.",

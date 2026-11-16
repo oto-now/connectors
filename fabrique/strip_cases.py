@@ -12,8 +12,8 @@ comme une description :
   règle 18, la liste des cas et celle des sorties refusées par la règle 18 (celles de la règle 19 jugent l'exemple, que
   l'hôte ne voit jamais : elles ne sortent pas), que les tests du paquet de l'hôte jouent contre son moteur. Des données de
   test : l'index ne le réexporte pas, le paquet `ts/` l'expose sous `./strip-cases` ;
-- en Python, rien : la lib n'applique la sortie d'aucune description. `tests/test_strip_cases.py` joue les cas contre
-  une référence écrite dans le test.
+- en Python, rien : `tests/test_strip_cases.py` joue les cas contre le moteur de la lib (`oto.connectors.engine`), un
+  faux tiers rendant la réponse de chaque cas.
 
 `python -m fabrique --check` échoue quand le module TypeScript commité ne suit plus le fichier.
 """

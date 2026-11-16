@@ -101,7 +101,7 @@ METHODS = {
     "list_quotes", "get_quote", "update_quote", "delete_quote", "validate_quote",
     "list_invoices", "get_invoice", "update_invoice", "validate_invoice", "pay_invoice",
     "create_credit_note",
-    "list_payments", "get_payment", "update_payment",
+    "list_payments", "get_payment", "update_payment", "get_treatment_provider",
     "list_payment_mediums", "get_payment_medium", "create_payment_medium",
     "update_payment_medium", "delete_payment_medium",
     "get_appointment_income_statistics", "list_treatment_type_statistics",
@@ -246,6 +246,10 @@ def test_api_key_goes_in_bearer_header_never_in_params(calls, client):
      f"/v4/clinics/{A}/global_products", {"limit": 50, "offset": 0, "search": "zzz"}),
     ("list_payments", (A,), {"invoice_id": B}, "GET", f"/v4/clinics/{A}/payments",
      {"limit": 50, "offset": 0, "invoice": B}),
+    ("list_payments", (A,), {"paid_from": "2026-10-01", "paid_to": "2026-10-31",
+                             "limit": 100}, "GET", f"/v4/clinics/{A}/payments",
+     {"limit": 100, "offset": 0, "payment_time__gte": "2026-10-01",
+      "payment_time__lte": "2026-10-31"}),
     ("get_payment", (A,), {}, "GET", f"/v4/payments/{A}", {}),
     ("list_payment_mediums", (A,), {}, "GET", f"/v4/clinics/{A}/payment_mediums",
      {"limit": 50, "offset": 0}),
@@ -558,3 +562,110 @@ def test_billed_counts_refuse_an_unknown_filter_and_an_unexpected_answer(calls, 
     calls.responses.append(_Resp({"detail": "x"}))
     with pytest.raises(ValueError, match="data"):
         client.list_appointment_billed_counts(A)
+
+
+# --- les encaissements par praticien : la période côté API, le praticien réduit ------
+
+#: Un soin tel que l'API le rend (champs du schéma OpenAPI, valeurs inventées) : du
+#: contenu médical, un patient par sa consultation, et un praticien complet.
+_TREATMENT = {
+    "id": A, "created_time": "2026-10-02T09:00:00Z", "modified_time": "2026-10-02T09:00:00Z",
+    "consultation": B, "treatment_type": B, "treatment_pricing": B, "pricing": "90.00",
+    "quantity": 1, "treatment_time": "2026-10-02T10:00:00Z", "notes": "NOTE CLINIQUE",
+    "zone": "ZONE TRAITEE", "text": "TEXTE LIBRE", "quote": None, "consent_form": B,
+    "invoice": B, "is_copilot_ai": False,
+    "secretary": {"id": B, "first_name": "Secretaire", "last_name": "Fictive"},
+    "assistant": {"id": B, "first_name": "Assistant", "last_name": "Fictif"},
+    "provider": {
+        "id": A, "user_id": B, "first_name": "Praticien", "last_name": "Fictif",
+        "email": "praticien@example.test", "preferred_language": "fr",
+        "photograph": {"media_file": "https://files.example.test/p.jpg"},
+        "preview_photograph": {"media_file": "https://files.example.test/pp.jpg"},
+        "speciality": "SPECIALITE", "kind": 1, "color": "#000000",
+        "clinic": {"id": B, "name": "Clinique Fictive"}, "permissions": ["x"],
+        "id_no_1": "NUMERO-PRO-1", "id_no_2": "NUMERO-PRO-2", "id_no_3": "NUMERO-PRO-3",
+        "visit_type_category": {"id": B}, "visit_types": [B], "is_active": "true",
+        "is_disabled": False, "is_admin": False, "is_assistant": False,
+        "has_copilot_ai_access": False, "display_in_calendar_provider_view": True,
+        "activate_online_booking": True, "display_in_appointment_page": True,
+        "display_in_patient_ownership_dropdown": True,
+    },
+}
+
+
+def test_treatment_provider_keeps_only_the_practitioner_id_and_name(calls, client):
+    calls.responses.append(_Resp({"data": _TREATMENT}))
+    out = client.get_treatment_provider(A)
+    assert (calls[0]["method"], calls[0]["url"]) == ("GET", f"{BASE}/v4/treatments/{A}")
+    assert out == {"data": {"id": A, "invoice": B, "provider": {
+        "id": A, "first_name": "Praticien", "last_name": "Fictif"}}}
+    text = json.dumps(out)
+    for leaked in ("NOTE", "ZONE", "TEXTE", "SPECIALITE", "NUMERO-PRO", "example.test",
+                   "Clinique", "Secretaire", "Assistant", "90.00", "2026-10-02"):
+        assert leaked not in text, leaked
+
+
+def test_treatment_provider_is_an_allow_list(calls, client):
+    """A field Nextmotion would add, to the treatment or to its provider, never goes out."""
+    added = {**_TREATMENT, "diagnosis": "NOUVEAU",
+             "provider": {**_TREATMENT["provider"], "phone_number": "NOUVEAU"}}
+    calls.responses.append(_Resp({"data": added}))
+    out = client.get_treatment_provider(A)
+    assert set(out["data"]) == {"id", "invoice", "provider"}
+    assert set(out["data"]["provider"]) == {"id", "first_name", "last_name"}
+    assert "NOUVEAU" not in json.dumps(out)
+
+
+def test_treatment_without_provider_says_none(calls, client):
+    calls.responses.append(_Resp({"data": {**_TREATMENT, "provider": None}}))
+    assert client.get_treatment_provider(A)["data"]["provider"] is None
+
+
+@pytest.mark.parametrize("answer", [{"detail": "x"}, {"data": [_TREATMENT]},
+                                    {"data": {**_TREATMENT, "provider": "x"}}])
+def test_treatment_provider_refuses_an_unexpected_answer(calls, client, answer):
+    calls.responses.append(_Resp(answer))
+    with pytest.raises(ValueError, match="unexpected"):
+        client.get_treatment_provider(A)
+
+
+def test_treatment_provider_refuses_a_non_uuid_before_the_request(calls, client):
+    with pytest.raises(ValueError, match="UUID"):
+        client.get_treatment_provider("../x")
+    assert not calls
+
+
+# --- la description suit le client sur list_payments ----------------------------------
+
+def _description():
+    import pathlib
+
+    import yaml
+
+    path = pathlib.Path(__file__).parents[1] / "connectors" / "nextmotion" / "connector.yaml"
+    return yaml.safe_load(path.read_text())
+
+
+def test_description_of_list_payments_follows_the_client(calls, client):
+    import inspect
+
+    fn = next(f for f in _description()["functions"] if f["name"] == "list_payments")
+    params = set(inspect.signature(NextmotionClient.list_payments).parameters) - {"self"}
+    assert set(fn["input"]["properties"]) == params
+    assert fn["call"]["query"] == {"invoice": "invoice_id", "payment_time__gte": "paid_from",
+                                   "payment_time__lte": "paid_to", "limit": "limit",
+                                   "offset": "offset"}
+    args = {"invoice_id": B, "paid_from": "2026-10-01", "paid_to": "2026-10-31",
+            "limit": 20, "offset": 40}
+    client.list_payments(A, **args)
+    assert calls[0]["params"] == {api: args[arg] for api, arg in fn["call"]["query"].items()}
+    # The answer of the API passes as it is: no key added nor removed by the description.
+    assert "output" not in fn
+
+
+def test_no_described_function_reads_a_treatment_record():
+    """The practitioner lookup stays in the client: the format could only reduce the
+    treatment record by a deny-list (strip), which would let a new field through."""
+    for fn in _description()["functions"]:
+        path = fn.get("call", {}).get("path", "")
+        assert not path.startswith("/v4/treatments/"), fn["name"]

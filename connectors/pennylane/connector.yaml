@@ -13,8 +13,18 @@
 # importing a supplier invoice from it (POST /supplier_invoices/import), which
 # depend on that upload (the multipart body can be said, but an uploaded file
 # alone would return an id that no described function reads; the import will
-# come with it); categorizing an invoice or a ledger entry line
-# (PUT .../categories), whose body is a list at the top level.
+# come with it); categorizing an invoice, a ledger entry line, a bank
+# transaction, a customer or a supplier (PUT .../categories), whose body is a
+# list at the top level, which the format cannot say yet (corps-de-requete.md):
+# the Python client serves it (categorize).
+# Left out by choice, 2026-11-09 (OpenAPI read on that day): webhooks,
+# GoCardless and pro account mandates, e-invoicing (sending to a platform,
+# registrations, e-invoice imports and statuses), multipart imports and
+# uploads (customer invoices, purchase requests, appendices), and the writes on
+# billing subscriptions, commercial documents and SEPA mandates, which wait for
+# a need. Bank accounts are read only: creating one is left out too.
+# list_changes declares no pagination: Pennylane refuses start_date and cursor
+# together (400), and the format cannot drop an argument once the cursor is set.
 # The Python client's fetch_complete_data (several calls), the only_outstanding
 # option of the transactions (a local filter) and its two duplicate searches by
 # external_reference (served here by the filter of the list functions) stay out
@@ -30,7 +40,7 @@ connector:
   name: pennylane
   label: Pennylane
   namespace: pennylane
-  version: 2.1.0
+  version: 2.2.0
   api_version: v2
   base_url: https://app.pennylane.com/api/external/v2
   auth:
@@ -1945,6 +1955,1890 @@ functions:
       method: POST
       path: /supplier_invoices/{invoice_id}/matched_transactions
       body: { transaction_id: transaction_id }
+    cost: { per: request }
+
+  - name: list_bank_accounts
+    class: read
+    description: >-
+      List the company's bank accounts with their current balance: id, name,
+      currency, balance, bank_establishment {id}, journal and ledger_account.
+      balance is a decimal string as Pennylane holds it ("12345.67"): parse it
+      as a decimal, never a float, before adding up. Pennylane exposes no IBAN
+      and no bank sync date on an account; updated_at is when the record last
+      changed, not proof that the bank feed ran. The bank's name is read with
+      list_bank_establishments. Scope bank_accounts:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        limit: *limit
+        cursor: *cursor
+        sort: &sort_id { enum: [id, -id], description: "Prefix with - for descending order (the default)." }
+    examples:
+      - title: All bank accounts and their balances
+        input: {}
+    call:
+      method: GET
+      path: /bank_accounts
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_bank_account
+    class: read
+    description: >-
+      Get one bank account and its current balance, a decimal string
+      ("12345.67"). Scope bank_accounts:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [bank_account_id]
+      properties:
+        bank_account_id: *id
+    examples:
+      - title: One bank account
+        input: { bank_account_id: 501 }
+    refusals:
+      - { code: bank_account_not_found, when: 404, message: "No bank account with this id in this Pennylane company." }
+    call: { method: GET, path: "/bank_accounts/{bank_account_id}" }
+    cost: { per: request }
+
+  - name: list_bank_establishments
+    class: read
+    description: >-
+      List the bank establishments {id, name}: the bank behind each account
+      (bank_establishment.id of a bank account). Filter on id to name only
+      the banks of the accounts read. Scope bank_establishments:readonly,
+      distinct from bank_accounts:readonly: a key can read balances without
+      it.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        filter:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [field, operator, value]
+            properties:
+              field: { enum: [id] }
+              operator: *operator
+              value: *clause_value
+            allOf: [*in_takes_a_list]
+          description: >-
+            Clauses that must all hold, each {field, operator, value}; in
+            and not_in take a list. Field: id (lt, lteq, gt, gteq, eq,
+            not_eq, in, not_in).
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: The banks of two accounts
+        input: { filter: [{ field: id, operator: in, value: [11, 12] }] }
+    call:
+      method: GET
+      path: /bank_establishments
+      query: { filter: filter, limit: limit, cursor: cursor, sort: sort }
+      encode: { filter: json }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_transaction
+    class: read
+    description: >-
+      Get one bank transaction: amount, date, label, bank_account,
+      outstanding_balance (non-zero while not fully matched), customer or
+      supplier, categories and matched_invoices. Scope
+      transactions:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [transaction_id]
+      properties:
+        transaction_id: *id
+    examples:
+      - title: One transaction
+        input: { transaction_id: 30001 }
+    refusals:
+      - &transaction_not_found { code: transaction_not_found, when: 404, message: "No bank transaction with this id in this Pennylane company." }
+    call: { method: GET, path: "/transactions/{transaction_id}" }
+    cost: { per: request }
+
+  - name: create_transaction
+    class: write
+    description: >-
+      Record a bank transaction on a bank account by hand, e.g. for an
+      account without a bank feed. amount is a decimal string, negative for
+      money out ("-120.50"). A transaction the bank feed also brings would
+      be recorded twice: check list_transactions on the account and date
+      first. Scope transactions:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [bank_account_id, label, date, amount]
+      properties:
+        bank_account_id: *id
+        label: { type: string, minLength: 1 }
+        date: *date
+        amount: *decimal
+        fee: *decimal
+    examples:
+      - title: A manual incoming payment
+        input: { bank_account_id: 501, label: Cheque deposit, date: "2026-10-06", amount: "250.00" }
+    call:
+      method: POST
+      path: /transactions
+      body: { bank_account_id: bank_account_id, label: label, date: date, amount: amount, fee: fee }
+    cost: { per: request }
+
+  - name: update_transaction
+    class: write
+    description: >-
+      Attach a bank transaction to a customer or to a supplier (one of the
+      two per call), or detach it with null. Matching it to an invoice is
+      match_customer_invoice_transaction or
+      match_supplier_invoice_transaction. Scope transactions:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [transaction_id]
+      properties:
+        transaction_id: *id
+        customer_id: { type: [integer, "null"], minimum: 1, description: "The customer, or null to detach." }
+        supplier_id: { type: [integer, "null"], minimum: 1, description: "The supplier, or null to detach." }
+      oneOf:
+        - { required: [customer_id] }
+        - { required: [supplier_id] }
+    examples:
+      - title: Attach a transaction to a supplier
+        input: { transaction_id: 30002, supplier_id: 4001 }
+    refusals:
+      - *transaction_not_found
+    call:
+      method: PUT
+      path: /transactions/{transaction_id}
+      body: { customer_id: customer_id, supplier_id: supplier_id }
+    cost: { per: request }
+
+  - name: list_transaction_categories
+    class: read
+    description: >-
+      List the analytical categories of one bank transaction, each with its
+      weight (a string between 0 and 1). Scope transactions:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [transaction_id]
+      properties:
+        transaction_id: *id
+        limit: *limit
+        cursor: *cursor
+    examples:
+      - title: Categories of a transaction
+        input: { transaction_id: 30001 }
+    call:
+      method: GET
+      path: /transactions/{transaction_id}/categories
+      query: { limit: limit, cursor: cursor }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_transaction_matched_invoices
+    class: read
+    description: >-
+      List the invoices matched to one bank transaction, each {id, type,
+      url}: type tells a customer invoice from a supplier invoice. Scope
+      transactions:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [transaction_id]
+      properties:
+        transaction_id: *id
+        limit: *limit
+        cursor: *cursor
+    examples:
+      - title: Invoices matched to a transaction
+        input: { transaction_id: 30001 }
+    call:
+      method: GET
+      path: /transactions/{transaction_id}/matched_invoices
+      query: { limit: limit, cursor: cursor }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_changes
+    class: read
+    description: >-
+      List what changed on one kind of object ({id, operation, processed_at}),
+      oldest first, to sync without reading everything again. Pennylane keeps
+      four weeks of changes: an older start_date is refused (422). Pass
+      start_date for the first page, then only cursor (next_cursor): both
+      together are refused (400). Scope: the read scope of the object
+      (transactions:readonly for transactions, ledger_entries:readonly for
+      the four ledger kinds...).
+    input:
+      type: object
+      additionalProperties: false
+      required: [resource]
+      properties:
+        resource:
+          enum: [transactions, customer_invoices, supplier_invoices, customers, suppliers,
+                 products, quotes, ledger_entries, ledger_entry_lines,
+                 ledger_entries_categories, ledger_entry_lines_categories]
+          description: "The kind of object whose changes are listed."
+        start_date: { type: string, format: date-time, description: "RFC 3339, within the last four weeks; never with cursor." }
+        limit: { type: integer, minimum: 1, maximum: 1000, default: 1000 }
+        cursor: { type: string, description: "next_cursor of the previous page; never with start_date." }
+      not: { required: [start_date, cursor] }
+    examples:
+      - title: Transactions changed since the first of November
+        input: { resource: transactions, start_date: "2026-11-01T00:00:00Z" }
+    call:
+      method: GET
+      path: /changelogs/{resource}
+      query: { start_date: start_date, limit: limit, cursor: cursor }
+    output: *list_output
+    cost: { per: request }
+
+  # --- Invoices: payments, installments, matching, attachments ----------------
+
+  - name: get_customer_invoice
+    class: read
+    description: >-
+      Get one customer invoice or credit note: status, paid,
+      remaining_amount_with_tax, amounts, customer, lines, payments,
+      installments, matched_transactions, public_file_url (the PDF).
+      Scope customer_invoices:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+    examples:
+      - title: One customer invoice
+        input: { invoice_id: 5001 }
+    refusals:
+      - &customer_invoice_not_found { code: customer_invoice_not_found, when: 404, message: "No customer invoice with this id in this Pennylane company." }
+    call: { method: GET, path: "/customer_invoices/{invoice_id}" }
+    cost: { per: request }
+
+  - name: list_customer_invoice_payments
+    class: read
+    description: >-
+      List the payments recorded on one customer invoice ({id, label,
+      currency_amount, status}). Scope customer_invoices:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Payments of a customer invoice
+        input: { invoice_id: 5001 }
+    call:
+      method: GET
+      path: /customer_invoices/{invoice_id}/payments
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_supplier_invoice_payments
+    class: read
+    description: >-
+      List the payments recorded on one supplier invoice ({id, label,
+      currency_amount, status}). Scope supplier_invoices:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Payments of a supplier invoice
+        input: { invoice_id: 8001 }
+    call:
+      method: GET
+      path: /supplier_invoices/{invoice_id}/payments
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_customer_invoice_installments
+    class: read
+    description: >-
+      List the installments of one customer invoice, by deadline: amount,
+      deadline, status, remaining_amount_with_tax, payment_methods. The
+      installment ids are what mark_customer_invoice_installment_paid takes.
+      Scope customer_invoices:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: { enum: [deadline, -deadline], description: "deadline ascending by default." }
+    examples:
+      - title: Installments of an invoice
+        input: { invoice_id: 5001 }
+    call:
+      method: GET
+      path: /customer_invoices/{invoice_id}/installments
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: mark_customer_invoice_installment_paid
+    class: write
+    description: >-
+      Mark one installment of a customer invoice as paid; once every
+      installment is paid, the invoice is paid too. Pennylane matches no
+      transaction then, and the API offers no way back: when the payment is
+      on the bank account, match the transaction instead. Needs a plan with
+      installments (get_company_features), else 403. Scope
+      customer_invoices:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id, installment_id]
+      properties:
+        invoice_id: *id
+        installment_id: { type: integer, minimum: 1, description: "From list_customer_invoice_installments." }
+    examples:
+      - title: Mark the first installment paid
+        input: { invoice_id: 5001, installment_id: 61 }
+    call: { method: PUT, path: "/customer_invoices/{invoice_id}/installments/{installment_id}/mark_as_paid" }
+    cost: { per: request }
+
+  - name: mark_customer_invoice_paid
+    class: write
+    description: >-
+      Mark a finalized customer invoice as paid, e.g. paid in cash or by a
+      channel without a bank transaction. Pennylane matches no transaction
+      then, and the API offers no way back: when the payment is on the bank
+      account, match the transaction instead
+      (match_customer_invoice_transaction). Scope customer_invoices:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+    examples:
+      - title: Mark an invoice paid
+        input: { invoice_id: 5001 }
+    refusals:
+      - *customer_invoice_not_found
+    call: { method: PUT, path: "/customer_invoices/{invoice_id}/mark_as_paid" }
+    cost: { per: request }
+
+  - name: list_customer_invoice_matched_transactions
+    class: read
+    description: >-
+      List the bank transactions matched to one customer invoice. The ids
+      are what unmatch_customer_invoice_transaction takes. Scope
+      customer_invoices:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Transactions matched to an invoice
+        input: { invoice_id: 5001 }
+    call:
+      method: GET
+      path: /customer_invoices/{invoice_id}/matched_transactions
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_supplier_invoice_matched_transactions
+    class: read
+    description: >-
+      List the bank transactions matched to one supplier invoice. The ids
+      are what unmatch_supplier_invoice_transaction takes. Scope
+      supplier_invoices:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Transactions matched to a supplier invoice
+        input: { invoice_id: 8001 }
+    call:
+      method: GET
+      path: /supplier_invoices/{invoice_id}/matched_transactions
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: unmatch_customer_invoice_transaction
+    class: sensitive
+    effect: destroy
+    description: >-
+      Remove the match between a bank transaction and a customer invoice:
+      the invoice may go back to unpaid or late, and Pennylane may remind
+      the customer. Not applicable to a draft. Restoring it is
+      match_customer_invoice_transaction with the same ids. Scope
+      customer_invoices:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id, transaction_id]
+      properties:
+        invoice_id: *id
+        transaction_id: *id
+    examples:
+      - title: Unmatch a wrong transaction
+        input: { invoice_id: 5001, transaction_id: 30001 }
+    confirm:
+      summary: "Unmatch transaction {transaction_id} from customer invoice {invoice_id}: the invoice may read unpaid again."
+    call: { method: DELETE, path: "/customer_invoices/{invoice_id}/matched_transactions/{transaction_id}" }
+    cost: { per: request }
+
+  - name: unmatch_supplier_invoice_transaction
+    class: sensitive
+    effect: destroy
+    description: >-
+      Remove the match between a bank transaction and a supplier invoice:
+      the invoice may go back to unpaid. Restoring it is
+      match_supplier_invoice_transaction with the same ids. Scope
+      supplier_invoices:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id, transaction_id]
+      properties:
+        invoice_id: *id
+        transaction_id: *id
+    examples:
+      - title: Unmatch a wrong transaction
+        input: { invoice_id: 8001, transaction_id: 30002 }
+    confirm:
+      summary: "Unmatch transaction {transaction_id} from supplier invoice {invoice_id}: the invoice may read unpaid again."
+    call: { method: DELETE, path: "/supplier_invoices/{invoice_id}/matched_transactions/{transaction_id}" }
+    cost: { per: request }
+
+  - name: update_supplier_invoice_payment_status
+    class: write
+    description: >-
+      Set the payment status of a supplier invoice: paid or to_be_paid,
+      e.g. paid by the manager's own card, with no bank transaction to
+      match. Scope supplier_invoices:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id, payment_status]
+      properties:
+        invoice_id: *id
+        payment_status: { enum: [paid, to_be_paid] }
+    examples:
+      - title: Mark a supplier invoice paid
+        input: { invoice_id: 8001, payment_status: paid }
+    refusals:
+      - *supplier_invoice_not_found
+    call:
+      method: PUT
+      path: /supplier_invoices/{invoice_id}/payment_status
+      body: { payment_status: payment_status }
+    cost: { per: request }
+
+  - name: list_customer_invoice_appendices
+    class: read
+    description: >-
+      List the files appended to one customer invoice ({id, filename, url}).
+      Scope customer_invoices:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+        limit: *limit
+        cursor: *cursor
+    examples:
+      - title: Appendices of an invoice
+        input: { invoice_id: 5001 }
+    call:
+      method: GET
+      path: /customer_invoices/{invoice_id}/appendices
+      query: { limit: limit, cursor: cursor }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_customer_invoice_custom_header_fields
+    class: read
+    description: >-
+      List the custom header fields of one customer invoice ({id, title,
+      value, rank}), printed at the top of the PDF. Scope
+      customer_invoices:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [invoice_id]
+      properties:
+        invoice_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Custom header fields of an invoice
+        input: { invoice_id: 5001 }
+    call:
+      method: GET
+      path: /customer_invoices/{invoice_id}/custom_header_fields
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  # --- Reference data: analytics, journals, chart of accounts, products -------
+
+  - name: list_category_group_categories
+    class: read
+    description: >-
+      List the categories of one analytical axis (category group). Scope
+      categories:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [category_group_id]
+      properties:
+        category_group_id: *id
+        limit: *limit
+        cursor: *cursor
+    examples:
+      - title: Categories of one axis
+        input: { category_group_id: 71 }
+    call:
+      method: GET
+      path: /category_groups/{category_group_id}/categories
+      query: { limit: limit, cursor: cursor }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_category_group
+    class: read
+    description: >-
+      Get one analytical axis (category group) with its kind and its
+      categories. Scope categories:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [category_group_id]
+      properties:
+        category_group_id: *id
+    examples:
+      - title: One axis
+        input: { category_group_id: 71 }
+    call: { method: GET, path: "/category_groups/{category_group_id}" }
+    cost: { per: request }
+
+  - name: create_category_group
+    class: write
+    description: >-
+      Create an analytical axis (category group). kind: profit_and_loss
+      (revenue and expense analysis), treasury (cash in and out) or
+      building. Look the axes up first (list_category_groups): the API
+      cannot delete one. Scope categories:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [label]
+      properties:
+        label: { type: string, minLength: 1, maxLength: 2000 }
+        kind: &category_group_kind { enum: [profit_and_loss, treasury, building] }
+    examples:
+      - title: A projects axis
+        input: { label: Projects, kind: profit_and_loss }
+    call:
+      method: POST
+      path: /category_groups
+      body: { label: label, kind: kind }
+    cost: { per: request }
+
+  - name: update_category_group
+    class: write
+    description: >-
+      Rename an analytical axis or change its kind. label is required by
+      Pennylane even when unchanged. Scope categories:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [category_group_id, label]
+      properties:
+        category_group_id: *id
+        label: { type: string, minLength: 1, maxLength: 2000 }
+        kind: *category_group_kind
+    examples:
+      - title: Rename an axis
+        input: { category_group_id: 71, label: Client projects }
+    call:
+      method: PUT
+      path: /category_groups/{category_group_id}
+      body: { label: label, kind: kind }
+    cost: { per: request }
+
+  - name: get_category
+    class: read
+    description: >-
+      Get one analytical category: label, category_group, analytical_code,
+      direction (treasury categories) and ledger_account. Scope
+      categories:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [category_id]
+      properties:
+        category_id: *id
+    examples:
+      - title: One category
+        input: { category_id: 7101 }
+    call: { method: GET, path: "/categories/{category_id}" }
+    cost: { per: request }
+
+  - name: create_category
+    class: write
+    description: >-
+      Create an analytical category in an axis (category group). direction
+      only applies to a treasury axis (cash_out when absent).
+      ledger_account_id is only accepted in an axis with self-service
+      accounting, and never a bank, pending or cash account. Look the
+      categories up first (list_categories): the API cannot delete one.
+      Scope categories:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [label, category_group_id]
+      properties:
+        label: { type: string, minLength: 1 }
+        category_group_id: *id
+        direction: &direction { enum: [cash_in, cash_out], description: "Treasury axes only." }
+        analytical_code: { type: string }
+        ledger_account_id: *id
+    examples:
+      - title: A project in the projects axis
+        input: { label: Website redesign, category_group_id: 71, analytical_code: P-042 }
+    call:
+      method: POST
+      path: /categories
+      body: { label: label, category_group_id: category_group_id, direction: direction,
+              analytical_code: analytical_code, ledger_account_id: ledger_account_id }
+    cost: { per: request }
+
+  - name: update_category
+    class: write
+    description: >-
+      Change an analytical category: label, direction (treasury axes),
+      analytical_code (not in a structured analytical axis),
+      ledger_account_id (self-service accounting axes only, never cleared).
+      Only the arguments passed change. Scope categories:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [category_id]
+      minProperties: 2
+      properties:
+        category_id: *id
+        label: { type: string, minLength: 1 }
+        direction: *direction
+        analytical_code: { type: string }
+        ledger_account_id: *id
+    examples:
+      - title: Rename a category
+        input: { category_id: 7101, label: Website redesign 2026 }
+    call:
+      method: PUT
+      path: /categories/{category_id}
+      body: { label: label, direction: direction, analytical_code: analytical_code,
+              ledger_account_id: ledger_account_id }
+    cost: { per: request }
+
+  - name: get_journal
+    class: read
+    description: Get one journal ({id, code, label, type}). Scope journals:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [journal_id]
+      properties:
+        journal_id: *id
+    examples:
+      - title: One journal
+        input: { journal_id: 12 }
+    call: { method: GET, path: "/journals/{journal_id}" }
+    cost: { per: request }
+
+  - name: create_journal
+    class: write
+    description: >-
+      Create a journal: code of 2 to 5 letters and a label. Look the
+      journals up first (list_journals): the API cannot delete one. Scope
+      journals:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [code, label]
+      properties:
+        code: { type: string, pattern: "^[A-Za-z]{2,5}$", description: "2 to 5 letters." }
+        label: { type: string, minLength: 1 }
+    examples:
+      - title: A journal for miscellaneous operations
+        input: { code: OD, label: Miscellaneous operations }
+    call:
+      method: POST
+      path: /journals
+      body: { code: code, label: label }
+    cost: { per: request }
+
+  - name: get_ledger_account
+    class: read
+    description: >-
+      Get one ledger account: number, label, type, vat_rate, letterable,
+      enabled. Scope ledger_accounts:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [ledger_account_id]
+      properties:
+        ledger_account_id: *id
+    examples:
+      - title: One ledger account
+        input: { ledger_account_id: 4101 }
+    call: { method: GET, path: "/ledger_accounts/{ledger_account_id}" }
+    cost: { per: request }
+
+  - name: create_ledger_account
+    class: write
+    description: >-
+      Add an account to the chart of accounts. A number starting with 401
+      also creates a supplier, one starting with 411 a company customer:
+      look both up first. Look the account up by number first
+      (list_ledger_accounts, start_with): the API cannot delete one. Scope
+      ledger_accounts:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [number, label]
+      properties:
+        number: { type: string, pattern: "^\\S+$", description: "e.g. 6226 or 401ACME." }
+        label: { type: string, minLength: 1 }
+        vat_rate: *vat_rate
+        country_alpha2: { type: string, pattern: "^[A-Z]{2}$", description: "ISO 3166-1 alpha-2, EU countries." }
+    examples:
+      - title: A fees account
+        input: { number: "6226", label: Fees }
+    call:
+      method: POST
+      path: /ledger_accounts
+      body: { number: number, label: label, vat_rate: vat_rate, country_alpha2: country_alpha2 }
+    cost: { per: request }
+
+  - name: update_ledger_account
+    class: write
+    description: >-
+      Change a ledger account's label, or whether its lines can be lettered
+      (letterable). The number cannot change. Scope ledger_accounts:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [ledger_account_id]
+      minProperties: 2
+      properties:
+        ledger_account_id: *id
+        label: { type: string, minLength: 1 }
+        letterable: { type: boolean }
+    examples:
+      - title: Make an account letterable
+        input: { ledger_account_id: 4101, letterable: true }
+    call:
+      method: PUT
+      path: /ledger_accounts/{ledger_account_id}
+      body: { label: label, letterable: letterable }
+    cost: { per: request }
+
+  - name: update_product
+    class: write
+    description: >-
+      Change a product of the catalogue: label, price_before_tax (decimal
+      string), vat_rate (Pennylane code, FR_200 for 20%), unit, currency,
+      reference, external_reference, description, ledger_account_id or
+      substance (goods or services; with ledger_account_id, both must name
+      the same account). Invoices already issued keep their lines. Only the
+      arguments passed change. Scope products:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [product_id]
+      minProperties: 2
+      properties:
+        product_id: *id
+        label: { type: string, minLength: 1 }
+        description: { type: string, maxLength: 5000 }
+        external_reference: { type: string }
+        price_before_tax: *decimal
+        vat_rate: *vat_rate
+        unit: { type: string }
+        currency: *currency
+        reference: { type: string }
+        ledger_account_id: *id
+        substance: { enum: [goods, services] }
+    examples:
+      - title: Raise the price of a consulting day
+        input: { product_id: 1201, price_before_tax: "750.00" }
+    refusals:
+      - { code: product_not_found, when: 404, message: "No product with this id in this Pennylane company." }
+    call:
+      method: PUT
+      path: /products/{product_id}
+      body: { label: label, description: description, external_reference: external_reference,
+              price_before_tax: price_before_tax, vat_rate: vat_rate, unit: unit,
+              currency: currency, reference: reference, ledger_account_id: ledger_account_id,
+              substance: substance }
+    cost: { per: request }
+
+  - name: list_numberings
+    class: read
+    description: >-
+      List the document numbering set up per document type ({kind,
+      number_prefix, next_number}); a type never set up is absent. Check it
+      before acting: finalizing an invoice fails without the invoice
+      numbering, a quote created without its numbering has no number, and a
+      commercial document fails without its own. Numbering is set up in the
+      Pennylane app only. Scope customer_invoices:readonly, quotes:readonly
+      or commercial_documents:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: All numberings
+        input: {}
+    call:
+      method: GET
+      path: /numberings
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_company_features
+    class: read
+    description: >-
+      Tell which gated features the company can use now: installments,
+      custom_fields, products_and_services_catalog, each true or false. A
+      feature is true only when the plan and the rollout both allow it: it
+      can be false on a plan that includes it. Read it before an action that
+      a feature gates, rather than reading a 403 as a missing scope. No
+      scope required.
+    input:
+      type: object
+      additionalProperties: false
+      properties: {}
+    examples:
+      - title: Features of the company
+        input: {}
+    call: { method: GET, path: /company/features }
+    cost: { per: request }
+
+  # --- Customers, contacts, suppliers ---------------------------------------
+
+  - name: get_customer
+    class: read
+    description: >-
+      Get one customer, company or individual, by its id (the customer.id of
+      an invoice): name, emails, addresses, payment conditions, ledger
+      account, contacts. Scope customers:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id]
+      properties:
+        customer_id: *id
+    examples:
+      - title: One customer
+        input: { customer_id: 3001 }
+    refusals:
+      - &customer_not_found { code: customer_not_found, when: 404, message: "No customer with this id in this Pennylane company." }
+    call: { method: GET, path: "/customers/{customer_id}" }
+    cost: { per: request }
+
+  - name: get_company_customer
+    class: read
+    description: >-
+      Get one company customer: name, reg_no, vat_number, emails, addresses,
+      billing_iban, payment conditions, mandates. An individual's id is
+      refused here: get_individual_customer. Scope customers:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id]
+      properties:
+        customer_id: *id
+    examples:
+      - title: One company customer
+        input: { customer_id: 3001 }
+    refusals:
+      - *customer_not_found
+    call: { method: GET, path: "/company_customers/{customer_id}" }
+    cost: { per: request }
+
+  - name: get_individual_customer
+    class: read
+    description: >-
+      Get one individual customer (a person): first_name, last_name, emails,
+      addresses, payment conditions. A company's id is refused here:
+      get_company_customer. Scope customers:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id]
+      properties:
+        customer_id: *id
+    examples:
+      - title: One individual customer
+        input: { customer_id: 3002 }
+    refusals:
+      - *customer_not_found
+    call: { method: GET, path: "/individual_customers/{customer_id}" }
+    cost: { per: request }
+
+  - name: create_individual_customer
+    class: write
+    description: >-
+      Create an individual customer (a person, not a company): first_name,
+      last_name and the full billing address are required. Look it up first
+      by external_reference (list_customers): creating it again is refused.
+      Returns the customer with its id. Scope customers:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [first_name, last_name, billing_address]
+      properties:
+        first_name: { type: string, minLength: 1, maxLength: 1000, personal: true }
+        last_name: { type: string, minLength: 1, maxLength: 1000, personal: true }
+        billing_address: &personal_address
+          type: object
+          additionalProperties: false
+          required: [address, postal_code, city, country_alpha2]
+          properties:
+            address: { type: string, personal: true }
+            postal_code: { type: string }
+            city: { type: string }
+            country_alpha2: { type: string, pattern: "^[A-Z]{2}$", description: "ISO 3166-1 alpha-2, e.g. FR." }
+        delivery_address: *personal_address
+        emails: &personal_emails
+          type: array
+          items: { type: string, format: email, personal: true }
+          description: "Recipients of the invoices."
+        phone: { type: string, personal: true }
+        payment_conditions: &payment_conditions
+          enum: [upon_receipt, custom, 7_days, 15_days, 30_days, 30_days_end_of_month,
+                 45_days, 45_days_end_of_month, 60_days]
+          description: "30_days by default. custom has no effect through the API: an invoice still needs its deadline."
+        billing_iban: { type: string, personal: true }
+        recipient: { type: string, personal: true }
+        reference: { type: string }
+        notes: { type: string }
+        external_reference: { type: string, description: "Your own unique value." }
+        billing_language: *language
+    examples:
+      - title: A private customer in Paris
+        input:
+          first_name: Jane
+          last_name: Doe
+          billing_address: { address: 1 rue de l'Exemple, postal_code: "75001", city: Paris, country_alpha2: FR }
+          emails: [jane.doe@example.com]
+    call:
+      method: POST
+      path: /individual_customers
+      body: { first_name: first_name, last_name: last_name, billing_address: billing_address,
+              delivery_address: delivery_address, emails: emails, phone: phone,
+              payment_conditions: payment_conditions, billing_iban: billing_iban,
+              recipient: recipient, reference: reference, notes: notes,
+              external_reference: external_reference, billing_language: billing_language }
+    cost: { per: request }
+
+  - name: update_individual_customer
+    class: write
+    description: >-
+      Update an individual customer: names, addresses, emails, phone,
+      payment conditions, IBAN, external_reference... Only the arguments
+      passed change. Scope customers:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id]
+      minProperties: 2
+      properties:
+        customer_id: *id
+        first_name: { type: string, minLength: 1, personal: true }
+        last_name: { type: string, minLength: 1, personal: true }
+        billing_address: *personal_address
+        delivery_address: *personal_address
+        emails: *personal_emails
+        phone: { type: string, personal: true }
+        payment_conditions: *payment_conditions
+        billing_iban: { type: string, personal: true }
+        recipient: { type: string, personal: true }
+        reference: { type: string }
+        notes: { type: string }
+        external_reference: { type: string }
+        billing_language: *language
+    examples:
+      - title: Change the billing email
+        input: { customer_id: 3002, emails: [jane@example.com] }
+    refusals:
+      - *customer_not_found
+    call:
+      method: PUT
+      path: /individual_customers/{customer_id}
+      body: { first_name: first_name, last_name: last_name, billing_address: billing_address,
+              delivery_address: delivery_address, emails: emails, phone: phone,
+              payment_conditions: payment_conditions, billing_iban: billing_iban,
+              recipient: recipient, reference: reference, notes: notes,
+              external_reference: external_reference, billing_language: billing_language }
+    cost: { per: request }
+
+  - name: list_customer_contacts
+    class: read
+    description: >-
+      List the contacts of one customer (first_name, last_name, email, role,
+      phone numbers). Contacts are separate from the customer's invoice
+      recipients (its emails). Scope customers:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id]
+      properties:
+        customer_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Contacts of a customer
+        input: { customer_id: 3001 }
+    call:
+      method: GET
+      path: /customers/{customer_id}/contacts
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_customer_contact
+    class: read
+    description: Get one contact of a customer. Scope customers:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id, contact_id]
+      properties:
+        customer_id: *id
+        contact_id: *id
+    examples:
+      - title: One contact
+        input: { customer_id: 3001, contact_id: 91 }
+    refusals:
+      - &contact_not_found { code: contact_not_found, when: 404, message: "No such contact for this customer in this Pennylane company." }
+    call: { method: GET, path: "/customers/{customer_id}/contacts/{contact_id}" }
+    cost: { per: request }
+
+  - name: create_customer_contact
+    class: write
+    description: >-
+      Add a contact to a customer. A contact is not an invoice recipient:
+      to have invoices sent to this address, add it to the customer's emails
+      (update_customer). Scope customers:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id, first_name, last_name, email]
+      properties:
+        customer_id: *id
+        first_name: &contact_name { type: string, pattern: "\\S", maxLength: 2000, personal: true }
+        last_name: *contact_name
+        email: { type: string, format: email, maxLength: 2000, personal: true }
+        role: { type: string, maxLength: 2000, description: "Role within the customer's organisation." }
+        telephone_number: &contact_phone { type: string, maxLength: 1744, personal: true }
+        mobile_number: *contact_phone
+    examples:
+      - title: The customer's accountant
+        input: { customer_id: 3001, first_name: John, last_name: Smith, email: john.smith@example.com, role: Accountant }
+    call:
+      method: POST
+      path: /customers/{customer_id}/contacts
+      body: { first_name: first_name, last_name: last_name, email: email, role: role,
+              telephone_number: telephone_number, mobile_number: mobile_number }
+    cost: { per: request }
+
+  - name: update_customer_contact
+    class: write
+    description: >-
+      Update a contact of a customer; only the arguments passed change, and
+      an empty string clears role or a phone number. The customer's invoice
+      recipients do not change. Scope customers:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id, contact_id]
+      minProperties: 3
+      properties:
+        customer_id: *id
+        contact_id: *id
+        first_name: *contact_name
+        last_name: *contact_name
+        email: { type: string, format: email, maxLength: 2000, personal: true }
+        role: { type: string, maxLength: 2000 }
+        telephone_number: *contact_phone
+        mobile_number: *contact_phone
+    examples:
+      - title: Change a contact's role
+        input: { customer_id: 3001, contact_id: 91, role: CFO }
+    refusals:
+      - *contact_not_found
+    call:
+      method: PUT
+      path: /customers/{customer_id}/contacts/{contact_id}
+      body: { first_name: first_name, last_name: last_name, email: email, role: role,
+              telephone_number: telephone_number, mobile_number: mobile_number }
+    cost: { per: request }
+
+  - name: delete_customer_contact
+    class: sensitive
+    effect: destroy
+    description: >-
+      Delete a contact of a customer. Its address stays among the invoice
+      recipients if it is there. Read the contact first if it may have to
+      be recreated. Scope customers:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [customer_id, contact_id]
+      properties:
+        customer_id: *id
+        contact_id: *id
+    examples:
+      - title: Delete a contact
+        input: { customer_id: 3001, contact_id: 91 }
+    refusals:
+      - *contact_not_found
+    confirm:
+      summary: "Delete contact {contact_id} of customer {customer_id}."
+    call: { method: DELETE, path: "/customers/{customer_id}/contacts/{contact_id}" }
+    cost: { per: request }
+
+  - name: update_supplier
+    class: write
+    description: >-
+      Update a supplier: name, SIREN (reg_no), SIRET (establishment_no),
+      VAT number, address, emails, IBAN, payment method and due date rule,
+      external_reference. Only the arguments passed change; null clears
+      establishment_no and the payment settings. Scope suppliers:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [supplier_id]
+      minProperties: 2
+      properties:
+        supplier_id: *id
+        name: { type: string, minLength: 1 }
+        reg_no: { type: string, pattern: "^[0-9]{9}$", description: "SIREN, French companies only." }
+        establishment_no: { type: [string, "null"], pattern: "^[0-9]{14}$", description: "SIRET, French companies only." }
+        vat_number: { type: string }
+        postal_address: *address
+        emails: { type: array, items: { type: string, format: email } }
+        iban: { type: string }
+        external_reference: { type: string }
+        supplier_payment_method:
+          enum: [automatic_transfer, manual_transfer, automatic_debiting, bill_of_exchange,
+                 check, cash, card, other, null]
+        supplier_due_date_delay: { type: [integer, "null"], minimum: 0, description: "Payment delay, in days." }
+        supplier_due_date_rule: { enum: [days, days_or_end_of_month, null] }
+    examples:
+      - title: Add the supplier's IBAN
+        input: { supplier_id: 4001, iban: FR7630006000011234567890189 }
+    refusals:
+      - { code: supplier_not_found, when: 404, message: "No supplier with this id in this Pennylane company." }
+    call:
+      method: PUT
+      path: /suppliers/{supplier_id}
+      body: { name: name, reg_no: reg_no, establishment_no: establishment_no,
+              vat_number: vat_number, postal_address: postal_address, emails: emails,
+              iban: iban, external_reference: external_reference,
+              supplier_payment_method: supplier_payment_method,
+              supplier_due_date_delay: supplier_due_date_delay,
+              supplier_due_date_rule: supplier_due_date_rule }
+    cost: { per: request }
+
+  # --- Exports: FEC, general ledger, analytical general ledger ---------------
+
+  - name: create_fec_export
+    class: read
+    description: >-
+      Start a FEC export (fichier des écritures comptables, the French
+      legal ledger file) over a period. Pennylane builds it in the
+      background: the answer is {id, status: pending}; read it again with
+      get_fec_export until status is ready (or error). Scope exports:fec.
+    input:
+      type: object
+      additionalProperties: false
+      required: [period_start, period_end]
+      properties:
+        period_start: &period_start { type: string, format: date, description: "First day of the period, YYYY-MM-DD." }
+        period_end: &period_end { type: string, format: date, description: "Last day of the period, YYYY-MM-DD." }
+    examples:
+      - title: FEC of 2025
+        input: { period_start: "2025-01-01", period_end: "2025-12-31" }
+    call:
+      method: POST
+      path: /exports/fecs
+      body: { period_start: period_start, period_end: period_end }
+    cost: { per: request }
+    async: { collect: get_fec_export, job_id: { from: id, to: export_id } }
+
+  - name: get_fec_export
+    class: read
+    description: >-
+      Read a FEC export started by create_fec_export: status pending, ready
+      or error, and file_url once ready. The file_url expires 30 minutes
+      after this read: download it at once, or read the export again for a
+      fresh one. Scope exports:fec.
+    input:
+      type: object
+      additionalProperties: false
+      required: [export_id]
+      properties:
+        export_id: &export_id { type: integer, minimum: 1, description: "id returned when the export was started." }
+    examples:
+      - title: State of an export
+        input: { export_id: 124 }
+    call: { method: GET, path: "/exports/fecs/{export_id}" }
+    cost: { per: request }
+
+  - name: create_general_ledger_export
+    class: read
+    description: >-
+      Start a general ledger export (an xlsx file) over a period. The
+      answer is {id, status: pending}; read it again with
+      get_general_ledger_export until status is ready (or error). Scope
+      exports:gl.
+    input:
+      type: object
+      additionalProperties: false
+      required: [period_start, period_end]
+      properties:
+        period_start: *period_start
+        period_end: *period_end
+    examples:
+      - title: General ledger of October
+        input: { period_start: "2026-10-01", period_end: "2026-10-31" }
+    call:
+      method: POST
+      path: /exports/general_ledgers
+      body: { period_start: period_start, period_end: period_end }
+    cost: { per: request }
+    async: { collect: get_general_ledger_export, job_id: { from: id, to: export_id } }
+
+  - name: get_general_ledger_export
+    class: read
+    description: >-
+      Read a general ledger export started by create_general_ledger_export:
+      status pending, ready or error, and file_url (xlsx) once ready. The
+      file_url expires 30 minutes after this read. Scope exports:gl.
+    input:
+      type: object
+      additionalProperties: false
+      required: [export_id]
+      properties:
+        export_id: *export_id
+    examples:
+      - title: State of an export
+        input: { export_id: 125 }
+    call: { method: GET, path: "/exports/general_ledgers/{export_id}" }
+    cost: { per: request }
+
+  - name: create_analytical_general_ledger_export
+    class: read
+    description: >-
+      Start an analytical general ledger export (an xlsx file, the ledger
+      lines with their analytical categories) over a period. mode in_line
+      (the default) gives one row per line and category, in_column one
+      column per axis. The answer is {id, status: pending}; read it again
+      with get_analytical_general_ledger_export until status is ready (or
+      error). Scope exports:agl.
+    input:
+      type: object
+      additionalProperties: false
+      required: [period_start, period_end]
+      properties:
+        period_start: *period_start
+        period_end: *period_end
+        mode: { enum: [in_line, in_column] }
+    examples:
+      - title: Analytical ledger of 2025, one column per axis
+        input: { period_start: "2025-01-01", period_end: "2025-12-31", mode: in_column }
+    call:
+      method: POST
+      path: /exports/analytical_general_ledgers
+      body: { period_start: period_start, period_end: period_end, mode: mode }
+    cost: { per: request }
+    async: { collect: get_analytical_general_ledger_export, job_id: { from: id, to: export_id } }
+
+  - name: get_analytical_general_ledger_export
+    class: read
+    description: >-
+      Read an analytical general ledger export started by
+      create_analytical_general_ledger_export: status pending, ready or
+      error, and file_url (xlsx) once ready. The file_url expires 30 minutes
+      after this read. Scope exports:agl.
+    input:
+      type: object
+      additionalProperties: false
+      required: [export_id]
+      properties:
+        export_id: *export_id
+    examples:
+      - title: State of an export
+        input: { export_id: 126 }
+    call: { method: GET, path: "/exports/analytical_general_ledgers/{export_id}" }
+    cost: { per: request }
+
+  # --- Subscriptions, commercial documents, quotes, purchase requests ---------
+
+  - name: list_billing_subscriptions
+    class: read
+    description: >-
+      List the billing subscriptions (recurring invoices): customer, label,
+      status (draft, not_started, in_progress, pending, stopped, finished),
+      mode (awaiting_validation: invoices come as drafts; finalized; email:
+      finalized and emailed), recurring_rule, next_occurrence. Scope
+      billing_subscriptions:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        filter:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [field, operator, value]
+            properties:
+              field: { enum: [id, start, customer_id, status] }
+              operator: *operator
+              value: *clause_value
+            allOf: [*in_takes_a_list]
+          description: >-
+            Clauses that must all hold, each {field, operator, value}; in
+            and not_in take a list. Fields: id, start, customer_id (lt,
+            lteq, gt, gteq, eq, not_eq, in, not_in), status (eq, not_eq,
+            in, not_in).
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Running subscriptions
+        input: { filter: [{ field: status, operator: eq, value: in_progress }] }
+    call:
+      method: GET
+      path: /billing_subscriptions
+      query: { filter: filter, limit: limit, cursor: cursor, sort: sort }
+      encode: { filter: json }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_billing_subscription
+    class: read
+    description: >-
+      Get one billing subscription: customer, status, mode, recurring_rule,
+      start, finish, next_occurrence, payment conditions and the data of the
+      invoices it generates. Scope billing_subscriptions:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [billing_subscription_id]
+      properties:
+        billing_subscription_id: *id
+    examples:
+      - title: One subscription
+        input: { billing_subscription_id: 801 }
+    call: { method: GET, path: "/billing_subscriptions/{billing_subscription_id}" }
+    cost: { per: request }
+
+  - name: list_billing_subscription_lines
+    class: read
+    description: >-
+      List the invoice lines of one billing subscription (label, quantity,
+      raw_currency_unit_price, vat_rate, product). Scope
+      billing_subscriptions:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [billing_subscription_id]
+      properties:
+        billing_subscription_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Lines of a subscription
+        input: { billing_subscription_id: 801 }
+    call:
+      method: GET
+      path: /billing_subscriptions/{billing_subscription_id}/invoice_lines
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_commercial_documents
+    class: read
+    description: >-
+      List the commercial documents: proformas, shipping orders and
+      purchasing orders (document_type), with customer, amounts, lines and
+      public_file_url. Quotes and invoices have their own functions. Scope
+      commercial_documents:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        filter:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [field, operator, value]
+            properties:
+              field: { enum: [id, customer_id, document_type] }
+              operator: *operator
+              value: *clause_value
+            allOf: [*in_takes_a_list]
+          description: >-
+            Clauses that must all hold, each {field, operator, value}; in
+            and not_in take a list. Fields: id, customer_id (lt, lteq, gt,
+            gteq, eq, not_eq, in, not_in), document_type (eq, not_eq, in,
+            not_in: proforma, shipping_order, purchasing_order).
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Proformas only
+        input: { filter: [{ field: document_type, operator: eq, value: proforma }] }
+    call:
+      method: GET
+      path: /commercial_documents
+      query: { filter: filter, limit: limit, cursor: cursor, sort: sort }
+      encode: { filter: json }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_commercial_document
+    class: read
+    description: >-
+      Get one commercial document (proforma, shipping order or purchasing
+      order): document_number, customer, amounts, lines, public_file_url.
+      Scope commercial_documents:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [commercial_document_id]
+      properties:
+        commercial_document_id: *id
+    examples:
+      - title: One commercial document
+        input: { commercial_document_id: 901 }
+    refusals:
+      - &commercial_document_not_found { code: commercial_document_not_found, when: 404, message: "No commercial document with this id in this Pennylane company." }
+    call: { method: GET, path: "/commercial_documents/{commercial_document_id}" }
+    cost: { per: request }
+
+  - name: list_commercial_document_lines
+    class: read
+    description: >-
+      List the lines of one commercial document. Scope
+      commercial_documents:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [commercial_document_id]
+      properties:
+        commercial_document_id: *id
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Lines of a commercial document
+        input: { commercial_document_id: 901 }
+    call:
+      method: GET
+      path: /commercial_documents/{commercial_document_id}/invoice_lines
+      query: { limit: limit, cursor: cursor, sort: sort }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_commercial_document_appendices
+    class: read
+    description: >-
+      List the files appended to one commercial document ({id, filename,
+      url}). Scope commercial_documents:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [commercial_document_id]
+      properties:
+        commercial_document_id: *id
+        limit: *limit
+        cursor: *cursor
+    examples:
+      - title: Appendices of a commercial document
+        input: { commercial_document_id: 901 }
+    call:
+      method: GET
+      path: /commercial_documents/{commercial_document_id}/appendices
+      query: { limit: limit, cursor: cursor }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: send_commercial_document
+    class: sensitive
+    effect: send
+    description: >-
+      Email a commercial document to the customer: to recipients when
+      given, else to the addresses on the customer's record. Only after
+      explicit human validation. The PDF takes a few minutes to generate
+      after creation: a conflict means it is not ready yet, retry later.
+      email_template_id picks a billing email template of the matching
+      kind. Scope commercial_documents:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [commercial_document_id]
+      properties:
+        commercial_document_id: *id
+        recipients: &recipients
+          type: array
+          minItems: 1
+          items: { type: string, format: email, personal: true }
+          description: "Addresses to send to; absent, the customer's own."
+        email_template_id: *id
+    examples:
+      - title: Send a proforma to the customer's addresses
+        input: { commercial_document_id: 901 }
+    refusals:
+      - { code: pdf_not_ready, when: 409, message: "The document PDF is not generated yet: retry in a few minutes." }
+    confirm:
+      summary: "Email commercial document {commercial_document_id} to the customer."
+    call:
+      method: POST
+      path: /commercial_documents/{commercial_document_id}/send_by_email
+      body: { recipients: recipients, email_template_id: email_template_id }
+    cost: { per: request }
+
+  - name: send_quote
+    class: sensitive
+    effect: send
+    description: >-
+      Email a quote to the customer: to recipients when given, else to the
+      addresses on the customer's record. Only after explicit human
+      validation. The PDF takes a few minutes to generate after creation: a
+      conflict means it is not ready yet, retry later. email_template_id
+      picks a billing email template of kind billing_email_quote. Scope
+      quotes:all.
+    input:
+      type: object
+      additionalProperties: false
+      required: [quote_id]
+      properties:
+        quote_id: *id
+        recipients: *recipients
+        email_template_id: *id
+    examples:
+      - title: Send a quote to the customer's addresses
+        input: { quote_id: 6001 }
+    refusals:
+      - { code: pdf_not_ready, when: 409, message: "The quote PDF is not generated yet: retry in a few minutes." }
+    confirm:
+      summary: "Email quote {quote_id} to the customer."
+    call:
+      method: POST
+      path: /quotes/{quote_id}/send_by_email
+      body: { recipients: recipients, email_template_id: email_template_id }
+    cost: { per: request }
+
+  - name: list_quote_appendices
+    class: read
+    description: >-
+      List the files appended to one quote ({id, filename, url}). Scope
+      quotes:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [quote_id]
+      properties:
+        quote_id: *id
+        limit: *limit
+        cursor: *cursor
+    examples:
+      - title: Appendices of a quote
+        input: { quote_id: 6001 }
+    call:
+      method: GET
+      path: /quotes/{quote_id}/appendices
+      query: { limit: limit, cursor: cursor }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: list_purchase_requests
+    class: read
+    description: >-
+      List the purchase requests: supplier, amounts, reason, status
+      (to_be_validated, approved, rejected, invoiced), purchase order and
+      linked_invoices. Scope purchase_requests:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        filter:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [field, operator, value]
+            properties:
+              field: { enum: [id, reviewed_by_id, user_id, supplier_id] }
+              operator: *operator
+              value: *clause_value
+            allOf: [*in_takes_a_list]
+          description: >-
+            Clauses that must all hold, each {field, operator, value}; in
+            and not_in take a list. Fields: id (lt, lteq, gt, gteq, eq,
+            not_eq, in, not_in), reviewed_by_id, user_id, supplier_id (eq,
+            not_eq, in, not_in).
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Purchase requests to one supplier
+        input: { filter: [{ field: supplier_id, operator: eq, value: 4001 }] }
+    call:
+      method: GET
+      path: /purchase_requests
+      query: { filter: filter, limit: limit, cursor: cursor, sort: sort }
+      encode: { filter: json }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_purchase_request
+    class: read
+    description: Get one purchase request. Scope purchase_requests:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [purchase_request_id]
+      properties:
+        purchase_request_id: *id
+    examples:
+      - title: One purchase request
+        input: { purchase_request_id: 701 }
+    call: { method: GET, path: "/purchase_requests/{purchase_request_id}" }
+    cost: { per: request }
+
+  - name: list_sepa_mandates
+    class: read
+    description: >-
+      List the customers' SEPA direct debit mandates: customer, identifier,
+      bank, bic, iban, signed_at, sequence_type (FRST, OOFF, RCUR, FNAL).
+      Scope customer_mandates:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        filter:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [field, operator, value]
+            properties:
+              field: { enum: [id, customer_id] }
+              operator: *operator
+              value: *clause_value
+            allOf: [*in_takes_a_list]
+          description: >-
+            Clauses that must all hold, each {field, operator, value}; in
+            and not_in take a list. Fields: id, customer_id (lt, lteq, gt,
+            gteq, eq, not_eq, in, not_in).
+        limit: *limit
+        cursor: *cursor
+        sort: *sort_id
+    examples:
+      - title: Mandates of one customer
+        input: { filter: [{ field: customer_id, operator: eq, value: 3001 }] }
+    call:
+      method: GET
+      path: /sepa_mandates
+      query: { filter: filter, limit: limit, cursor: cursor, sort: sort }
+      encode: { filter: json }
+    pagination: *pagination
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_sepa_mandate
+    class: read
+    description: Get one SEPA mandate. Scope customer_mandates:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [sepa_mandate_id]
+      properties:
+        sepa_mandate_id: *id
+    examples:
+      - title: One mandate
+        input: { sepa_mandate_id: 301 }
+    call: { method: GET, path: "/sepa_mandates/{sepa_mandate_id}" }
+    cost: { per: request }
+
+  # --- Ledger: lines across entries, attached documents -----------------------
+
+  - name: search_ledger_entry_lines
+    class: read
+    description: >-
+      List ledger entry lines across all entries, filtered at the source:
+      the lines of one account over a period, of one journal, of some
+      entries. Without a filter the whole ledger comes back, far beyond what
+      an agent can read. Each line carries debit, credit, date, label,
+      ledger_account, journal, ledger_entry and its lettering. Scope
+      ledger_entries:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        filter:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [field, operator, value]
+            properties:
+              field: { enum: [id, journal_id, ledger_account_id, ledger_entry_id, date] }
+              operator: { enum: [lt, lteq, gt, gteq, eq, not_eq, in, not_in] }
+              value: *clause_value
+            allOf: [*in_takes_a_list]
+          description: >-
+            Clauses that must all hold, each {field, operator, value}; in
+            and not_in take a list. Fields: id, journal_id,
+            ledger_account_id, ledger_entry_id, date; operators lt, lteq,
+            gt, gteq, eq, not_eq, in, not_in.
+        limit: *limit
+        cursor: *cursor
+        sort: { enum: [id, -id, date, -date], description: "Prefix with - for descending order." }
+    examples:
+      - title: Lines of one account in October
+        input:
+          filter:
+            - { field: ledger_account_id, operator: eq, value: 4101 }
+            - { field: date, operator: gteq, value: "2026-10-01" }
+            - { field: date, operator: lteq, value: "2026-10-31" }
+    call:
+      method: GET
+      path: /ledger_entry_lines
+      query: { filter: filter, limit: limit, cursor: cursor, sort: sort }
+      encode: { filter: json }
+    pagination: *pagination_long
+    output: *list_output
+    cost: { per: request }
+
+  - name: get_ledger_entry_line
+    class: read
+    description: >-
+      Get one ledger entry line: debit, credit, date, label, ledger_account,
+      journal, ledger_entry, categories and the lines it is lettered with.
+      Scope ledger_entries:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [line_id]
+      properties:
+        line_id: *id
+    examples:
+      - title: One line
+        input: { line_id: 20001 }
+    call: { method: GET, path: "/ledger_entry_lines/{line_id}" }
+    cost: { per: request }
+
+  - name: list_ledger_entry_documents
+    class: read
+    description: >-
+      List the documents attached to one ledger entry ({id, name, url}), the
+      receipts and invoices it was booked from. Scope
+      ledger_entries:readonly.
+    input:
+      type: object
+      additionalProperties: false
+      required: [entry_id]
+      properties:
+        entry_id: *id
+        limit: *limit
+        cursor: *cursor
+    examples:
+      - title: Documents of an entry
+        input: { entry_id: 10001 }
+    refusals:
+      - *entry_not_found
+    call:
+      method: GET
+      path: /ledger_entries/{entry_id}/dms_files
+      query: { limit: limit, cursor: cursor }
+    pagination: *pagination
+    output: *list_output
     cost: { per: request }
 
 exposure:

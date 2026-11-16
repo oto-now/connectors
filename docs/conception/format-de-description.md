@@ -1,7 +1,7 @@
 # Format de description d'un connecteur
 
 - **Statut** : validé par le mainteneur le 29/09/2026
-- **Dernière révision** : 2026-11-03
+- **Dernière révision** : 2026-11-11
 
 ## Résumé
 
@@ -34,8 +34,8 @@ Un connecteur partagé se décrit dans un fichier YAML, `connectors/<nom>/connec
 |---|---|
 | Ce document | Le fichier, le bloc `connector`, le bloc `functions` (classe, côté d'action, donnée personnelle, délai, pagination), le bloc `exposure`, les contrôles. |
 | [Sortie d'une fonction](sortie.md) | `output.items`, `strip`, `projection`, `sample`. |
-| [Compte](compte.md) | `auth`, `credential`, `settings`, gabarits d'adresse, `oauth2_user`, compte de l'hôte et compte rattaché. |
-| [Niveaux d'accès](niveaux-d-acces.md) | `access_levels`, `scope_implies`, `scopes` d'une fonction. |
+| [Compte](compte.md) | `auth`, `credential`, `settings`, gabarits d'adresse, `oauth2_user`, compte de service (`oauth2_jwt_bearer`), compte de l'hôte et compte rattaché. |
+| [Niveaux d'accès](niveaux-d-acces.md) | `access_levels`, `scope_implies`, `default_level` (compte de service), `scopes` d'une fonction. |
 | [Corps d'une requête](corps-de-requete.md) | Corps en table, emboîté, entier, et ses clés libres. |
 | [Fichiers](fichiers.md) | `call.files` et `output.file`. |
 | [Erreurs et signal de refus](signal-de-refus.md) | `errors`, `refusals`, `marks_account`, `body`. |
@@ -61,7 +61,7 @@ Un connecteur partagé se décrit dans un fichier YAML, `connectors/<nom>/connec
 | `base_url` | sauf `base_urls` ou tout `handwritten` | Racine `https://` des chemins d'appel, sans `/` final ; gabarit possible sur les réglages. |
 | `base_urls` | non, exclusif de `base_url` | Une racine par valeur d'un réglage `choice` : `{ setting: region, values: { us: …, eu: … } }`. |
 | `auth` | oui | Mode d'authentification, voir [compte](compte.md). |
-| `credential` | sauf `none` et `oauth2_user` | Champs fournis par le consommateur : `name`, `label`, `secret` (booléen), `holder` (`account` par défaut, ou `host`), voir [compte](compte.md). |
+| `credential` | sauf `none` et `oauth2_user` | Champs fournis par le consommateur : `name`, `label`, `secret` (booléen), `holder` (`account` par défaut, ou `host`) ; un seul, secret, en `oauth2_jwt_bearer` : voir [compte](compte.md). |
 | `account_identity` | non | Identité d'un compte rattaché chez un tiers : `name`, `label`, `pattern` (expression ancrée), citée par `base_url` seulement, voir [compte](compte.md). |
 | `settings` | non | Réglages non secrets d'un compte, voir [compte](compte.md). |
 | `modes` | oui | Qui peut porter un compte : `platform`, `byo_user`, `byo_org`. |
@@ -82,6 +82,7 @@ Les champs du compte (`auth`, `credential`, `settings`, `account_identity`, `bas
 | `name` | oui | Un verbe et son objet : `list_estimates`. |
 | `class` | oui | `read`, `write` ou `sensitive`. |
 | `act` | non (déduit de la classe) | La fonction engage ou détruit (envoi, corbeille, archive, déplacement) : booléen, `false` par défaut pour `read`, `true` pour `write` et `sensitive`. Une simple préparation, comme un brouillon, déclare `act: false`. Jamais `false` sur `sensitive`, jamais `true` sur `read` (la fabrique refuse). |
+| `effect` | non, `sensitive` seulement | Ce que fait une fonction sensible une fois confirmée : `send` (quelque chose part vers un tiers : un message, des pistes inscrites dans une campagne active) ou `destroy` (supprime, arrête pour de bon, remplace sans garder). Pas de défaut ; refusé sur `read` et `write` (le schéma et la règle 9). Un hôte qui sert les fonctions sensibles par effet, le lecteur d'oto 1, refuse au montage une fonction sensible qui ne le dit pas. |
 | `scopes` | si le connecteur a des niveaux d'accès, interdit sinon | Les droits OAuth que la fonction exige, tous ([niveaux d'accès](niveaux-d-acces.md)). |
 | `description` | oui | En anglais, 1000 caractères au plus (borne du paquet d'oto 2) : ce que l'agent lit. |
 | `input` | oui | JSON Schema 2020-12 d'un objet strict (`type: object`, `additionalProperties: false`, `properties`), servi et validé tel quel. Une propriété peut porter `personal: true` (« Donnée personnelle », ci-dessous). |
@@ -89,14 +90,14 @@ Les champs du compte (`auth`, `credential`, `settings`, `account_identity`, `bas
 | `refusals` | non | `code`, `when` (statut HTTP ou condition), `message` : surcharge ou complète la table commune ; sous un statut seulement, `body` et `marks_account` comme dans la table. |
 | `checks` | non | Contrôles de l'entrée avant l'appel, chacun nomme un refus : `{ kind: equal_sums, refusal: entry_unbalanced, items: ledger_entry_lines, fields: [debit, credit] }` (sommes égales, chaînes décimales sommées exactement). |
 | `expect` | non | Contrôles de la réponse, chacun nomme un refus : `{ kind: non_empty, refusal: pdf_missing, path: public_file_url }`. |
-| `call` | sauf `handwritten` | `method`, `path` relatif avec `{param}`, puis `query`, `body` (envoyé quelle que soit la méthode, `DELETE` compris), `headers` qui associent un nom côté API à un argument ; dans `body`, la valeur d'une clé peut aussi être une table de même forme, emboîtée ; `body` peut aussi nommer un seul argument, un objet strict, qui forme le corps entier ([corps d'une requête](corps-de-requete.md)) ; `constants` (`query`, `body`, `headers`) : des valeurs envoyées à chaque appel, hors du schéma, comme `{ body: { draft: true } }` ; `encode` : `{ filter: json }` sérialise un argument structuré en une chaîne ; `files` : les parties fichier d'un corps multipart ([fichiers](fichiers.md)). Chaque argument va à un seul endroit, chaque nom côté API reçoit une seule valeur. |
+| `call` | sauf `handwritten` | `method`, `path` relatif avec `{param}`, puis `query`, `body` (envoyé quelle que soit la méthode, `DELETE` compris), `headers` qui associent un nom côté API à un argument ; dans `body`, la valeur d'une clé peut aussi être une table de même forme, emboîtée ; `body` peut aussi nommer un seul argument, un objet strict, qui forme le corps entier ([corps d'une requête](corps-de-requete.md)) ; `constants` (`query`, `body`, `headers`) : des valeurs envoyées à chaque appel, hors du schéma, comme `{ body: { draft: true } }` ; `encode` : `{ filter: json }` sérialise un argument structuré en une chaîne ; `files` : les parties fichier d'un corps multipart ([fichiers](fichiers.md)) ; `body_list: true` : le corps construit part seul élément d'une liste JSON ([corps d'une requête](corps-de-requete.md)). Chaque argument va à un seul endroit, chaque nom côté API reçoit une seule valeur. |
 | `handwritten` | exclusif de `call` | `python` (`module`, `function`) et `typescript` (`file`, `export`). |
 | `pagination` | non | `kind` (`cursor` ou `page`), `request_param` (l'argument qui porte le curseur, placé en query ou au corps, emboîté ou non), `next`, `more` facultatif (booléen de la réponse, `false` à la dernière page : `has_more`), `total` facultatif, `max_pages`. Présente, elle ajoute `all_pages` et `max_pages` au schéma servi. |
 | `output` | non | `items` (chemin de la liste), `strip` (clés retirées, chacune par son chemin), `projection` (clés de premier niveau gardées), `schema` (schéma de sortie, fermé et à propriétés), `sample` (exemple de réponse) : [sortie d'une fonction](sortie.md), `file` ([fichiers](fichiers.md)). |
 | `timeout_s` | non (celui du connecteur) | Délai propre à la fonction, en secondes, de même type et mêmes bornes que celui du connecteur, qu'il remplace pour chacun de ses appels (chaque page d'une lecture paginée) : plus court (une page qui peut rester pendue) ou plus long (une réponse d'IA synchrone de plusieurs minutes), jamais égal (la fabrique refuse, règle 11) : « Délai par fonction ». |
 | `async` | non | La fonction soumet un travail relevé plus tard : `collect` (la relève), `job_id` (`from`, `to`), `within_s` ou `no_deadline` ; voir [travaux longs](travaux-longs.md). |
 | `background` | non | `true` : le tiers répond en minutes, l'hôte exécute la fonction en tâche de fond et rend aussitôt un identifiant de travail ; exige un `timeout_s` propre ; voir [travaux longs](travaux-longs.md). |
-| `cost` | non | Ce que coûte un appel : `per` (`request`, `page` ou `item`), `quantity` (ce que coûte une requête, `request` et `page`), `items` et `times` (les listes comptées, `per: item`) ou `weights` (le poids des valeurs que liste chaque élément), `unit`, `settle` (la quantité réelle relue) ; voir [coût et solde](cout-et-solde.md). |
+| `cost` | non | Ce que coûte un appel : `per` (`request`, `page` ou `item`), `quantity` (ce que coûte une requête, `request` et `page`), `items` et `times` (les listes comptées, `per: item`) ou `weights` (le poids des valeurs que liste chaque élément), `unit`, `settle` (la quantité réelle relue, et `scale`, son facteur vers `unit`) ; voir [coût et solde](cout-et-solde.md). |
 | `confirm` | si `sensitive` | `summary`, gabarit du résumé montré avant exécution (`Validate invoice {id}: irreversible.`). |
 
 
@@ -134,7 +135,7 @@ functions:
 
 ### Le bloc `exposure`
 
-L'exposition est une projection, pas une propriété de la fonction. `mode` vaut `per_action` (un outil `<namespace>_<name>` par fonction), `per_connector` (un outil par connecteur, l'action en paramètre) ou `via_call` (rien n'est exposé, le verbe d'appel lit le registre). Le défaut est `per_connector`, fixé par le consommateur ; `mode` le surcharge pour un connecteur, `tool` nomme l'outil unique en `per_connector`.
+L'exposition est une projection, pas une propriété de la fonction. `mode` vaut `per_action` (un outil `<namespace>_<name>` par fonction), `per_connector` (un outil par connecteur, l'action en paramètre) ou `via_call` (rien n'est exposé, le verbe d'appel lit le registre). Le défaut est `per_connector`, fixé par le consommateur ; `mode` le surcharge pour un connecteur, `tool` nomme l'outil unique en `per_connector`. Les modes côté hôte, et le regroupement par famille proposé pour un ERP : [exposition des fonctions](https://github.com/oto-now/oto-core/blob/main/docs/conception/exposition-des-fonctions.md) (oto-core).
 
 `exposure` et `modes` ne servent qu'à oto 1 : un hôte d'oto 2 sert ses fonctions par des outils fixes et dit qui fournit le compte par son propriétaire. Les deux blocs restent, marqués « oto 1 seulement », et partent quand oto 1 ne lira plus ce dépôt (décidé le 16/10).
 
@@ -173,7 +174,7 @@ Deux gardes de CI :
 
 ## Écart avec le code
 
-- Les clients Python restent écrits à la main et rien n'est généré ; les descriptions, écrites après eux pour la plupart, n'en sont pas encore la source. Quelques clients ne suivent pas leur description : `yousign` ; les clients Google (`oto.tools.google.*`, par le SDK de Google) ; `oto.tools.unipile` (il prend l'identité du compte en paramètre, ou découvre le premier compte LinkedIn de la clé) ; `fullenrich` (une liste de champs pour tout le lot) ; `pennylane` (une seule page des listes que le fichier dit paginées). Ailleurs, un test de concordance garde l'égalité, et les écarts sont nommés dans l'en-tête de chaque description.
+- Les clients Python restent écrits à la main et rien n'est généré ; les descriptions, écrites après eux pour la plupart, n'en sont pas encore la source. Quelques clients ne suivent pas leur description : `yousign` ; les clients Google (`oto.tools.google.*`, par le SDK de Google) ; `oto.tools.unipile` (il prend l'identité du compte en paramètre, ou découvre le premier compte LinkedIn de la clé) ; `fullenrich` (une liste de champs pour tout le lot) ; `pennylane` (une seule page des listes que le fichier dit paginées, et des noms de méthode à part, pour les méthodes antérieures au 2026-11-09 ; les modules ajoutés ce jour-là, banque, suivi des factures, référentiel, tiers, exports et autres documents, suivent leur description, gardés par `tests/test_pennylane_description_concordance.py`). Ailleurs, un test de concordance garde l'égalité, et les écarts sont nommés dans l'en-tête de chaque description.
 - Les descriptions ne partent pas dans la distribution PyPI : seul le dépôt les porte.
 - `modes` garde le vocabulaire d'oto 1 (`platform`, `byo_user`, `byo_org`). `quota` n'a pas de forme : le schéma n'exige qu'un objet non vide.
 - Le format se déclare YAML 1.2, mais le test et la fabrique lisent avec PyYAML, qui suit YAML 1.1.
@@ -205,3 +206,6 @@ Deux gardes de CI :
 - 2026-10-19 : donnée personnelle : `personal: true` sur une propriété de l'entrée, passé tel quel dans le schéma servi, que l'hôte ne journalise pas ; règle 15 de la fabrique — décidé par le mainteneur.
 - 2026-10-21 : toute forme neuve du format s'écrit pour les deux côtés à la fois, selon la règle de convergence ([fabrique](fabrique.md), « La règle de convergence ») — décidé par le mainteneur.
 - 2026-11-03 : redécoupage de la note en documents par sujet ; les résumés par connecteur sortent pour la carte du parc et l'en-tête de chaque description — décidé par le responsable produit (source : demande de rationalisation des connecteurs).
+- 2026-11-06 : `effect` (`send`, `destroy`) sur une fonction sensible, facultatif, sans défaut, pour qu'un hôte distingue un envoi d'une destruction — décidé par Alexis (source : lecteur générique d'oto 1, décision du 05/11).
+- 2026-11-06 : septième mode d'authentification, `oauth2_jwt_bearer`, le compte de service ([compte](compte.md), « Le compte de service ») — décidé par le mainteneur (source : lecture de Search Console par un agent).
+- 2026-11-13 : le compte de service reçoit des niveaux d'accès et un niveau par défaut (`default_level`) ([niveaux d'accès](niveaux-d-acces.md)) — décidé par le mainteneur (source : envoi d'un sitemap à Search Console).

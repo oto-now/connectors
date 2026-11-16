@@ -1,10 +1,9 @@
 """Les cas communs du corps emboîté (`connectors/_cases/nested_body.yaml`), joués côté Python, une ligne par cas.
 
-La lib n'envoie la requête d'aucune description : seul le moteur du paquet de l'hôte le fait. Les cas se jouent donc
-ici contre une référence écrite dans le test, qui dit la sémantique du format (`docs/conception/corps-de-requete.md`) ; le paquet de
-l'hôte joue les mêmes cas, sortis par la fabrique dans `ts/src/nested-body-cases.ts`, contre son moteur. Les entrées
-rejetées le sont par le schéma d'entrée, avant tout envoi ; les fonctions refusées le sont par la fabrique (règle 22),
-avec leur code.
+Ils se jouent contre le moteur de la lib (`oto.connectors.engine`), qui compose et envoie la requête à un faux tiers
+(`engine_fake`) ; le paquet de l'hôte joue les mêmes cas, sortis par la fabrique dans `ts/src/nested-body-cases.ts`,
+contre son moteur. Les entrées rejetées le sont par le schéma d'entrée, avant tout envoi ; les fonctions refusées le sont
+par la fabrique (règle 22), avec leur code.
 """
 from __future__ import annotations
 
@@ -15,28 +14,12 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from fabrique import nested_body_cases
-from fabrique.descriptions import NESTED_BODY_REFUSALS, DescriptionError, body_entries, body_table_refusal, check_rules
-from test_body_cases import request as flat_request
+from fabrique.descriptions import NESTED_BODY_REFUSALS, DescriptionError, body_table_refusal, check_rules
+from test_body_cases import sent
 
 LOADED = nested_body_cases.load()
 FUNCTIONS = {function["name"]: function for function in LOADED.description.data["functions"]}
 WHERE = "connectors/_cases/nested_body.yaml"
-
-
-def body(function: dict, given: dict) -> dict:
-    """La référence : la constante du corps, copiée, puis chaque argument donné posé à son chemin, les objets parents
-    créés au besoin ; un argument absent ne crée rien, un `null` part `null`. Une clé est une clé : un point n'y est
-    qu'un caractère."""
-    call = function["call"]
-    sent = copy.deepcopy((call.get("constants") or {}).get("body") or {})
-    for path, argument in body_entries(call["body"]):
-        if argument not in given:
-            continue
-        parent = sent
-        for key in path[:-1]:
-            parent = parent.setdefault(key, {})
-        parent[path[-1]] = given[argument]
-    return sent
 
 
 @pytest.mark.parametrize("case", LOADED.cases, ids=[case["name"] for case in LOADED.cases])
@@ -44,11 +27,7 @@ def test_nested_body_case(case):
     function = case["function"]
     given = copy.deepcopy(case["input"])
     assert Draft202012Validator(function["input"]).is_valid(given)
-    # Chemin, query et en-têtes par la référence du corps entier, qui ne lit le corps qu'à sa clé `call.body` ; le corps
-    # par la référence de la règle 22.
-    others = {**function, "call": {**function["call"], "body": "body"}}
-    expected = {**flat_request(others, {**given, "body": None}), "body": body(function, given)}
-    assert expected == case["request"]
+    assert sent(LOADED.description.data, function, given) == case["request"]
     assert given == case["input"]
 
 

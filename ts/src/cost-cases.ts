@@ -399,6 +399,33 @@ export const tagRecords = defineFunction({
   cost: { per: "item", items: "records", unit: "tags", settle: { path: "results.0.billed" } },
 })
 
+export const searchSerp = defineFunction({
+  name: "cases.search_serp",
+  connector: "cases",
+  class: "read",
+  act: false,
+  description: "Search one results page, billed in dollars, the dollars billed in each answer.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["q"],
+    "properties": {"q": {"type": "string"}}
+  },
+  examples: [
+    { title: "By text", input: {"q": "alpha"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/serp",
+    pathParams: [],
+    query: {},
+    body: {"q": "q"},
+    headers: {},
+  },
+  cost: { per: "request", quantity: 2000, unit: "microdollars", settle: { path: "tasks.0.cost", scale: 1000000 } },
+})
+
 export const verifyPeople = defineFunction({
   name: "cases.verify_people",
   connector: "cases",
@@ -723,6 +750,7 @@ export const connector = defineConnector({
     scorePeople,
     enrichPeople,
     tagRecords,
+    searchSerp,
     verifyPeople,
     submitBatch,
     getBatch,
@@ -1109,6 +1137,60 @@ export const costCases: readonly CostCase[] = [
     answers: [{"results": [{"billed": 1}, {"billed": 7}]}],
     worstCase: {"quantity": 2, "unit": "tags"},
     settled: {"quantity": 1, "unit": "tags", "from": "response", "exceeded": false},
+    collection: null,
+  },
+  {
+    name: "scale_settles_in_the_sub_unit",
+    function: searchSerp,
+    args: {"q": "alpha"},
+    answers: [{"tasks": [{"cost": 0.0006}]}],
+    worstCase: {"quantity": 2000, "unit": "microdollars"},
+    settled: {"quantity": 600, "unit": "microdollars", "from": "response", "exceeded": false},
+    collection: null,
+  },
+  {
+    name: "scale_float_noise_is_rounded_away",
+    function: searchSerp,
+    args: {"q": "alpha"},
+    answers: [{"tasks": [{"cost": 1.0000000000000003e-05}]}],
+    worstCase: {"quantity": 2000, "unit": "microdollars"},
+    settled: {"quantity": 10, "unit": "microdollars", "from": "response", "exceeded": false},
+    collection: null,
+  },
+  {
+    name: "scale_rounds_up_to_an_integer",
+    function: searchSerp,
+    args: {"q": "alpha"},
+    answers: [{"tasks": [{"cost": 0.0012345678}]}],
+    worstCase: {"quantity": 2000, "unit": "microdollars"},
+    settled: {"quantity": 1235, "unit": "microdollars", "from": "response", "exceeded": false},
+    collection: null,
+  },
+  {
+    name: "scale_zero_is_zero",
+    function: searchSerp,
+    args: {"q": "alpha"},
+    answers: [{"tasks": [{"cost": 0}]}],
+    worstCase: {"quantity": 2000, "unit": "microdollars"},
+    settled: {"quantity": 0, "unit": "microdollars", "from": "response", "exceeded": false},
+    collection: null,
+  },
+  {
+    name: "scale_above_worst_case",
+    function: searchSerp,
+    args: {"q": "alpha"},
+    answers: [{"tasks": [{"cost": 0.0025}]}],
+    worstCase: {"quantity": 2000, "unit": "microdollars"},
+    settled: {"quantity": 2500, "unit": "microdollars", "from": "response", "exceeded": true},
+    collection: null,
+  },
+  {
+    name: "scale_unreadable_settles_the_worst_case",
+    function: searchSerp,
+    args: {"q": "alpha"},
+    answers: [{"tasks": [{"cost": "0.0006"}]}],
+    worstCase: {"quantity": 2000, "unit": "microdollars"},
+    settled: {"quantity": 2000, "unit": "microdollars", "from": "unreadable", "exceeded": false},
     collection: null,
   },
   {

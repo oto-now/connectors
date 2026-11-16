@@ -14,8 +14,8 @@ fonction refusée, puis convertit la description comme une description :
   les fonctions refusées (une définition chacune, hors du connecteur), la liste des cas, celle des entrées rejetées et
   celle des fonctions refusées, que les tests du paquet de l'hôte jouent contre son moteur et `registerConnectors`. Des
   données de test : l'index ne le réexporte pas, le paquet `ts/` l'expose sous `./body-cases` ;
-- en Python, rien : la lib n'envoie la requête d'aucune description. `tests/test_body_cases.py` joue les cas contre une
-  référence écrite dans le test.
+- en Python, rien : `tests/test_body_cases.py` joue les cas contre le moteur de la lib (`oto.connectors.engine`), qui
+  envoie chaque requête à un faux tiers.
 
 `python -m fabrique --check` échoue quand le module TypeScript commité ne suit plus le fichier.
 """

@@ -179,10 +179,18 @@ class _AccountsMixin:
     ) -> str:
         """Hosted auth URL (v2: `POST /v2/auth/link`, createAuthLink).
 
-        v2 schema: `expires_on` (snake); `providers` = list of **lowercase**
-        codes (`["linkedin"]`) or `"*"` (all); **a single** `redirect_uri`
-        (v2 no longer separates success/failure); the response carries the link on **`link`**.
-        `name`/`notify_url` remain accepted (hosted-auth webhook correlation #131).
+        v2 schema (createAuthLink, API 2.67): an `anyOf` of TWO bodies, both
+        `additionalProperties: false` — no `type` discriminator, the variant is
+        picked by which key is present:
+        - create: `expires_on`, `redirect_uri`, `providers` (+ `state`, `config`);
+        - reconnect: `expires_on`, `redirect_uri`, `account_id` (+ `state`,
+          `config`) — and NO `providers`.
+        v1 leftovers (`type`, `api_url`, `name`, `notify_url`, `reconnect_account`)
+        are now REJECTED with a 400 ("must NOT have additional properties … must have
+        required property 'account_id'") — they used to be tolerated. `name` and
+        `notify_url` stay in the signature but are no longer sent.
+        `providers` = list of **lowercase** codes (`["linkedin"]`) or `"*"` (all);
+        **a single** `redirect_uri`; the response carries the link on **`link`**.
 
         ⚠️ **It's up to the app to enable premium products**: without
         `config.linkedin.products`, Unipile only connects `classic` → the
@@ -193,28 +201,28 @@ class _AccountsMixin:
         - `allow_cookies`: adds cookie-based connection to the wizard's methods
           (without it, only login/password is offered). **Recommended by
           Unipile for premium products.**
-        - `reconnect_account`: `account_id` of an EXISTING account → `type=reconnect`
-          (attaches the product/repairs the session ON that account) instead of `create`
+        - `reconnect_account`: `account_id` of an EXISTING account → reconnect body
+          (`account_id`, attaches the product/repairs the session ON that account) instead of `create`
           (which would make a DUPLICATE). To be used to enable a premium on an
           already connected account."""
         expires = datetime.now(timezone.utc) + timedelta(minutes=ttl_minutes)
         body: dict[str, Any] = {
-            "type": "reconnect" if reconnect_account else "create",
-            "providers": [str(p).lower() for p in providers] if providers else "*",
-            "api_url": f"https://{self.dsn}",
             "expires_on": expires.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
         }
+        # The variant is chosen by the key: `account_id` (reconnect) XOR `providers`
+        # (create) — sending both, or a `type`, fails the anyOf.
+        if reconnect_account:
+            body["account_id"] = reconnect_account
+        else:
+            body["providers"] = [str(p).lower() for p in providers] if providers else "*"
         # v2 = a single redirect_uri (failure no longer has a dedicated URL); we take the
         # success one, otherwise the failure one as a fallback.
         redirect = success_redirect_url or failure_redirect_url
         if redirect:
             body["redirect_uri"] = redirect
-        if reconnect_account:
-            body["reconnect_account"] = reconnect_account
-        if notify_url:
-            body["notify_url"] = notify_url
-        if name:
-            body["name"] = name
+        # `name` / `notify_url`: v1 fields, rejected by the v2 schema — kept in the
+        # signature only, never sent. Nothing reads a correlation value back from
+        # Unipile (the pending row is matched by `reconcile_pending`, not by the link).
         # config.linkedin: products to enable + offered connection methods.
         # Only set if we ask for something non-default (otherwise Unipile
         # keeps its original behavior: classic + credentials).

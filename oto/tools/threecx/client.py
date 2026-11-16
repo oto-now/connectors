@@ -1,4 +1,5 @@
-"""3CX phone system client — call log and call recordings (3CX v20, XAPI).
+"""3CX phone system client — call log, call recordings and configuration (3CX v20,
+XAPI).
 
 Reference: 3CX's Configuration REST API (`/xapi/v1`, OData v4), whose
 `$metadata` document is served by every PBX.
@@ -21,12 +22,23 @@ call log of the PBX and downloads its recordings, but listing the
   asked. Recorded rows are therefore filtered here, after paging.
 - A recording downloads from `Recordings/Pbx.DownloadRecording(recId=…)`,
   as `audio/x-wav`.
+
+## Configuration
+
+`read` / `create` / `update` / `delete` / `invoke` reach any resource of the
+XAPI. Nothing is hard-coded: every path is checked against the PBX's own
+`$metadata` (`schema.Schema`, cached one hour per PBX) before the request, a
+body may only name properties of the target type, and a credential
+(passwords, SIP secrets, provisioning links, API and licence keys) is never
+written, nor handed out by an operation. Masking what is READ is the caller's
+choice (`schema.mask`).
 """
 from __future__ import annotations
 
 import re
+import time
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlsplit
 
 import requests
@@ -35,11 +47,15 @@ from ..common import raise_for_upstream
 from ..common.url_guard import assert_public_https_url, refuse_redirect
 from ..common.credentials import require
 from . import auth
+from .schema import Schema, check_identifier
 
 _HTTP_TIMEOUT = (10, 120)  # (connect, read) — never an unbounded wait
 _DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _DATETIME = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$")
 _MAX_TOP = 500
+_SCHEMA_TTL = 3600  # seconds — a PBX's schema changes only with its version
+# {base_url: (Schema, fetched_at)} — process-wide, like the token cache.
+_SCHEMA_CACHE: Dict[str, Tuple[Schema, float]] = {}
 
 
 def _base_url(value: Optional[str]) -> str:
@@ -112,12 +128,13 @@ class ThreeCXClient:
         return auth.get_access_token(self.base_url, key=self._key, **self._creds)
 
     def _request(self, path: str, *, params: Optional[Dict[str, Any]] = None,
-                 accept: str = "application/json") -> requests.Response:
+                 accept: str = "application/json", method: str = "GET",
+                 body: Optional[Any] = None) -> requests.Response:
         renewed = False
         while True:
             assert_public_https_url(self.base_url)
-            resp = self.session.get(
-                f"{self.base_url}/xapi/v1{path}", params=params,
+            resp = self.session.request(
+                method, f"{self.base_url}/xapi/v1{path}", params=params, json=body,
                 headers={"Authorization": f"Bearer {self._token()}", "Accept": accept},
                 timeout=_HTTP_TIMEOUT, allow_redirects=False)
             refuse_redirect(resp, service="3cx")
@@ -186,3 +203,106 @@ class ThreeCXClient:
         return {"content": resp.content,
                 "content_type": resp.headers.get("Content-Type") or "audio/x-wav",
                 "filename": _filename(resp, rec_id)}
+
+    # ------------------------------------------------------------------
+    # configuration — any resource of the XAPI, checked against its schema
+    # ------------------------------------------------------------------
+
+    def schema(self) -> Schema:
+        """The PBX's own `$metadata`, parsed; cached one hour per PBX."""
+        hit = _SCHEMA_CACHE.get(self.base_url)
+        if hit and time.monotonic() - hit[1] < _SCHEMA_TTL:
+            return hit[0]
+        schema = Schema.parse(self._request("/$metadata", accept="application/xml").content)
+        _SCHEMA_CACHE[self.base_url] = (schema, time.monotonic())
+        return schema
+
+    @staticmethod
+    def _json(resp: requests.Response) -> Any:
+        if resp.status_code == 204 or not resp.content:
+            return None
+        try:
+            return resp.json()
+        except ValueError:
+            return {"content_type": resp.headers.get("Content-Type"), "size": len(resp.content)}
+
+    def read(self, resource: str, *, key: Any = None, navigation: Optional[str] = None,
+             filter: Optional[str] = None, select: Optional[List[str]] = None,
+             expand: Optional[str] = None, orderby: Optional[str] = None,
+             top: Optional[int] = None, skip: int = 0) -> Dict[str, Any]:
+        """A collection page, one entity, a navigation of it, or a singleton.
+
+        Returns:
+            a collection: `{"value": [rows], "next_skip": int | None}` (a page
+            is the last when it holds fewer rows than `top`); otherwise
+            `{"value": entity}`.
+        """
+        schema = self.schema()
+        path = schema.path(check_identifier(resource, "resource"), key=key,
+                           navigation=navigation)
+        params: Dict[str, Any] = {}
+        if filter:
+            params["$filter"] = filter
+        if select:
+            params["$select"] = ",".join(check_identifier(s, "select") for s in select)
+        if expand:
+            params["$expand"] = expand
+        if orderby:
+            params["$orderby"] = orderby
+        collection = key is None and not schema.is_singleton(resource)
+        if navigation is not None:
+            nav_type = schema.resource_type(resource).navigations[navigation]
+            collection = nav_type.startswith("Collection(")
+        if collection:
+            top = 100 if top is None else int(top)
+            if not 1 <= top <= _MAX_TOP:
+                raise ValueError(f"top must be between 1 and {_MAX_TOP} — received {top!r}.")
+            if int(skip) < 0:
+                raise ValueError(f"skip must be non-negative — received {skip!r}.")
+            params.update({"$top": top, "$skip": int(skip)})
+        payload = self._json(self._request(path, params=params or None))
+        if not collection:
+            return {"value": payload}
+        rows = (payload or {}).get("value") or []
+        return {"value": rows, "next_skip": int(skip) + len(rows) if len(rows) == top else None}
+
+    def create(self, resource: str, body: Dict[str, Any]) -> Any:
+        """POST a new entity to a collection; returns what the PBX answers."""
+        schema = self.schema()
+        if schema.is_singleton(check_identifier(resource, "resource")):
+            raise ValueError(f"{resource} is a singleton: update it, it cannot be created.")
+        schema.check_body(resource, body)
+        return self._json(self._request(schema.path(resource), method="POST", body=body))
+
+    def update(self, resource: str, body: Dict[str, Any], *, key: Any = None) -> Any:
+        """PATCH the given properties of one entity, or of a singleton."""
+        schema = self.schema()
+        check_identifier(resource, "resource")
+        if key is None and not schema.is_singleton(resource):
+            raise ValueError(f"updating {resource} needs the key of the entity.")
+        schema.check_body(resource, body)
+        return self._json(self._request(schema.path(resource, key=key), method="PATCH",
+                                        body=body))
+
+    def delete(self, resource: str, *, key: Any) -> Any:
+        """DELETE one entity of a collection."""
+        schema = self.schema()
+        check_identifier(resource, "resource")
+        if key is None:
+            raise ValueError(f"deleting from {resource} needs the key of the entity.")
+        return self._json(self._request(schema.path(resource, key=key), method="DELETE"))
+
+    def invoke(self, operation: str, *, resource: Optional[str] = None, key: Any = None,
+               arguments: Optional[Dict[str, Any]] = None) -> Any:
+        """Call a bound or unbound operation: a function is a GET (it reads), an
+        action a POST (it acts), its arguments in the body."""
+        schema = self.schema()
+        if resource is not None:
+            check_identifier(resource, "resource")
+        op = schema.operation(check_identifier(operation, "operation"), resource,
+                              on_entity=key is not None or (
+                                  resource is not None and schema.is_singleton(resource)))
+        path = schema.path(resource, key=key, operation=op, arguments=arguments)
+        if op.kind == "function":
+            return self._json(self._request(path))
+        return self._json(self._request(path, method="POST", body=dict(arguments or {})))

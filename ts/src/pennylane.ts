@@ -2725,11 +2725,2742 @@ export const matchSupplierInvoiceTransaction = defineFunction({
   cost: { per: "request" },
 })
 
+export const listBankAccounts = defineFunction({
+  name: "pennylane.list_bank_accounts",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the company's bank accounts with their current balance: id, name, currency, balance, bank_establishment {id}, journal and ledger_account. balance is a decimal string as Pennylane holds it (\"12345.67\"): parse it as a decimal, never a float, before adding up. Pennylane exposes no IBAN and no bank sync date on an account; updated_at is when the record last changed, not proof that the bank feed ran. The bank's name is read with list_bank_establishments. Scope bank_accounts:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "All bank accounts and their balances", input: {} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/bank_accounts",
+    pathParams: [],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getBankAccount = defineFunction({
+  name: "pennylane.get_bank_account",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one bank account and its current balance, a decimal string (\"12345.67\"). Scope bank_accounts:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["bank_account_id"],
+    "properties": {"bank_account_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One bank account", input: {"bank_account_id": 501} },
+  ],
+  refusals: [
+    { code: "bank_account_not_found", when: 404, message: "No bank account with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/bank_accounts/{bank_account_id}",
+    pathParams: ["bank_account_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listBankEstablishments = defineFunction({
+  name: "pennylane.list_bank_establishments",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the bank establishments {id, name}: the bank behind each account (bank_establishment.id of a bank account). Filter on id to name only the banks of the accounts read. Scope bank_establishments:readonly, distinct from bank_accounts:readonly: a key can read balances without it.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "filter": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "operator", "value"],
+          "properties": {
+            "field": {"enum": ["id"]},
+            "operator": {"enum": ["lt", "lteq", "gt", "gteq", "eq", "not_eq", "in", "not_in", "start_with"]},
+            "value": {"type": ["string", "number", "boolean", "array"], "items": {"type": ["string", "number"]}}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"operator": {"enum": ["in", "not_in"]}}},
+              "then": {"properties": {"value": {"type": "array", "minItems": 1}}},
+              "else": {"properties": {"value": {"type": ["string", "number", "boolean"]}}}
+            }
+          ]
+        },
+        "description": "Clauses that must all hold, each {field, operator, value}; in and not_in take a list. Field: id (lt, lteq, gt, gteq, eq, not_eq, in, not_in)."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "The banks of two accounts", input: {"filter": [{"field": "id", "operator": "in", "value": [11, 12]}]} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/bank_establishments",
+    pathParams: [],
+    query: {"filter": "filter", "limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+    encode: {"filter": "json"},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getTransaction = defineFunction({
+  name: "pennylane.get_transaction",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one bank transaction: amount, date, label, bank_account, outstanding_balance (non-zero while not fully matched), customer or supplier, categories and matched_invoices. Scope transactions:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["transaction_id"],
+    "properties": {"transaction_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One transaction", input: {"transaction_id": 30001} },
+  ],
+  refusals: [
+    { code: "transaction_not_found", when: 404, message: "No bank transaction with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/transactions/{transaction_id}",
+    pathParams: ["transaction_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createTransaction = defineFunction({
+  name: "pennylane.create_transaction",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Record a bank transaction on a bank account by hand, e.g. for an account without a bank feed. amount is a decimal string, negative for money out (\"-120.50\"). A transaction the bank feed also brings would be recorded twice: check list_transactions on the account and date first. Scope transactions:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["bank_account_id", "label", "date", "amount"],
+    "properties": {
+      "bank_account_id": {"type": "integer", "minimum": 1},
+      "label": {"type": "string", "minLength": 1},
+      "date": {"type": "string", "format": "date", "description": "YYYY-MM-DD."},
+      "amount": {
+        "type": "string",
+        "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+        "description": "Decimal amount as a string, e.g. \"700.00\"."
+      },
+      "fee": {
+        "type": "string",
+        "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+        "description": "Decimal amount as a string, e.g. \"700.00\"."
+      }
+    }
+  },
+  examples: [
+    { title: "A manual incoming payment", input: {"bank_account_id": 501, "label": "Cheque deposit", "date": "2026-10-06", "amount": "250.00"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/transactions",
+    pathParams: [],
+    query: {},
+    body: {"bank_account_id": "bank_account_id", "label": "label", "date": "date", "amount": "amount", "fee": "fee"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const updateTransaction = defineFunction({
+  name: "pennylane.update_transaction",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Attach a bank transaction to a customer or to a supplier (one of the two per call), or detach it with null. Matching it to an invoice is match_customer_invoice_transaction or match_supplier_invoice_transaction. Scope transactions:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["transaction_id"],
+    "properties": {
+      "transaction_id": {"type": "integer", "minimum": 1},
+      "customer_id": {"type": ["integer", "null"], "minimum": 1, "description": "The customer, or null to detach."},
+      "supplier_id": {"type": ["integer", "null"], "minimum": 1, "description": "The supplier, or null to detach."}
+    },
+    "oneOf": [{"required": ["customer_id"]}, {"required": ["supplier_id"]}]
+  },
+  examples: [
+    { title: "Attach a transaction to a supplier", input: {"transaction_id": 30002, "supplier_id": 4001} },
+  ],
+  refusals: [
+    { code: "transaction_not_found", when: 404, message: "No bank transaction with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "PUT",
+    path: "/transactions/{transaction_id}",
+    pathParams: ["transaction_id"],
+    query: {},
+    body: {"customer_id": "customer_id", "supplier_id": "supplier_id"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listTransactionCategories = defineFunction({
+  name: "pennylane.list_transaction_categories",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the analytical categories of one bank transaction, each with its weight (a string between 0 and 1). Scope transactions:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["transaction_id"],
+    "properties": {
+      "transaction_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Categories of a transaction", input: {"transaction_id": 30001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/transactions/{transaction_id}/categories",
+    pathParams: ["transaction_id"],
+    query: {"limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listTransactionMatchedInvoices = defineFunction({
+  name: "pennylane.list_transaction_matched_invoices",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the invoices matched to one bank transaction, each {id, type, url}: type tells a customer invoice from a supplier invoice. Scope transactions:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["transaction_id"],
+    "properties": {
+      "transaction_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Invoices matched to a transaction", input: {"transaction_id": 30001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/transactions/{transaction_id}/matched_invoices",
+    pathParams: ["transaction_id"],
+    query: {"limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listChanges = defineFunction({
+  name: "pennylane.list_changes",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List what changed on one kind of object ({id, operation, processed_at}), oldest first, to sync without reading everything again. Pennylane keeps four weeks of changes: an older start_date is refused (422). Pass start_date for the first page, then only cursor (next_cursor): both together are refused (400). Scope: the read scope of the object (transactions:readonly for transactions, ledger_entries:readonly for the four ledger kinds...).",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["resource"],
+    "properties": {
+      "resource": {
+        "enum": [
+          "transactions",
+          "customer_invoices",
+          "supplier_invoices",
+          "customers",
+          "suppliers",
+          "products",
+          "quotes",
+          "ledger_entries",
+          "ledger_entry_lines",
+          "ledger_entries_categories",
+          "ledger_entry_lines_categories"
+        ],
+        "description": "The kind of object whose changes are listed."
+      },
+      "start_date": {
+        "type": "string",
+        "format": "date-time",
+        "description": "RFC 3339, within the last four weeks; never with cursor."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 1000},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page; never with start_date."}
+    },
+    "not": {"required": ["start_date", "cursor"]}
+  },
+  examples: [
+    { title: "Transactions changed since the first of November", input: {"resource": "transactions", "start_date": "2026-11-01T00:00:00Z"} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/changelogs/{resource}",
+    pathParams: ["resource"],
+    query: {"start_date": "start_date", "limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getCustomerInvoice = defineFunction({
+  name: "pennylane.get_customer_invoice",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one customer invoice or credit note: status, paid, remaining_amount_with_tax, amounts, customer, lines, payments, installments, matched_transactions, public_file_url (the PDF). Scope customer_invoices:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {"invoice_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One customer invoice", input: {"invoice_id": 5001} },
+  ],
+  refusals: [
+    { code: "customer_invoice_not_found", when: 404, message: "No customer invoice with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/customer_invoices/{invoice_id}",
+    pathParams: ["invoice_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listCustomerInvoicePayments = defineFunction({
+  name: "pennylane.list_customer_invoice_payments",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the payments recorded on one customer invoice ({id, label, currency_amount, status}). Scope customer_invoices:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {
+      "invoice_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Payments of a customer invoice", input: {"invoice_id": 5001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/customer_invoices/{invoice_id}/payments",
+    pathParams: ["invoice_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listSupplierInvoicePayments = defineFunction({
+  name: "pennylane.list_supplier_invoice_payments",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the payments recorded on one supplier invoice ({id, label, currency_amount, status}). Scope supplier_invoices:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {
+      "invoice_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Payments of a supplier invoice", input: {"invoice_id": 8001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/supplier_invoices/{invoice_id}/payments",
+    pathParams: ["invoice_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listCustomerInvoiceInstallments = defineFunction({
+  name: "pennylane.list_customer_invoice_installments",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the installments of one customer invoice, by deadline: amount, deadline, status, remaining_amount_with_tax, payment_methods. The installment ids are what mark_customer_invoice_installment_paid takes. Scope customer_invoices:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {
+      "invoice_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["deadline", "-deadline"], "description": "deadline ascending by default."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Installments of an invoice", input: {"invoice_id": 5001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/customer_invoices/{invoice_id}/installments",
+    pathParams: ["invoice_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const markCustomerInvoiceInstallmentPaid = defineFunction({
+  name: "pennylane.mark_customer_invoice_installment_paid",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Mark one installment of a customer invoice as paid; once every installment is paid, the invoice is paid too. Pennylane matches no transaction then, and the API offers no way back: when the payment is on the bank account, match the transaction instead. Needs a plan with installments (get_company_features), else 403. Scope customer_invoices:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id", "installment_id"],
+    "properties": {
+      "invoice_id": {"type": "integer", "minimum": 1},
+      "installment_id": {"type": "integer", "minimum": 1, "description": "From list_customer_invoice_installments."}
+    }
+  },
+  examples: [
+    { title: "Mark the first installment paid", input: {"invoice_id": 5001, "installment_id": 61} },
+  ],
+  refusals: [],
+  request: {
+    method: "PUT",
+    path: "/customer_invoices/{invoice_id}/installments/{installment_id}/mark_as_paid",
+    pathParams: ["invoice_id", "installment_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const markCustomerInvoicePaid = defineFunction({
+  name: "pennylane.mark_customer_invoice_paid",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Mark a finalized customer invoice as paid, e.g. paid in cash or by a channel without a bank transaction. Pennylane matches no transaction then, and the API offers no way back: when the payment is on the bank account, match the transaction instead (match_customer_invoice_transaction). Scope customer_invoices:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {"invoice_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "Mark an invoice paid", input: {"invoice_id": 5001} },
+  ],
+  refusals: [
+    { code: "customer_invoice_not_found", when: 404, message: "No customer invoice with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "PUT",
+    path: "/customer_invoices/{invoice_id}/mark_as_paid",
+    pathParams: ["invoice_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listCustomerInvoiceMatchedTransactions = defineFunction({
+  name: "pennylane.list_customer_invoice_matched_transactions",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the bank transactions matched to one customer invoice. The ids are what unmatch_customer_invoice_transaction takes. Scope customer_invoices:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {
+      "invoice_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Transactions matched to an invoice", input: {"invoice_id": 5001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/customer_invoices/{invoice_id}/matched_transactions",
+    pathParams: ["invoice_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listSupplierInvoiceMatchedTransactions = defineFunction({
+  name: "pennylane.list_supplier_invoice_matched_transactions",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the bank transactions matched to one supplier invoice. The ids are what unmatch_supplier_invoice_transaction takes. Scope supplier_invoices:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {
+      "invoice_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Transactions matched to a supplier invoice", input: {"invoice_id": 8001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/supplier_invoices/{invoice_id}/matched_transactions",
+    pathParams: ["invoice_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const unmatchCustomerInvoiceTransaction = defineFunction({
+  name: "pennylane.unmatch_customer_invoice_transaction",
+  connector: "pennylane",
+  class: "sensitive",
+  act: true,
+  description: "Remove the match between a bank transaction and a customer invoice: the invoice may go back to unpaid or late, and Pennylane may remind the customer. Not applicable to a draft. Restoring it is match_customer_invoice_transaction with the same ids. Scope customer_invoices:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id", "transaction_id"],
+    "properties": {"invoice_id": {"type": "integer", "minimum": 1}, "transaction_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "Unmatch a wrong transaction", input: {"invoice_id": 5001, "transaction_id": 30001} },
+  ],
+  refusals: [],
+  request: {
+    method: "DELETE",
+    path: "/customer_invoices/{invoice_id}/matched_transactions/{transaction_id}",
+    pathParams: ["invoice_id", "transaction_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+  confirm: { summary: "Unmatch transaction {transaction_id} from customer invoice {invoice_id}: the invoice may read unpaid again." },
+})
+
+export const unmatchSupplierInvoiceTransaction = defineFunction({
+  name: "pennylane.unmatch_supplier_invoice_transaction",
+  connector: "pennylane",
+  class: "sensitive",
+  act: true,
+  description: "Remove the match between a bank transaction and a supplier invoice: the invoice may go back to unpaid. Restoring it is match_supplier_invoice_transaction with the same ids. Scope supplier_invoices:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id", "transaction_id"],
+    "properties": {"invoice_id": {"type": "integer", "minimum": 1}, "transaction_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "Unmatch a wrong transaction", input: {"invoice_id": 8001, "transaction_id": 30002} },
+  ],
+  refusals: [],
+  request: {
+    method: "DELETE",
+    path: "/supplier_invoices/{invoice_id}/matched_transactions/{transaction_id}",
+    pathParams: ["invoice_id", "transaction_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+  confirm: { summary: "Unmatch transaction {transaction_id} from supplier invoice {invoice_id}: the invoice may read unpaid again." },
+})
+
+export const updateSupplierInvoicePaymentStatus = defineFunction({
+  name: "pennylane.update_supplier_invoice_payment_status",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Set the payment status of a supplier invoice: paid or to_be_paid, e.g. paid by the manager's own card, with no bank transaction to match. Scope supplier_invoices:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id", "payment_status"],
+    "properties": {"invoice_id": {"type": "integer", "minimum": 1}, "payment_status": {"enum": ["paid", "to_be_paid"]}}
+  },
+  examples: [
+    { title: "Mark a supplier invoice paid", input: {"invoice_id": 8001, "payment_status": "paid"} },
+  ],
+  refusals: [
+    { code: "supplier_invoice_not_found", when: 404, message: "No supplier invoice with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "PUT",
+    path: "/supplier_invoices/{invoice_id}/payment_status",
+    pathParams: ["invoice_id"],
+    query: {},
+    body: {"payment_status": "payment_status"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listCustomerInvoiceAppendices = defineFunction({
+  name: "pennylane.list_customer_invoice_appendices",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the files appended to one customer invoice ({id, filename, url}). Scope customer_invoices:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {
+      "invoice_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Appendices of an invoice", input: {"invoice_id": 5001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/customer_invoices/{invoice_id}/appendices",
+    pathParams: ["invoice_id"],
+    query: {"limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listCustomerInvoiceCustomHeaderFields = defineFunction({
+  name: "pennylane.list_customer_invoice_custom_header_fields",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the custom header fields of one customer invoice ({id, title, value, rank}), printed at the top of the PDF. Scope customer_invoices:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["invoice_id"],
+    "properties": {
+      "invoice_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Custom header fields of an invoice", input: {"invoice_id": 5001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/customer_invoices/{invoice_id}/custom_header_fields",
+    pathParams: ["invoice_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listCategoryGroupCategories = defineFunction({
+  name: "pennylane.list_category_group_categories",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the categories of one analytical axis (category group). Scope categories:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["category_group_id"],
+    "properties": {
+      "category_group_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Categories of one axis", input: {"category_group_id": 71} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/category_groups/{category_group_id}/categories",
+    pathParams: ["category_group_id"],
+    query: {"limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getCategoryGroup = defineFunction({
+  name: "pennylane.get_category_group",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one analytical axis (category group) with its kind and its categories. Scope categories:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["category_group_id"],
+    "properties": {"category_group_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One axis", input: {"category_group_id": 71} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/category_groups/{category_group_id}",
+    pathParams: ["category_group_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createCategoryGroup = defineFunction({
+  name: "pennylane.create_category_group",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Create an analytical axis (category group). kind: profit_and_loss (revenue and expense analysis), treasury (cash in and out) or building. Look the axes up first (list_category_groups): the API cannot delete one. Scope categories:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["label"],
+    "properties": {
+      "label": {"type": "string", "minLength": 1, "maxLength": 2000},
+      "kind": {"enum": ["profit_and_loss", "treasury", "building"]}
+    }
+  },
+  examples: [
+    { title: "A projects axis", input: {"label": "Projects", "kind": "profit_and_loss"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/category_groups",
+    pathParams: [],
+    query: {},
+    body: {"label": "label", "kind": "kind"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const updateCategoryGroup = defineFunction({
+  name: "pennylane.update_category_group",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Rename an analytical axis or change its kind. label is required by Pennylane even when unchanged. Scope categories:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["category_group_id", "label"],
+    "properties": {
+      "category_group_id": {"type": "integer", "minimum": 1},
+      "label": {"type": "string", "minLength": 1, "maxLength": 2000},
+      "kind": {"enum": ["profit_and_loss", "treasury", "building"]}
+    }
+  },
+  examples: [
+    { title: "Rename an axis", input: {"category_group_id": 71, "label": "Client projects"} },
+  ],
+  refusals: [],
+  request: {
+    method: "PUT",
+    path: "/category_groups/{category_group_id}",
+    pathParams: ["category_group_id"],
+    query: {},
+    body: {"label": "label", "kind": "kind"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const getCategory = defineFunction({
+  name: "pennylane.get_category",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one analytical category: label, category_group, analytical_code, direction (treasury categories) and ledger_account. Scope categories:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["category_id"],
+    "properties": {"category_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One category", input: {"category_id": 7101} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/categories/{category_id}",
+    pathParams: ["category_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createCategory = defineFunction({
+  name: "pennylane.create_category",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Create an analytical category in an axis (category group). direction only applies to a treasury axis (cash_out when absent). ledger_account_id is only accepted in an axis with self-service accounting, and never a bank, pending or cash account. Look the categories up first (list_categories): the API cannot delete one. Scope categories:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["label", "category_group_id"],
+    "properties": {
+      "label": {"type": "string", "minLength": 1},
+      "category_group_id": {"type": "integer", "minimum": 1},
+      "direction": {"enum": ["cash_in", "cash_out"], "description": "Treasury axes only."},
+      "analytical_code": {"type": "string"},
+      "ledger_account_id": {"type": "integer", "minimum": 1}
+    }
+  },
+  examples: [
+    { title: "A project in the projects axis", input: {"label": "Website redesign", "category_group_id": 71, "analytical_code": "P-042"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/categories",
+    pathParams: [],
+    query: {},
+    body: {"label": "label", "category_group_id": "category_group_id", "direction": "direction", "analytical_code": "analytical_code", "ledger_account_id": "ledger_account_id"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const updateCategory = defineFunction({
+  name: "pennylane.update_category",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Change an analytical category: label, direction (treasury axes), analytical_code (not in a structured analytical axis), ledger_account_id (self-service accounting axes only, never cleared). Only the arguments passed change. Scope categories:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["category_id"],
+    "minProperties": 2,
+    "properties": {
+      "category_id": {"type": "integer", "minimum": 1},
+      "label": {"type": "string", "minLength": 1},
+      "direction": {"enum": ["cash_in", "cash_out"], "description": "Treasury axes only."},
+      "analytical_code": {"type": "string"},
+      "ledger_account_id": {"type": "integer", "minimum": 1}
+    }
+  },
+  examples: [
+    { title: "Rename a category", input: {"category_id": 7101, "label": "Website redesign 2026"} },
+  ],
+  refusals: [],
+  request: {
+    method: "PUT",
+    path: "/categories/{category_id}",
+    pathParams: ["category_id"],
+    query: {},
+    body: {"label": "label", "direction": "direction", "analytical_code": "analytical_code", "ledger_account_id": "ledger_account_id"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const getJournal = defineFunction({
+  name: "pennylane.get_journal",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one journal ({id, code, label, type}). Scope journals:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["journal_id"],
+    "properties": {"journal_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One journal", input: {"journal_id": 12} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/journals/{journal_id}",
+    pathParams: ["journal_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createJournal = defineFunction({
+  name: "pennylane.create_journal",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Create a journal: code of 2 to 5 letters and a label. Look the journals up first (list_journals): the API cannot delete one. Scope journals:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["code", "label"],
+    "properties": {
+      "code": {"type": "string", "pattern": "^[A-Za-z]{2,5}$", "description": "2 to 5 letters."},
+      "label": {"type": "string", "minLength": 1}
+    }
+  },
+  examples: [
+    { title: "A journal for miscellaneous operations", input: {"code": "OD", "label": "Miscellaneous operations"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/journals",
+    pathParams: [],
+    query: {},
+    body: {"code": "code", "label": "label"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const getLedgerAccount = defineFunction({
+  name: "pennylane.get_ledger_account",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one ledger account: number, label, type, vat_rate, letterable, enabled. Scope ledger_accounts:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["ledger_account_id"],
+    "properties": {"ledger_account_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One ledger account", input: {"ledger_account_id": 4101} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/ledger_accounts/{ledger_account_id}",
+    pathParams: ["ledger_account_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createLedgerAccount = defineFunction({
+  name: "pennylane.create_ledger_account",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Add an account to the chart of accounts. A number starting with 401 also creates a supplier, one starting with 411 a company customer: look both up first. Look the account up by number first (list_ledger_accounts, start_with): the API cannot delete one. Scope ledger_accounts:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["number", "label"],
+    "properties": {
+      "number": {"type": "string", "pattern": "^\\S+$", "description": "e.g. 6226 or 401ACME."},
+      "label": {"type": "string", "minLength": 1},
+      "vat_rate": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_]+$",
+        "description": "Pennylane VAT code, never a percentage: FR_200 (20%), FR_100 (10%), FR_55 (5.5%), FR_21 (2.1%), exempt. Reverse-charge codes: intracom_21, intracom_55, intracom_85, intracom_100, extracom, crossborder, FR_85_construction, FR_100_construction, FR_200_construction."
+      },
+      "country_alpha2": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2, EU countries."}
+    }
+  },
+  examples: [
+    { title: "A fees account", input: {"number": "6226", "label": "Fees"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/ledger_accounts",
+    pathParams: [],
+    query: {},
+    body: {"number": "number", "label": "label", "vat_rate": "vat_rate", "country_alpha2": "country_alpha2"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const updateLedgerAccount = defineFunction({
+  name: "pennylane.update_ledger_account",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Change a ledger account's label, or whether its lines can be lettered (letterable). The number cannot change. Scope ledger_accounts:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["ledger_account_id"],
+    "minProperties": 2,
+    "properties": {
+      "ledger_account_id": {"type": "integer", "minimum": 1},
+      "label": {"type": "string", "minLength": 1},
+      "letterable": {"type": "boolean"}
+    }
+  },
+  examples: [
+    { title: "Make an account letterable", input: {"ledger_account_id": 4101, "letterable": true} },
+  ],
+  refusals: [],
+  request: {
+    method: "PUT",
+    path: "/ledger_accounts/{ledger_account_id}",
+    pathParams: ["ledger_account_id"],
+    query: {},
+    body: {"label": "label", "letterable": "letterable"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const updateProduct = defineFunction({
+  name: "pennylane.update_product",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Change a product of the catalogue: label, price_before_tax (decimal string), vat_rate (Pennylane code, FR_200 for 20%), unit, currency, reference, external_reference, description, ledger_account_id or substance (goods or services; with ledger_account_id, both must name the same account). Invoices already issued keep their lines. Only the arguments passed change. Scope products:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["product_id"],
+    "minProperties": 2,
+    "properties": {
+      "product_id": {"type": "integer", "minimum": 1},
+      "label": {"type": "string", "minLength": 1},
+      "description": {"type": "string", "maxLength": 5000},
+      "external_reference": {"type": "string"},
+      "price_before_tax": {
+        "type": "string",
+        "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+        "description": "Decimal amount as a string, e.g. \"700.00\"."
+      },
+      "vat_rate": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_]+$",
+        "description": "Pennylane VAT code, never a percentage: FR_200 (20%), FR_100 (10%), FR_55 (5.5%), FR_21 (2.1%), exempt. Reverse-charge codes: intracom_21, intracom_55, intracom_85, intracom_100, extracom, crossborder, FR_85_construction, FR_100_construction, FR_200_construction."
+      },
+      "unit": {"type": "string"},
+      "currency": {"type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217, EUR by default."},
+      "reference": {"type": "string"},
+      "ledger_account_id": {"type": "integer", "minimum": 1},
+      "substance": {"enum": ["goods", "services"]}
+    }
+  },
+  examples: [
+    { title: "Raise the price of a consulting day", input: {"product_id": 1201, "price_before_tax": "750.00"} },
+  ],
+  refusals: [
+    { code: "product_not_found", when: 404, message: "No product with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "PUT",
+    path: "/products/{product_id}",
+    pathParams: ["product_id"],
+    query: {},
+    body: {"label": "label", "description": "description", "external_reference": "external_reference", "price_before_tax": "price_before_tax", "vat_rate": "vat_rate", "unit": "unit", "currency": "currency", "reference": "reference", "ledger_account_id": "ledger_account_id", "substance": "substance"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listNumberings = defineFunction({
+  name: "pennylane.list_numberings",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the document numbering set up per document type ({kind, number_prefix, next_number}); a type never set up is absent. Check it before acting: finalizing an invoice fails without the invoice numbering, a quote created without its numbering has no number, and a commercial document fails without its own. Numbering is set up in the Pennylane app only. Scope customer_invoices:readonly, quotes:readonly or commercial_documents:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "All numberings", input: {} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/numberings",
+    pathParams: [],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getCompanyFeatures = defineFunction({
+  name: "pennylane.get_company_features",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Tell which gated features the company can use now: installments, custom_fields, products_and_services_catalog, each true or false. A feature is true only when the plan and the rollout both allow it: it can be false on a plan that includes it. Read it before an action that a feature gates, rather than reading a 403 as a missing scope. No scope required.",
+  schema: {"type": "object", "additionalProperties": false, "properties": {}},
+  examples: [
+    { title: "Features of the company", input: {} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/company/features",
+    pathParams: [],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const getCustomer = defineFunction({
+  name: "pennylane.get_customer",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one customer, company or individual, by its id (the customer.id of an invoice): name, emails, addresses, payment conditions, ledger account, contacts. Scope customers:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id"],
+    "properties": {"customer_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One customer", input: {"customer_id": 3001} },
+  ],
+  refusals: [
+    { code: "customer_not_found", when: 404, message: "No customer with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/customers/{customer_id}",
+    pathParams: ["customer_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const getCompanyCustomer = defineFunction({
+  name: "pennylane.get_company_customer",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one company customer: name, reg_no, vat_number, emails, addresses, billing_iban, payment conditions, mandates. An individual's id is refused here: get_individual_customer. Scope customers:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id"],
+    "properties": {"customer_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One company customer", input: {"customer_id": 3001} },
+  ],
+  refusals: [
+    { code: "customer_not_found", when: 404, message: "No customer with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/company_customers/{customer_id}",
+    pathParams: ["customer_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const getIndividualCustomer = defineFunction({
+  name: "pennylane.get_individual_customer",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one individual customer (a person): first_name, last_name, emails, addresses, payment conditions. A company's id is refused here: get_company_customer. Scope customers:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id"],
+    "properties": {"customer_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One individual customer", input: {"customer_id": 3002} },
+  ],
+  refusals: [
+    { code: "customer_not_found", when: 404, message: "No customer with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/individual_customers/{customer_id}",
+    pathParams: ["customer_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createIndividualCustomer = defineFunction({
+  name: "pennylane.create_individual_customer",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Create an individual customer (a person, not a company): first_name, last_name and the full billing address are required. Look it up first by external_reference (list_customers): creating it again is refused. Returns the customer with its id. Scope customers:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["first_name", "last_name", "billing_address"],
+    "properties": {
+      "first_name": {"type": "string", "minLength": 1, "maxLength": 1000, "personal": true},
+      "last_name": {"type": "string", "minLength": 1, "maxLength": 1000, "personal": true},
+      "billing_address": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["address", "postal_code", "city", "country_alpha2"],
+        "properties": {
+          "address": {"type": "string", "personal": true},
+          "postal_code": {"type": "string"},
+          "city": {"type": "string"},
+          "country_alpha2": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2, e.g. FR."}
+        }
+      },
+      "delivery_address": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["address", "postal_code", "city", "country_alpha2"],
+        "properties": {
+          "address": {"type": "string", "personal": true},
+          "postal_code": {"type": "string"},
+          "city": {"type": "string"},
+          "country_alpha2": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2, e.g. FR."}
+        }
+      },
+      "emails": {
+        "type": "array",
+        "items": {"type": "string", "format": "email", "personal": true},
+        "description": "Recipients of the invoices."
+      },
+      "phone": {"type": "string", "personal": true},
+      "payment_conditions": {
+        "enum": [
+          "upon_receipt",
+          "custom",
+          "7_days",
+          "15_days",
+          "30_days",
+          "30_days_end_of_month",
+          "45_days",
+          "45_days_end_of_month",
+          "60_days"
+        ],
+        "description": "30_days by default. custom has no effect through the API: an invoice still needs its deadline."
+      },
+      "billing_iban": {"type": "string", "personal": true},
+      "recipient": {"type": "string", "personal": true},
+      "reference": {"type": "string"},
+      "notes": {"type": "string"},
+      "external_reference": {"type": "string", "description": "Your own unique value."},
+      "billing_language": {"enum": ["fr_FR", "en_GB", "de_DE", "es_ES"]}
+    }
+  },
+  examples: [
+    { title: "A private customer in Paris", input: {"first_name": "Jane", "last_name": "Doe", "billing_address": {"address": "1 rue de l'Exemple", "postal_code": "75001", "city": "Paris", "country_alpha2": "FR"}, "emails": ["jane.doe@example.com"]} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/individual_customers",
+    pathParams: [],
+    query: {},
+    body: {"first_name": "first_name", "last_name": "last_name", "billing_address": "billing_address", "delivery_address": "delivery_address", "emails": "emails", "phone": "phone", "payment_conditions": "payment_conditions", "billing_iban": "billing_iban", "recipient": "recipient", "reference": "reference", "notes": "notes", "external_reference": "external_reference", "billing_language": "billing_language"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const updateIndividualCustomer = defineFunction({
+  name: "pennylane.update_individual_customer",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Update an individual customer: names, addresses, emails, phone, payment conditions, IBAN, external_reference... Only the arguments passed change. Scope customers:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id"],
+    "minProperties": 2,
+    "properties": {
+      "customer_id": {"type": "integer", "minimum": 1},
+      "first_name": {"type": "string", "minLength": 1, "personal": true},
+      "last_name": {"type": "string", "minLength": 1, "personal": true},
+      "billing_address": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["address", "postal_code", "city", "country_alpha2"],
+        "properties": {
+          "address": {"type": "string", "personal": true},
+          "postal_code": {"type": "string"},
+          "city": {"type": "string"},
+          "country_alpha2": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2, e.g. FR."}
+        }
+      },
+      "delivery_address": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["address", "postal_code", "city", "country_alpha2"],
+        "properties": {
+          "address": {"type": "string", "personal": true},
+          "postal_code": {"type": "string"},
+          "city": {"type": "string"},
+          "country_alpha2": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2, e.g. FR."}
+        }
+      },
+      "emails": {
+        "type": "array",
+        "items": {"type": "string", "format": "email", "personal": true},
+        "description": "Recipients of the invoices."
+      },
+      "phone": {"type": "string", "personal": true},
+      "payment_conditions": {
+        "enum": [
+          "upon_receipt",
+          "custom",
+          "7_days",
+          "15_days",
+          "30_days",
+          "30_days_end_of_month",
+          "45_days",
+          "45_days_end_of_month",
+          "60_days"
+        ],
+        "description": "30_days by default. custom has no effect through the API: an invoice still needs its deadline."
+      },
+      "billing_iban": {"type": "string", "personal": true},
+      "recipient": {"type": "string", "personal": true},
+      "reference": {"type": "string"},
+      "notes": {"type": "string"},
+      "external_reference": {"type": "string"},
+      "billing_language": {"enum": ["fr_FR", "en_GB", "de_DE", "es_ES"]}
+    }
+  },
+  examples: [
+    { title: "Change the billing email", input: {"customer_id": 3002, "emails": ["jane@example.com"]} },
+  ],
+  refusals: [
+    { code: "customer_not_found", when: 404, message: "No customer with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "PUT",
+    path: "/individual_customers/{customer_id}",
+    pathParams: ["customer_id"],
+    query: {},
+    body: {"first_name": "first_name", "last_name": "last_name", "billing_address": "billing_address", "delivery_address": "delivery_address", "emails": "emails", "phone": "phone", "payment_conditions": "payment_conditions", "billing_iban": "billing_iban", "recipient": "recipient", "reference": "reference", "notes": "notes", "external_reference": "external_reference", "billing_language": "billing_language"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listCustomerContacts = defineFunction({
+  name: "pennylane.list_customer_contacts",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the contacts of one customer (first_name, last_name, email, role, phone numbers). Contacts are separate from the customer's invoice recipients (its emails). Scope customers:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id"],
+    "properties": {
+      "customer_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Contacts of a customer", input: {"customer_id": 3001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/customers/{customer_id}/contacts",
+    pathParams: ["customer_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getCustomerContact = defineFunction({
+  name: "pennylane.get_customer_contact",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one contact of a customer. Scope customers:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id", "contact_id"],
+    "properties": {"customer_id": {"type": "integer", "minimum": 1}, "contact_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One contact", input: {"customer_id": 3001, "contact_id": 91} },
+  ],
+  refusals: [
+    { code: "contact_not_found", when: 404, message: "No such contact for this customer in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/customers/{customer_id}/contacts/{contact_id}",
+    pathParams: ["customer_id", "contact_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createCustomerContact = defineFunction({
+  name: "pennylane.create_customer_contact",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Add a contact to a customer. A contact is not an invoice recipient: to have invoices sent to this address, add it to the customer's emails (update_customer). Scope customers:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id", "first_name", "last_name", "email"],
+    "properties": {
+      "customer_id": {"type": "integer", "minimum": 1},
+      "first_name": {"type": "string", "pattern": "\\S", "maxLength": 2000, "personal": true},
+      "last_name": {"type": "string", "pattern": "\\S", "maxLength": 2000, "personal": true},
+      "email": {"type": "string", "format": "email", "maxLength": 2000, "personal": true},
+      "role": {"type": "string", "maxLength": 2000, "description": "Role within the customer's organisation."},
+      "telephone_number": {"type": "string", "maxLength": 1744, "personal": true},
+      "mobile_number": {"type": "string", "maxLength": 1744, "personal": true}
+    }
+  },
+  examples: [
+    { title: "The customer's accountant", input: {"customer_id": 3001, "first_name": "John", "last_name": "Smith", "email": "john.smith@example.com", "role": "Accountant"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/customers/{customer_id}/contacts",
+    pathParams: ["customer_id"],
+    query: {},
+    body: {"first_name": "first_name", "last_name": "last_name", "email": "email", "role": "role", "telephone_number": "telephone_number", "mobile_number": "mobile_number"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const updateCustomerContact = defineFunction({
+  name: "pennylane.update_customer_contact",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Update a contact of a customer; only the arguments passed change, and an empty string clears role or a phone number. The customer's invoice recipients do not change. Scope customers:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id", "contact_id"],
+    "minProperties": 3,
+    "properties": {
+      "customer_id": {"type": "integer", "minimum": 1},
+      "contact_id": {"type": "integer", "minimum": 1},
+      "first_name": {"type": "string", "pattern": "\\S", "maxLength": 2000, "personal": true},
+      "last_name": {"type": "string", "pattern": "\\S", "maxLength": 2000, "personal": true},
+      "email": {"type": "string", "format": "email", "maxLength": 2000, "personal": true},
+      "role": {"type": "string", "maxLength": 2000},
+      "telephone_number": {"type": "string", "maxLength": 1744, "personal": true},
+      "mobile_number": {"type": "string", "maxLength": 1744, "personal": true}
+    }
+  },
+  examples: [
+    { title: "Change a contact's role", input: {"customer_id": 3001, "contact_id": 91, "role": "CFO"} },
+  ],
+  refusals: [
+    { code: "contact_not_found", when: 404, message: "No such contact for this customer in this Pennylane company." },
+  ],
+  request: {
+    method: "PUT",
+    path: "/customers/{customer_id}/contacts/{contact_id}",
+    pathParams: ["customer_id", "contact_id"],
+    query: {},
+    body: {"first_name": "first_name", "last_name": "last_name", "email": "email", "role": "role", "telephone_number": "telephone_number", "mobile_number": "mobile_number"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const deleteCustomerContact = defineFunction({
+  name: "pennylane.delete_customer_contact",
+  connector: "pennylane",
+  class: "sensitive",
+  act: true,
+  description: "Delete a contact of a customer. Its address stays among the invoice recipients if it is there. Read the contact first if it may have to be recreated. Scope customers:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["customer_id", "contact_id"],
+    "properties": {"customer_id": {"type": "integer", "minimum": 1}, "contact_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "Delete a contact", input: {"customer_id": 3001, "contact_id": 91} },
+  ],
+  refusals: [
+    { code: "contact_not_found", when: 404, message: "No such contact for this customer in this Pennylane company." },
+  ],
+  request: {
+    method: "DELETE",
+    path: "/customers/{customer_id}/contacts/{contact_id}",
+    pathParams: ["customer_id", "contact_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+  confirm: { summary: "Delete contact {contact_id} of customer {customer_id}." },
+})
+
+export const updateSupplier = defineFunction({
+  name: "pennylane.update_supplier",
+  connector: "pennylane",
+  class: "write",
+  act: true,
+  description: "Update a supplier: name, SIREN (reg_no), SIRET (establishment_no), VAT number, address, emails, IBAN, payment method and due date rule, external_reference. Only the arguments passed change; null clears establishment_no and the payment settings. Scope suppliers:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["supplier_id"],
+    "minProperties": 2,
+    "properties": {
+      "supplier_id": {"type": "integer", "minimum": 1},
+      "name": {"type": "string", "minLength": 1},
+      "reg_no": {"type": "string", "pattern": "^[0-9]{9}$", "description": "SIREN, French companies only."},
+      "establishment_no": {"type": ["string", "null"], "pattern": "^[0-9]{14}$", "description": "SIRET, French companies only."},
+      "vat_number": {"type": "string"},
+      "postal_address": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["address", "postal_code", "city", "country_alpha2"],
+        "properties": {
+          "address": {"type": "string"},
+          "postal_code": {"type": "string"},
+          "city": {"type": "string"},
+          "country_alpha2": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2, e.g. FR."}
+        }
+      },
+      "emails": {"type": "array", "items": {"type": "string", "format": "email"}},
+      "iban": {"type": "string"},
+      "external_reference": {"type": "string"},
+      "supplier_payment_method": {
+        "enum": [
+          "automatic_transfer",
+          "manual_transfer",
+          "automatic_debiting",
+          "bill_of_exchange",
+          "check",
+          "cash",
+          "card",
+          "other",
+          null
+        ]
+      },
+      "supplier_due_date_delay": {"type": ["integer", "null"], "minimum": 0, "description": "Payment delay, in days."},
+      "supplier_due_date_rule": {"enum": ["days", "days_or_end_of_month", null]}
+    }
+  },
+  examples: [
+    { title: "Add the supplier's IBAN", input: {"supplier_id": 4001, "iban": "FR7630006000011234567890189"} },
+  ],
+  refusals: [
+    { code: "supplier_not_found", when: 404, message: "No supplier with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "PUT",
+    path: "/suppliers/{supplier_id}",
+    pathParams: ["supplier_id"],
+    query: {},
+    body: {"name": "name", "reg_no": "reg_no", "establishment_no": "establishment_no", "vat_number": "vat_number", "postal_address": "postal_address", "emails": "emails", "iban": "iban", "external_reference": "external_reference", "supplier_payment_method": "supplier_payment_method", "supplier_due_date_delay": "supplier_due_date_delay", "supplier_due_date_rule": "supplier_due_date_rule"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createFecExport = defineFunction({
+  name: "pennylane.create_fec_export",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Start a FEC export (fichier des écritures comptables, the French legal ledger file) over a period. Pennylane builds it in the background: the answer is {id, status: pending}; read it again with get_fec_export until status is ready (or error). Scope exports:fec.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["period_start", "period_end"],
+    "properties": {
+      "period_start": {"type": "string", "format": "date", "description": "First day of the period, YYYY-MM-DD."},
+      "period_end": {"type": "string", "format": "date", "description": "Last day of the period, YYYY-MM-DD."}
+    }
+  },
+  examples: [
+    { title: "FEC of 2025", input: {"period_start": "2025-01-01", "period_end": "2025-12-31"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/exports/fecs",
+    pathParams: [],
+    query: {},
+    body: {"period_start": "period_start", "period_end": "period_end"},
+    headers: {},
+  },
+  async: { collect: "pennylane.get_fec_export", jobId: { from: "id", to: "export_id" } },
+  cost: { per: "request" },
+})
+
+export const getFecExport = defineFunction({
+  name: "pennylane.get_fec_export",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Read a FEC export started by create_fec_export: status pending, ready or error, and file_url once ready. The file_url expires 30 minutes after this read: download it at once, or read the export again for a fresh one. Scope exports:fec.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["export_id"],
+    "properties": {
+      "export_id": {"type": "integer", "minimum": 1, "description": "id returned when the export was started."}
+    }
+  },
+  examples: [
+    { title: "State of an export", input: {"export_id": 124} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/exports/fecs/{export_id}",
+    pathParams: ["export_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createGeneralLedgerExport = defineFunction({
+  name: "pennylane.create_general_ledger_export",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Start a general ledger export (an xlsx file) over a period. The answer is {id, status: pending}; read it again with get_general_ledger_export until status is ready (or error). Scope exports:gl.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["period_start", "period_end"],
+    "properties": {
+      "period_start": {"type": "string", "format": "date", "description": "First day of the period, YYYY-MM-DD."},
+      "period_end": {"type": "string", "format": "date", "description": "Last day of the period, YYYY-MM-DD."}
+    }
+  },
+  examples: [
+    { title: "General ledger of October", input: {"period_start": "2026-10-01", "period_end": "2026-10-31"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/exports/general_ledgers",
+    pathParams: [],
+    query: {},
+    body: {"period_start": "period_start", "period_end": "period_end"},
+    headers: {},
+  },
+  async: { collect: "pennylane.get_general_ledger_export", jobId: { from: "id", to: "export_id" } },
+  cost: { per: "request" },
+})
+
+export const getGeneralLedgerExport = defineFunction({
+  name: "pennylane.get_general_ledger_export",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Read a general ledger export started by create_general_ledger_export: status pending, ready or error, and file_url (xlsx) once ready. The file_url expires 30 minutes after this read. Scope exports:gl.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["export_id"],
+    "properties": {
+      "export_id": {"type": "integer", "minimum": 1, "description": "id returned when the export was started."}
+    }
+  },
+  examples: [
+    { title: "State of an export", input: {"export_id": 125} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/exports/general_ledgers/{export_id}",
+    pathParams: ["export_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const createAnalyticalGeneralLedgerExport = defineFunction({
+  name: "pennylane.create_analytical_general_ledger_export",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Start an analytical general ledger export (an xlsx file, the ledger lines with their analytical categories) over a period. mode in_line (the default) gives one row per line and category, in_column one column per axis. The answer is {id, status: pending}; read it again with get_analytical_general_ledger_export until status is ready (or error). Scope exports:agl.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["period_start", "period_end"],
+    "properties": {
+      "period_start": {"type": "string", "format": "date", "description": "First day of the period, YYYY-MM-DD."},
+      "period_end": {"type": "string", "format": "date", "description": "Last day of the period, YYYY-MM-DD."},
+      "mode": {"enum": ["in_line", "in_column"]}
+    }
+  },
+  examples: [
+    { title: "Analytical ledger of 2025, one column per axis", input: {"period_start": "2025-01-01", "period_end": "2025-12-31", "mode": "in_column"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/exports/analytical_general_ledgers",
+    pathParams: [],
+    query: {},
+    body: {"period_start": "period_start", "period_end": "period_end", "mode": "mode"},
+    headers: {},
+  },
+  async: { collect: "pennylane.get_analytical_general_ledger_export", jobId: { from: "id", to: "export_id" } },
+  cost: { per: "request" },
+})
+
+export const getAnalyticalGeneralLedgerExport = defineFunction({
+  name: "pennylane.get_analytical_general_ledger_export",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Read an analytical general ledger export started by create_analytical_general_ledger_export: status pending, ready or error, and file_url (xlsx) once ready. The file_url expires 30 minutes after this read. Scope exports:agl.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["export_id"],
+    "properties": {
+      "export_id": {"type": "integer", "minimum": 1, "description": "id returned when the export was started."}
+    }
+  },
+  examples: [
+    { title: "State of an export", input: {"export_id": 126} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/exports/analytical_general_ledgers/{export_id}",
+    pathParams: ["export_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listBillingSubscriptions = defineFunction({
+  name: "pennylane.list_billing_subscriptions",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the billing subscriptions (recurring invoices): customer, label, status (draft, not_started, in_progress, pending, stopped, finished), mode (awaiting_validation: invoices come as drafts; finalized; email: finalized and emailed), recurring_rule, next_occurrence. Scope billing_subscriptions:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "filter": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "operator", "value"],
+          "properties": {
+            "field": {"enum": ["id", "start", "customer_id", "status"]},
+            "operator": {"enum": ["lt", "lteq", "gt", "gteq", "eq", "not_eq", "in", "not_in", "start_with"]},
+            "value": {"type": ["string", "number", "boolean", "array"], "items": {"type": ["string", "number"]}}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"operator": {"enum": ["in", "not_in"]}}},
+              "then": {"properties": {"value": {"type": "array", "minItems": 1}}},
+              "else": {"properties": {"value": {"type": ["string", "number", "boolean"]}}}
+            }
+          ]
+        },
+        "description": "Clauses that must all hold, each {field, operator, value}; in and not_in take a list. Fields: id, start, customer_id (lt, lteq, gt, gteq, eq, not_eq, in, not_in), status (eq, not_eq, in, not_in)."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Running subscriptions", input: {"filter": [{"field": "status", "operator": "eq", "value": "in_progress"}]} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/billing_subscriptions",
+    pathParams: [],
+    query: {"filter": "filter", "limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+    encode: {"filter": "json"},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getBillingSubscription = defineFunction({
+  name: "pennylane.get_billing_subscription",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one billing subscription: customer, status, mode, recurring_rule, start, finish, next_occurrence, payment conditions and the data of the invoices it generates. Scope billing_subscriptions:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["billing_subscription_id"],
+    "properties": {"billing_subscription_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One subscription", input: {"billing_subscription_id": 801} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/billing_subscriptions/{billing_subscription_id}",
+    pathParams: ["billing_subscription_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listBillingSubscriptionLines = defineFunction({
+  name: "pennylane.list_billing_subscription_lines",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the invoice lines of one billing subscription (label, quantity, raw_currency_unit_price, vat_rate, product). Scope billing_subscriptions:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["billing_subscription_id"],
+    "properties": {
+      "billing_subscription_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Lines of a subscription", input: {"billing_subscription_id": 801} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/billing_subscriptions/{billing_subscription_id}/invoice_lines",
+    pathParams: ["billing_subscription_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listCommercialDocuments = defineFunction({
+  name: "pennylane.list_commercial_documents",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the commercial documents: proformas, shipping orders and purchasing orders (document_type), with customer, amounts, lines and public_file_url. Quotes and invoices have their own functions. Scope commercial_documents:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "filter": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "operator", "value"],
+          "properties": {
+            "field": {"enum": ["id", "customer_id", "document_type"]},
+            "operator": {"enum": ["lt", "lteq", "gt", "gteq", "eq", "not_eq", "in", "not_in", "start_with"]},
+            "value": {"type": ["string", "number", "boolean", "array"], "items": {"type": ["string", "number"]}}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"operator": {"enum": ["in", "not_in"]}}},
+              "then": {"properties": {"value": {"type": "array", "minItems": 1}}},
+              "else": {"properties": {"value": {"type": ["string", "number", "boolean"]}}}
+            }
+          ]
+        },
+        "description": "Clauses that must all hold, each {field, operator, value}; in and not_in take a list. Fields: id, customer_id (lt, lteq, gt, gteq, eq, not_eq, in, not_in), document_type (eq, not_eq, in, not_in: proforma, shipping_order, purchasing_order)."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Proformas only", input: {"filter": [{"field": "document_type", "operator": "eq", "value": "proforma"}]} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/commercial_documents",
+    pathParams: [],
+    query: {"filter": "filter", "limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+    encode: {"filter": "json"},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getCommercialDocument = defineFunction({
+  name: "pennylane.get_commercial_document",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one commercial document (proforma, shipping order or purchasing order): document_number, customer, amounts, lines, public_file_url. Scope commercial_documents:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["commercial_document_id"],
+    "properties": {"commercial_document_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One commercial document", input: {"commercial_document_id": 901} },
+  ],
+  refusals: [
+    { code: "commercial_document_not_found", when: 404, message: "No commercial document with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/commercial_documents/{commercial_document_id}",
+    pathParams: ["commercial_document_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listCommercialDocumentLines = defineFunction({
+  name: "pennylane.list_commercial_document_lines",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the lines of one commercial document. Scope commercial_documents:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["commercial_document_id"],
+    "properties": {
+      "commercial_document_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Lines of a commercial document", input: {"commercial_document_id": 901} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/commercial_documents/{commercial_document_id}/invoice_lines",
+    pathParams: ["commercial_document_id"],
+    query: {"limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listCommercialDocumentAppendices = defineFunction({
+  name: "pennylane.list_commercial_document_appendices",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the files appended to one commercial document ({id, filename, url}). Scope commercial_documents:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["commercial_document_id"],
+    "properties": {
+      "commercial_document_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Appendices of a commercial document", input: {"commercial_document_id": 901} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/commercial_documents/{commercial_document_id}/appendices",
+    pathParams: ["commercial_document_id"],
+    query: {"limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const sendCommercialDocument = defineFunction({
+  name: "pennylane.send_commercial_document",
+  connector: "pennylane",
+  class: "sensitive",
+  act: true,
+  description: "Email a commercial document to the customer: to recipients when given, else to the addresses on the customer's record. Only after explicit human validation. The PDF takes a few minutes to generate after creation: a conflict means it is not ready yet, retry later. email_template_id picks a billing email template of the matching kind. Scope commercial_documents:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["commercial_document_id"],
+    "properties": {
+      "commercial_document_id": {"type": "integer", "minimum": 1},
+      "recipients": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "format": "email", "personal": true},
+        "description": "Addresses to send to; absent, the customer's own."
+      },
+      "email_template_id": {"type": "integer", "minimum": 1}
+    }
+  },
+  examples: [
+    { title: "Send a proforma to the customer's addresses", input: {"commercial_document_id": 901} },
+  ],
+  refusals: [
+    { code: "pdf_not_ready", when: 409, message: "The document PDF is not generated yet: retry in a few minutes." },
+  ],
+  request: {
+    method: "POST",
+    path: "/commercial_documents/{commercial_document_id}/send_by_email",
+    pathParams: ["commercial_document_id"],
+    query: {},
+    body: {"recipients": "recipients", "email_template_id": "email_template_id"},
+    headers: {},
+  },
+  cost: { per: "request" },
+  confirm: { summary: "Email commercial document {commercial_document_id} to the customer." },
+})
+
+export const sendQuote = defineFunction({
+  name: "pennylane.send_quote",
+  connector: "pennylane",
+  class: "sensitive",
+  act: true,
+  description: "Email a quote to the customer: to recipients when given, else to the addresses on the customer's record. Only after explicit human validation. The PDF takes a few minutes to generate after creation: a conflict means it is not ready yet, retry later. email_template_id picks a billing email template of kind billing_email_quote. Scope quotes:all.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["quote_id"],
+    "properties": {
+      "quote_id": {"type": "integer", "minimum": 1},
+      "recipients": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "format": "email", "personal": true},
+        "description": "Addresses to send to; absent, the customer's own."
+      },
+      "email_template_id": {"type": "integer", "minimum": 1}
+    }
+  },
+  examples: [
+    { title: "Send a quote to the customer's addresses", input: {"quote_id": 6001} },
+  ],
+  refusals: [
+    { code: "pdf_not_ready", when: 409, message: "The quote PDF is not generated yet: retry in a few minutes." },
+  ],
+  request: {
+    method: "POST",
+    path: "/quotes/{quote_id}/send_by_email",
+    pathParams: ["quote_id"],
+    query: {},
+    body: {"recipients": "recipients", "email_template_id": "email_template_id"},
+    headers: {},
+  },
+  cost: { per: "request" },
+  confirm: { summary: "Email quote {quote_id} to the customer." },
+})
+
+export const listQuoteAppendices = defineFunction({
+  name: "pennylane.list_quote_appendices",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the files appended to one quote ({id, filename, url}). Scope quotes:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["quote_id"],
+    "properties": {
+      "quote_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Appendices of a quote", input: {"quote_id": 6001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/quotes/{quote_id}/appendices",
+    pathParams: ["quote_id"],
+    query: {"limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const listPurchaseRequests = defineFunction({
+  name: "pennylane.list_purchase_requests",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the purchase requests: supplier, amounts, reason, status (to_be_validated, approved, rejected, invoiced), purchase order and linked_invoices. Scope purchase_requests:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "filter": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "operator", "value"],
+          "properties": {
+            "field": {"enum": ["id", "reviewed_by_id", "user_id", "supplier_id"]},
+            "operator": {"enum": ["lt", "lteq", "gt", "gteq", "eq", "not_eq", "in", "not_in", "start_with"]},
+            "value": {"type": ["string", "number", "boolean", "array"], "items": {"type": ["string", "number"]}}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"operator": {"enum": ["in", "not_in"]}}},
+              "then": {"properties": {"value": {"type": "array", "minItems": 1}}},
+              "else": {"properties": {"value": {"type": ["string", "number", "boolean"]}}}
+            }
+          ]
+        },
+        "description": "Clauses that must all hold, each {field, operator, value}; in and not_in take a list. Fields: id (lt, lteq, gt, gteq, eq, not_eq, in, not_in), reviewed_by_id, user_id, supplier_id (eq, not_eq, in, not_in)."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Purchase requests to one supplier", input: {"filter": [{"field": "supplier_id", "operator": "eq", "value": 4001}]} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/purchase_requests",
+    pathParams: [],
+    query: {"filter": "filter", "limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+    encode: {"filter": "json"},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getPurchaseRequest = defineFunction({
+  name: "pennylane.get_purchase_request",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one purchase request. Scope purchase_requests:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["purchase_request_id"],
+    "properties": {"purchase_request_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One purchase request", input: {"purchase_request_id": 701} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/purchase_requests/{purchase_request_id}",
+    pathParams: ["purchase_request_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listSepaMandates = defineFunction({
+  name: "pennylane.list_sepa_mandates",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the customers' SEPA direct debit mandates: customer, identifier, bank, bic, iban, signed_at, sequence_type (FRST, OOFF, RCUR, FNAL). Scope customer_mandates:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "filter": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "operator", "value"],
+          "properties": {
+            "field": {"enum": ["id", "customer_id"]},
+            "operator": {"enum": ["lt", "lteq", "gt", "gteq", "eq", "not_eq", "in", "not_in", "start_with"]},
+            "value": {"type": ["string", "number", "boolean", "array"], "items": {"type": ["string", "number"]}}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"operator": {"enum": ["in", "not_in"]}}},
+              "then": {"properties": {"value": {"type": "array", "minItems": 1}}},
+              "else": {"properties": {"value": {"type": ["string", "number", "boolean"]}}}
+            }
+          ]
+        },
+        "description": "Clauses that must all hold, each {field, operator, value}; in and not_in take a list. Fields: id, customer_id (lt, lteq, gt, gteq, eq, not_eq, in, not_in)."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id"], "description": "Prefix with - for descending order (the default)."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Mandates of one customer", input: {"filter": [{"field": "customer_id", "operator": "eq", "value": 3001}]} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/sepa_mandates",
+    pathParams: [],
+    query: {"filter": "filter", "limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+    encode: {"filter": "json"},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getSepaMandate = defineFunction({
+  name: "pennylane.get_sepa_mandate",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one SEPA mandate. Scope customer_mandates:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["sepa_mandate_id"],
+    "properties": {"sepa_mandate_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One mandate", input: {"sepa_mandate_id": 301} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/sepa_mandates/{sepa_mandate_id}",
+    pathParams: ["sepa_mandate_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const searchLedgerEntryLines = defineFunction({
+  name: "pennylane.search_ledger_entry_lines",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List ledger entry lines across all entries, filtered at the source: the lines of one account over a period, of one journal, of some entries. Without a filter the whole ledger comes back, far beyond what an agent can read. Each line carries debit, credit, date, label, ledger_account, journal, ledger_entry and its lettering. Scope ledger_entries:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "filter": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "operator", "value"],
+          "properties": {
+            "field": {"enum": ["id", "journal_id", "ledger_account_id", "ledger_entry_id", "date"]},
+            "operator": {"enum": ["lt", "lteq", "gt", "gteq", "eq", "not_eq", "in", "not_in"]},
+            "value": {"type": ["string", "number", "boolean", "array"], "items": {"type": ["string", "number"]}}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"operator": {"enum": ["in", "not_in"]}}},
+              "then": {"properties": {"value": {"type": "array", "minItems": 1}}},
+              "else": {"properties": {"value": {"type": ["string", "number", "boolean"]}}}
+            }
+          ]
+        },
+        "description": "Clauses that must all hold, each {field, operator, value}; in and not_in take a list. Fields: id, journal_id, ledger_account_id, ledger_entry_id, date; operators lt, lteq, gt, gteq, eq, not_eq, in, not_in."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "sort": {"enum": ["id", "-id", "date", "-date"], "description": "Prefix with - for descending order."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 5)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "default": 5,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Lines of one account in October", input: {"filter": [{"field": "ledger_account_id", "operator": "eq", "value": 4101}, {"field": "date", "operator": "gteq", "value": "2026-10-01"}, {"field": "date", "operator": "lteq", "value": "2026-10-31"}]} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/ledger_entry_lines",
+    pathParams: [],
+    query: {"filter": "filter", "limit": "limit", "cursor": "cursor", "sort": "sort"},
+    body: {},
+    headers: {},
+    encode: {"filter": "json"},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 5 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
+export const getLedgerEntryLine = defineFunction({
+  name: "pennylane.get_ledger_entry_line",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "Get one ledger entry line: debit, credit, date, label, ledger_account, journal, ledger_entry, categories and the lines it is lettered with. Scope ledger_entries:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["line_id"],
+    "properties": {"line_id": {"type": "integer", "minimum": 1}}
+  },
+  examples: [
+    { title: "One line", input: {"line_id": 20001} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/ledger_entry_lines/{line_id}",
+    pathParams: ["line_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listLedgerEntryDocuments = defineFunction({
+  name: "pennylane.list_ledger_entry_documents",
+  connector: "pennylane",
+  class: "read",
+  act: false,
+  description: "List the documents attached to one ledger entry ({id, name, url}), the receipts and invoices it was booked from. Scope ledger_entries:readonly.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["entry_id"],
+    "properties": {
+      "entry_id": {"type": "integer", "minimum": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+      "cursor": {"type": "string", "description": "next_cursor of the previous page."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Documents of an entry", input: {"entry_id": 10001} },
+  ],
+  refusals: [
+    { code: "ledger_entry_not_found", when: 404, message: "No ledger entry with this id in this Pennylane company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/ledger_entries/{entry_id}/dms_files",
+    pathParams: ["entry_id"],
+    query: {"limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", more: "has_more", maxPages: 10 },
+  output: { items: "items" },
+  cost: { per: "request" },
+})
+
 export const connector = defineConnector({
   name: "pennylane",
   label: "Pennylane",
   namespace: "pennylane",
-  version: "2.1.0",
+  version: "2.2.0",
   apiVersion: "v2",
   baseUrl: "https://app.pennylane.com/api/external/v2",
   auth: {"kind": "bearer", "token": "api_key"},
@@ -2801,5 +5532,76 @@ export const connector = defineConnector({
     getTrialBalance,
     matchCustomerInvoiceTransaction,
     matchSupplierInvoiceTransaction,
+    listBankAccounts,
+    getBankAccount,
+    listBankEstablishments,
+    getTransaction,
+    createTransaction,
+    updateTransaction,
+    listTransactionCategories,
+    listTransactionMatchedInvoices,
+    listChanges,
+    getCustomerInvoice,
+    listCustomerInvoicePayments,
+    listSupplierInvoicePayments,
+    listCustomerInvoiceInstallments,
+    markCustomerInvoiceInstallmentPaid,
+    markCustomerInvoicePaid,
+    listCustomerInvoiceMatchedTransactions,
+    listSupplierInvoiceMatchedTransactions,
+    unmatchCustomerInvoiceTransaction,
+    unmatchSupplierInvoiceTransaction,
+    updateSupplierInvoicePaymentStatus,
+    listCustomerInvoiceAppendices,
+    listCustomerInvoiceCustomHeaderFields,
+    listCategoryGroupCategories,
+    getCategoryGroup,
+    createCategoryGroup,
+    updateCategoryGroup,
+    getCategory,
+    createCategory,
+    updateCategory,
+    getJournal,
+    createJournal,
+    getLedgerAccount,
+    createLedgerAccount,
+    updateLedgerAccount,
+    updateProduct,
+    listNumberings,
+    getCompanyFeatures,
+    getCustomer,
+    getCompanyCustomer,
+    getIndividualCustomer,
+    createIndividualCustomer,
+    updateIndividualCustomer,
+    listCustomerContacts,
+    getCustomerContact,
+    createCustomerContact,
+    updateCustomerContact,
+    deleteCustomerContact,
+    updateSupplier,
+    createFecExport,
+    getFecExport,
+    createGeneralLedgerExport,
+    getGeneralLedgerExport,
+    createAnalyticalGeneralLedgerExport,
+    getAnalyticalGeneralLedgerExport,
+    listBillingSubscriptions,
+    getBillingSubscription,
+    listBillingSubscriptionLines,
+    listCommercialDocuments,
+    getCommercialDocument,
+    listCommercialDocumentLines,
+    listCommercialDocumentAppendices,
+    sendCommercialDocument,
+    sendQuote,
+    listQuoteAppendices,
+    listPurchaseRequests,
+    getPurchaseRequest,
+    listSepaMandates,
+    getSepaMandate,
+    searchLedgerEntryLines,
+    getLedgerEntryLine,
+    listLedgerEntryDocuments,
   ],
 })

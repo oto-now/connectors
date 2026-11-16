@@ -2,6 +2,8 @@
 # 3CX V20 Configuration REST API (XAPI, OData v4): its $metadata document is served by every phone system, at
 # {address}/xapi/v1/$metadata. API clients: https://www.3cx.com/docs/configuration-rest-api/
 # 1.0.0: the description of the existing client (oto.tools.threecx), unchanged.
+# 1.1.0: the client gains the configuration (read, create, update, delete, invoke, checked against the phone
+#   system's own $metadata); not described here, the description itself is unchanged.
 #
 # The address is the account's: 3CX is self-hosted or hosted under a name of its own, so the https address of the
 # phone system (the one of its web client) is a url setting, cited by base_url and token_url.
@@ -27,7 +29,7 @@ connector:
   name: threecx
   label: 3CX
   namespace: threecx
-  version: 1.0.0
+  version: 1.1.0
   api_version: XAPI v1 (3CX V20)
   base_url: "{base_url}/xapi/v1"
   auth:

@@ -18,10 +18,11 @@ GENERATED_MARK = (
 
 PERSON_OAUTH = "connexion d'une personne (OAuth)"
 CLIENT_APPLICATION = "application du client (OAuth entre machines)"
+SERVICE_ACCOUNT = "compte de service (assertion signée)"
 HOST_KEY = "clé de l'hôte"
 NO_KEY = "sans clé"
 KEY = "clé"
-KINDS = (PERSON_OAUTH, CLIENT_APPLICATION, HOST_KEY, NO_KEY, KEY)
+KINDS = (PERSON_OAUTH, CLIENT_APPLICATION, SERVICE_ACCOUNT, HOST_KEY, NO_KEY, KEY)
 
 CLASSES = ("read", "write", "sensitive")
 
@@ -33,6 +34,8 @@ def kind(connector: dict) -> str:
         return PERSON_OAUTH
     if auth_kind == "oauth2_client_credentials":
         return CLIENT_APPLICATION
+    if auth_kind == "oauth2_jwt_bearer":
+        return SERVICE_ACCOUNT
     if any(field.get("holder") == "host" for field in connector.get("credential", [])):
         return HOST_KEY
     if auth_kind == "none":
@@ -102,9 +105,10 @@ def markdown_source(descriptions: list[Description], modules: list[Module]) -> s
         "",
         f"1. `auth.kind: oauth2_user` : {PERSON_OAUTH} ;",
         f"2. `auth.kind: oauth2_client_credentials` : {CLIENT_APPLICATION} ;",
-        f"3. un champ du `credential` en `holder: host` : {HOST_KEY} ;",
-        f"4. `auth.kind: none` : {NO_KEY} ;",
-        f"5. sinon (`api_key`, `bearer`, `basic`) : {KEY}.",
+        f"3. `auth.kind: oauth2_jwt_bearer` : {SERVICE_ACCOUNT} ;",
+        f"4. un champ du `credential` en `holder: host` : {HOST_KEY} ;",
+        f"5. `auth.kind: none` : {NO_KEY} ;",
+        f"6. sinon (`api_key`, `bearer`, `basic`) : {KEY}.",
         "",
         "« Clé de la plateforme » : `modes` contient `platform`. Fonctions : par `class` (lecture, écriture, "
         "sensible). Sonde : `probe`, et son solde `probe.balance`. Avec coût : les fonctions qui portent `cost`. "

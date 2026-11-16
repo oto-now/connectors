@@ -12,8 +12,8 @@
 # Synthetic: no real connector, no vendor. The fabrique assembles `connector` and `function` into one description,
 # checked with the schema and the rules of every description (rule 10 included), then converts it as it converts a
 # description: ts/src/error-cases.ts for the host package (`@otomata_tech/connectors/error-cases`), whose engine selects
-# the entry for each answer. tests/test_error_cases.py plays the cases against a reference written in the test: the
-# Python lib reads no error table of a description.
+# the entry for each answer. tests/test_error_cases.py plays the cases against the engine of the Python lib
+# (oto.connectors.engine), a fake vendor giving the answer of each case.
 #
 # A case:
 # - answer: the status and the body of the vendor's answer, `json` (any JSON value) or `text` (a body that is not JSON);

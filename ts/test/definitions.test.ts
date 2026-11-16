@@ -91,7 +91,35 @@ describe("generated definitions", () => {
     }
   })
 
-  it.each(connectors.filter((c) => !(c.auth.kind === "oauth2_user" && c.auth.accessLevels)).map((c) => [c.name, c] as const))(
+  // Un compte de service à niveaux : `full` sert tout, la sonde est servie à chaque niveau, le niveau par défaut est déclaré.
+  const serviceAccounts = connectors.flatMap((c) =>
+    c.auth.kind === "oauth2_jwt_bearer" && c.auth.accessLevels ? [[c.name, c, c.auth.accessLevels, c.auth.scopeImplies ?? {}, c.auth.defaultLevel] as const] : [])
+  it.each(serviceAccounts)("%s: a service account's levels: full serves every function, every level serves the probe", (_name, connector, levels, implies, defaultLevel) => {
+    const full = covered(levels.full.scopes, implies)
+    for (const fn of connector.functions) {
+      expect(fn.scopes?.length, fn.name).toBeGreaterThan(0)
+      for (const scope of fn.scopes ?? []) expect(full.has(scope), `${fn.name}: ${scope}`).toBe(true)
+    }
+    if (defaultLevel !== undefined) expect(Object.keys(levels)).toContain(defaultLevel)
+    const probe = connector.functions.find((fn) => fn.name === connector.probe?.function)?.scopes
+    for (const [level, { scopes }] of Object.entries(levels)) {
+      const granted = covered(scopes, implies)
+      for (const scope of probe ?? []) expect(granted.has(scope), `${level}: ${scope}`).toBe(true)
+    }
+  })
+
+  it("google_search_console: read by default, add_sitemap at full only", () => {
+    const gsc = serviceAccounts.find(([name]) => name === "google_search_console")
+    if (gsc === undefined) throw new Error("google_search_console has no access levels")
+    const [, connector, levels, implies, defaultLevel] = gsc
+    expect(defaultLevel).toBe("read")
+    const atRead = covered(levels.read?.scopes ?? [], implies)
+    const served = connector.functions.filter((fn) => (fn.scopes ?? []).every((scope) => atRead.has(scope))).map((fn) => fn.name)
+    expect(served).toEqual(connector.functions.filter((fn) => fn.class === "read").map((fn) => fn.name))
+    expect(connector.functions.find((fn) => fn.name === "google_search_console.add_sitemap")?.scopes).toEqual(["https://www.googleapis.com/auth/webmasters"])
+  })
+
+  it.each(connectors.filter((c) => !((c.auth.kind === "oauth2_user" || c.auth.kind === "oauth2_jwt_bearer") && c.auth.accessLevels)).map((c) => [c.name, c] as const))(
     "%s: without access levels, no function declares scopes",
     (_name, connector) => {
       for (const fn of connector.functions) expect(fn.scopes, fn.name).toBeUndefined()

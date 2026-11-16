@@ -5,8 +5,8 @@
 # cases carry into one description, checked with the schema and the rules of every description (rule 18 included), then
 # converts it as it converts a description: ts/src/strip-cases.ts for the host package
 # (`@otomata_tech/connectors/strip-cases`), whose engine shapes each answer. tests/test_strip_cases.py plays the cases
-# against a reference written in the test: the Python lib applies no output of a description. A function shared by
-# several cases is written once, with a YAML anchor; the same name is always the same function.
+# against the engine of the Python lib (oto.connectors.engine), a fake vendor giving the answer of each case. A
+# function shared by several cases is written once, with a YAML anchor; the same name is always the same function.
 #
 # A case:
 # - answer: the JSON answer of the call (one page);

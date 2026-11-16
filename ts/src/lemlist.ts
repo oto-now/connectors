@@ -186,7 +186,7 @@ export const updateCampaign = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Change the settings of a campaign: only the keys given in data change. Its name, its senders (sendUserIds replaces the sender pool), the stop rules, the tracking, the AI handling of replies, and what happens to a lead on a reply, a click or a booked meeting. Auto-review is not set here: it turns adding a lead into a send.",
+  description: "Change the settings of a campaign: only the keys given in data change. Its name, its senders (sendUserIds replaces the sender pool, with the first account of each channel type of each user: to choose the mailboxes, replace_campaign_senders), the stop rules, the tracking, the AI handling of replies, and what happens to a lead on a reply, a click or a booked meeting. Auto-review is not set here: it turns adding a lead into a send.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -202,7 +202,7 @@ export const updateCampaign = defineFunction({
           "sendUserIds": {
             "type": "array",
             "items": {"type": "string", "minLength": 1, "description": "User id (usr_…)."},
-            "description": "The senders (usr_…), replacing the sender pool. Refused on a campaign whose sender is chosen per lead (contact owner, lead importer, custom field); every channel the sequence reaches needs a sender that can use it."
+            "description": "The senders (usr_…), replacing the sender pool with the first account of each channel type of each user. Refused on a campaign whose sender is chosen per lead (contact owner, lead importer, custom field); every channel the sequence reaches needs a sender that can use it."
           },
           "stopOnEmailReplied": {"type": "boolean", "description": "Stop the campaign for a lead who replies by email."},
           "stopOnMeetingBooked": {"type": "boolean", "description": "Stop the campaign for a lead who books a meeting."},
@@ -323,6 +323,161 @@ export const updateCampaign = defineFunction({
     pathParams: ["campaign_id"],
     query: {},
     body: "data",
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const getCampaignSenders = defineFunction({
+  name: "lemlist.get_campaign_senders",
+  connector: "lemlist",
+  class: "read",
+  act: false,
+  description: "The sender pool of a campaign: its strategy, whether it is read-only, and each sender (userId, email) with its enabled channels (type, id of the mailbox or account, alias) and their diagnostics.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["campaign_id"],
+    "properties": {"campaign_id": {"type": "string", "minLength": 1, "description": "Campaign id (cam_…)."}}
+  },
+  examples: [
+    { title: "Who sends a campaign, from which mailboxes", input: {"campaign_id": "cam_example1"} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/campaigns/{campaign_id}/senders",
+    pathParams: ["campaign_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const addCampaignSenders = defineFunction({
+  name: "lemlist.add_campaign_senders",
+  connector: "lemlist",
+  class: "write",
+  act: true,
+  description: "Add senders and channels to the sender pool of a campaign; nothing is removed. A sender without channels gets every healthy account of each channel type the steps use; name the mailboxes to choose them.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["campaign_id", "senders"],
+    "properties": {
+      "campaign_id": {"type": "string", "minLength": 1, "description": "Campaign id (cam_…)."},
+      "senders": {
+        "type": "array",
+        "minItems": 1,
+        "description": "The senders, each a user and the accounts it sends from.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["userId"],
+          "properties": {
+            "userId": {"type": "string", "minLength": 1, "description": "User id (usr_…)."},
+            "channels": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type"],
+                "properties": {
+                  "type": {"type": "string", "enum": ["email", "linkedin", "whatsapp", "phone"]},
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The mailbox id (usm_…), WhatsApp account id or phone number; none for linkedin."
+                  },
+                  "alias": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Email only, with id: the address the mailbox sends as."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  examples: [
+    { title: "Two mailboxes of one user", input: {"campaign_id": "cam_example1", "senders": [{"userId": "usr_example1", "channels": [{"type": "email", "id": "usm_example1"}, {"type": "email", "id": "usm_example2"}]}]} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/campaigns/{campaign_id}/senders",
+    pathParams: ["campaign_id"],
+    query: {},
+    body: {"senders": "senders"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const replaceCampaignSenders = defineFunction({
+  name: "lemlist.replace_campaign_senders",
+  connector: "lemlist",
+  class: "write",
+  act: true,
+  description: "Replace the whole sender pool of a campaign: a sender or a channel left out is removed, an empty list clears the pool. impact.contactedLeads counts the contacted leads that keep a removed sender.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["campaign_id", "senders"],
+    "properties": {
+      "campaign_id": {"type": "string", "minLength": 1, "description": "Campaign id (cam_…)."},
+      "senders": {
+        "type": "array",
+        "minItems": 0,
+        "description": "The senders, each a user and the accounts it sends from.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["userId"],
+          "properties": {
+            "userId": {"type": "string", "minLength": 1, "description": "User id (usr_…)."},
+            "channels": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type"],
+                "properties": {
+                  "type": {"type": "string", "enum": ["email", "linkedin", "whatsapp", "phone"]},
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The mailbox id (usm_…), WhatsApp account id or phone number; none for linkedin."
+                  },
+                  "alias": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Email only, with id: the address the mailbox sends as."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  examples: [
+    { title: "Three mailboxes of one user, and nothing else", input: {"campaign_id": "cam_example1", "senders": [{"userId": "usr_example1", "channels": [{"type": "email", "id": "usm_example1"}, {"type": "email", "id": "usm_example2"}, {"type": "email", "id": "usm_example3"}]}]} },
+  ],
+  refusals: [],
+  request: {
+    method: "PUT",
+    path: "/campaigns/{campaign_id}/senders",
+    pathParams: ["campaign_id"],
+    query: {},
+    body: {"senders": "senders"},
     headers: {},
   },
   cost: { per: "request" },
@@ -1784,7 +1939,7 @@ export const listUnsubscribes = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the unsubscribed emails and domains (v1 list).",
+  description: "List the unsubscribed emails and domains: the same list as list_unsubscribed_variables (the v1 listing route is no longer served), rows {_id, value, source, createdAt}, at most 100 per page.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1799,7 +1954,7 @@ export const listUnsubscribes = defineFunction({
   refusals: [],
   request: {
     method: "GET",
-    path: "/unsubscribes",
+    path: "/v2/unsubscribes/variables",
     pathParams: [],
     query: {"offset": "offset", "limit": "limit"},
     body: {},
@@ -4503,7 +4658,7 @@ export const connector = defineConnector({
   name: "lemlist",
   label: "lemlist",
   namespace: "lemlist",
-  version: "1.2.2",
+  version: "1.5.0",
   apiVersion: "v1 and v2 routes",
   baseUrl: "https://api.lemlist.com/api",
   auth: {"kind": "basic", "password": "api_key"},
@@ -4529,6 +4684,9 @@ export const connector = defineConnector({
     pauseCampaign,
     duplicateCampaign,
     updateCampaign,
+    getCampaignSenders,
+    addCampaignSenders,
+    replaceCampaignSenders,
     getCampaignStatutes,
     getSequences,
     deleteStep,

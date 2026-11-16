@@ -68,7 +68,7 @@ def test_auth_figee():
     assert {n: str(inspect.signature(getattr(auth, n))) for n in EXPECTED_AUTH} == EXPECTED_AUTH
     for name in ("Grant", "JefactureAuthError", "JefactureGrantExpired", "AUTHORIZE_URL",
                  "TOKEN_URL", "REFRESH_URL", "CLIENT_CREDENTIALS_URL", "SCOPES",
-                 "DEFAULT_EXPIRES_IN"):
+                 "DEFAULT_EXPIRES_IN", "USER_AGENT"):
         assert hasattr(auth, name), name
     assert issubclass(auth.JefactureGrantExpired, auth.JefactureAuthError)
 

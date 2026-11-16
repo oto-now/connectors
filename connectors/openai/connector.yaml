@@ -1,0 +1,202 @@
+# yaml-language-server: $schema=../connector.schema.json
+# OpenAI API v1, Images (generations and edits) and Models. Sources, read on 2026-11-12: the request and response
+# types of the official Python SDK (github.com/openai/openai-python, src/openai/types: image_model.py,
+# image_generate_params.py, image_edit_params.py, images_response.py), generated from OpenAI's OpenAPI spec; the
+# image generation guide (developers.openai.com/api/docs/guides/image-generation); the error codes guide
+# (developers.openai.com/api/docs/guides/error-codes). The API reference on platform.openai.com/docs answered 403 to
+# an automated read: not read.
+#
+# Qualification.
+# - Who holds the access: the organization or the person who owns the OpenAI project, by a project API key. No
+#   platform key (modes byo_org and byo_user only).
+# - Authentication: the key as a bearer token (Authorization: Bearer <key>).
+# - What a key allows: a key may be restricted per endpoint (Images, Models) when it is created; the API does not list
+#   its rights. Some image models need a verified organization: OpenAI refuses the call (403) otherwise.
+# - Cost: an image is billed in tokens (text input, image input, image output, each at its own rate, which depends on
+#   the model, the quality and the size). The answer gives usage (input_tokens, output_tokens, total_tokens and their
+#   text and image details), never an amount. No cost is declared: a single unit would add tokens billed at different
+#   rates, and no published table bounds the worst case of a call from its arguments. Left to the maintainer.
+# - Engagement: a generation spends the account's money and creates nothing at OpenAI: a write, on the act side.
+# - What the agent must not see: the image comes back as base64 in data.0.b64_json; it becomes a file of the caller
+#   (output.file, from: base64), never bytes in the context.
+# - Limits: a generation takes up to minutes (180 s, the client's timeout); rate limits are per organization and per
+#   model, in requests and tokens per minute, not declared.
+# - Address: one host, https://api.openai.com/v1.
+# - Owner of the access: a commercial product sold to companies.
+#
+# Scope: the two methods of the Python client (oto.tools.openai, OpenAIImageClient), under their names, and
+# list_models, a free read added for the probe (the client has none).
+#
+# Named gaps with the client:
+# 1. files: the client takes and returns base64 (edit_image) or writes a local file (generate_image); the description
+#    takes the id of a file of the host and renders the image as a file of the caller.
+# 2. edit_image: the client sends several images, the references first and the subject last, each as a part image[].
+#    The format gives one argument per part name (call.files), so the description sends one image (part image[]) and
+#    an optional mask (part mask), which OpenAI applies to the first image. Several images to compose are not
+#    described: a list of files sent under one part name is a form the format does not say yet.
+# 3. arguments beyond the client: quality and background on both, moderation on generate_image, from the SDK types.
+#    output_format is fixed to png (OpenAI's default, the client's mime type), so the file is always .png; n is fixed
+#    to 1, as the client sends it.
+# 4. size: the client passes any text; the description takes the standard sizes and auto. The arbitrary WIDTHxHEIGHT
+#    resolutions some models take (multiples of 16, ratio between 1:3 and 3:1, up to 3840x2160) are not offered.
+# 5. model: required. The client defaults to gpt-image-2; OpenAI's own default was a DALL-E model, retired. Models
+#    shut down (gpt-image-1 since 2026-10-23, dall-e-2 and dall-e-3 since 2026-05-12) are left out of the enum.
+#
+# Errors. 401: the key refused (marks the account); the guide also gives a 401 for an IP address outside the
+# project's allowlist or an account outside any organization, rare, marked the same. 429: the guide names the billing
+# codes in error.code (credit_balance_exhausted, organization_spend_limit_exceeded, project_spend_limit_exceeded,
+# organization_usage_limit_exceeded) and says error.type can still be insufficient_quota; both mark the account
+# quota_exhausted, as does error.code insufficient_quota. Any other 429 is a rate limit. 400: an invalid request, or a
+# prompt or image refused by OpenAI's safety system; the guide gives no code to tell them apart, so one entry says
+# both. A 5xx is not retried: a generation may have been billed.
+connector:
+  name: openai
+  label: OpenAI Images
+  namespace: openai
+  version: 1.0.0
+  api_version: v1
+  base_url: https://api.openai.com/v1
+  auth: { kind: bearer, token: api_key }
+  credential:
+    - { name: api_key, label: OpenAI API key, secret: true }
+  modes: [byo_user, byo_org]
+  probe: { function: list_models, non_empty: [data] }
+  errors:
+    - { status: 400, code: invalid_or_refused, retryable: false,
+        message: "OpenAI rejected the request: an invalid argument, or a prompt or image refused by its safety system; error.message says which." }
+    - { status: 401, code: key_refused, retryable: false, marks_account: credential_rejected,
+        message: "OpenAI did not accept the API key: missing, revoked or mistyped. Retrying unchanged fails the same way." }
+    - { status: 403, code: not_allowed, retryable: false,
+        message: "OpenAI refused the call: the key is restricted for this endpoint, the model needs a verified organization, or the region is not supported." }
+    - { status: 404, code: not_found, retryable: false,
+        message: "OpenAI found no such model for this key." }
+    - { status: 429, body: { path: error.code, equals: [insufficient_quota, credit_balance_exhausted, organization_spend_limit_exceeded,
+                                                       project_spend_limit_exceeded, organization_usage_limit_exceeded] },
+        code: quota_exhausted, retryable: false, marks_account: quota_exhausted,
+        message: "The OpenAI account cannot spend more: credits exhausted or a spend or usage limit reached. Add credits or raise the limit." }
+    - { status: 429, body: { path: error.type, equals: [insufficient_quota] },
+        code: quota_exhausted, retryable: false, marks_account: quota_exhausted,
+        message: "The OpenAI account cannot spend more: credits exhausted or a spend or usage limit reached. Add credits or raise the limit." }
+    - { status: 429, code: rate_limited, retryable: true,
+        message: "OpenAI rate limit reached (requests or tokens per minute for this model): retry in a moment." }
+    - { status: [500, 502, 503, 504], code: upstream_unavailable, retryable: false,
+        message: "OpenAI is temporarily unavailable or overloaded; a generation may have been billed: check before calling again." }
+
+functions:
+  - name: list_models
+    class: read
+    description: >-
+      The models this key can call: each with its id (gpt-image-2,
+      gpt-image-2.5-flare…), created and owned_by. Free. Use it to check the
+      key, or which image models the project can use.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - title: Every model of the key
+        input: {}
+    call: { method: GET, path: /models }
+
+  - name: generate_image
+    class: write
+    description: >-
+      Generate one image from a text prompt with an OpenAI GPT image model.
+      The answer is a PNG file of yours, kept 24 hours: pass its id as is to
+      a function that takes a file; never a link nor bytes. Billed by OpenAI
+      in tokens, more for a higher quality and a larger size: the model,
+      quality and size decide the price. quality xhigh and max exist on the
+      gpt-image-2.5 models only. background transparent gives a PNG with
+      alpha. A prompt refused by OpenAI's safety system answers 400.
+      Takes up to three minutes.
+    input:
+      type: object
+      additionalProperties: false
+      required: [prompt, model]
+      properties:
+        prompt: { type: string, minLength: 1, maxLength: 32000, description: "What to draw." }
+        model: &model
+          type: string
+          enum: [gpt-image-2, gpt-image-2-2026-04-21, gpt-image-2.5-sunburst, gpt-image-2.5-sunburst-2026-09-08,
+                 gpt-image-2.5-flare, gpt-image-2.5-flare-2026-09-08, gpt-image-2.6-sunburst, gpt-image-2.6-flare,
+                 gpt-image-1.5, gpt-image-1-mini, chatgpt-image-latest]
+          description: "The GPT image model: sunburst for detailed work, flare for fast iterations, mini the cheapest."
+        size: &size
+          type: string
+          enum: [auto, 1024x1024, 1536x1024, 1024x1536]
+          description: "Square, landscape or portrait; without it, OpenAI picks (auto)."
+        quality: &quality
+          type: string
+          enum: [auto, low, medium, high, xhigh, max]
+          description: "Without it, auto. xhigh and max on the gpt-image-2.5 models only."
+        background: &background
+          type: string
+          enum: [auto, opaque, transparent]
+          description: "Without it, auto."
+        moderation:
+          type: string
+          enum: [auto, low]
+          description: "Content filtering: auto (the default) or low, less restrictive."
+    examples:
+      - title: A square illustration
+        input: { prompt: "A lighthouse at dawn, flat illustration, pastel colors", model: gpt-image-2 }
+      - title: A detailed landscape banner
+        input: { prompt: "A mountain village under snow, photographic", model: gpt-image-2.5-sunburst, size: 1536x1024, quality: high }
+      - title: A logo on a transparent background
+        input: { prompt: "A minimal fox head logo, orange", model: gpt-image-2.5-flare, size: 1024x1024, background: transparent }
+    call:
+      method: POST
+      path: /images/generations
+      body: { prompt: prompt, model: model, size: size, quality: quality, background: background, moderation: moderation }
+      constants:
+        body: { n: 1, output_format: png }
+    timeout_s: 180
+    output:
+      file:
+        from: base64
+        path: data.0.b64_json
+        types: { png: [image/png] }
+        name: { template: image.png }
+
+  - name: edit_image
+    class: write
+    description: >-
+      Edit an image of yours with an OpenAI GPT image model, following a
+      prompt: change a part, restyle it, put the subject in a new scene. image
+      is the id of a PNG, WebP or JPEG file (under 50 MB): a transit file of
+      yours or a file on a page you can read; mask, optional, a PNG of the
+      same size whose fully transparent pixels mark where to edit (under
+      4 MB). A transit file is consumed once OpenAI accepts it, a page file
+      stays. The answer is a PNG file of yours, kept 24 hours: pass its id as
+      is to a function that takes a file. Billed by OpenAI in tokens, the
+      input image included. A prompt or image refused by OpenAI's safety
+      system answers 400. Takes up to three minutes.
+    input:
+      type: object
+      additionalProperties: false
+      required: [prompt, model, image]
+      properties:
+        prompt: { type: string, minLength: 1, maxLength: 32000, description: "The change to make." }
+        model: *model
+        image: { type: string, format: uuid, description: "Id of the image to edit: a transit file of yours, or a file on a page you can read (from its link /f/<id>)." }
+        mask: { type: string, format: uuid, description: "Id of a PNG mask of the same size as image, transparent where to edit: a transit file of yours, or a file on a page you can read (from its link /f/<id>)." }
+        size: *size
+        quality: *quality
+        background: *background
+    examples:
+      - title: Restyle a photo
+        input: { prompt: "Turn this photo into a watercolor painting", model: gpt-image-2, image: "0f8fad5b-d9cb-469f-a165-70867728950e" }
+      - title: Replace the sky under a mask
+        input: { prompt: "A stormy sky", model: gpt-image-2.5-sunburst, image: "0f8fad5b-d9cb-469f-a165-70867728950e",
+                 mask: "7c9e6679-7425-40de-944b-e07fc1f90ae7", quality: high }
+    call:
+      method: POST
+      path: /images/edits
+      body: { prompt: prompt, model: model, size: size, quality: quality, background: background }
+      files: { "image[]": image, mask: mask }
+      constants:
+        body: { n: 1, output_format: png }
+    timeout_s: 180
+    output:
+      file:
+        from: base64
+        path: data.0.b64_json
+        types: { png: [image/png] }
+        name: { template: edited-image.png }

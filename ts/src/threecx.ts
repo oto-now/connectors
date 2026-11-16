@@ -83,7 +83,7 @@ export const connector = defineConnector({
   name: "threecx",
   label: "3CX",
   namespace: "threecx",
-  version: "1.0.0",
+  version: "1.1.0",
   apiVersion: "XAPI v1 (3CX V20)",
   baseUrl: "{base_url}/xapi/v1",
   auth: {

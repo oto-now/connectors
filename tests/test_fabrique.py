@@ -182,6 +182,43 @@ def test_auth_reference_must_name_a_credential_field(path, reference):
         check(description, path)
 
 
+def _jwt_bearer(path: pathlib.Path) -> dict:
+    description = _load(path)
+    description["connector"]["auth"] = {"kind": "oauth2_jwt_bearer", "token_url": "https://oauth2.example.test/token",
+                                        "scopes": ["https://api.example.test/auth/read"], "key": "service_account_key"}
+    description["connector"]["credential"] = [{"name": "service_account_key", "label": "Service account key (JSON)", "secret": True}]
+    return description
+
+
+def test_jwt_bearer_passes_and_is_carried_as_described():
+    """Un compte de service : un seul champ, secret ; la sortie porte `tokenUrl`, `scopes` et `key`, tels quels."""
+    source = connector_module(check(_jwt_bearer(NOTION), NOTION)).source
+    assert ('"kind": "oauth2_jwt_bearer"' in source and '"tokenUrl": "https://oauth2.example.test/token"' in source
+            and '"key": "service_account_key"' in source)
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda c: c["auth"].update(key="missing_field"), r"auth\.key names 'missing_field', which is not a credential field"),
+    (lambda c: c["credential"].append({"name": "other", "label": "Other", "secret": True}),
+     "auth.kind oauth2_jwt_bearer takes a single credential field, the key file named by auth.key"),
+    (lambda c: c["credential"][0].update(secret=False), r"auth\.key names 'service_account_key', which must be a secret field"),
+], ids=["key_not_a_field", "second_field", "key_not_secret"])
+def test_jwt_bearer_rule_2_refuses(mutate, message):
+    """Règle 2 : en `oauth2_jwt_bearer`, `key` nomme le seul champ de `credential`, secret."""
+    description = _jwt_bearer(NOTION)
+    mutate(description["connector"])
+    with pytest.raises(DescriptionError, match=message):
+        check(description, NOTION)
+
+
+def test_jwt_bearer_authorization_header_is_set_once():
+    """Règle 3 : l'authentification pose `Authorization` ; un en-tête constant ne le reprend pas."""
+    description = _jwt_bearer(NOTION)
+    description["connector"].setdefault("headers", {})["Authorization"] = "x"
+    with pytest.raises(DescriptionError, match="Authorization"):
+        check(description, NOTION)
+
+
 def test_basic_username_must_name_a_credential_field():
     """`username` est facultatif ; déclaré, il nomme un champ de `credential` (règle 2)."""
     description = _load(AIRCALL)
@@ -679,6 +716,43 @@ def test_microsoft_levels_serve_every_function_at_read():
     assert not any("ReadWrite" in scope for scope in read)
     assert all(served(f, read, auth["scope_implies"]) for f in description.data["functions"])
 
+
+
+# --- Niveaux d'accès d'un compte de service (règle 7) ---------------------------------
+
+SEARCH_CONSOLE = CONNECTORS / "google_search_console" / "connector.yaml"
+WEBMASTERS = "https://www.googleapis.com/auth/webmasters"
+WEBMASTERS_READONLY = "https://www.googleapis.com/auth/webmasters.readonly"
+
+
+def test_search_console_levels_read_by_default_and_add_sitemap_at_full():
+    """Deux niveaux : `read` par défaut sert les lectures ; `full` sert tout, `add_sitemap` exige le droit d'écriture."""
+    description = check(_load(SEARCH_CONSOLE), SEARCH_CONSOLE)
+    auth = description.data["connector"]["auth"]
+    assert auth["kind"] == "oauth2_jwt_bearer" and "scopes" not in auth
+    assert auth["access_levels"] == {"read": {"scopes": [WEBMASTERS_READONLY]}, "full": {"scopes": [WEBMASTERS]}}
+    assert auth["scope_implies"] == {WEBMASTERS: [WEBMASTERS_READONLY]} and auth["default_level"] == "read"
+    functions = {f["name"]: f for f in description.data["functions"]}
+    assert functions["add_sitemap"]["scopes"] == [WEBMASTERS] and functions["add_sitemap"]["class"] == "write"
+    at_read = {name for name, f in functions.items() if served(f, auth["access_levels"]["read"]["scopes"], auth["scope_implies"])}
+    assert at_read == {name for name, f in functions.items() if f["class"] == "read"} and "add_sitemap" not in at_read
+    assert all(served(f, auth["access_levels"]["full"]["scopes"], auth["scope_implies"]) for f in functions.values())
+    source = connector_module(description).source
+    assert '"defaultLevel": "read"' in source and '"accessLevels": {' in source
+    assert f'scopes: ["{WEBMASTERS}"],' in source
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda a, f: a.update(default_level="admin"), "auth.default_level 'admin' is not a declared access level"),
+    (lambda a, f: f[0].update(scopes=[WEBMASTERS]), "probe 'list_sites' is not served at access level 'read'"),
+    (lambda a, f: a.pop("scope_implies"),
+     f"access level 'read' asks for {WEBMASTERS_READONLY}, which level 'full' does not cover"),
+], ids=["default_level_unknown", "probe_not_served_at_read", "full_without_implication"])
+def test_search_console_level_rules_refuse(mutate, message):
+    description = _load(SEARCH_CONSOLE)
+    mutate(description["connector"]["auth"], description["functions"])
+    with pytest.raises(DescriptionError, match=re.escape(message)):
+        check(description, SEARCH_CONSOLE)
 
 # --- Règle 8 : compte de l'hôte et compte rattaché -----------------------------------
 
@@ -1267,6 +1341,7 @@ def test_only_the_declared_files_are_carried():
                 carried[f"{checked.data['connector']['name']}.{function['name']}"] = function["output"]["file"]["from"]
     assert carried == {"aircall.get_call_recording": "url", "aircall.get_call_voicemail": "url",
                        "allo.get_call_recording": "url", "mistral.transcribe": "json",
+                       "openai.edit_image": "base64", "openai.generate_image": "base64",
                        "threecx.download_recording": "body"}
 
 

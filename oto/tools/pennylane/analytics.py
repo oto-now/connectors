@@ -12,7 +12,8 @@ across groups they are independent. An empty list removes every category.
 
 Scopes: `categories:readonly` for groups and categories; the categories of an
 object follow the scope of that object (`supplier_invoices:*`,
-`customer_invoices:*`, `ledger_entries:*`), `:all` to categorize.
+`customer_invoices:*`, `ledger_entries:*`, `transactions:*`, `customers:*`,
+`suppliers:*`), `:all` to categorize.
 """
 from __future__ import annotations
 
@@ -23,6 +24,9 @@ CATEGORIZABLE = {
     "supplier_invoice": "supplier_invoices",
     "customer_invoice": "customer_invoices",
     "ledger_entry_line": "ledger_entry_lines",
+    "transaction": "transactions",
+    "customer": "customers",
+    "supplier": "suppliers",
 }
 
 
@@ -64,7 +68,8 @@ class AnalyticsMixin:
 
     def get_categories_of(self, target: str, target_id: int) -> list:
         """The categories of one object, each with its `weight`. `target`:
-        supplier_invoice, customer_invoice or ledger_entry_line."""
+        supplier_invoice, customer_invoice, ledger_entry_line, transaction,
+        customer or supplier."""
         return self.fetch_all_pages(_path(target, target_id))
 
     def categorize(self, target: str, target_id: int, categories: list[dict]) -> dict | list:

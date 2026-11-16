@@ -6,7 +6,8 @@
 # each case as the connector block of a description (the schema, then the rules of every description, rule 2 included:
 # each reference of auth names a credential field), then writes ts/src/auth-cases.ts for the host package
 # (`@otomata_tech/connectors/auth-cases`), which signs each case with its engine. tests/test_auth_cases.py plays the
-# cases against a reference written in the test: the Python lib signs no request of a description.
+# cases against the engine of the Python lib (oto.connectors.engine), which signs each request it sends to a fake
+# vendor.
 #
 # A case:
 # - auth, credential: the connector's blocks, in source form;
