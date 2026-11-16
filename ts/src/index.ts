@@ -10,6 +10,7 @@ import * as brevo from "./brevo"
 import * as claap from "./claap"
 import * as crisp from "./crisp"
 import * as dataforseo from "./dataforseo"
+import * as demodesk from "./demodesk"
 import * as dropcontact from "./dropcontact"
 import * as elevenlabs from "./elevenlabs"
 import * as fod from "./fod"
@@ -72,6 +73,7 @@ export { brevo }
 export { claap }
 export { crisp }
 export { dataforseo }
+export { demodesk }
 export { dropcontact }
 export { elevenlabs }
 export { fod }
@@ -137,6 +139,7 @@ export const connectors: readonly Connector[] = [
   claap.connector,
   crisp.connector,
   dataforseo.connector,
+  demodesk.connector,
   dropcontact.connector,
   elevenlabs.connector,
   fod.connector,
