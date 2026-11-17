@@ -226,10 +226,12 @@ class GmailClient:
         markdown: bool = True,
         to: Optional[str] = None,
         thread_id: Optional[str] = None,
+        reply_all: bool = False,
     ) -> dict:
         """Reply to a message (`message_id`) or to the latest message of a thread
         (`thread_id`) — exactly one of them. Keeps the thread, subject and threading
-        headers; recipients per `_reply.reply_recipients` (reply-all unless `to`/`cc`).
+        headers; recipients per `_reply.reply_recipients` (the author alone unless
+        `reply_all` or an explicit `to`/`cc`).
 
         If `html` is not provided and `markdown=True` (default), the body is
         rendered from markdown to an HTML fragment. Returns the sent message's `id`
@@ -238,7 +240,7 @@ class GmailClient:
         """
         if html is None and markdown:
             html = _markdown_to_html_fragment(body)
-        ctx = self._reply_context(message_id, thread_id, to, cc)
+        ctx = self._reply_context(message_id, thread_id, to, cc, reply_all)
         message = self._build_message(ctx['to'], ctx['subject'], body, html, ctx['cc'] or None,
                                       None, attachments, from_name=from_name)
         self._thread(message, ctx)
@@ -249,7 +251,7 @@ class GmailClient:
         return {'id': sent['id'], 'threadId': sent.get('threadId', ''), **ctx['answer']}
 
     def _reply_context(self, message_id: Optional[str], thread_id: Optional[str],
-                       to: Optional[str], cc: Optional[str]) -> dict:
+                       to: Optional[str], cc: Optional[str], reply_all: bool) -> dict:
         """Everything a reply takes from the message it answers, in two reads: the
         thread (headers of each message), after the message's own threadId.
 
@@ -281,7 +283,8 @@ class GmailClient:
                                        f"{thread_id!r} as Gmail returns it.")
         headers = {h['name'].lower(): h['value'] for h in parent['payload']['headers']}
         my_email = self.service.users().getProfile(userId='me').execute()['emailAddress']
-        reply_to, reply_cc = reply_recipients(headers, my_email, to=to, cc=cc)
+        reply_to, reply_cc = reply_recipients(headers, my_email, to=to, cc=cc,
+                                              reply_all=reply_all)
         if not reply_to:
             raise GmailClientError("Cannot determine reply recipient (from="
                                    f"{headers.get('from', '')!r}, to={headers.get('to', '')!r}).")
@@ -388,6 +391,7 @@ class GmailClient:
         markdown: bool = True,
         to: Optional[str] = None,
         thread_id: Optional[str] = None,
+        reply_all: bool = False,
     ) -> dict:
         """Create a draft reply — same targets, recipients and headers as `reply`.
 
@@ -396,7 +400,7 @@ class GmailClient:
         """
         if html is None and markdown:
             html = _markdown_to_html_fragment(body)
-        ctx = self._reply_context(message_id, thread_id, to, cc)
+        ctx = self._reply_context(message_id, thread_id, to, cc, reply_all)
         message = self._build_message(ctx['to'], ctx['subject'], body, html, ctx['cc'] or None,
                                       None, attachments)
         self._thread(message, ctx)

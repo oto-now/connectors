@@ -45,18 +45,21 @@ def _primary(headers: dict, my_email: str) -> str:
     return recipients(headers.get('from', ''))
 
 
-def reply_recipients(headers: dict, my_email: str,
-                     to: Optional[str] = None, cc: Optional[str] = None) -> tuple[str, str]:
+def reply_recipients(headers: dict, my_email: str, to: Optional[str] = None,
+                     cc: Optional[str] = None, reply_all: bool = False) -> tuple[str, str]:
     """`(to, cc)` of a reply. An empty `to` means none could be determined.
 
-    With neither `to` nor `cc`, a reply-all: the default recipient (`_primary`) in To,
-    everyone else on the message (its To and Cc) in Cc, minus ourselves and anyone
-    already in To. An explicit `to` or `cc` turns that off: the reply goes exactly
-    to them, `to` falling back to the default recipient (a reply always has one).
+    By default the reply goes to the default recipient (`_primary`) alone: nobody else
+    receives it unless the call says so. `reply_all=True` copies everyone else on the
+    message (its To and Cc), minus ourselves and anyone already in To. An explicit `to`
+    or `cc` wins over both: the reply goes exactly to them, `to` falling back to the
+    default recipient (a reply always has one).
     """
     primary = _primary(headers, my_email)
     if to or cc:
         return (to or primary), (cc or "")
+    if not reply_all:
+        return primary, ""
     leave_out = {my_email.lower()} | {a.lower() for a in _addresses(primary)}
     copied: list[str] = []
     for a in _addresses(headers.get('to', '')) + _addresses(headers.get('cc', '')):
