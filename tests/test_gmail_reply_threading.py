@@ -6,7 +6,8 @@ Trois écarts vécus sur `reply` et `create_draft_reply` :
   personne l'agent répondait à un message plus ancien — rangé sous lui.
 - `References` ne portait que le Message-ID du parent : Outlook, chez le destinataire,
   sortait la réponse de la conversation (RFC 5322 §3.6.4 : References du parent + son id).
-- le Cc du message d'origine se perdait.
+- le Cc du message d'origine se perdait : il suit désormais sur demande (`reply_all`) ;
+  par défaut, la réponse va à l'auteur seul.
 
 Aucun réseau : le service Google est mocké, on inspecte le MIME construit.
 """
@@ -120,10 +121,18 @@ def test_first_message_references_only_itself(client):
     assert mime["In-Reply-To"] == mime["References"] == "<1@example.com>"
 
 
-# ── (d) répondre-à-tous implicite : le Cc d'origine suit, sans soi ni doublon ──
+# ── (d) l'auteur seul par défaut ; répondre à tous se demande ─────────────────
 
-def test_implicit_reply_all_copies_everyone_but_me(client):
+def test_by_default_the_reply_goes_to_the_author_alone(client):
+    """Personne d'autre ne reçoit une réponse sans que l'appel le dise."""
     out = client.reply("m3", "corps")
+    mime, _ = _sent(client)
+    assert mime["To"] == "bob@example.com"
+    assert mime["Cc"] is None and out["cc"] == ""
+
+
+def test_reply_all_copies_everyone_but_me(client):
+    out = client.reply("m3", "corps", reply_all=True)
     mime, _ = _sent(client)
     assert mime["To"] == "bob@example.com"
     # To et Cc d'origine, sans moi, sans le destinataire, sans doublon (casse comprise).
@@ -131,8 +140,20 @@ def test_implicit_reply_all_copies_everyone_but_me(client):
     assert out["cc"] == "ann@example.com, carl@example.com"
 
 
-def test_reply_to_our_own_message_goes_to_its_recipients_and_keeps_its_cc(client):
+def test_explicit_to_wins_over_reply_all(client):
+    client.reply("m3", "corps", to="dan@example.com", reply_all=True)
+    mime, _ = _sent(client)
+    assert mime["To"] == "dan@example.com" and mime["Cc"] is None
+
+
+def test_reply_to_our_own_message_goes_to_its_recipients(client):
     client.reply("m2", "corps")
+    mime, _ = _sent(client)
+    assert mime["To"] == "ann@example.com" and mime["Cc"] is None
+
+
+def test_reply_all_to_our_own_message_keeps_its_cc(client):
+    client.reply("m2", "corps", reply_all=True)
     mime, _ = _sent(client)
     assert mime["To"] == "ann@example.com" and mime["Cc"] == "bob@example.com"
 
