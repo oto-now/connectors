@@ -6,7 +6,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-from email.utils import getaddresses, parseaddr
 from pathlib import Path
 from typing import Optional
 
@@ -14,6 +13,10 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from oto.tools.common.credentials import require
+
+from ._reply import (
+    REPLY_HEADERS, latest_of, reply_recipients, reply_subject, threading_headers,
+)
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
@@ -35,22 +38,6 @@ def _markdown_to_html_fragment(text: str) -> str:
         extensions=['tables', 'fenced_code', 'sane_lists', 'attr_list'],
         output_format='html',
     )
-
-
-def _recipients(header: str, exclude: str = "") -> str:
-    """The addresses of a header, as a list, minus `exclude`.
-
-    ⚠️ Do NOT use `parseaddr` here: it reads only one address and returns
-    `('', '')` on `To: a@x, b@y` — a thread with several recipients then became
-    "Cannot determine reply recipient".
-    """
-    # `if "@" in a`: on a header with no real address ("Name Without Address"),
-    # getaddresses returns [('', 'Name')] — letting it through would send to "Name"
-    # instead of raising the call guard.
-    addrs = [a for _, a in getaddresses([header]) if a and "@" in a]
-    if exclude:
-        addrs = [a for a in addrs if a.lower() != exclude.lower()]
-    return ", ".join(addrs)
 
 
 class GmailClientError(Exception):
@@ -230,62 +217,92 @@ class GmailClient:
 
     def reply(
         self,
-        message_id: str,
+        message_id: Optional[str],
         body: str,
         html: Optional[str] = None,
         cc: Optional[str] = None,
         attachments: Optional[list[str]] = None,
         from_name: Optional[str] = None,
         markdown: bool = True,
+        to: Optional[str] = None,
+        thread_id: Optional[str] = None,
     ) -> dict:
-        """Reply to a message. Preserves thread, subject, and headers.
+        """Reply to a message (`message_id`) or to the latest message of a thread
+        (`thread_id`) — exactly one of them. Keeps the thread, subject and threading
+        headers; recipients per `_reply.reply_recipients` (reply-all unless `to`/`cc`).
 
         If `html` is not provided and `markdown=True` (default), the body is
-        rendered from markdown to an HTML fragment.
+        rendered from markdown to an HTML fragment. Returns the sent message's `id`
+        and `threadId`, plus what `_reply_context` names (recipients, the message
+        answered, `warning` when it is not the latest of its thread).
         """
         if html is None and markdown:
             html = _markdown_to_html_fragment(body)
-        original = self.service.users().messages().get(
-            userId='me', id=message_id, format='full',
-        ).execute()
-        # Case-insensitive lookup: header casing is not normalized
-        # ("Message-ID" vs "Message-Id" depending on the sender).
-        headers = {h['name'].lower(): h['value'] for h in original['payload']['headers']}
-        thread_id = original['threadId']
-
-        # Determine recipient: reply to sender (unless we sent it, then reply to To)
-        from_addr = headers.get('from', '')
-        to_addr = headers.get('to', '')
-        reply_to_header = headers.get('reply-to', '')
-        profile = self.service.users().getProfile(userId='me').execute()
-        my_email = profile['emailAddress']
-
-        if reply_to_header:
-            reply_to = _recipients(reply_to_header)
-        elif my_email.lower() in from_addr.lower():
-            # notre propre message : on relance le fil vers TOUS ses destinataires
-            reply_to = _recipients(to_addr)
-        else:
-            reply_to = _recipients(from_addr)
-
-        if not reply_to:
-            raise GmailClientError(f"Cannot determine reply recipient (from={from_addr!r}, to={to_addr!r})")
-
-        subject = headers.get('subject', '')
-        if not subject.lower().startswith('re:'):
-            subject = f"Re: {subject}"
-
-        message = self._build_message(reply_to, subject, body, html, cc, None, attachments, from_name=from_name)
-        orig_msg_id = headers.get('message-id', '')
-        if orig_msg_id:
-            message['In-Reply-To'] = orig_msg_id
-            message['References'] = orig_msg_id
-
+        ctx = self._reply_context(message_id, thread_id, to, cc)
+        message = self._build_message(ctx['to'], ctx['subject'], body, html, ctx['cc'] or None,
+                                      None, attachments, from_name=from_name)
+        self._thread(message, ctx)
         raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
         sent = self.service.users().messages().send(
-            userId='me', body={'raw': raw, 'threadId': thread_id},
+            userId='me', body={'raw': raw, 'threadId': ctx['thread_id']},
         ).execute()
-        return {'id': sent['id'], 'threadId': sent.get('threadId', ''), 'to': reply_to}
+        return {'id': sent['id'], 'threadId': sent.get('threadId', ''), **ctx['answer']}
+
+    def _reply_context(self, message_id: Optional[str], thread_id: Optional[str],
+                       to: Optional[str], cc: Optional[str]) -> dict:
+        """Everything a reply takes from the message it answers, in two reads: the
+        thread (headers of each message), after the message's own threadId.
+
+        `answer` is what the caller gets back: `to`, `cc`, `replied_to` (the message
+        answered) and, when `message_id` is not the latest message of its thread,
+        `warning` with the latest one's id — a reply to an older message is filed
+        under it by the recipient's client.
+        """
+        if (message_id is None) == (thread_id is None):
+            raise GmailClientError("A reply needs exactly one of message_id (the message "
+                                   "to answer) or thread_id (answers its latest message).")
+        messages = self.service.users().messages()
+        if message_id is not None:
+            thread_id = messages.get(userId='me', id=message_id, format='minimal',
+                                     ).execute()['threadId']
+        thread = self.service.users().threads().get(
+            userId='me', id=thread_id, format='metadata', metadataHeaders=REPLY_HEADERS,
+        ).execute().get('messages', [])
+        latest = latest_of(thread)
+        if message_id is None:
+            if latest is None:
+                raise GmailClientError(f"Thread {thread_id!r} has no message to answer "
+                                       "(only drafts or trashed messages).")
+            parent = latest
+        else:
+            parent = next((m for m in thread if m['id'] == message_id), None)
+            if parent is None:
+                raise GmailClientError(f"Message {message_id!r} is not in its thread "
+                                       f"{thread_id!r} as Gmail returns it.")
+        headers = {h['name'].lower(): h['value'] for h in parent['payload']['headers']}
+        my_email = self.service.users().getProfile(userId='me').execute()['emailAddress']
+        reply_to, reply_cc = reply_recipients(headers, my_email, to=to, cc=cc)
+        if not reply_to:
+            raise GmailClientError("Cannot determine reply recipient (from="
+                                   f"{headers.get('from', '')!r}, to={headers.get('to', '')!r}).")
+        in_reply_to, references = threading_headers(headers)
+        answer = {'to': reply_to, 'cc': reply_cc, 'replied_to': parent['id']}
+        if latest is not None and latest['id'] != parent['id']:
+            answer['warning'] = {
+                'code': 'not_latest_in_thread',
+                'latest_message_id': latest['id'],
+                'message': (f"Message {parent['id']} is not the latest of its thread: "
+                            f"{latest['id']} is. The reply is filed under the older one."),
+            }
+        return {'thread_id': thread_id, 'subject': reply_subject(headers),
+                'in_reply_to': in_reply_to, 'references': references,
+                'to': reply_to, 'cc': reply_cc, 'answer': answer}
+
+    @staticmethod
+    def _thread(message, ctx: dict) -> None:
+        if ctx['in_reply_to']:
+            message['In-Reply-To'] = ctx['in_reply_to']
+            message['References'] = ctx['references']
 
     def create_draft(
         self,
@@ -314,6 +331,9 @@ class GmailClient:
         if in_reply_to:
             message['In-Reply-To'] = in_reply_to
             message['References'] = in_reply_to
+        return self._save_draft(message, thread_id)
+
+    def _save_draft(self, message, thread_id: Optional[str]) -> dict:
         raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
         msg_body: dict = {'raw': raw}
         if thread_id:
@@ -360,58 +380,27 @@ class GmailClient:
 
     def create_draft_reply(
         self,
-        message_id: str,
+        message_id: Optional[str],
         body: str,
         html: Optional[str] = None,
         cc: Optional[str] = None,
         attachments: Optional[list[str]] = None,
         markdown: bool = True,
+        to: Optional[str] = None,
+        thread_id: Optional[str] = None,
     ) -> dict:
-        """Create a draft reply to a message. Preserves thread, subject, and headers.
+        """Create a draft reply — same targets, recipients and headers as `reply`.
 
         If `html` is not provided and `markdown=True` (default), the body is
         rendered from markdown to an HTML fragment — same contract as `reply`.
         """
         if html is None and markdown:
             html = _markdown_to_html_fragment(body)
-        original = self.service.users().messages().get(
-            userId='me', id=message_id, format='full',
-        ).execute()
-        # Lookup case-insensitive (cf. reply) : "Message-ID" vs "Message-Id".
-        headers = {h['name'].lower(): h['value'] for h in original['payload']['headers']}
-        thread_id = original['threadId']
-
-        from_addr = headers.get('from', '')
-        to_addr = headers.get('to', '')
-        reply_to_header = headers.get('reply-to', '')
-        profile = self.service.users().getProfile(userId='me').execute()
-        my_email = profile['emailAddress']
-
-        if reply_to_header:
-            reply_to = _recipients(reply_to_header)
-        elif my_email.lower() in from_addr.lower():
-            # notre propre message : on relance le fil vers TOUS ses destinataires
-            reply_to = _recipients(to_addr)
-        else:
-            reply_to = _recipients(from_addr)
-
-        if not reply_to:
-            raise GmailClientError(f"Cannot determine reply recipient (from={from_addr!r}, to={to_addr!r})")
-
-        subject = headers.get('subject', '')
-        if not subject.lower().startswith('re:'):
-            subject = f"Re: {subject}"
-
-        orig_msg_id = headers.get('message-id', '')
-        return self.create_draft(
-            to=reply_to, subject=subject, body=body, html=html,
-            cc=cc, attachments=attachments,
-            thread_id=thread_id, in_reply_to=orig_msg_id or None,
-            # Rendering already happened above: `markdown` is propagated so that a
-            # `markdown=False` call is not re-rendered by the default of
-            # `create_draft` (html stays None in that case — intentional).
-            markdown=markdown,
-        )
+        ctx = self._reply_context(message_id, thread_id, to, cc)
+        message = self._build_message(ctx['to'], ctx['subject'], body, html, ctx['cc'] or None,
+                                      None, attachments)
+        self._thread(message, ctx)
+        return {**self._save_draft(message, ctx['thread_id']), **ctx['answer']}
 
     def _build_message(self, to, subject, body, html=None, cc=None, bcc=None, attachments=None, from_name=None):
         """Build a MIME message."""

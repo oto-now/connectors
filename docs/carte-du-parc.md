@@ -31,7 +31,7 @@ Une ligne par connecteur décrit, par ordre alphabétique. Le type se déduit de
 | `fod` | France Open Data | 1.5.0 | clé | oui | 31 | 31 | 0 | 0 | oui | 31 | non | 0 |
 | `folk` | folk | 1.0.1 | clé | non | 62 | 23 | 21 | 18 | oui | 62 | non | 0 |
 | `fullenrich` | FullEnrich | 1.0.0 | clé | oui | 2 | 1 | 1 | 0 | non | 1 | non | 0 |
-| `gmail` | Gmail | 1.0.1 | connexion d'une personne (OAuth) | non | 13 | 8 | 2 | 3 | non | 13 | oui | 0 |
+| `gmail` | Gmail | 1.1.0 | connexion d'une personne (OAuth) | non | 13 | 8 | 2 | 3 | non | 13 | oui | 0 |
 | `google_calendar` | Google Calendar | 1.0.0 | connexion d'une personne (OAuth) | non | 7 | 4 | 0 | 3 | non | 7 | oui | 0 |
 | `google_drive` | Google Drive | 1.0.0 | connexion d'une personne (OAuth) | non | 12 | 5 | 4 | 3 | non | 12 | oui | 0 |
 | `google_search_console` | Google Search Console | 1.1.0 | compte de service (assertion signée) | non | 6 | 5 | 1 | 0 | oui | 6 | oui | 0 |

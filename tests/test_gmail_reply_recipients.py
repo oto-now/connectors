@@ -9,7 +9,7 @@ Aucun réseau : on inspecte la résolution des destinataires.
 """
 from __future__ import annotations
 
-from oto.tools.google.gmail.lib.gmail_client import _recipients
+from oto.tools.google.gmail.lib._reply import recipients as _recipients
 
 
 def test_une_seule_adresse():
