@@ -10,6 +10,9 @@
 # (export_mailboxes, export_credentials_status, list/get_export_batch) live in
 # the Python client too: export_mailboxes checks the platform login is saved
 # and every mailbox is active first; the login itself is never read back.
+# update_mailbox is described below as its plain PUT; the Python client reads
+# the mailbox first, sends only the fields that differ (nothing when none does),
+# refuses an avatar on a shared or private mailbox and checks the answer.
 #
 # Mailbox payloads carry the mailbox, IMAP/SMTP and admin passwords and the
 # admin secret; the Python client removes them (strip_secrets) and every
@@ -20,7 +23,7 @@ connector:
   name: mailpool
   label: Mailpool
   namespace: mailpool
-  version: 1.1.1
+  version: 1.2.0
   api_version: v1
   base_url: https://app.mailpool.io/v1/api
   auth:
@@ -334,7 +337,7 @@ functions:
           signature: { type: string }
           forwardTo: { type: string }
           status: { enum: [active, pending, inactive] }
-          avatar: { type: string }
+          avatar: { type: [string, "null"] }
           type: { enum: [google, shared, private, outlook] }
           isAdmin: { type: boolean }
           domain: *domain_out
@@ -364,6 +367,37 @@ functions:
       - title: One mailbox
         input: { mailbox_id: 5301 }
     call: { method: GET, path: "/mailboxes/{mailbox_id}" }
+    output: { strip: *secrets, schema: *mailbox_out }
+    cost: { per: request }
+
+  - name: update_mailbox
+    class: write
+    description: >-
+      Change a mailbox's sender settings in place: first and last name,
+      signature, forwarding address, and the avatar of a Google or Outlook
+      mailbox (null removes it). Only the fields given are sent; the address,
+      type and domain cannot be changed. Credentials are never returned.
+    input:
+      type: object
+      additionalProperties: false
+      required: [mailbox_id]
+      minProperties: 2
+      properties:
+        mailbox_id: *mailbox_id
+        first_name: { type: string, minLength: 1, description: "Sender first name." }
+        last_name: { type: string, minLength: 1, description: "Sender last name." }
+        signature: { type: string, minLength: 1, description: "Email signature." }
+        forward_to: { type: string, format: email, description: "Address incoming mail is forwarded to." }
+        avatar:
+          type: [string, "null"]
+          description: "Avatar image URL, Google and Outlook mailboxes only; null removes it."
+    examples:
+      - title: New sender name and signature
+        input: { mailbox_id: 5301, first_name: Anna, last_name: Martin, signature: "Anna Martin\nExample Inc." }
+    call:
+      method: PUT
+      path: "/mailboxes/{mailbox_id}"
+      body: { firstName: first_name, lastName: last_name, signature: signature, forwardTo: forward_to, avatar: avatar }
     output: { strip: *secrets, schema: *mailbox_out }
     cost: { per: request }
 

@@ -2,8 +2,10 @@
 
 from ._exports import MailpoolExportRefused
 from ._mailboxes import MailpoolCreatePartial, MailpoolCreateRefused
+from ._update import UNSET, MailpoolUpdateNotKept
 from .client import (MailpoolClient, MailpoolDnsWriteError, is_secret_key,
                      project_mailbox, strip_secrets)
 
-__all__ = ["MailpoolClient", "MailpoolCreatePartial", "MailpoolCreateRefused", "MailpoolDnsWriteError", "MailpoolExportRefused", "is_secret_key",
+__all__ = ["MailpoolClient", "MailpoolCreatePartial", "MailpoolCreateRefused", "MailpoolDnsWriteError", "MailpoolExportRefused",
+           "MailpoolUpdateNotKept", "UNSET", "is_secret_key",
            "project_mailbox", "strip_secrets"]

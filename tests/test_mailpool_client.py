@@ -10,6 +10,9 @@ if the fix were removed:
 - every list sends `limit` and `offset`, even when the caller omits them;
 - `update_domain_dns` replaces the whole set: it re-reads `expected`, refuses a
   set that loses an MX, SPF or DKIM, reads back and restores on a loss;
+- `update_mailbox` reads first, sends only the fields that differ (nothing when
+  none does), refuses an avatar on shared/private mailboxes, is never retried,
+  and raises when the answer read back lost a field or did not apply one;
 - ids placed in the path are positive integers only.
 """
 from __future__ import annotations
@@ -618,3 +621,115 @@ def test_une_creation_acceptee_sans_liste_en_retour_leve_au_lieu_de_rendre_vide(
     monkeypatch.setattr(c, "_request", lambda *a, **kw: {"ok": True})
     with pytest.raises(RuntimeError, match="exemple.test"):
         c.create_mailboxes([{}])
+
+
+# --- mailbox update ------------------------------------------------------------
+
+BOX = dict(MAILBOX, type="google", firstName="Anna", lastName="Lee",
+           signature="Anna Lee", forwardTo="replies@example.com",
+           avatar="https://example.com/a.png")
+
+
+def test_update_sends_only_the_fields_that_differ(capture, cli):
+    after = dict(BOX, lastName="Martin", signature="Anna Martin\nExample")
+    capture["responses"] += [_Resp(200, BOX), _Resp(200, after)]
+    out = cli.update_mailbox(5301, first_name="Anna", last_name=" Martin ",
+                             signature="Anna Martin\nExample")
+    assert capture["calls"] == [("GET", f"{BASE}/mailboxes/5301"),
+                                ("PUT", f"{BASE}/mailboxes/5301")]
+    assert capture["all"][1]["json"] == {"lastName": "Martin",
+                                         "signature": "Anna Martin\nExample"}
+    assert out["lastName"] == "Martin"
+    assert not SECRET_VALUES & set(_values(out))
+    assert out["admin"] == {"email": "admin@example-outreach.com"}
+
+
+def test_plan_update_sends_nothing(capture, cli):
+    capture["responses"].append(_Resp(200, BOX))
+    plan = cli.plan_mailbox_update(5301, first_name="Anna", forward_to="team@example.com")
+    assert capture["calls"] == [("GET", f"{BASE}/mailboxes/5301")]
+    assert plan["changes"] == {"forwardTo": {"before": "replies@example.com",
+                                             "after": "team@example.com"}}
+    assert plan["unchanged"] == ["firstName"]
+    assert plan["email"] == BOX["email"] and plan["type"] == "google"
+
+
+def test_update_with_nothing_different_sends_nothing(capture, cli):
+    capture["responses"].append(_Resp(200, BOX))
+    out = cli.update_mailbox(5301, first_name="Anna", signature="Anna Lee")
+    assert capture["calls"] == [("GET", f"{BASE}/mailboxes/5301")]
+    assert out["id"] == 5301 and "password" not in out
+
+
+def test_avatar_none_removes_it(capture, cli):
+    capture["responses"] += [_Resp(200, BOX), _Resp(200, dict(BOX, avatar=None))]
+    cli.update_mailbox(5301, avatar=None)
+    assert capture["all"][1]["json"] == {"avatar": None}
+
+
+@pytest.mark.parametrize("box_type", ["shared", "private"])
+def test_avatar_is_refused_on_shared_and_private(capture, cli, box_type):
+    capture["responses"].append(_Resp(200, dict(BOX, type=box_type)))
+    with pytest.raises(ValueError, match="take an avatar"):
+        cli.update_mailbox(5301, avatar="https://example.com/b.png")
+    assert [m for m, _ in capture["calls"]] == ["GET"]
+
+
+@pytest.mark.parametrize("kwargs, needle", [
+    ({}, "Nothing to update"),
+    ({"first_name": ""}, "empty"),
+    ({"signature": "  "}, "empty"),
+    ({"forward_to": None}, "must be a string"),
+    ({"forward_to": "a@b.com, c@d.com"}, "one address"),
+    ({"last_name": 3}, "must be a string"),
+])
+def test_update_input_is_checked_offline(capture, cli, kwargs, needle):
+    with pytest.raises(ValueError, match=needle):
+        cli.update_mailbox(5301, **kwargs)
+    assert capture["calls"] == []
+
+
+@pytest.mark.parametrize("bad", [0, -1, "5301", True])
+def test_update_mailbox_id_is_a_positive_integer(capture, cli, bad):
+    with pytest.raises(ValueError):
+        cli.update_mailbox(bad, first_name="Anna")
+    assert capture["calls"] == []
+
+
+def test_update_is_never_retried(capture, cli):
+    capture["responses"] += [_Resp(200, BOX), _Resp(503, {"message": "down"})]
+    with pytest.raises(UpstreamHTTPError):
+        cli.update_mailbox(5301, first_name="Ann")
+    assert [m for m, _ in capture["calls"]] == ["GET", "PUT"]
+
+
+def test_a_partial_answer_is_settled_by_a_read_back(capture, cli):
+    """The PUT answer may carry only some fields: the mailbox read back decides."""
+    after = dict(BOX, firstName="Ann")
+    partial = {"id": 5301, "firstName": "Ann"}
+    capture["responses"] += [_Resp(200, BOX), _Resp(200, partial), _Resp(200, after)]
+    out = cli.update_mailbox(5301, first_name="Ann")
+    assert [m for m, _ in capture["calls"]] == ["GET", "PUT", "GET"]
+    assert out["signature"] == "Anna Lee"
+
+
+def test_a_field_lost_on_the_write_is_raised_with_the_previous_values(capture, cli):
+    """If Mailpool's PUT replaced the whole mailbox, the fields not sent would be
+    gone: never read as a success."""
+    lost = {k: v for k, v in BOX.items() if k not in ("signature", "forwardTo")}
+    lost["firstName"] = "Ann"
+    capture["responses"] += [_Resp(200, BOX), _Resp(200, lost), _Resp(200, lost)]
+    with pytest.raises(mp_pkg.MailpoolUpdateNotKept) as e:
+        cli.update_mailbox(5301, first_name="Ann")
+    assert e.value.changed == ["forwardTo", "signature"]
+    assert e.value.not_applied == []
+    assert e.value.previous["signature"] == "Anna Lee"
+    assert "Anna Lee" not in str(e.value)  # the values travel in `previous`, not the text
+    assert "password" not in e.value.mailbox
+
+
+def test_a_change_not_applied_is_raised(capture, cli):
+    capture["responses"] += [_Resp(200, BOX), _Resp(200, BOX), _Resp(200, BOX)]
+    with pytest.raises(mp_pkg.MailpoolUpdateNotKept) as e:
+        cli.update_mailbox(5301, first_name="Ann")
+    assert e.value.not_applied == ["firstName"] and e.value.changed == []
