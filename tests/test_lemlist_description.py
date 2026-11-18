@@ -1,4 +1,4 @@
-"""La description `lemlist` 1.6.0 : celle du client existant (`oto.tools.lemlist`), sans rien y changer.
+"""La description `lemlist` 1.6.1 : celle du client existant (`oto.tools.lemlist`), sans rien y changer.
 
 Une fonction par méthode du client qui envoie une seule requête à `api.lemlist.com/api`, sous son nom, avec ses noms
 d'arguments et les clés que le client envoie à lemlist (chemin, query, corps, parties d'un multipart). Depuis la 1.1.0,
@@ -429,9 +429,9 @@ def _values(name: str, function: dict) -> dict:
     return {argument: values[argument] for argument in function["input"]["properties"]}
 
 
-def test_the_description_is_version_1_6_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_6_1_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.6.0"
+    assert description["connector"]["version"] == "1.6.1"
     check(description, LEMLIST)
 
 

@@ -40,6 +40,21 @@ def _is_variable_not_found(body: Any) -> bool:
                for t in texts)
 
 
+def _unsubscribe_forms(value: str) -> List[str]:
+    """The values `get_unsubscribe` reads, in order: the value, then in lower
+    case when it has capitals; for an address, its domain `@domain`, then in
+    lower case when it has capitals."""
+    forms = [value]
+    if value.lower() != value:
+        forms.append(value.lower())
+    local, at, domain = value.rpartition("@")
+    if local and at and domain:
+        forms.append(f"@{domain}")
+        if domain.lower() != domain:
+            forms.append(f"@{domain.lower()}")
+    return forms
+
+
 def _query(params: Dict[str, Any]) -> Dict[str, Any]:
     """Query parameters with booleans written `true`/`false`: `requests` would
     write `True`/`False` (Python capital), which lemlist does not read as a
@@ -1767,17 +1782,18 @@ class LemlistClient:
         `@example.com` is checked too: listed → `unsubscribed: True`,
         `matched: "@example.com"` (the record found). `matched` names the
         value that answered (the address itself, or its domain).
+
+        The match is case-sensitive too: a value with capitals that is not
+        found is read again in lower case (`Jane@Example.com`, then
+        `jane@example.com`), and the domain the same way (`@Example.com`, then
+        `@example.com`), at most one more request per form. `unsubscribed:
+        False` only when no form is found.
         """
-        record = self._unsubscribe_record(email)
-        if record is not None:
-            return {**record, "value": email, "matched": email,
-                    "unsubscribed": True}
-        local, at, domain = email.rpartition("@")
-        if local and at and domain:
-            par_domaine = self._unsubscribe_record(f"@{domain}")
-            if par_domaine is not None:
-                return {**par_domaine, "value": email,
-                        "matched": f"@{domain}", "unsubscribed": True}
+        for form in _unsubscribe_forms(email):
+            record = self._unsubscribe_record(form)
+            if record is not None:
+                return {**record, "value": email, "matched": form,
+                        "unsubscribed": True}
         return {"value": email, "unsubscribed": False}
 
     def _unsubscribe_record(self, value: str) -> Optional[Dict[str, Any]]:

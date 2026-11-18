@@ -5,6 +5,9 @@
 # The function names, the argument names and the keys sent to lemlist are the client's; the client is not changed
 # (tests/test_lemlist_description.py reads it to keep both equal).
 #
+# 1.6.1: the client's get_unsubscribe, outside this file, finds an address or a domain whatever its case: a value
+# with capitals that is not found is read again in lower case, the domain too. Nothing described changes.
+#
 # 1.6.0: the per-address unsubscribe functions send the v2 variables requests, the v1 routes (/unsubscribes/{email},
 # /unsubs/export) being no longer served nor in lemlist's reference: add_unsubscribe is POST and delete_unsubscribe
 # DELETE /v2/unsubscribes/variables/{email}, the same requests as unsubscribe_variable and resubscribe_variable; the
@@ -125,7 +128,7 @@ connector:
   name: lemlist
   label: lemlist
   namespace: lemlist
-  version: 1.6.0
+  version: 1.6.1
   api_version: v1 and v2 routes
   base_url: https://api.lemlist.com/api
   auth:

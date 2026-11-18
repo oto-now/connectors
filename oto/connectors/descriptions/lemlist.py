@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'lemlist',
                'label': 'lemlist',
                'namespace': 'lemlist',
-               'version': '1.6.0',
+               'version': '1.6.1',
                'api_version': 'v1 and v2 routes',
                'base_url': 'https://api.lemlist.com/api',
                'auth': {'kind': 'basic', 'password': 'api_key'},

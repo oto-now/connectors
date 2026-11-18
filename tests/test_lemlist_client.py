@@ -1230,6 +1230,51 @@ def test_get_unsubscribe_a_refusal_on_the_domain_check_still_raises(monkeypatch)
     assert e.value.status_code == 401
 
 
+def test_get_unsubscribe_an_address_with_capitals_is_found_in_lower_case(monkeypatch):
+    """lemlist matche à la casse près : la forme en minuscules est relue avant le domaine."""
+    record = {"_id": "uns_3", "value": "jane@example.test"}
+    calls = _sequence(monkeypatch, _Resp(404, {"error": "Variable not found"}), _Resp(200, record))
+    out = lm.LemlistClient(api_key="k").get_unsubscribe("Jane@Example.test")
+    assert calls == ["Jane@Example.test", "jane@example.test"]
+    assert out == {**record, "value": "Jane@Example.test", "matched": "jane@example.test",
+                   "unsubscribed": True}
+
+
+def test_get_unsubscribe_a_domain_with_capitals_is_found_in_lower_case(monkeypatch):
+    record = {"_id": "uns_4", "value": "@example.test"}
+    calls = _sequence(monkeypatch, _Resp(404, {"error": "Variable not found"}), _Resp(404, {"error": "Variable not found"}), _Resp(404, {"error": "Variable not found"}), _Resp(200, record))
+    out = lm.LemlistClient(api_key="k").get_unsubscribe("Jane@Example.test")
+    assert calls == ["Jane@Example.test", "jane@example.test", "@Example.test", "@example.test"]
+    assert out["matched"] == "@example.test" and out["unsubscribed"] is True
+
+
+def test_get_unsubscribe_with_capitals_found_nowhere_says_false_after_four_reads(monkeypatch):
+    calls = _sequence(monkeypatch, _Resp(404, {"error": "Variable not found"}), _Resp(404, {"error": "Variable not found"}), _Resp(404, {"error": "Variable not found"}), _Resp(404, {"error": "Variable not found"}))
+    out = lm.LemlistClient(api_key="k").get_unsubscribe("Jane@Example.test")
+    assert len(calls) == 4
+    assert out == {"value": "Jane@Example.test", "unsubscribed": False}
+
+
+def test_get_unsubscribe_a_lower_case_address_reads_no_other_form(monkeypatch):
+    calls = _sequence(monkeypatch, _Resp(404, {"error": "Variable not found"}), _Resp(404, {"error": "Variable not found"}))
+    lm.LemlistClient(api_key="k").get_unsubscribe("jane@example.test")
+    assert calls == ["jane@example.test", "@example.test"]
+
+
+def test_get_unsubscribe_capitals_only_in_the_local_part_read_the_domain_once(monkeypatch):
+    calls = _sequence(monkeypatch, _Resp(404, {"error": "Variable not found"}), _Resp(404, {"error": "Variable not found"}), _Resp(404, {"error": "Variable not found"}))
+    lm.LemlistClient(api_key="k").get_unsubscribe("Jane@example.test")
+    assert calls == ["Jane@example.test", "jane@example.test", "@example.test"]
+
+
+def test_get_unsubscribe_a_refusal_on_the_lower_case_read_still_raises(monkeypatch):
+    """Jamais « pas désinscrit » quand une forme n'a pas pu être vérifiée."""
+    calls = _sequence(monkeypatch, _Resp(404, {"error": "Variable not found"}), _Resp(500, {"error": "boom"}))
+    with pytest.raises(UpstreamHTTPError) as e:
+        lm.LemlistClient(api_key="k").get_unsubscribe("Jane@Example.test")
+    assert e.value.status_code == 500 and len(calls) == 2
+
+
 @pytest.mark.parametrize("resp", [
     _Resp(404, {"error": "Variable not found"}),   # la forme JSON
     _TextResp(404, "Variable not found"),          # la forme texte de la doc
