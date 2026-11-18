@@ -11,7 +11,8 @@ subscription slots; editing a domain's DNS and DMARC settings; running spam
 checks; creating mailboxes on subscription slots already paid for
 (`_mailboxes.py`: refused, before anything is sent, when no slot of the type
 is free); editing a mailbox's names, signature, forwarding address and avatar
-(`_update.py`: only the fields that differ are sent, the answer is checked).
+(`_update.py`: the four text fields are always sent, read just before, with
+the changes on top; the avatar only when it changes; the answer is checked).
 Everything else that is BILLED is deliberately absent: registering,
 transferring or renewing a domain, buying subscription slots, adding an inbox
 to warmup, inbox-placement tests. Exports to a sending platform are served

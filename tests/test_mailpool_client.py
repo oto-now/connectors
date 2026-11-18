@@ -630,18 +630,38 @@ BOX = dict(MAILBOX, type="google", firstName="Anna", lastName="Lee",
            avatar="https://example.com/a.png")
 
 
-def test_update_sends_only_the_fields_that_differ(capture, cli):
+def test_update_sends_the_four_text_fields_with_the_changes_on_top(capture, cli):
     after = dict(BOX, lastName="Martin", signature="Anna Martin\nExample")
     capture["responses"] += [_Resp(200, BOX), _Resp(200, after)]
     out = cli.update_mailbox(5301, first_name="Anna", last_name=" Martin ",
                              signature="Anna Martin\nExample")
     assert capture["calls"] == [("GET", f"{BASE}/mailboxes/5301"),
                                 ("PUT", f"{BASE}/mailboxes/5301")]
-    assert capture["all"][1]["json"] == {"lastName": "Martin",
-                                         "signature": "Anna Martin\nExample"}
+    assert capture["all"][1]["json"] == {"firstName": "Anna", "lastName": "Martin",
+                                         "signature": "Anna Martin\nExample",
+                                         "forwardTo": "replies@example.com"}
     assert out["lastName"] == "Martin"
     assert not SECRET_VALUES & set(_values(out))
     assert out["admin"] == {"email": "admin@example-outreach.com"}
+
+
+def test_changing_the_first_name_alone_also_sends_the_current_signature_and_forward_to(
+        capture, cli):
+    """A PUT that replaced the whole settings would erase what it was not given:
+    the current text fields always go with the change, the avatar does not."""
+    capture["responses"] += [_Resp(200, BOX), _Resp(200, dict(BOX, firstName="Ann"))]
+    cli.update_mailbox(5301, first_name="Ann")
+    assert capture["all"][1]["json"] == {"firstName": "Ann", "lastName": "Lee",
+                                         "signature": "Anna Lee",
+                                         "forwardTo": "replies@example.com"}
+
+
+def test_a_text_field_the_mailbox_does_not_carry_is_not_sent(capture, cli):
+    box = dict(BOX, forwardTo=None)
+    capture["responses"] += [_Resp(200, box), _Resp(200, dict(box, firstName="Ann"))]
+    cli.update_mailbox(5301, first_name="Ann")
+    assert capture["all"][1]["json"] == {"firstName": "Ann", "lastName": "Lee",
+                                         "signature": "Anna Lee"}
 
 
 def test_plan_update_sends_nothing(capture, cli):
@@ -664,7 +684,10 @@ def test_update_with_nothing_different_sends_nothing(capture, cli):
 def test_avatar_none_removes_it(capture, cli):
     capture["responses"] += [_Resp(200, BOX), _Resp(200, dict(BOX, avatar=None))]
     cli.update_mailbox(5301, avatar=None)
-    assert capture["all"][1]["json"] == {"avatar": None}
+    assert capture["all"][1]["json"] == {"firstName": "Anna", "lastName": "Lee",
+                                         "signature": "Anna Lee",
+                                         "forwardTo": "replies@example.com",
+                                         "avatar": None}
 
 
 @pytest.mark.parametrize("box_type", ["shared", "private"])
@@ -714,18 +737,26 @@ def test_a_partial_answer_is_settled_by_a_read_back(capture, cli):
 
 
 def test_a_field_lost_on_the_write_is_raised_with_the_previous_values(capture, cli):
-    """If Mailpool's PUT replaced the whole mailbox, the fields not sent would be
-    gone: never read as a success."""
+    """Fields sent at their current value that the answer no longer shows:
+    never read as a success."""
     lost = {k: v for k, v in BOX.items() if k not in ("signature", "forwardTo")}
     lost["firstName"] = "Ann"
     capture["responses"] += [_Resp(200, BOX), _Resp(200, lost), _Resp(200, lost)]
     with pytest.raises(mp_pkg.MailpoolUpdateNotKept) as e:
         cli.update_mailbox(5301, first_name="Ann")
-    assert e.value.changed == ["forwardTo", "signature"]
-    assert e.value.not_applied == []
+    assert e.value.not_applied == ["forwardTo", "signature"]
+    assert e.value.changed == []
     assert e.value.previous["signature"] == "Anna Lee"
     assert "Anna Lee" not in str(e.value)  # the values travel in `previous`, not the text
     assert "password" not in e.value.mailbox
+
+
+def test_an_avatar_not_sent_that_changed_is_raised(capture, cli):
+    moved = dict(BOX, firstName="Ann", avatar=None)
+    capture["responses"] += [_Resp(200, BOX), _Resp(200, moved), _Resp(200, moved)]
+    with pytest.raises(mp_pkg.MailpoolUpdateNotKept) as e:
+        cli.update_mailbox(5301, first_name="Ann")
+    assert e.value.changed == ["avatar"] and e.value.not_applied == []
 
 
 def test_a_change_not_applied_is_raised(capture, cli):

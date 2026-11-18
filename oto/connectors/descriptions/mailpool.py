@@ -502,36 +502,42 @@ DESCRIPTION = {'connector': {'name': 'mailpool',
                 'class': 'write',
                 'description': "Change a mailbox's sender settings in place: first and last name, signature, "
                                'forwarding address, and the avatar of a Google or Outlook mailbox (null '
-                               'removes it). Only the fields given are sent; the address, type and domain '
-                               'cannot be changed. Credentials are never returned.',
+                               'removes it). The four text fields are always sent, so a write that replaces '
+                               'the whole settings erases nothing: read the mailbox with get_mailbox first '
+                               'and pass its current first name, last name, signature and forwarding '
+                               'address, with your changes on top. The avatar is sent only when given. The '
+                               'address, type and domain cannot be changed. Credentials are never returned.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
-                          'required': ['mailbox_id'],
-                          'minProperties': 2,
+                          'required': ['mailbox_id', 'first_name', 'last_name', 'signature', 'forward_to'],
                           'properties': {'mailbox_id': {'type': 'integer',
                                                         'minimum': 1,
                                                         'description': 'Mailpool mailbox id.'},
                                          'first_name': {'type': 'string',
                                                         'minLength': 1,
-                                                        'description': 'Sender first name.'},
+                                                        'description': 'Sender first name: the current one '
+                                                                       'unless it changes.'},
                                          'last_name': {'type': 'string',
                                                        'minLength': 1,
-                                                       'description': 'Sender last name.'},
+                                                       'description': 'Sender last name: the current one '
+                                                                      'unless it changes.'},
                                          'signature': {'type': 'string',
-                                                       'minLength': 1,
-                                                       'description': 'Email signature.'},
+                                                       'description': 'Email signature: the current one '
+                                                                      'unless it changes.'},
                                          'forward_to': {'type': 'string',
-                                                        'format': 'email',
                                                         'description': 'Address incoming mail is forwarded '
-                                                                       'to.'},
+                                                                       'to: the current one unless it '
+                                                                       'changes.'},
                                          'avatar': {'type': ['string', 'null'],
                                                     'description': 'Avatar image URL, Google and Outlook '
                                                                    'mailboxes only; null removes it.'}}},
-                'examples': [{'title': 'New sender name and signature',
+                'examples': [{'title': 'New last name and signature, the first name and forwarding address '
+                                       'kept',
                               'input': {'mailbox_id': 5301,
                                         'first_name': 'Anna',
                                         'last_name': 'Martin',
-                                        'signature': 'Anna Martin\nExample Inc.'}}],
+                                        'signature': 'Anna Martin\nExample Inc.',
+                                        'forward_to': 'replies@example.com'}}],
                 'call': {'method': 'PUT',
                          'path': '/mailboxes/{mailbox_id}',
                          'body': {'firstName': 'first_name',

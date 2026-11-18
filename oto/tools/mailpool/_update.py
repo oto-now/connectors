@@ -7,10 +7,15 @@ address, type or domain), and warmup settings are another object (`/warmup`).
 
 What the caller needs to know, and cannot guess:
 
-- **Only what changes is sent.** `update_mailbox` reads the mailbox first,
-  compares, and sends the fields whose value differs; when nothing differs it
-  sends nothing and returns the mailbox as read. `plan_mailbox_update` does the
-  same read and comparison and sends nothing at all.
+- **The four text fields are always sent.** The reference does not say
+  whether the PUT keeps the fields left out of its body, so a write that
+  replaced the whole settings would erase them. `update_mailbox` reads the
+  mailbox first and sends the current first name, last name, signature and
+  forwarding address, with the changes on top; a field the mailbox does not
+  carry (`None`) is left out. The avatar is sent only when it changes. When
+  nothing differs, nothing is sent and the mailbox is returned as read.
+  `plan_mailbox_update` does the same read and comparison and sends nothing
+  at all.
 - **The answer is checked.** After the write, every field sent must hold its
   new value and every field not sent its previous one; otherwise
   `MailpoolUpdateNotKept` is raised with the values before the write, so the
@@ -32,6 +37,8 @@ from typing import Any, Dict, List
 UPDATE_FIELDS = {"first_name": "firstName", "last_name": "lastName",
                  "signature": "signature", "forward_to": "forwardTo",
                  "avatar": "avatar"}
+#: Text fields sent on every write, at their current value unless changed.
+ALWAYS_SENT = ("firstName", "lastName", "signature", "forwardTo")
 #: Mailbox types whose avatar can be set (Mailpool reference: UpdateGoogleMailbox,
 #: UpdateOutlookMailbox; shared and private mailboxes take no avatar).
 AVATAR_TYPES = ("google", "outlook")
@@ -135,10 +142,12 @@ class MailboxUpdateMixin:
     def update_mailbox(self, mailbox_id: int, *, first_name: Any = UNSET,
                        last_name: Any = UNSET, signature: Any = UNSET,
                        forward_to: Any = UNSET, avatar: Any = UNSET) -> Any:
-        """`PUT /mailboxes/{id}` with the fields that differ (see
-        `plan_mailbox_update`); returns the mailbox as `MAILBOX_FIELDS`. Leave
-        an argument out to keep the field; `avatar=None` removes the avatar.
-        Nothing is sent when nothing differs. Never retried; an answer that
+        """`PUT /mailboxes/{id}` with the four text fields as read just before
+        (first and last name, signature, forwarding address) and the changes on
+        top, so a PUT that replaces everything erases nothing; the avatar only
+        when it changes (see `plan_mailbox_update`). Returns the mailbox as
+        `MAILBOX_FIELDS`. Leave an argument out to keep the field;
+        `avatar=None` removes the avatar. Nothing is sent when nothing differs. Never retried; an answer that
         does not show the change raises `MailpoolUpdateNotKept`."""
         from .client import project_mailbox
 
@@ -148,7 +157,8 @@ class MailboxUpdateMixin:
         mailbox_id = plan["mailbox_id"]
         if not plan["changes"]:
             return current
-        body = {f: c["after"] for f, c in plan["changes"].items()}
+        body = {f: before[f] for f in ALWAYS_SENT if before[f] is not None}
+        body.update({f: c["after"] for f, c in plan["changes"].items()})
         answer = project_mailbox(self._request("PUT", f"/mailboxes/{mailbox_id}", json=body))
         after = answer if isinstance(answer, dict) and answer.get("id") else None
         if after is None or _differences(after, body, before) != ([], []):
