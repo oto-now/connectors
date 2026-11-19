@@ -2,7 +2,7 @@
 Browser automation tools.
 
 BrowserClient comes from o-browser package.
-Domain-specific clients (LinkedIn, Crunchbase...) live here.
+Domain-specific clients (LinkedIn, Pappers...) live here.
 """
 
 try:
@@ -19,7 +19,6 @@ except Exception:
     VivaTechClient = None
 
 from .linkedin import LinkedInClient  # noqa: linkedin/ subpackage
-from .crunchbase import CrunchbaseClient
 from .pappers import PappersClient
 from .g2 import G2Client
 from .indeed import IndeedClient
@@ -30,7 +29,6 @@ __all__ = [
     "BrowserClient",
     "VivaTechClient",
     "LinkedInClient",
-    "CrunchbaseClient",
     "PappersClient",
     "G2Client",
     "IndeedClient",

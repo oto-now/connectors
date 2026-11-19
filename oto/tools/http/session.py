@@ -16,10 +16,10 @@ a host under the registrable domain the card declares (no public suffix list gue
 the card names the domain). Before each hop, the host's egress guard (`guard`) checks
 the URL; a guard that refuses stops the chain before the request leaves.
 
-The cookies live in a jar the host keeps (`jar`, `on_jar`): the node hands it over as
-text after a login and whenever the service changes a cookie, the host stores it
-encrypted, and gives it back at the next build, so a call does not log in each time.
-The jar is a secret: a session cookie is worth the password for its lifetime.
+The cookies live in a jar the host keeps (`jar`, `on_jar`, the contract of
+`oto.tools.common.host_session`): the node hands it over as text after a login and
+whenever the service changes a cookie, the host stores it encrypted, and gives it back
+at the next build, so a call does not log in each time.
 
 A 401, or a redirect to the login page, triggers one full login and one replay; if the
 replay is refused again, `SessionRejected` (`credential_rejected`). Nothing is retried
@@ -42,6 +42,8 @@ from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 import requests
 
+from ..common.host_session import HostJar, SessionRejected
+
 # What the card may declare under `session`, and nothing else.
 _KEYS = {"login", "follow", "login_pages", "domain", "hosts", "max_redirects"}
 _LOGIN_KEYS = {"path", "user_field", "password_field", "constants"}
@@ -52,15 +54,6 @@ _VISITOR_KEYS = _KEYS - {"follow"}
 _VISITOR_LOGIN_KEYS = {"path", "method", "query"}
 VISITOR_METHODS = ("GET",)
 MAX_REDIRECTS = 5
-
-
-class SessionRejected(ValueError):
-    """The service refused the account: the login was refused, or the session was
-    refused again right after a fresh login. `code` is the account mark the host
-    applies (`credential_rejected`). The message never carries the login, the password
-    nor a cookie."""
-
-    code = "credential_rejected"
 
 
 class VisitorRefused(ValueError):
@@ -244,20 +237,17 @@ class SessionLogin:
         self._username, self._password = username, password
         self._cfg = config
         self._guard = guard
-        self._jar_text = jar
-        self._on_jar = on_jar
+        self._host = HostJar(jar, on_jar)
         self._timeout = timeout
         self._lock = threading.Lock()
-        self._saved: str | None = None
         if config.domain and not self._under_domain(self._base_host):
             raise ValueError("session.domain: the base URL's host is not under it")
 
     # -- the UpstreamAuth interface ------------------------------------------------
 
     def configure(self, session: requests.Session) -> None:
-        if self._jar_text:
-            load_jar(self._jar_text, session.cookies)
-            self._saved = self._jar_text
+        if self._host.text:
+            load_jar(self._host.text, session.cookies)
         else:
             self._login(session)
 
@@ -359,11 +349,7 @@ class SessionLogin:
         return self.is_login_redirect(r)
 
     def _save(self, session: requests.Session) -> None:
-        text = dump_jar(session.cookies)
-        if text != self._saved:
-            self._saved = text
-            if self._on_jar is not None:
-                self._on_jar(text)
+        self._host.save(dump_jar(session.cookies))
 
 
 class VisitorSession(SessionLogin):

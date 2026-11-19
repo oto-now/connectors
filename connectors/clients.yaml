@@ -59,6 +59,7 @@ without_description:
   # zeendoc : un document absent se dit par une redirection vers une page de refus, non par un statut d'erreur.
   boondmanager: { category: not_describable, reason: "jeton signé à chaque requête" }
   collective: { category: not_describable, reason: "pas d'API publique : piloté par un navigateur" }
+  crunchbase: { category: not_describable, reason: "exécuté dans le navigateur de l'hôte, sur une session ouverte par le login d'une personne" }
   gr: { category: not_describable, reason: "deux services enchaînés (registre GEMI, puis VIES sur un résultat unique), réponse recomposée, nouvel essai sur 429" }
   infosec: { category: not_describable, reason: "lectures DNS en nombre (DNS-over-HTTPS), poignée de main TLS par socket, rapport calculé à partir de plusieurs lectures" }
   linkedin_ads: { category: not_describable, reason: "syntaxe de requête Rest.li 2.0 composée à l'appel : List(...) aux éléments encodés, enregistrements imbriqués pour search et dateRange, URN encodé dans le chemin d'une publicité" }
