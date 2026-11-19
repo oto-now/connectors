@@ -1,13 +1,14 @@
 """Génère la sortie TypeScript, la sortie Python de données, les descriptions servies, la copie distribuée du schéma et la carte du parc, les écrit, ou vérifie que la sortie commitée est à jour."""
 from __future__ import annotations
 
+import json
 import pathlib
 from dataclasses import dataclass
 
 from . import (auth_cases, background_cases, body_cases, carte, cases, error_cases, file_cases, jwt_bearer_cases,
                list_body_cases, nested_body_cases, python, served, strip_cases)
 from .descriptions import CONNECTORS, REPO, SCHEMA_PATH, load_all
-from .typescript import GENERATED_MARK, Module, connector_module, index_source
+from .typescript import GENERATED_MARK, SCHEMA_OUTPUT_NAME, Module, connector_module, index_source, schema_source
 
 OUTPUT = REPO / "ts" / "src"
 # Le schéma du format, tel que la lib le distribue : le profil Custom API (`oto.connectors.custom_api`) le lit à
@@ -52,9 +53,11 @@ def generate(root: pathlib.Path = CONNECTORS) -> Result:
         nested_body_cases.load(root / nested_body_cases.CASES.relative_to(CONNECTORS)))
     files[list_body_cases.OUTPUT_NAME] = list_body_cases.typescript_source(
         list_body_cases.load(root / list_body_cases.CASES.relative_to(CONNECTORS)))
+    schema_text = SCHEMA_PATH.read_text(encoding="utf-8")
+    files[SCHEMA_OUTPUT_NAME] = schema_source(json.loads(schema_text))
     return Result(modules=modules, files=files, python=python.python_source(descriptions),
                   served=served.files(descriptions), carte=carte.markdown_source(descriptions, modules),
-                  schema=SCHEMA_PATH.read_text(encoding="utf-8"))
+                  schema=schema_text)
 
 
 def _generated_on_disk(output: pathlib.Path, pattern: str = "*.ts", mark: str = GENERATED_MARK) -> set[str]:

@@ -38,6 +38,8 @@ Une organisation décrit un outil que le catalogue n'a pas, et ses agents appell
 
 Les règles de la fabrique dont le profil a besoin (arguments, authentification, un nom côté API une valeur, contrôles, sonde, `act`, signal de refus, délai, `personal`, corps, `strip`) vivent dans la lib, `oto/connectors/rules/`, une seule copie que la fabrique applique et réexporte. `output.sample` n'est pas exigé d'une définition : c'est une garde de la fabrique pour le catalogue partagé. Le schéma voyage avec la lib (`oto/connectors/connector.schema.json`, copie que la fabrique écrit et vérifie) ; `jsonschema` devient une dépendance de la lib.
 
+Le module TypeScript (`ts/src/custom-api/`, exposé sous `@otomata_tech/connectors/custom-api`) porte la même validation, `validate(document, compile)`, avec les mêmes codes, et `toDefinition(document)`, qui projette la définition dans la forme que la fabrique génère pour un connecteur partagé (`Connector`, ses fonctions en ligne) ; ce que la fabrique ne génère pas (une entrée dont la racine n'est pas un objet strict) lève `NotGenerated`. Le paquet reste sans dépendance : le validateur JSON Schema arrive en paramètre, `compile`, qui rend pour un schéma la fonction listant les erreurs d'une valeur dans la forme d'Ajv, sans juger `format` et en connaissant le mot `personal`. Le schéma voyage dans le paquet (`ts/src/connector-schema.ts`, que la fabrique écrit). Les cas communs se jouent des deux côtés, et une garde applique `toDefinition` à chaque `connectors/*/connector.yaml` et la compare au module généré.
+
 La table d'erreurs standard (`standard_errors(label, auth_kind)`) est proposée en clair : 400 et 422, 401 (qui marque le compte, sauf sans authentification), 403, 404, 429 et 5xx rejouables.
 
 ### Exemple : un outil fictif, OAuth par personne, deux actions
@@ -125,8 +127,9 @@ Le rapport à blanc, `python -m oto.connectors.custom_api.rapport <export.json> 
 
 ## Écart avec le code
 
-- Écrit : le paquet Python (`validate`, `from_openapi`, `read_url`, `from_oto1`, `standard_errors`), le rapport à blanc, les règles dans `oto/connectors/rules/`, la garde du préfixe dans la fabrique, les cas communs et leurs tests (`tests/test_custom_api_cases.py`, `tests/test_custom_api.py`).
-- Pas encore écrit : le module TypeScript (même validation, `toDefinition`, une garde qui compare sa projection à la sortie de la fabrique pour chaque `connector.yaml`) ; la bascule d'oto 1 (colonne du document dans `api_apps`, reprise réelle, appel par le moteur, retrait de son format) ; dans oto-core, le stockage par organisation, l'application OAuth d'une organisation et l'écran.
+- Écrit : le paquet Python (`validate`, `from_openapi`, `read_url`, `from_oto1`, `standard_errors`), le rapport à blanc, les règles dans `oto/connectors/rules/`, la garde du préfixe dans la fabrique, les cas communs et leurs tests (`tests/test_custom_api_cases.py`, `tests/test_custom_api.py`) ; le module TypeScript (`validate`, `toDefinition`), ses règles recopiées de `oto/connectors/rules/` et sa garde (`ts/test/custom-api.test.ts`).
+- Le module TypeScript n'a ni import OpenAPI, ni reprise d'oto 1, ni table d'erreurs standard : ils restent en Python. Ses règles sont une seconde copie de celles de la lib, tenue par les cas communs. Les erreurs du validateur passé sont ramenées à celles de `jsonschema` (une erreur de `oneOf`/`anyOf` tient lieu de celles de ses branches) : les codes sont les mêmes, les messages du schéma diffèrent. Le poids se mesure sur le JSON écrit comme Python l'écrit, un nombre décimal à part.
+- Pas encore écrit : la bascule d'oto 1 (colonne du document dans `api_apps`, reprise réelle, appel par le moteur, retrait de son format) ; dans oto-core, le stockage par organisation, l'application OAuth d'une organisation et l'écran.
 - Le moteur Python exécute une définition valide, sauf `oauth2_user`. Il ne garde à chaque requête qu'une adresse venue d'un réglage ; une `base_url` fixe ne l'est pas : la garde d'egress de l'hôte (celle d'oto 1 aujourd'hui) reste exigée pour une définition d'organisation.
 - Suite à donner : ajouter `connector.description` et `logo_domain` au format quand oto-core les lira.
 
@@ -138,3 +141,4 @@ Le rapport à blanc, `python -m oto.connectors.custom_api.rapport <export.json> 
 ## Historique
 
 - 2026-11-19 : proposition relue sur le code d'oto 1, de la lib et d'oto-core ; même format restreint par un profil fermé, exemples obligatoires, variables en constantes, `session` et `visitor` bloquants, appels bruts laissés à oto 1, description et logo hors du format pour l'instant, `http://` et adresses internes refusés, préfixe `custom_` réservé, pas d'import OpenAPI dans oto-core en première version ; premier paquet Python et rapport à blanc — décidé par le mainteneur (source : lot 4 de la bascule des connecteurs d'oto 1 dans la lib).
+- 2026-11-19 : module TypeScript (`validate`, `toDefinition`), validateur JSON Schema passé en paramètre, schéma distribué dans le paquet, garde de la projection sur chaque description — décidé par le mainteneur (source : lot 4 de la bascule des connecteurs d'oto 1 dans la lib).

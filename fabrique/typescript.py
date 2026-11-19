@@ -368,6 +368,19 @@ def connector_module(description: Description, source: str | None = None) -> Mod
     return module
 
 
+SCHEMA_OUTPUT_NAME = "connector-schema.ts"
+
+
+def schema_source(schema: dict) -> str:
+    """`ts/src/connector-schema.ts` : le schéma du format, que le profil Custom API du paquet (`ts/src/custom-api/`)
+    passe au validateur de l'hôte ; le paquet ne lit aucun fichier hors de `src`."""
+    return (HEADER.format(source="connectors/connector.schema.json") + "\n"
+            + 'import type { JsonSchema } from "./types"\n\n'
+            + "/** Le schéma JSON (2020-12) d'un `connector.yaml`, tel que `connectors/connector.schema.json` le dit. */\n"
+            + "export const connectorSchema: JsonSchema = "
+            + json.dumps(schema, ensure_ascii=False, indent=2) + "\n")
+
+
 def index_source(modules: list[Module]) -> str:
     lines = [HEADER.format(source="connectors/*/connector.yaml")]
     lines += [f'import * as {m.identifier} from "./{m.connector}"' for m in modules]

@@ -27,7 +27,8 @@
     "./body-cases": "./src/body-cases.ts",
     "./background-cases": "./src/background-cases.ts",
     "./nested-body-cases": "./src/nested-body-cases.ts",
-    "./list-body-cases": "./src/list-body-cases.ts"
+    "./list-body-cases": "./src/list-body-cases.ts",
+    "./custom-api": "./src/custom-api/index.ts"
   },
   "files": [
     "src",
@@ -41,6 +42,7 @@
   "devDependencies": {
     "ajv": "8.20.0",
     "typescript": "5.8.3",
-    "vitest": "5.0.3"
+    "vitest": "5.0.3",
+    "yaml": "2.9.1"
   }
 }
