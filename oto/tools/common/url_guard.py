@@ -19,7 +19,10 @@ from urllib.parse import urlsplit
 from .errors import UpstreamHTTPError
 
 
-def _refused(ip: ipaddress._BaseAddress) -> bool:
+def non_public(ip: ipaddress._BaseAddress) -> bool:
+    """An address a request never goes to: private, loopback, link-local, reserved, multicast, unspecified or not
+    global (an IPv4-mapped IPv6 address judged as its IPv4). Also read without DNS by the Custom API profile
+    (`oto.connectors.custom_api`), on a host written as an address."""
     if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
         ip = ip.ipv4_mapped
     return (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved
@@ -43,7 +46,7 @@ def assert_public_https_url(url: str) -> None:
         raise ValueError(f"host {host!r} does not resolve.")
     for info in infos:
         address = info[4][0].split("%", 1)[0]  # strip an IPv6 zone id
-        if _refused(ipaddress.ip_address(address)):
+        if non_public(ipaddress.ip_address(address)):
             raise ValueError(f"host {host!r} resolves to a non-public address; refused.")
 
 

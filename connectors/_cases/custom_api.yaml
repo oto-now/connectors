@@ -1,0 +1,536 @@
+# Common cases of the Custom API profile (docs/conception/custom-api.md): the definitions it accepts, those it refuses
+# with their codes, OpenAPI documents with the candidates they give, and definitions of oto 1 with their takeover.
+#
+# Synthetic: made-up tools, addresses in domains reserved for tests. tests/test_custom_api_cases.py plays them against
+# the Python package (`oto.connectors.custom_api`); the TypeScript module of the host package plays the same cases.
+#
+# - valid: a definition the profile accepts (`validate` finds nothing), by name;
+# - refused: a valid definition (`base`) changed by `changes`, each a dotted path (a list index as a number) and either
+#   `value` (set) or `remove: true`; `codes` is the set of the codes found, `rules` the set of the rules of the format
+#   named by `custom_api_rule_broken`, when it has a code;
+# - openapi: a document (a text, JSON or YAML), the names of the candidates with their problem codes, the operations
+#   skipped by method, path and code, and the problem codes of the connector proposed; or `refused`, the code of a
+#   document that is none;
+# - oto1: an application of oto 1, the status of its takeover and its blocking codes; `expected` gives parts of the
+#   document built: the connector's keys it names, and the functions, whole.
+
+valid:
+  - name: acme_planning
+    document:
+      connector:
+        name: custom_acme_planning
+        label: Acme Planning
+        namespace: custom_acme_planning
+        version: 1.0.3
+        api_version: v2
+        base_url: https://api.acme-planning.test/v2
+        auth:
+          kind: oauth2_user
+          authorize_url: https://auth.acme-planning.test/oauth/authorize
+          token_url: https://auth.acme-planning.test/oauth/token
+          client_auth: body
+          scopes: [shifts.read, shifts.write, openid, email]
+          pkce: S256
+          refresh: refresh_token
+          rotates: true
+          expires_in_default: 3600
+          identity: { url: https://auth.acme-planning.test/userinfo, path: email, scopes: [openid, email] }
+        modes: [byo_user]
+        headers: { Acme-Api-Version: "2026-06" }
+        errors:
+          - { status: 401, code: authorization_expired, retryable: false, marks_account: credential_rejected,
+              message: "Acme Planning no longer accepts this authorization: the person must connect again." }
+          - { status: 404, code: not_found, retryable: false, message: "Acme Planning object not found." }
+          - { status: 429, code: rate_limited, retryable: true, message: "Acme Planning rate limit reached: retry later." }
+      functions:
+        - name: list_shifts
+          class: read
+          description: Shifts of one team between two dates, each with its employee, start, end and note.
+          input:
+            type: object
+            additionalProperties: false
+            required: [team_id, from]
+            properties:
+              team_id: { type: string, minLength: 1 }
+              from: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+              to: { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+              cursor: { type: string }
+          examples:
+            - { title: A team's week, input: { team_id: tm_42, from: "2026-11-16", to: "2026-11-22" } }
+          call:
+            method: GET
+            path: /teams/{team_id}/shifts
+            query: { start_date: from, end_date: to, cursor: cursor }
+          pagination: { kind: cursor, request_param: cursor, next: meta.next_cursor, max_pages: 5 }
+          output: { items: data, strip: [internal_notes] }
+        - name: create_shift
+          class: write
+          description: Create a shift for an employee of a team. Refused when it overlaps another shift of that employee.
+          input:
+            type: object
+            additionalProperties: false
+            required: [team_id, employee_id, starts_at, ends_at]
+            properties:
+              team_id: { type: string, minLength: 1 }
+              employee_id: { type: string, minLength: 1, personal: true }
+              starts_at: { type: string }
+              ends_at: { type: string }
+              note: { type: string, maxLength: 500 }
+          examples:
+            - { title: A morning shift, input: { team_id: tm_42, employee_id: em_7,
+                starts_at: "2026-11-20T08:00:00Z", ends_at: "2026-11-20T12:00:00Z" } }
+          refusals:
+            - { code: shift_overlaps, when: 200, body: { path: error.code, equals: [OVERLAP] },
+                message: "The shift overlaps another shift of this employee: nothing was created." }
+          call:
+            method: POST
+            path: /teams/{team_id}/shifts
+            body: { employee: { id: employee_id }, start: starts_at, end: ends_at, note: note }
+            constants: { body: { source: oto } }
+
+  - name: acme_tickets
+    document:
+      connector:
+        name: custom_acme_tickets
+        label: Acme Tickets
+        namespace: custom_acme_tickets
+        version: 1.0.0
+        api_version: unspecified
+        base_url: https://tickets.example.com/api
+        auth: { kind: bearer, token: token }
+        credential:
+          - { name: token, label: API key, secret: true }
+        modes: [byo_user, byo_org]
+        probe: { function: whoami }
+        errors:
+          - { status: 401, code: unauthorized, retryable: false, marks_account: credential_rejected,
+              message: "Acme Tickets refuses the credential of this account: it must be set again." }
+      functions:
+        - name: whoami
+          class: read
+          description: The account the key belongs to.
+          input: { type: object, additionalProperties: false, properties: {} }
+          examples: [{ title: Without arguments, input: {} }]
+          call: { method: GET, path: /me }
+        - name: delete_ticket
+          class: sensitive
+          effect: destroy
+          description: Delete a ticket for good.
+          input:
+            type: object
+            additionalProperties: false
+            required: [ticket_id]
+            properties: { ticket_id: { type: string, minLength: 1 } }
+          examples: [{ title: One ticket, input: { ticket_id: t_1 } }]
+          confirm: { summary: "DELETE /tickets/{ticket_id}: irreversible." }
+          call: { method: DELETE, path: "/tickets/{ticket_id}", constants: { query: { hard: true } } }
+
+refused:
+  - name: base_url_in_http
+    base: acme_tickets
+    changes: [{ path: connector.base_url, value: "http://tickets.example.com/api" }]
+    codes: [custom_api_base_url_not_https]
+  - name: base_url_private_address
+    base: acme_tickets
+    changes: [{ path: connector.base_url, value: "https://10.1.2.3/api" }]
+    codes: [custom_api_base_url_internal]
+  - name: base_url_internal_name
+    base: acme_tickets
+    changes: [{ path: connector.base_url, value: "https://tickets.corp.internal/api" }]
+    codes: [custom_api_base_url_internal]
+  - name: base_url_without_dot
+    base: acme_tickets
+    changes: [{ path: connector.base_url, value: "https://intranet/api" }]
+    codes: [custom_api_base_url_internal]
+  - name: token_url_in_http
+    base: acme_planning
+    changes: [{ path: connector.auth.token_url, value: "http://auth.acme-planning.test/oauth/token" }]
+    codes: [custom_api_base_url_not_https]
+  - name: base_url_template
+    base: acme_tickets
+    changes: [{ path: connector.base_url, value: "https://{tenant}.example.com/api" }]
+    codes: [custom_api_key_not_allowed]
+  - name: settings
+    base: acme_tickets
+    changes: [{ path: connector.settings, value: [{ name: region, label: Region, type: choice, choices: [eu, us] }] }]
+    codes: [custom_api_key_not_allowed]
+  - name: platform_mode
+    base: acme_tickets
+    changes: [{ path: connector.modes, value: [platform, byo_org] }]
+    codes: [custom_api_key_not_allowed]
+  - name: field_held_by_the_host
+    base: acme_tickets
+    changes: [{ path: connector.credential.0.holder, value: host }]
+    codes: [custom_api_key_not_allowed]
+  - name: service_account
+    base: acme_tickets
+    changes:
+      - { path: connector.auth, value: { kind: oauth2_jwt_bearer, token_url: "https://oauth.example.com/token",
+                                         key: token, scopes: [tickets] } }
+    codes: [custom_api_auth_not_supported]
+  - name: access_levels
+    base: acme_planning
+    changes:
+      - { path: connector.auth.scopes, remove: true }
+      - { path: connector.auth.access_levels, value: { full: { label: Full, scopes: [shifts.read] } } }
+    codes: [custom_api_key_not_allowed]
+  - name: name_without_prefix
+    base: acme_tickets
+    changes: [{ path: connector.name, value: acme_tickets }, { path: connector.namespace, value: acme_tickets }]
+    codes: [custom_api_name_reserved]
+  - name: constant_authorization_header
+    base: acme_tickets
+    changes: [{ path: connector.headers, value: { Authorization: "Bearer abc" } }]
+    codes: [custom_api_header_authenticates]
+  - name: argument_in_a_key_header
+    base: acme_tickets
+    changes:
+      - { path: functions.1.call.headers, value: { X-Api-Key: ticket_id } }
+      - { path: functions.1.call.path, value: /tickets }
+      - { path: functions.1.confirm.summary, value: "DELETE /tickets: irreversible." }
+    codes: [custom_api_header_authenticates]
+  - name: no_example
+    base: acme_tickets
+    changes: [{ path: functions.1.examples, remove: true }]
+    codes: [custom_api_example_missing]
+  - name: empty_examples
+    base: acme_tickets
+    changes: [{ path: functions.1.examples, value: [] }]
+    codes: [custom_api_example_missing]
+  - name: example_the_input_refuses
+    base: acme_tickets
+    changes: [{ path: functions.1.examples.0.input, value: { ticket_id: "" } }]
+    codes: [custom_api_example_invalid]
+  - name: cost
+    base: acme_tickets
+    changes: [{ path: functions.0.cost, value: { per: call, quantity: 1, unit: credit } }]
+    codes: [custom_api_key_not_allowed]
+  - name: file_part
+    base: acme_planning
+    changes: [{ path: functions.1.call.files, value: { attachment: note } }]
+    codes: [custom_api_key_not_allowed]
+  - name: balance
+    base: acme_tickets
+    changes: [{ path: connector.probe.balance, value: { path: credits, min: 1, unit: credits } }]
+    codes: [custom_api_key_not_allowed]
+  - name: class_missing
+    base: acme_tickets
+    changes: [{ path: functions.0.class, remove: true }]
+    codes: [custom_api_schema_invalid]
+  - name: body_key_twice
+    base: acme_planning
+    changes: [{ path: functions.1.call.constants.body, value: { start: "2026-01-01T00:00:00Z" } }]
+    codes: [custom_api_rule_broken]
+    rules: [body_key_twice]
+  - name: strip_overlaps
+    base: acme_planning
+    changes: [{ path: functions.0.output.strip, value: [internal_notes, internal_notes.author] }]
+    codes: [custom_api_rule_broken]
+    rules: [strip_path_overlaps]
+  - name: argument_goes_nowhere
+    base: acme_tickets
+    changes: [{ path: functions.0.input.properties.verbose, value: { type: boolean } }]
+    codes: [custom_api_rule_broken]
+  - name: several_problems_at_once
+    base: acme_tickets
+    changes:
+      - { path: connector.base_url, value: "http://localhost/api" }
+      - { path: connector.headers, value: { Cookie: "a=b" } }
+      - { path: functions.1.examples, remove: true }
+    codes: [custom_api_base_url_not_https, custom_api_example_missing, custom_api_header_authenticates]
+
+openapi:
+  - name: openapi_3_yaml
+    document: |
+      openapi: 3.0.3
+      info: { title: Acme Planning, version: "2" }
+      servers: [{ url: "https://api.acme-planning.test/v2/" }]
+      security: [{ key: [] }]
+      components:
+        securitySchemes:
+          key: { type: apiKey, in: header, name: X-Api-Token }
+        schemas:
+          Shift:
+            type: object
+            required: [employeeId]
+            properties:
+              employeeId: { type: string, example: em_7 }
+              note: { type: string, nullable: true }
+          Loop: { $ref: "#/components/schemas/Loop2" }
+          Loop2: { $ref: "#/components/schemas/Loop" }
+      paths:
+        /teams/{teamId}/shifts:
+          parameters:
+            - { name: teamId, in: path, required: true, schema: { type: string }, example: tm_42 }
+          get:
+            operationId: listShifts
+            summary: Shifts of a team
+            parameters:
+              - { name: from, in: query, schema: { type: string } }
+              - { name: X-Trace, in: header, schema: { type: string } }
+              - { name: sid, in: cookie, schema: { type: string } }
+          post:
+            operationId: createShift
+            requestBody:
+              required: true
+              content: { application/json: { schema: { $ref: "#/components/schemas/Shift" } } }
+          delete:
+            operationId: listShifts
+          head: {}
+        /reports/{reportId}:
+          get:
+            parameters:
+              - { name: reportId, in: path, required: true, schema: { type: string } }
+        /upload:
+          post:
+            requestBody: { content: { multipart/form-data: { schema: { type: object } } } }
+        /batch:
+          post:
+            requestBody: { content: { application/json: { schema: { type: array, items: { type: string } } } } }
+        /loop:
+          post:
+            requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/Loop" } } } }
+        /external:
+          get:
+            parameters: [{ $ref: "other.yaml#/components/parameters/p" }]
+        /session:
+          get:
+            parameters: [{ name: sid, in: cookie, required: true, schema: { type: string } }]
+    candidates:
+      - { name: list_shifts, problems: [] }
+      - { name: create_shift, problems: [] }
+      - { name: list_shifts_2, problems: [openapi_name_collision] }
+      - { name: get_reports, problems: [custom_api_example_missing] }
+    skipped:
+      - { method: HEAD, path: "/teams/{teamId}/shifts", code: openapi_method_not_supported }
+      - { method: POST, path: /upload, code: openapi_body_not_json }
+      - { method: POST, path: /batch, code: openapi_body_not_object }
+      - { method: POST, path: /loop, code: openapi_ref_too_deep }
+      - { method: GET, path: /external, code: openapi_ref_external }
+      - { method: GET, path: /session, code: openapi_cookie_parameter }
+    connector_problems: []
+
+  - name: swagger_2_json
+    document: |
+      {"swagger": "2.0", "info": {"title": "Acme Stock", "version": "1"},
+       "host": "stock.example.com", "basePath": "/v1", "schemes": ["https"],
+       "securityDefinitions": {"basic": {"type": "basic"}},
+       "paths": {
+         "/items": {
+           "get": {"operationId": "listItems", "parameters": [{"name": "limit", "in": "query", "type": "integer"}]},
+           "post": {"operationId": "createItem", "parameters": [{"name": "body", "in": "body", "required": true,
+                    "schema": {"type": "object", "required": ["sku"], "properties": {"sku": {"type": "string"}},
+                               "example": {"sku": "A-1"}}}]}},
+         "/items/import": {
+           "post": {"operationId": "importItems", "parameters": [{"name": "file", "in": "formData", "type": "file"}]}}}}
+    candidates:
+      - { name: list_items, problems: [] }
+      - { name: create_item, problems: [] }
+    skipped:
+      - { method: POST, path: /items/import, code: openapi_body_not_json }
+    connector_problems: []
+
+  - name: server_variables_and_openid
+    document: |
+      openapi: 3.1.0
+      info: { title: Acme Desk, version: "1" }
+      servers: [{ url: "https://{tenant}.desk.example.com", variables: { tenant: { default: demo } } }]
+      components:
+        securitySchemes:
+          oidc: { type: openIdConnect, openIdConnectUrl: "https://auth.desk.example.com/.well-known/openid-configuration" }
+      paths:
+        /me: { get: { operationId: me } }
+    candidates:
+      - { name: me, problems: [] }
+    skipped: []
+    connector_problems: [openapi_openid_connect, openapi_server_variables]
+
+  - name: oauth2_flows
+    document: |
+      openapi: 3.0.0
+      info: { title: Acme Mail, version: "1" }
+      servers: [{ url: "https://mail.example.com/api" }]
+      components:
+        securitySchemes:
+          consent:
+            type: oauth2
+            flows:
+              authorizationCode:
+                authorizationUrl: https://mail.example.com/oauth/authorize
+                tokenUrl: https://mail.example.com/oauth/token
+                scopes: { mail.read: Read mail }
+      paths:
+        /messages: { get: { operationId: listMessages } }
+    candidates:
+      - { name: list_messages, problems: [] }
+    skipped: []
+    connector_problems: [custom_api_schema_invalid]
+
+  - name: not_a_document
+    document: |
+      {"title": "not an API description"}
+    refused: openapi_not_a_document
+
+oto1:
+  - name: key_in_header_with_variables
+    application:
+      account: Acme Payroll
+      connection: { base_url: "https://api.acme-payroll.test/v1/", auth_mode: header, header_name: X-Acme-Key,
+                    doc_path: /openapi.json }
+      definition:
+        label: Acme Payroll
+        description: Payroll of the org.
+        headers: { Acme-Version: "2" }
+        variables:
+          organizationId: { value: org_1, description: The org at the payroll tool. }
+          pageSize: { value: "50", description: Page size. }
+        operations:
+          - name: list_collaborators
+            description: The collaborators of the organization.
+            method: GET
+            path: /organizations/{organizationId}/collaborators
+            input:
+              type: object
+              properties: { organizationId: { type: string }, pageSize: { type: integer }, fullName: { type: string } }
+              required: [organizationId]
+            output: { items: data }
+          - name: search_payslips
+            description: Search payslips.
+            method: POST
+            path: /payslips/search
+            class: read
+            input: { type: object, properties: { employeeId: { type: string } }, required: [employeeId] }
+            refusals:
+              - { code: unknown_employee, when: 200, body: { path: error, equals: [UNKNOWN] }, message: Unknown employee.,
+                  retryable: true }
+    status: blocked
+    blocking: [custom_api_example_missing]
+
+  - name: converted_whole
+    application:
+      account: Acme Payroll
+      connection: { base_url: "https://api.acme-payroll.test/v1", auth_mode: header, header_name: X-Acme-Key }
+      definition:
+        variables: { organizationId: { value: org_1, description: "" } }
+        operations:
+          - name: list_collaborators
+            description: The collaborators of the organization.
+            method: GET
+            path: /organizations/{organizationId}/collaborators
+            input:
+              type: object
+              properties: { organizationId: { type: string }, fullName: { type: string } }
+              required: [organizationId]
+          - name: clear_drafts
+            description: Remove every draft payslip.
+            method: DELETE
+            path: /organizations/{organizationId}/drafts
+            input: { type: object, properties: { organizationId: { type: string }, olderThan: { type: string } },
+                     required: [organizationId] }
+    status: converted
+    blocking: []
+    expected:
+      connector:
+        name: custom_acme_payroll
+        base_url: https://api.acme-payroll.test/v1
+        auth: { kind: api_key, in: header, name: X-Acme-Key, key: token }
+        credential: [{ name: token, label: API key, secret: true }]
+        modes: [byo_user, byo_org]
+      functions:
+        - name: list_collaborators
+          class: read
+          description: The collaborators of the organization.
+          input: { type: object, additionalProperties: false, properties: { full_name: { type: string } } }
+          examples: [{ title: Without arguments, input: {} }]
+          call: { method: GET, path: /organizations/org_1/collaborators, query: { fullName: full_name } }
+        - name: clear_drafts
+          class: sensitive
+          effect: destroy
+          confirm: { summary: "DELETE /organizations/org_1/drafts: irreversible." }
+          description: Remove every draft payslip.
+          input: { type: object, additionalProperties: false, properties: { older_than: { type: string } } }
+          examples: [{ title: Without arguments, input: {} }]
+          call: { method: DELETE, path: /organizations/org_1/drafts, query: { olderThan: older_than } }
+
+  - name: oauth2_client_credentials
+    application:
+      account: acme_ledger
+      connection: { base_url: "https://ledger.example.com/api", auth_mode: oauth2,
+                    token_url: "https://ledger.example.com/oauth/token", scope: ledger.read }
+      definition:
+        operations:
+          - { name: list_entries, description: Ledger entries., method: GET, path: /entries }
+    status: converted
+    blocking: []
+    expected:
+      connector:
+        auth: { kind: oauth2_client_credentials, token_url: "https://ledger.example.com/oauth/token",
+                token_request: form, client_auth: body, client_id: client_id, client_secret: client_secret,
+                scope: ledger.read }
+        credential: [{ name: client_id, label: Client ID, secret: false },
+                     { name: client_secret, label: Client secret, secret: true }]
+
+  - name: basic_and_query
+    application:
+      account: acme_basic
+      connection: { base_url: "https://basic.example.com", auth_mode: basic }
+      definition: { operations: [{ name: ping, description: Ping., method: GET, path: /ping }] }
+    status: converted
+    blocking: []
+    expected:
+      connector:
+        auth: { kind: basic, username: username, password: password }
+
+  - name: session_mode
+    application:
+      account: acme_portal
+      connection: { base_url: "https://portal.example.com", auth_mode: session, session: "{\"login\": {\"path\": \"/login\"}}" }
+      definition: { operations: [{ name: ping, description: Ping., method: GET, path: /ping }] }
+    status: blocked
+    blocking: [custom_api_auth_not_supported]
+
+  - name: visitor_mode
+    application:
+      account: acme_public
+      connection: { base_url: "https://public.example.com", auth_mode: visitor }
+      definition: { operations: [{ name: ping, description: Ping., method: GET, path: /ping }] }
+    status: blocked
+    blocking: [custom_api_auth_not_supported]
+
+  - name: base_url_in_http
+    application:
+      account: acme_old
+      connection: { base_url: "http://old.example.com/api", auth_mode: none }
+      definition: { operations: [{ name: ping, description: Ping., method: GET, path: /ping }] }
+    status: blocked
+    blocking: [custom_api_base_url_not_https]
+
+  - name: base_url_internal
+    application:
+      account: acme_lan
+      connection: { base_url: "https://192.168.1.10/api", auth_mode: bearer }
+      definition: { operations: [{ name: ping, description: Ping., method: GET, path: /ping }] }
+    status: blocked
+    blocking: [custom_api_base_url_internal]
+
+  - name: argument_name_collision
+    application:
+      account: acme_items
+      connection: { base_url: "https://items.example.com", auth_mode: bearer }
+      definition:
+        operations:
+          - name: list_items
+            description: Items.
+            method: GET
+            path: /items
+            input: { type: object, properties: { pageSize: { type: integer }, page_size: { type: integer } } }
+    status: blocked
+    blocking: [custom_api_argument_name_collision]
+
+  - name: secret_in_the_export
+    application:
+      account: acme_items
+      connection: { base_url: "https://items.example.com", auth_mode: bearer, token: made-up }
+      definition: { operations: [{ name: ping, description: Ping., method: GET, path: /ping }] }
+    status: blocked
+    blocking: [custom_api_key_not_allowed]

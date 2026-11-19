@@ -31,10 +31,10 @@ jobs:
       # 2026-09-09 : sans lui, `tests/test_planity_*.py` interrompt la collecte
       # (« 2 errors during collection ») et la suite entière ne tourne plus.
       # Tout nouvel extra dont un test importe la dépendance doit atterrir ici.
-      # `jsonschema` = outil de test, pas une dépendance de la lib : il valide les
-      # fichiers de description `connectors/*/connector.yaml` contre leur schéma.
+      # `jsonschema` est une dépendance de la lib depuis le profil Custom API (`oto.connectors.custom_api`), qui
+      # valide une définition d'org à l'exécution ; il vient donc avec le paquet.
       - name: Install (extras dont les tests importent les deps)
-        run: pip install -e ".[anonymize,google,planity]" pytest "jsonschema>=4.18"
+        run: pip install -e ".[anonymize,google,planity]" pytest
       - name: Tests
         run: pytest -q
 

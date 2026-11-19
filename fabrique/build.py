@@ -1,4 +1,4 @@
-"""Génère la sortie TypeScript, la sortie Python de données, les descriptions servies et la carte du parc, les écrit, ou vérifie que la sortie commitée est à jour."""
+"""Génère la sortie TypeScript, la sortie Python de données, les descriptions servies, la copie distribuée du schéma et la carte du parc, les écrit, ou vérifie que la sortie commitée est à jour."""
 from __future__ import annotations
 
 import pathlib
@@ -6,10 +6,14 @@ from dataclasses import dataclass
 
 from . import (auth_cases, background_cases, body_cases, carte, cases, error_cases, file_cases, jwt_bearer_cases,
                list_body_cases, nested_body_cases, python, served, strip_cases)
-from .descriptions import CONNECTORS, REPO, load_all
+from .descriptions import CONNECTORS, REPO, SCHEMA_PATH, load_all
 from .typescript import GENERATED_MARK, Module, connector_module, index_source
 
 OUTPUT = REPO / "ts" / "src"
+# Le schéma du format, tel que la lib le distribue : le profil Custom API (`oto.connectors.custom_api`) le lit à
+# l'exécution, et les fichiers YAML ne partent pas dans la distribution. Une copie à l'octet près.
+SCHEMA_OUTPUT = REPO / "oto" / "connectors" / "connector.schema.json"
+SCHEMA_RELATIVE = "oto/connectors/connector.schema.json"
 
 
 @dataclass
@@ -19,6 +23,7 @@ class Result:
     python: str
     served: dict[str, str]
     carte: str
+    schema: str
 
 
 def generate(root: pathlib.Path = CONNECTORS) -> Result:
@@ -48,7 +53,8 @@ def generate(root: pathlib.Path = CONNECTORS) -> Result:
     files[list_body_cases.OUTPUT_NAME] = list_body_cases.typescript_source(
         list_body_cases.load(root / list_body_cases.CASES.relative_to(CONNECTORS)))
     return Result(modules=modules, files=files, python=python.python_source(descriptions),
-                  served=served.files(descriptions), carte=carte.markdown_source(descriptions, modules))
+                  served=served.files(descriptions), carte=carte.markdown_source(descriptions, modules),
+                  schema=SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
 def _generated_on_disk(output: pathlib.Path, pattern: str = "*.ts", mark: str = GENERATED_MARK) -> set[str]:
@@ -77,16 +83,19 @@ def _stale_dir(files: dict[str, str], output: pathlib.Path, pattern: str, mark: 
 
 
 def write(result: Result, output: pathlib.Path = OUTPUT, python_output: pathlib.Path = python.OUTPUT,
-          carte_output: pathlib.Path = carte.OUTPUT, served_output: pathlib.Path = served.OUTPUT) -> None:
+          carte_output: pathlib.Path = carte.OUTPUT, served_output: pathlib.Path = served.OUTPUT,
+          schema_output: pathlib.Path = SCHEMA_OUTPUT) -> None:
     _write_dir(result.files, output, "*.ts", GENERATED_MARK)
     python_output.parent.mkdir(parents=True, exist_ok=True)
     python_output.write_text(result.python, encoding="utf-8")
     _write_dir(result.served, served_output, "*.py", served.GENERATED_MARK)
     carte_output.write_text(result.carte, encoding="utf-8")
+    schema_output.write_text(result.schema, encoding="utf-8")
 
 
 def stale(result: Result, output: pathlib.Path = OUTPUT, python_output: pathlib.Path = python.OUTPUT,
-          carte_output: pathlib.Path = carte.OUTPUT, served_output: pathlib.Path = served.OUTPUT) -> list[str]:
+          carte_output: pathlib.Path = carte.OUTPUT, served_output: pathlib.Path = served.OUTPUT,
+          schema_output: pathlib.Path = SCHEMA_OUTPUT) -> list[str]:
     """Les fichiers dont la version commitée n'est pas celle que la fabrique produit : ceux de `ts/src/` par leur nom,
     le module Python de données, les descriptions servies et la carte du parc par leur chemin dans le dépôt."""
     differ = _stale_dir(result.files, output, "*.ts", GENERATED_MARK)
@@ -96,4 +105,6 @@ def stale(result: Result, output: pathlib.Path = OUTPUT, python_output: pathlib.
                                                                   served.GENERATED_MARK)]
     if not carte_output.exists() or carte_output.read_text(encoding="utf-8") != result.carte:
         differ.append(carte.RELATIVE)
+    if not schema_output.exists() or schema_output.read_text(encoding="utf-8") != result.schema:
+        differ.append(SCHEMA_RELATIVE)
     return differ

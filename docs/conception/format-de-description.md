@@ -1,7 +1,7 @@
 # Format de description d'un connecteur
 
 - **Statut** : validé par le mainteneur le 29/09/2026
-- **Dernière révision** : 2026-11-11
+- **Dernière révision** : 2026-11-19
 
 ## Résumé
 
@@ -41,6 +41,7 @@ Un connecteur partagé se décrit dans un fichier YAML, `connectors/<nom>/connec
 | [Erreurs et signal de refus](signal-de-refus.md) | `errors`, `refusals`, `marks_account`, `body`. |
 | [Coût et solde](cout-et-solde.md) | `cost`, `probe`, `probe.balance`. |
 | [Travaux longs](travaux-longs.md) | `async` et `background`. |
+| [Custom API](custom-api.md) | Le profil fermé du format pour la définition d'un outil par une organisation, l'import OpenAPI et la reprise d'oto 1. |
 
 ### Le fichier
 
@@ -145,7 +146,7 @@ L'exposition est une projection, pas une propriété de la fonction. `mode` vaut
 
 ### Contrôles
 
-`tests/test_connector_descriptions.py` vérifie que le schéma est un JSON Schema valide, que chaque description le respecte et porte le nom de son dossier, et que chaque exemple respecte l'entrée de sa fonction. Des variantes invalides du fichier Sellsy doivent être refusées : classe absente, clé inconnue, `call` et `handwritten` ensemble ou aucun des deux, fonction sensible sans `confirm`, entrée non stricte, aucun exemple, exemple hors bornes ou à argument inconnu, `embed` non documenté, `quota` sans `platform`, version hors semver, `exposure.mode` inconnu, schéma de sortie ouvert ou sans propriétés, `rate_limit` incomplet, en-tête constant non textuel, encodage inconnu, contrôle d'un genre inconnu, attente sans chemin, sonde à clé inconnue, `more` vide ; pour le délai d'une fonction, six de plus : nul, négatif, non entier, en texte, `null`, au-delà de 300 s (borne qui vaut aussi pour le connecteur). Les variantes propres à un bloc spécialisé sont dites dans son document. Les règles hors schéma sont vérifiées par la fabrique ([fabrique](fabrique.md)). `jsonschema` est un outil de test, pas une dépendance de la lib.
+`tests/test_connector_descriptions.py` vérifie que le schéma est un JSON Schema valide, que chaque description le respecte et porte le nom de son dossier, et que chaque exemple respecte l'entrée de sa fonction. Des variantes invalides du fichier Sellsy doivent être refusées : classe absente, clé inconnue, `call` et `handwritten` ensemble ou aucun des deux, fonction sensible sans `confirm`, entrée non stricte, aucun exemple, exemple hors bornes ou à argument inconnu, `embed` non documenté, `quota` sans `platform`, version hors semver, `exposure.mode` inconnu, schéma de sortie ouvert ou sans propriétés, `rate_limit` incomplet, en-tête constant non textuel, encodage inconnu, contrôle d'un genre inconnu, attente sans chemin, sonde à clé inconnue, `more` vide ; pour le délai d'une fonction, six de plus : nul, négatif, non entier, en texte, `null`, au-delà de 300 s (borne qui vaut aussi pour le connecteur). Les variantes propres à un bloc spécialisé sont dites dans son document. Les règles hors schéma sont vérifiées par la fabrique ([fabrique](fabrique.md)). `jsonschema` est une dépendance de la lib depuis le profil [Custom API](custom-api.md), qui valide à l'exécution la définition d'une organisation.
 
 Deux gardes de CI :
 
@@ -209,3 +210,4 @@ Deux gardes de CI :
 - 2026-11-06 : `effect` (`send`, `destroy`) sur une fonction sensible, facultatif, sans défaut, pour qu'un hôte distingue un envoi d'une destruction — décidé par Alexis (source : lecteur générique d'oto 1, décision du 05/11).
 - 2026-11-06 : septième mode d'authentification, `oauth2_jwt_bearer`, le compte de service ([compte](compte.md), « Le compte de service ») — décidé par le mainteneur (source : lecture de Search Console par un agent).
 - 2026-11-13 : le compte de service reçoit des niveaux d'accès et un niveau par défaut (`default_level`) ([niveaux d'accès](niveaux-d-acces.md)) — décidé par le mainteneur (source : envoi d'un sitemap à Search Console).
+- 2026-11-19 : la définition Custom API d'une organisation est un fichier du format, restreint par un profil fermé ([Custom API](custom-api.md)) ; `jsonschema` devient une dépendance de la lib — décidé par le mainteneur (source : lot 4 de la bascule des connecteurs d'oto 1 dans la lib).

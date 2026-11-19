@@ -150,7 +150,13 @@ pas dire :
    table, emboîté ou entier, part seul élément d'une liste JSON. La fonction a un corps (une table non vide, l'argument
    du corps entier ou une constante du corps : `body_list_without_body`), une méthode qui en envoie un, jamais `GET`
    (`body_list_method`), et pas de partie fichier, dont le corps est multipart (`body_list_multipart`). Les codes sont
-   ceux des cas communs (`connectors/_cases/list_body.yaml`), jugés dans cet ordre.
+   ceux des cas communs (`connectors/_cases/list_body.yaml`), jugés dans cet ordre ;
+24. le préfixe réservé (décidé par le mainteneur le 2026-11-19) : ni le nom ni l'espace d'un connecteur partagé ne
+   commencent par `custom_`, le préfixe des définitions Custom API d'une organisation (docs/conception/custom-api.md) :
+   aucune ne rencontre le catalogue. Jugée sur `connectors/<nom>/connector.yaml` seulement (`check`).
+
+Les règles 1 à 5, 9 à 11, 15, 18, 20, 22 et 23 vivent dans la lib (`oto/connectors/rules/`), une seule copie, que le profil Custom
+API applique aussi à la définition d'une organisation ; ce module les applique et les réexporte.
 
 Un fichier fautif lève `DescriptionError`, qui nomme le fichier, la fonction et la
 règle : la fabrique ne génère alors rien.
@@ -165,200 +171,28 @@ from dataclasses import dataclass
 import yaml
 from jsonschema import Draft202012Validator
 
+# Les règles dont le profil Custom API a besoin vivent dans la lib, une seule copie (`oto/connectors/rules/`) : la
+# fabrique les applique d'ici, et les réexporte pour ses autres modules.
+from oto.connectors.rules.body import (BODY_REFUSALS, FREE_SIMPLE_KEYS, FREE_TEXT_KEYS, LIST_BODY_REFUSALS,  # noqa: F401
+                                       NESTED_BODY_REFUSALS, NO_BODY_METHODS, PATH_PARAM, PLACES, argument_table,
+                                       body_argument, body_argument_refusal, body_entries, body_list_refusal,
+                                       body_table_refusal, free_keys, strict_object)
+from oto.connectors.rules.checks import (AUTH_REFERENCES, DEFAULT_TIMEOUT_S, SCHEMA_KEYWORDS, SCHEMA_LISTS,  # noqa: F401
+                                         SCHEMA_MAPS, STRIP_REFUSALS, DescriptionError, _auth_header, _auth_query,
+                                         _personal_marks, act, check_act, check_arguments, check_auth, check_checks,
+                                         check_constants, check_personal, check_probe, check_signals, check_timeout,
+                                         strip_refusal)
+
+from oto.connectors.custom_api.profile import PREFIX as CUSTOM_API_PREFIX
+
 REPO = pathlib.Path(__file__).resolve().parent.parent
 CONNECTORS = REPO / "connectors"
 SCHEMA_PATH = CONNECTORS / "connector.schema.json"
 
-PATH_PARAM = re.compile(r"\{([^{}]*)\}")
-# Le délai d'un appel quand le connecteur n'en déclare pas (le `default` du schéma).
-DEFAULT_TIMEOUT_S = 30
-AUTH_REFERENCES = ("key", "token", "username", "password", "client_id", "client_secret")
-PLACES = ("query", "body", "headers", "files")
-# Les méthodes qui n'envoient pas de corps : l'argument qui forme le corps entier n'y a pas de place (règle 20).
-NO_BODY_METHODS = ("GET",)
 # Les méthodes qui envoient un corps multipart.
 FILE_METHODS = ("POST", "PUT", "PATCH")
 # Ce qui précède l'identité d'un compte dans une adresse : le schéma et l'hôte (ou une adresse libre en tête), puis `/`.
 AFTER_HOST = re.compile(r"^(https://[^/{}]+|\{[a-z][a-z0-9_]*\})/")
-
-
-class DescriptionError(ValueError):
-    """Une description refusée : le message dit le fichier, la fonction et la règle."""
-
-
-def body_argument(call: dict) -> str | None:
-    """L'argument qui forme le corps entier (`call.body` en texte, règle 20), ou `None` pour un corps en table."""
-    body = call.get("body")
-    return body if isinstance(body, str) else None
-
-
-def body_entries(table: dict, at: tuple[str, ...] = ()) -> list[tuple[tuple[str, ...], str]]:
-    """Les entrées d'un corps en table, à toute profondeur (règle 22) : le chemin des clés côté API et l'argument, dans
-    l'ordre du fichier ; une table emboîtée vide n'en donne aucune."""
-    entries: list[tuple[tuple[str, ...], str]] = []
-    for key, value in table.items():
-        if isinstance(value, dict):
-            entries += body_entries(value, at + (key,))
-        else:
-            entries.append((at + (key,), value))
-    return entries
-
-
-def argument_table(call: dict, kind: str) -> dict:
-    """La table d'une place de `call` (`query`, `body`, `headers`, `files`) : nom côté API → argument ; vide quand la place
-    est absente, ou quand le corps est un argument entier (`body_argument`), qui n'a pas de nom côté API. Celle du corps
-    est mise à plat (`body_entries`) : un chemin emboîté s'y nomme par ses clés jointes d'un point, pour les messages."""
-    table = call.get(kind)
-    if not isinstance(table, dict):
-        return {}
-    if kind == "body":
-        return {".".join(path): argument for path, argument in body_entries(table)}
-    return table
-
-
-# Les refus de la règle 20, les mêmes des deux côtés (cas communs `connectors/_cases/body.yaml`), dans l'ordre où ils
-# se jugent.
-BODY_REFUSALS = ("body_argument_unknown", "body_argument_not_strict", "body_argument_optional", "body_argument_method",
-                 "body_argument_elsewhere", "body_argument_encoded", "body_argument_not_alone", "body_argument_paginated")
-
-
-# Les clés libres de l'argument du corps entier, à sa racine seulement : au lieu de `additionalProperties: false`,
-# chaque clé que `properties` ne déclare pas est marquée donnée personnelle (règle 15 : l'hôte ne journalise pas sa
-# valeur), de l'un des deux genres que la description choisit. Les clés déclarées gardent leur schéma.
-# - le texte (décidé par le mainteneur le 2026-10-22) : `{type: string, personal: true}` ;
-# - la valeur simple (décidé par le mainteneur le 2026-10-22) : un texte, un nombre ou un vrai/faux, pour des champs que le
-#   tiers type (les champs personnalisés d'un CRM). `number`, pas `integer` : un champ nombre du tiers prend une
-#   décimale, et JSON ne distingue pas `2` de `2.0`. Une date reste un texte ; `null`, un objet, une liste restent
-#   refusés. Les trois types dans cet ordre, l'écriture unique que les deux juges comparent telle quelle.
-# La forme exacte, rien d'autre : ni `true`, ni un autre type, ni un schéma sans `personal`, ni un mot de plus.
-FREE_TEXT_KEYS = {"type": "string", "personal": True}
-FREE_SIMPLE_KEYS = {"type": ["string", "number", "boolean"], "personal": True}
-
-
-def free_keys(additional: object) -> bool:
-    """`additionalProperties` qui admet des clés libres, toutes donnée personnelle : exactement `FREE_TEXT_KEYS` ou
-    `FREE_SIMPLE_KEYS`, `personal` le booléen `true` (jamais `1`, que `==` confondrait)."""
-    return (isinstance(additional, dict) and additional.keys() == FREE_TEXT_KEYS.keys()
-            and additional["personal"] is True
-            and any(additional["type"] == form["type"] for form in (FREE_TEXT_KEYS, FREE_SIMPLE_KEYS)))
-
-
-def strict_object(schema: object) -> bool:
-    """Un objet strict : `type: object`, `additionalProperties: false` ou des clés libres toutes donnée personnelle
-    (`free_keys`), au moins une propriété déclarée, aucune clé admise par motif (`patternProperties` rouvrirait
-    l'objet)."""
-    if not isinstance(schema, dict):
-        return False
-    additional = schema.get("additionalProperties")
-    return (schema.get("type") == "object" and (additional is False or free_keys(additional))
-            and isinstance(schema.get("properties"), dict) and len(schema["properties"]) >= 1
-            and "patternProperties" not in schema)
-
-
-def body_argument_refusal(function: dict) -> tuple[str, str] | None:
-    """Le premier défaut d'un corps formé par un argument entier, `(code, raison)`, ou `None` : la règle 20, hors de
-    toute description, que les cas communs rejouent."""
-    call = function["call"]
-    argument = body_argument(call)
-    if argument is None:
-        return None
-    properties = function["input"]["properties"]
-    if argument not in properties:
-        return ("body_argument_unknown", "is not an input argument")
-    if not strict_object(properties[argument]):
-        return ("body_argument_not_strict",
-                "must be a strict object (type: object, additionalProperties: false or free keys "
-                "{type: string, personal: true} or {type: [string, number, boolean], personal: true}, at least one "
-                "declared property, no patternProperties): the body is what the agent may send, never a free bag")
-    if argument not in function["input"].get("required", []):
-        return ("body_argument_optional", "must be required: the whole body is never absent")
-    if call["method"] in NO_BODY_METHODS:
-        return ("body_argument_method", f"needs a method that sends a body, not {call['method']}")
-    elsewhere = PATH_PARAM.findall(call["path"])
-    for kind in ("query", "headers", "files"):
-        elsewhere += argument_table(call, kind).values()
-    if argument in elsewhere:
-        return ("body_argument_elsewhere", "is the whole body, so it goes nowhere else (path, query, headers, files)")
-    if argument in (call.get("encode") or {}):
-        return ("body_argument_encoded", "is sent as the JSON object it is, never encoded")
-    if "body" in (call.get("constants") or {}) or "files" in call:
-        return ("body_argument_not_alone", "is the whole body: no body constant nor file part joins it")
-    if "pagination" in function:
-        return ("body_argument_paginated", "a function whose body is one argument is not paginated")
-    return None
-
-
-# Les refus de la règle 22, les mêmes des deux côtés (cas communs `connectors/_cases/nested_body.yaml`), dans l'ordre où
-# ils se jugent.
-NESTED_BODY_REFUSALS = ("body_nested_empty", "body_key_twice", "body_nested_multipart")
-
-
-def _empty_table(table: dict, at: tuple[str, ...]) -> tuple[str, ...] | None:
-    """Le chemin de la première table emboîtée vide, ou `None`."""
-    for key, value in table.items():
-        if isinstance(value, dict):
-            found = (at + (key,)) if not value else _empty_table(value, at + (key,))
-            if found is not None:
-                return found
-    return None
-
-
-def _clash(table: dict, constant: object, at: tuple[str, ...]) -> tuple[str, ...] | None:
-    """Le premier chemin où la table et la constante du corps se rencontrent autrement que par deux objets : un argument
-    là où la constante a une valeur, ou une table emboîtée sous une constante qui n'est pas un objet ; `None` sinon."""
-    if not isinstance(constant, dict):
-        return None
-    for key, value in table.items():
-        if key not in constant:
-            continue
-        if not (isinstance(value, dict) and isinstance(constant[key], dict)):
-            return at + (key,)
-        found = _clash(value, constant[key], at + (key,))
-        if found is not None:
-            return found
-    return None
-
-
-def body_table_refusal(function: dict) -> tuple[str, str, str] | None:
-    """Le premier défaut d'un corps en table, `(code, chemin, raison)`, ou `None` : la règle 22, hors de toute
-    description, que les cas communs rejouent ; un corps formé d'un argument entier relève de la règle 20."""
-    call = function["call"]
-    table = call.get("body")
-    if not isinstance(table, dict):
-        return None
-    empty = _empty_table(table, ())
-    if empty is not None:
-        return ("body_nested_empty", ".".join(empty), "is a nested table without any entry: it places nothing")
-    clash = _clash(table, (call.get("constants") or {}).get("body"), ())
-    if clash is not None:
-        return ("body_key_twice", ".".join(clash),
-                "is both a body constant and an argument, or one is under the other: they meet only through objects")
-    if "files" in call:
-        nested = next((path for path, _ in body_entries(table) if len(path) > 1), None)
-        if nested is not None:
-            return ("body_nested_multipart", ".".join(nested),
-                    "is nested in a multipart body, whose parts are texts: a file part rules out a nested table")
-    return None
-
-
-# Les refus de la règle 23, les mêmes des deux côtés (cas communs `connectors/_cases/list_body.yaml`), dans l'ordre où
-# ils se jugent.
-LIST_BODY_REFUSALS = ("body_list_without_body", "body_list_method", "body_list_multipart")
-
-
-def body_list_refusal(function: dict) -> tuple[str, str] | None:
-    """Le premier défaut d'un corps en liste (`call.body_list`), `(code, raison)`, ou `None` : la règle 23, hors de toute
-    description, que les cas communs rejouent."""
-    call = function["call"]
-    if call.get("body_list") is not True:
-        return None
-    if not (call.get("body") or "body" in (call.get("constants") or {})):
-        return ("body_list_without_body", "sends the body as a list, and the function has no body to put in it")
-    if call["method"] in NO_BODY_METHODS:
-        return ("body_list_method", f"needs a method that sends a body, not {call['method']}")
-    if "files" in call:
-        return ("body_list_multipart", "a multipart body (files) is a form, never a JSON list")
-    return None
 
 
 # Les refus de la règle 21, les mêmes des deux côtés (cas communs `connectors/_cases/background.yaml`), dans l'ordre où
@@ -420,159 +254,6 @@ def check_schema(data: dict, where: str) -> None:
                     f"{where}: function {function['name']}: example {example['title']!r} "
                     f"does not match its input: {error.message}"
                 )
-
-
-def check_arguments(function: dict, where: str) -> None:
-    """Règle 1 : un argument va à un seul endroit, et tout endroit nomme un argument."""
-    call = function.get("call")
-    if call is None:
-        return
-    name = function["name"]
-    declared = set(function["input"]["properties"])
-    required = set(function["input"].get("required", []))
-    placed: dict[str, str] = {}
-
-    def place(argument: str, at: str) -> None:
-        if argument not in declared:
-            raise DescriptionError(f"{where}: function {name}: {at} names {argument!r}, which is not an input argument")
-        if argument in placed:
-            raise DescriptionError(
-                f"{where}: function {name}: argument {argument!r} goes to two places ({placed[argument]} and {at})"
-            )
-        placed[argument] = at
-
-    whole = body_argument(call)
-    refusal = body_argument_refusal(function)
-    if refusal is not None:
-        code, reason = refusal
-        raise DescriptionError(f"{where}: function {name}: call.body {whole!r}: {code}: {reason}")
-    if whole is not None:
-        place(whole, "the whole body")
-    nested = body_table_refusal(function)
-    if nested is not None:
-        code, path, reason = nested
-        raise DescriptionError(f"{where}: function {name}: call.body {path!r}: {code}: {reason}")
-    listed = body_list_refusal(function)
-    if listed is not None:
-        code, reason = listed
-        raise DescriptionError(f"{where}: function {name}: call.body_list: {code}: {reason}")
-    for argument in PATH_PARAM.findall(call["path"]):
-        place(argument, "the path")
-        if argument not in required:
-            raise DescriptionError(f"{where}: function {name}: path argument {argument!r} must be required")
-    for kind in PLACES:
-        for api_name, argument in argument_table(call, kind).items():
-            place(argument, f"{kind} {api_name!r}")
-    pagination = function.get("pagination")
-    unplaced = declared - set(placed)
-    if unplaced:
-        raise DescriptionError(
-            f"{where}: function {name}: argument(s) {', '.join(sorted(unplaced))} go nowhere in call"
-        )
-    if pagination and pagination["request_param"] not in declared:
-        raise DescriptionError(
-            f"{where}: function {name}: pagination request_param {pagination['request_param']!r} is not an input argument"
-        )
-    for argument in call.get("encode") or {}:
-        if argument not in placed or placed[argument] == "the path" or placed[argument].startswith("files "):
-            raise DescriptionError(
-                f"{where}: function {name}: encode names {argument!r}, which is not placed in query, body or headers"
-                " (a file is never encoded)"
-            )
-
-
-def check_auth(connector: dict, where: str) -> None:
-    """Règle 2 : une référence de `auth` désigne un champ de `credential` existant ; en `oauth2_jwt_bearer`, le seul
-    champ, secret."""
-    auth = connector["auth"]
-    fields = {field["name"] for field in connector.get("credential", [])}
-    for reference in AUTH_REFERENCES:
-        if reference in auth and auth[reference] not in fields:
-            raise DescriptionError(
-                f"{where}: auth.{reference} names {auth[reference]!r}, which is not a credential field "
-                f"({', '.join(sorted(fields)) or 'none declared'})"
-            )
-    if auth["kind"] == "oauth2_jwt_bearer":
-        others = sorted(fields - {auth["key"]})
-        if others:
-            raise DescriptionError(
-                f"{where}: auth.kind oauth2_jwt_bearer takes a single credential field, the key file named by auth.key "
-                f"({auth['key']!r}); remove {', '.join(others)}"
-            )
-        field = next(f for f in connector["credential"] if f["name"] == auth["key"])
-        if field["secret"] is not True:
-            raise DescriptionError(f"{where}: auth.key names {auth['key']!r}, which must be a secret field (secret: true)")
-
-
-def _auth_header(auth: dict) -> str | None:
-    if auth["kind"] == "api_key":
-        return auth["name"] if auth["in"] == "header" else None
-    if auth["kind"] in ("bearer", "basic", "oauth2_client_credentials", "oauth2_user", "oauth2_jwt_bearer"):
-        return "Authorization"
-    return None
-
-
-def _auth_query(auth: dict) -> str | None:
-    return auth["name"] if auth["kind"] == "api_key" and auth["in"] == "query" else None
-
-
-def check_constants(connector: dict, function: dict, where: str) -> None:
-    """Règle 3 : un nom côté API, une seule valeur."""
-    call = function.get("call")
-    if call is None:
-        return
-    name = function["name"]
-    constants = call.get("constants") or {}
-    # Au corps, la règle 22 juge la constante et la table à toute profondeur (`body_key_twice`).
-    for api_name in constants.get("query") or {}:
-        if api_name in argument_table(call, "query"):
-            raise DescriptionError(f"{where}: function {name}: query {api_name!r} is both a constant and an argument")
-    auth_query = _auth_query(connector["auth"])
-    if auth_query and (auth_query in (call.get("query") or {}) or auth_query in (constants.get("query") or {})):
-        raise DescriptionError(
-            f"{where}: function {name}: query {auth_query!r} is set twice (the authentication and the function)"
-        )
-    seen: dict[str, str] = {}
-    auth_header = _auth_header(connector["auth"])
-    if auth_header:
-        seen[auth_header.lower()] = "the authentication"
-    sources = [
-        ("the connector headers", connector.get("headers") or {}),
-        ("the function constant headers", constants.get("headers") or {}),
-        ("the function headers", call.get("headers") or {}),
-    ]
-    for source, headers in sources:
-        for header in headers:
-            if header.lower() in seen:
-                raise DescriptionError(
-                    f"{where}: function {name}: header {header!r} is set twice ({seen[header.lower()]} and {source})"
-                )
-            seen[header.lower()] = source
-
-
-def act(function: dict) -> bool:
-    """Ce qui engage ou détruit : `act` déclaré, sinon déduit de la classe (`read` → false, `write` et `sensitive` → true)."""
-    return function.get("act", function["class"] != "read")
-
-
-def check_act(function: dict, where: str) -> None:
-    """Règle 9 : `act` ne contredit pas la classe, et `effect` n'est dit que d'une fonction sensible."""
-    declared = function.get("act")
-    if declared is False and function["class"] == "sensitive":
-        raise DescriptionError(f"{where}: function {function['name']}: a sensitive function cannot declare act: false")
-    if declared is True and function["class"] == "read":
-        raise DescriptionError(f"{where}: function {function['name']}: a read function cannot declare act: true")
-    if "effect" in function and function["class"] != "sensitive":
-        raise DescriptionError(f"{where}: function {function['name']}: effect is said of a sensitive function only")
-
-
-def check_timeout(connector: dict, function: dict, where: str) -> None:
-    """Règle 11 : le délai d'une fonction n'est pas celui du connecteur."""
-    own = function.get("timeout_s")
-    if own is not None and own == connector.get("timeout_s", DEFAULT_TIMEOUT_S):
-        raise DescriptionError(
-            f"{where}: function {function['name']}: timeout_s {own} is the connector's timeout: declare none"
-        )
 
 
 def check_background(data: dict, function: dict, where: str) -> None:
@@ -817,28 +498,6 @@ def check_output_file(data: dict, function: dict, where: str) -> None:
         raise DescriptionError(f"{where}: function {name}: expect is refused with output.file from: body, which has no JSON")
 
 
-# Les refus de la règle 18, les mêmes des deux côtés (cas communs `connectors/_cases/strip.yaml`).
-STRIP_REFUSALS = ("strip_path_malformed", "strip_path_overlaps", "strip_path_twice")
-
-
-def strip_refusal(paths: list[str]) -> tuple[str, str, str] | None:
-    """Le premier défaut d'une liste `strip`, `(code, chemin, raison)`, ou `None` : la règle 18 hors de toute description,
-    que les cas communs rejouent."""
-    seen: set[str] = set()
-    for path in paths:
-        if any(key == "" for key in path.split(".")):
-            return ("strip_path_malformed", path,
-                    "a path is keys separated by dots, each non-empty (no leading, trailing or doubled dot)")
-        if path in seen:
-            return ("strip_path_twice", path, "declared twice")
-        seen.add(path)
-    for path in paths:
-        above = next((other for other in paths if path.startswith(other + ".")), None)
-        if above is not None:
-            return ("strip_path_overlaps", path, f"lies under {above!r}, which is already removed whole")
-    return None
-
-
 # Les refus de la règle 19 : l'exemple de réponse, une garde de la fabrique seulement (l'hôte ne le voit jamais).
 SAMPLE_REFUSALS = ("strip_path_absent", "strip_path_unsampled", "strip_sample_foreign_address", "strip_sample_unused")
 # Une adresse dans un texte : `scheme://autorité`, ou un courriel ; seuls les domaines réservés aux tests y sont admis.
@@ -939,143 +598,6 @@ def check_strip(function: dict, where: str) -> None:
         code, path, reason = refusal
         at = "output.sample" if path is None else f"output.strip {path!r}"
         raise DescriptionError(f"{where}: function {function['name']}: {at}: {code}: {reason}")
-
-
-# Les mots d'un JSON Schema dont la valeur est un schéma, une liste de schémas, ou des schémas par nom : la donnée
-# personnelle se cherche là seulement, jamais dans `examples`, `default`, `const` ni `enum`, et le nom d'une propriété
-# (une propriété qui s'appellerait `personal`) n'est jamais lu comme un mot.
-SCHEMA_KEYWORDS = ("items", "additionalProperties", "not", "if", "then", "else", "contains", "propertyNames",
-                   "unevaluatedItems", "unevaluatedProperties")
-SCHEMA_LISTS = ("allOf", "anyOf", "oneOf", "prefixItems")
-SCHEMA_MAPS = ("properties", "patternProperties", "$defs", "dependentSchemas")
-
-
-def _personal_marks(schema: object, at: str) -> list[tuple[str, object]]:
-    """Chaque `personal` d'un schéma, avec sa place (`input.properties.email`)."""
-    if not isinstance(schema, dict):
-        return []
-    found = [(at, schema["personal"])] if "personal" in schema else []
-    for key in SCHEMA_KEYWORDS:
-        found += _personal_marks(schema.get(key), f"{at}.{key}")
-    for key in SCHEMA_LISTS:
-        for index, child in enumerate(schema.get(key) or []):
-            found += _personal_marks(child, f"{at}.{key}[{index}]")
-    for key in SCHEMA_MAPS:
-        for name, child in (schema.get(key) or {}).items():
-            found += _personal_marks(child, f"{at}.{key}.{name}")
-    return found
-
-
-def check_personal(function: dict, where: str) -> None:
-    """Règle 15 : `personal` marque une propriété de l'entrée, toujours `true` ; ni la racine ni la sortie."""
-    name = function["name"]
-    for at, value in _personal_marks(function["input"], "input"):
-        if at == "input":
-            raise DescriptionError(f"{where}: function {name}: personal marks a property of input, not input itself")
-        if value is not True:
-            raise DescriptionError(f"{where}: function {name}: {at}: personal must be true (declare it only where it applies)")
-    schema = (function.get("output") or {}).get("schema")
-    for at, _ in _personal_marks(schema, "output.schema"):
-        raise DescriptionError(f"{where}: function {name}: {at}: personal marks an input argument, not an output field")
-
-
-def _statuses(entry: dict) -> list[int]:
-    status = entry["status"] if "status" in entry else entry["when"]
-    return status if isinstance(status, list) else [status]
-
-
-def _check_signal_table(entries: list[dict], at: str, where: str) -> None:
-    """Règle 10, sur une table (`errors` du connecteur, ou les refus d'une fonction)."""
-    plain: set[int] = set()
-    for entry in entries:
-        label = f"{at} {entry['code']!r}"
-        if "status" not in entry and not isinstance(entry["when"], int):
-            if "body" in entry or "marks_account" in entry:
-                raise DescriptionError(
-                    f"{where}: {label}: a refusal with body or marks_account needs an HTTP status in when, not a text condition"
-                )
-            continue
-        statuses = _statuses(entry)
-        body = "body" in entry
-        mark = entry.get("marks_account")
-        if not body and any(200 <= status < 300 for status in statuses):
-            raise DescriptionError(f"{where}: {label}: a 2xx status needs a body condition, or every success would be refused")
-        if mark == "credential_rejected" and not body and 403 in statuses:
-            raise DescriptionError(
-                f"{where}: {label}: a 403 without a body condition cannot mark credential_rejected (a missing right is not a refused key)"
-            )
-        if mark == "quota_exhausted" and not body and 429 in statuses:
-            raise DescriptionError(
-                f"{where}: {label}: a 429 without a body condition cannot mark quota_exhausted (a rate limit is not spent credits)"
-            )
-        if mark is not None and entry.get("retryable") is True:
-            raise DescriptionError(f"{where}: {label}: an entry that marks the account is not retryable")
-        shadowed = sorted(plain.intersection(statuses))
-        if body and shadowed:
-            raise DescriptionError(
-                f"{where}: {label}: its body condition comes after an entry without one for status "
-                f"{', '.join(map(str, shadowed))}, so it is never read"
-            )
-        if not body:
-            plain.update(statuses)
-
-
-def check_signals(data: dict, where: str) -> None:
-    """Règle 10 : le signal de refus du service, dans la table du connecteur et dans les refus de chaque fonction."""
-    _check_signal_table(data["connector"]["errors"], "errors", where)
-    for function in data["functions"]:
-        _check_signal_table(function.get("refusals", []), f"function {function['name']}: refusal", where)
-
-
-def check_checks(function: dict, where: str) -> None:
-    """Règle 4 : un contrôle nomme un refus de sa fonction, et `equal_sums` une liste qui a ses deux champs."""
-    name = function["name"]
-    refusals = {refusal["code"] for refusal in function.get("refusals", [])}
-    for check in function.get("checks", []) + function.get("expect", []):
-        if check["refusal"] not in refusals:
-            raise DescriptionError(
-                f"{where}: function {name}: {check['kind']} names refusal {check['refusal']!r}, which the function does not declare"
-            )
-        if check["kind"] == "equal_sums":
-            argument = function["input"]["properties"].get(check["items"])
-            item = (argument or {}).get("items") if (argument or {}).get("type") == "array" else None
-            missing = [f for f in check["fields"] if f not in ((item or {}).get("properties") or {})]
-            if item is None or missing:
-                raise DescriptionError(
-                    f"{where}: function {name}: equal_sums needs {check['items']!r} to be a list argument whose items "
-                    f"declare {', '.join(check['fields'])}"
-                )
-
-
-def _plain_read(data: dict, role: str, name: str, where: str) -> None:
-    function = next((f for f in data["functions"] if f["name"] == name), None)
-    if function is None:
-        raise DescriptionError(f"{where}: {role} names {name!r}, which is not a function of the connector")
-    if function["class"] != "read" or "call" not in function or function["input"].get("required"):
-        raise DescriptionError(
-            f"{where}: {role} {name!r} must be a read function with a call and no required argument"
-        )
-
-
-def check_probe(data: dict, where: str) -> None:
-    """Règle 5 : la sonde et l'identité d'un consentement sont des lectures par `call`, appelables sans argument ; la
-    fonction d'une sonde qui lit un solde ne coûte rien."""
-    probe = data["connector"].get("probe")
-    if probe is not None:
-        _plain_read(data, "probe", probe["function"], where)
-        function = next(f for f in data["functions"] if f["name"] == probe["function"])
-        if "balance" in probe and "cost" in function:
-            raise DescriptionError(
-                f"{where}: probe {probe['function']!r} reads a balance, so it must declare no cost: one never pays to learn whether one can pay"
-            )
-    auth = data["connector"]["auth"]
-    identity = auth.get("identity")
-    if identity is not None and "function" in identity:
-        _plain_read(data, "auth.identity", identity["function"], where)
-    if identity is not None and "url" in identity and "access_levels" not in auth:
-        beyond = sorted(set(identity["scopes"]) - set(auth.get("scopes", [])))
-        if beyond:
-            raise DescriptionError(f"{where}: auth.identity needs {', '.join(beyond)}, which auth.scopes does not ask for")
 
 
 def _check_template(
@@ -1289,8 +811,19 @@ def check(data: dict, path: pathlib.Path) -> Description:
     check_schema(data, where)
     if data["connector"]["name"] != path.parent.name:
         raise DescriptionError(f"{where}: connector.name {data['connector']['name']!r} is not the folder name")
+    check_prefix(data["connector"], where)
     check_rules(data, where)
     return Description(path=path, data=data)
+
+
+def check_prefix(connector: dict, where: str) -> None:
+    """Règle 24 : le préfixe des définitions Custom API n'est le nom ni l'espace d'aucun connecteur partagé."""
+    for key in ("name", "namespace"):
+        if connector[key].startswith(CUSTOM_API_PREFIX):
+            raise DescriptionError(
+                f"{where}: connector.{key} {connector[key]!r}: the prefix {CUSTOM_API_PREFIX!r} is reserved to the "
+                "Custom API definitions of an organisation"
+            )
 
 
 def check_rules(data: dict, where: str) -> None:

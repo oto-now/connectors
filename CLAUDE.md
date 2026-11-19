@@ -39,7 +39,7 @@ garde d'un credential client) n'est pas un client et ne vit pas ici : il part du
 
 - Python ≥3.10, setuptools (namespace package). Version dans `pyproject.toml`, recopiée par `uv.lock` et par le paquet
   npm `ts/` (`@otomata_tech/connectors`), publié à la même version par le même tag → `docs/release.md`.
-- Deps cœur : requests, france-opendata, pyyaml, defusedxml. **Pas de typer**.
+- Deps cœur : requests, france-opendata, pyyaml, defusedxml, jsonschema (profil Custom API). **Pas de typer**.
 - Extras : `google`, `browser` (o-browser), `planity` (async), `vivatech`, `anthropic`, `stock`, `anonymize`.
   `all` les tire tous.
 - **`uv.lock` est commité et ne gouverne aucune install** — il sert à rendre le dépôt observable par le graphe
