@@ -20,6 +20,8 @@ valid:
       connector:
         name: custom_acme_planning
         label: Acme Planning
+        description: Shifts of the teams of an organisation, read and planned.
+        logo_domain: acme-planning.test
         namespace: custom_acme_planning
         version: 1.0.3
         api_version: v2
@@ -146,6 +148,49 @@ refused:
     base: acme_planning
     changes: [{ path: connector.auth.token_url, value: "http://auth.acme-planning.test/oauth/token" }]
     codes: [custom_api_base_url_not_https]
+  - name: description_too_long
+    base: acme_planning
+    changes:
+      - path: connector.description
+        value: |-          # 21 lines of 95 characters: 2015 characters
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    codes: [custom_api_schema_invalid]
+  - name: description_blank
+    base: acme_planning
+    changes: [{ path: connector.description, value: "   " }]
+    codes: [custom_api_schema_invalid]
+  - name: logo_domain_with_scheme
+    base: acme_planning
+    changes: [{ path: connector.logo_domain, value: "https://acme-planning.test" }]
+    codes: [custom_api_schema_invalid]
+  - name: logo_domain_in_capitals
+    base: acme_planning
+    changes: [{ path: connector.logo_domain, value: Acme-Planning.test }]
+    codes: [custom_api_schema_invalid]
+  - name: logo_domain_without_dot
+    base: acme_planning
+    changes: [{ path: connector.logo_domain, value: acme }]
+    codes: [custom_api_schema_invalid]
   - name: base_url_template
     base: acme_tickets
     changes: [{ path: connector.base_url, value: "https://{tenant}.example.com/api" }]
@@ -411,6 +456,8 @@ oto1:
       account: Acme Payroll
       connection: { base_url: "https://api.acme-payroll.test/v1", auth_mode: header, header_name: X-Acme-Key }
       definition:
+        description: " Payroll of the org. "
+        logo_domain: acme-payroll.test
         variables: { organizationId: { value: org_1, description: "" } }
         operations:
           - name: list_collaborators
@@ -432,6 +479,8 @@ oto1:
     expected:
       connector:
         name: custom_acme_payroll
+        description: Payroll of the org.
+        logo_domain: acme-payroll.test
         base_url: https://api.acme-payroll.test/v1
         auth: { kind: api_key, in: header, name: X-Acme-Key, key: token }
         credential: [{ name: token, label: API key, secret: true }]

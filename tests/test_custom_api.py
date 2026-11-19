@@ -118,6 +118,15 @@ def test_a_variable_that_is_not_one_path_segment_blocks():
     assert "custom_api_variable_invalid" in {problem["code"] for problem in report["blocking"]}
 
 
+@pytest.mark.parametrize("key, value", [("description", "x" * 2001), ("logo_domain", "https://www.acme-payroll.test/")])
+def test_a_presentation_the_format_refuses_is_left_behind(key, value):
+    application = copy.deepcopy(OTO1["converted_whole"])
+    application["definition"][key] = value
+    document, report = from_oto1(application)
+    assert report["status"] == "converted" and key not in document["connector"]
+    assert f"definition.{key}" in {entry["path"] for entry in report["dropped"]}
+
+
 def test_the_report_never_repeats_a_secret():
     document, report = from_oto1(OTO1["secret_in_the_export"])
     assert document is None and "made-up" not in json.dumps(report)

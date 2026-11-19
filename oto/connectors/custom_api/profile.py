@@ -64,6 +64,8 @@ CONNECTOR_KEYS = (
     "namespace",
     "version",
     "api_version",
+    "description",
+    "logo_domain",
     "base_url",
     "auth",
     "credential",

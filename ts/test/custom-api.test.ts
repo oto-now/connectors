@@ -79,6 +79,15 @@ describe("custom api cases", () => {
     const definition = toDefinition(valid.get("acme_tickets"))
     expect(definition.functions.map((fn) => fn.name)).toEqual(definition.functions.map((fn) => `${definition.name}.${fn.name.split(".")[1]}`))
   })
+
+  it("should project the description and the logo domain in camel case", () => {
+    const definition = toDefinition(valid.get("acme_planning"))
+    expect([definition.description, definition.logoDomain]).toEqual([
+      "Shifts of the teams of an organisation, read and planned.",
+      "acme-planning.test",
+    ])
+    expect("logoDomain" in toDefinition(valid.get("acme_tickets"))).toBe(false)
+  })
 })
 
 describe("projection guard", () => {

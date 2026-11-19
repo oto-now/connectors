@@ -254,6 +254,19 @@
           "$ref": "#/$defs/identifier"
         },
         "label": { "description": "Display name.", "$ref": "#/$defs/text" },
+        "description": {
+          "description": "What the agent reads of the tool as a whole, in English: 1 to 2000 characters, not blank.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "\\S"
+        },
+        "logo_domain": {
+          "description": "Domain of the tool, from which a screen draws its logo: a lowercase domain name of two labels or more, the last in letters, without scheme, port, path or final dot (example.com).",
+          "type": "string",
+          "maxLength": 253,
+          "pattern": "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}(?![\\s\\S])"
+        },
         "namespace": {
           "description": "Prefix of the exposed tools, often equal to name.",
           "$ref": "#/$defs/identifier"

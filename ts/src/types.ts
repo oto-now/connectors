@@ -487,6 +487,10 @@ export type Connector = {
   readonly version: string
   /** Version de l'API du tiers, telle que l'éditeur la nomme. */
   readonly apiVersion: string
+  /** Ce que l'agent lit de l'outil entier, en anglais : 1 à 2 000 caractères. */
+  readonly description?: string
+  /** Domaine de l'outil, d'où un écran tire son logo (`example.com`). */
+  readonly logoDomain?: string
   /**
    * Racine des chemins, gabarit possible sur les réglages (`https://{domain}.example.net`, `{server}`) et sur l'identité
    * du compte, après l'hôte (`https://api.example.com/v2/{account_id}`). Absente quand `baseUrls` la remplace, ou quand

@@ -237,6 +237,27 @@ def test_basic_without_username_passes_and_is_carried_without_it():
     assert "username" not in source
 
 
+def test_description_and_logo_domain_are_carried_in_camel_case():
+    """`connector.description` et `connector.logo_domain`, facultatifs, passent tels quels : `description`, `logoDomain`."""
+    description = _load(AIRCALL)
+    description["connector"]["description"] = "Calls of a phone system."
+    description["connector"]["logo_domain"] = "aircall.io"
+    source = connector_module(check(description, AIRCALL)).source
+    assert '  description: "Calls of a phone system.",\n  logoDomain: "aircall.io",\n' in source
+
+
+@pytest.mark.parametrize("key, value", [
+    ("description", ""), ("description", "  "), ("description", "x" * 2001),
+    ("logo_domain", "https://aircall.io"), ("logo_domain", "Aircall.io"), ("logo_domain", "aircall"),
+    ("logo_domain", "aircall.io."), ("logo_domain", "aircall.io:443"), ("logo_domain", "aircall.io/x"),
+])
+def test_description_and_logo_domain_are_checked_by_the_schema(key, value):
+    description = _load(AIRCALL)
+    description["connector"][key] = value
+    with pytest.raises(DescriptionError):
+        check(description, AIRCALL)
+
+
 def test_schema_violation_is_refused_before_the_rules():
     description = _load(SELLSY)
     del description["functions"][0]["class"]

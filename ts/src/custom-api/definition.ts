@@ -164,6 +164,8 @@ export function toDefinition(doc: Json): Connector {
     version: connector.version,
     apiVersion: connector.api_version,
   }
+  if ("description" in connector) out.description = connector.description
+  if ("logo_domain" in connector) out.logoDomain = connector.logo_domain
   if ("base_url" in connector) out.baseUrl = connector.base_url
   if ("base_urls" in connector) out.baseUrls = copy(connector.base_urls)
   out.auth = auth(name, connector.auth)

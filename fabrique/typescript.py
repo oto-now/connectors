@@ -326,6 +326,9 @@ def connector_module(description: Description, source: str | None = None) -> Mod
         ("version", js(connector["version"])),
         ("apiVersion", js(connector["api_version"])),
     ]
+    for key in ("description", "logo_domain"):
+        if key in connector:
+            entries.append((camel(key), js(connector[key])))
     if "base_url" in connector:
         entries.append(("baseUrl", js(connector["base_url"])))
     if "base_urls" in connector:

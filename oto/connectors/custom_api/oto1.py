@@ -9,7 +9,8 @@ PURE: no I/O. `definition_oto1` is one application as oto 1 keeps it, its non-se
 
 The document is a Custom API definition (`profile.validate` finds nothing in it), or `None` when anything blocks. The
 report names each value deduced (`deduced`), each part of oto 1 left behind without blocking (`dropped`) and each
-problem that blocks (`blocking`, with its code), never a secret value:
+problem that blocks (`blocking`, with its code), never a secret value. The label, the constant headers, the
+`description` and the `logo_domain` (trimmed) are taken over as they are, into the connector:
 
 - deduced: the name (`custom_` + the application's name in snake_case), `version` 1.0.0, `api_version` `unspecified`,
   the modes (a person's or an org's key), the class from the verb (GET reads, POST/PUT/PATCH write, DELETE is sensitive,
@@ -18,8 +19,9 @@ problem that blocks (`blocking`, with its code), never a secret value:
   the query for GET and DELETE, the body otherwise), each `variables` value turned into a constant of `call` (in the
   path, or in `constants`), the argument leaving the input, the example `{}` of an action without required argument,
   and the standard error table (`errors.standard_errors`), written out;
-- dropped: `description` and `logo_domain` (not yet in the format), `doc_path` (the raw calls stay in oto 1), a variable
-  no action uses, a refusal's `retryable: true` (the format has none);
+- dropped: a `description` or a `logo_domain` the format refuses (blank or too long, not a lowercase domain name),
+  `doc_path` (the raw calls stay in oto 1), a variable no action uses, a refusal's `retryable: true` (the format has
+  none);
 - blocking: an address in `http://` or towards an internal host, the `session` and `visitor` modes, an action with a
   required argument and no example, two arguments that give the same snake_case name, a secret in the export, and any
   problem the profile finds in the document built.
@@ -31,14 +33,19 @@ import copy
 from typing import Any, Optional
 from urllib.parse import quote, unquote
 
+from jsonschema import Draft202012Validator
+
 from . import problems as p
 from .errors import standard_errors
 from .naming import class_of, confirmation, identifier
 from .problems import Problem, dotted
 from .profile import PREFIX, validate
+from .schema import schema
 
 KEYS = ("account", "connection", "definition")
 DEFINITION_KEYS = ("label", "description", "logo_domain", "headers", "variables", "operations")
+#: Taken over as they are, trimmed, when the format accepts them.
+PRESENTATION_KEYS = ("description", "logo_domain")
 CONNECTION_KEYS = (
     "base_url",
     "auth_mode",
@@ -270,6 +277,19 @@ def _function(op: dict, i: int, variables: dict[str, str], used: set[str], repor
     return function
 
 
+def _presentation(key: str, value: object, connector: dict, report: _Report) -> None:
+    """`description` and `logo_domain` taken over as they are, trimmed; one the format refuses is left behind, said."""
+    if not value:
+        return
+    taken = value.strip() if isinstance(value, str) else value
+    if not Draft202012Validator(schema()["$defs"]["connector"]["properties"][key]).is_valid(taken):
+        reason = ("1 to 2000 characters, not blank" if key == "description"
+                  else "a lowercase domain name, without scheme, port or path (example.com)")
+        report.drop(f"definition.{key}", f"the format wants {reason}")
+        return
+    connector[key] = taken
+
+
 def _connector(account: str, connection: dict, definition: dict, report: _Report) -> dict:
     name = PREFIX + identifier(account, "app")
     report.deduce("connector.name", name, f"the reserved prefix {PREFIX!r} and the application's name in snake_case")
@@ -288,9 +308,8 @@ def _connector(account: str, connection: dict, definition: dict, report: _Report
         connector["headers"] = dict(definition["headers"])
     connector["errors"] = standard_errors(label, (auth or {}).get("kind", "none"))
     report.deduce("connector.errors", [entry["code"] for entry in connector["errors"]], "the standard error table")
-    for key in ("description", "logo_domain"):
-        if definition.get(key):
-            report.drop(f"definition.{key}", "not in the format yet")
+    for key in PRESENTATION_KEYS:
+        _presentation(key, definition.get(key), connector, report)
     if connection.get("doc_path"):
         report.drop("connection.doc_path", "the raw calls, the documentation route included, stay in oto 1")
     return connector

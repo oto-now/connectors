@@ -56,6 +56,8 @@ Un connecteur partagé se décrit dans un fichier YAML, `connectors/<nom>/connec
 |---|---|---|
 | `name` | oui | Identifiant stable (`^[a-z][a-z0-9_]*$`), premier segment des outils. |
 | `label` | oui | Nom affiché. |
+| `description` | non | Ce que l'agent lit de l'outil entier, en anglais : 1 à 2 000 caractères, pas seulement des blancs. |
+| `logo_domain` | non | Domaine de l'outil, d'où un écran tire son logo : en minuscules, deux étiquettes au moins, la dernière en lettres, sans schéma, port, chemin ni point final (`example.com`). |
 | `namespace` | oui | Préfixe des outils exposés, souvent égal à `name`. |
 | `version` | oui | Version du connecteur, semver : elle monte avec tout commit qui change sa description ou son client (« Contrôles », ci-dessous). |
 | `api_version` | oui | Version de l'API tierce, telle que l'éditeur la nomme. |
@@ -211,3 +213,4 @@ Deux gardes de CI :
 - 2026-11-06 : septième mode d'authentification, `oauth2_jwt_bearer`, le compte de service ([compte](compte.md), « Le compte de service ») — décidé par le mainteneur (source : lecture de Search Console par un agent).
 - 2026-11-13 : le compte de service reçoit des niveaux d'accès et un niveau par défaut (`default_level`) ([niveaux d'accès](niveaux-d-acces.md)) — décidé par le mainteneur (source : envoi d'un sitemap à Search Console).
 - 2026-11-19 : la définition Custom API d'une organisation est un fichier du format, restreint par un profil fermé ([Custom API](custom-api.md)) ; `jsonschema` devient une dépendance de la lib — décidé par le mainteneur (source : lot 4 de la bascule des connecteurs d'oto 1 dans la lib).
+- 2026-11-19 : `connector.description` et `connector.logo_domain`, facultatifs, projetés en `description` et `logoDomain`, avec les contrôles qu'oto-core applique à leur déclaration ; les connecteurs existants ne les portent pas encore — décidé par le mainteneur (source : [Custom API](custom-api.md), reprise de la description et du logo d'oto 1).

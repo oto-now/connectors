@@ -22,7 +22,7 @@ Une organisation décrit un outil que le catalogue n'a pas, et ses agents appell
 
 ### Le profil
 
-- **Admis** : `connector` avec `name`, `label`, `namespace`, `version`, `api_version`, `base_url` (https fixe, sans gabarit), `auth`, `credential` (champs tenus par le compte seulement), `modes` (`byo_user`, `byo_org`), `timeout_s`, `query_arrays`, `headers`, `rate_limit`, `probe` (sans solde) et `errors`. Dans `functions` : `class`, `act`, `effect`, `description`, `input`, `examples`, `refusals`, `checks`, `expect`, `call` (sans `files`), `pagination`, `output` (sans `file`), `timeout_s` et `confirm`.
+- **Admis** : `connector` avec `name`, `label`, `description`, `logo_domain`, `namespace`, `version`, `api_version`, `base_url` (https fixe, sans gabarit), `auth`, `credential` (champs tenus par le compte seulement), `modes` (`byo_user`, `byo_org`), `timeout_s`, `query_arrays`, `headers`, `rate_limit`, `probe` (sans solde) et `errors`. Dans `functions` : `class`, `act`, `effect`, `description`, `input`, `examples`, `refusals`, `checks`, `expect`, `call` (sans `files`), `pagination`, `output` (sans `file`), `timeout_s` et `confirm`.
 - **Authentification** : `none`, `api_key` (en-tête ou query), `bearer`, `basic`, `oauth2_client_credentials` et `oauth2_user`.
 - **Refusé**, parce que cela touche les ressources de l'hôte ou sort du REST simple : `platform` dans `modes`, `holder: host`, `account_identity`, `settings`, `base_urls`, `quota`, `cost`, `async`, `background`, `files`, `output.file`, `handwritten`, `exposure`, `scopes` d'une fonction, `oauth2_jwt_bearer`, et dans `auth` ce qui suppose des réglages ou des niveaux (`token_urls`, `access_levels`, `scope_implies`, `default_level`, `from_token`).
 - **Bornes reprises d'oto 1** : 100 fonctions et 256 Ko au plus. Aucun en-tête, constant ou argument, qui authentifie ou route la requête (`Authorization`, `Cookie`, `Set-Cookie`, `Host`, `X-Api-Key`, `Api-Key`, `Proxy-*`, ni l'en-tête de la clé). Le nom et l'espace commencent par le préfixe réservé `custom_`, qu'aucun connecteur partagé ne porte (règle 24 de la fabrique).
@@ -48,6 +48,8 @@ La table d'erreurs standard (`standard_errors(label, auth_kind)`) est proposée 
 connector:
   name: custom_acme_planning
   label: Acme Planning
+  description: Shifts of the teams of an organisation, read and planned.
+  logo_domain: acme-planning.test
   namespace: custom_acme_planning
   version: 1.0.3                       # montée par l'hôte à chaque enregistrement
   api_version: v2
@@ -100,7 +102,8 @@ Aucun secret : le `client_id` et le `client_secret` sont ceux de l'application O
 
 - **Modes** : `bearer` → `bearer` ; `header` et `query` → `api_key` ; `basic` → `basic` ; `oauth2` → `oauth2_client_credentials` (jeton demandé en formulaire, client dans le corps) ; `none` → `none`. Les champs du coffre (`token`, `username`, `password`, `client_id`, `client_secret`) gardent leurs noms.
 - **Déduit** : le nom (`custom_` et le nom de l'application en snake_case), `version` 1.0.0, `api_version` `unspecified`, les modes, la classe d'après le verbe (`class: read` déclaré reste `read`), chaque argument renommé en snake_case (le nom côté API reste dans `call`), sa place selon la règle d'oto 1, chaque `variables` devenu une constante de `call` (dans le chemin ou dans `constants`, l'argument sortant de l'entrée), l'exemple `{}` d'une action sans argument requis, la table d'erreurs standard.
-- **Laissé** : `description` et `logo_domain` (pas encore au format), `doc_path` (les appels bruts restent dans oto 1), une variable qu'aucune action n'utilise, `retryable: true` d'un refus.
+- **Repris tels quels** : le libellé, les en-têtes constants, `description` et `logo_domain` (sans blancs autour).
+- **Laissé** : une `description` ou un `logo_domain` que le format refuse (vide ou trop longue, domaine mal formé), `doc_path` (les appels bruts restent dans oto 1), une variable qu'aucune action n'utilise, `retryable: true` d'un refus.
 - **Bloque, sans repli** : une adresse en `http://` ou interne, les modes `session` et `visitor`, une action à argument requis sans exemple, deux arguments au même nom en snake_case, une variable qui n'est pas un segment de chemin (`custom_api_variable_invalid`), un secret dans l'export, et tout problème que le profil trouve au document construit.
 
 Le rapport à blanc, `python -m oto.connectors.custom_api.rapport <export.json> <rapport.json>`, applique `from_oto1` à chaque application d'un export JSON fourni par l'exploitant d'oto 1 et écrit un rapport agrégé, par application et par code. Il ne se connecte à rien, n'écrit que ce rapport et n'en écrase jamais un ; la forme de l'export est dans son en-tête.
@@ -112,7 +115,7 @@ Le rapport à blanc, `python -m oto.connectors.custom_api.rapport <export.json> 
 - **Les `variables` deviennent des constantes de `call`** (19/11/2026) : une forme « valeur d'organisation par défaut » remplie par l'hôte a été écartée. L'agent ne peut plus forcer une autre valeur.
 - **`session` et `visitor` ne sont pas traduits** (19/11/2026) : `from_oto1` les nomme comme bloquants ; l'application reste dans oto 1 tant que le format n'a pas de mode qui les dise.
 - **Les appels bruts restent dans oto 1** (19/11/2026) : oto-core n'en a pas, l'unité du format étant la fonction.
-- **`connector.description` et `logo_domain` ne sont pas ajoutés au format** (19/11/2026) : oto-core ne les lit pas encore. Un bloc `custom_api` à côté a été écarté : une définition serait alors « presque » un `connector.yaml`.
+- **`connector.description` et `logo_domain` entrent au format, facultatifs** (19/11/2026) : d'abord laissés dehors tant qu'oto-core ne les lisait pas ; il les lit désormais (`description`, `logoDomain`) avec les mêmes contrôles, et un oto-core plus ancien ignore ces clés. Un bloc `custom_api` à côté a été écarté : une définition serait alors « presque » un `connector.yaml`.
 - **`http://` et adresses internes refusés** (19/11/2026) : l'exception nommée par l'opérateur d'oto 1 n'est pas reprise ; le rapport à blanc nomme chaque définition concernée.
 - **Préfixe réservé `custom_`** (19/11/2026) : aucune collision possible avec le catalogue ni avec les outils d'oto 1.
 - **Pas d'import OpenAPI dans oto-core en première version** (19/11/2026) : l'écran accepte un document collé ou écrit par l'agent, validé par le module TypeScript ; le portage vient quand l'écran le réclame.
@@ -131,7 +134,7 @@ Le rapport à blanc, `python -m oto.connectors.custom_api.rapport <export.json> 
 - Le module TypeScript n'a ni import OpenAPI, ni reprise d'oto 1, ni table d'erreurs standard : ils restent en Python. Ses règles sont une seconde copie de celles de la lib, tenue par les cas communs. Les erreurs du validateur passé sont ramenées à celles de `jsonschema` (une erreur de `oneOf`/`anyOf` tient lieu de celles de ses branches) : les codes sont les mêmes, les messages du schéma diffèrent. Le poids se mesure sur le JSON écrit comme Python l'écrit, un nombre décimal à part.
 - Pas encore écrit : la bascule d'oto 1 (colonne du document dans `api_apps`, reprise réelle, appel par le moteur, retrait de son format) ; dans oto-core, le stockage par organisation, l'application OAuth d'une organisation et l'écran.
 - Le moteur Python exécute une définition valide, sauf `oauth2_user`. Il ne garde à chaque requête qu'une adresse venue d'un réglage ; une `base_url` fixe ne l'est pas : la garde d'egress de l'hôte (celle d'oto 1 aujourd'hui) reste exigée pour une définition d'organisation.
-- Suite à donner : ajouter `connector.description` et `logo_domain` au format quand oto-core les lira.
+- Les connecteurs partagés ne portent pas encore `description` ni `logo_domain` : leur ajout est un travail à part.
 
 ## Questions ouvertes
 
@@ -142,3 +145,4 @@ Le rapport à blanc, `python -m oto.connectors.custom_api.rapport <export.json> 
 
 - 2026-11-19 : proposition relue sur le code d'oto 1, de la lib et d'oto-core ; même format restreint par un profil fermé, exemples obligatoires, variables en constantes, `session` et `visitor` bloquants, appels bruts laissés à oto 1, description et logo hors du format pour l'instant, `http://` et adresses internes refusés, préfixe `custom_` réservé, pas d'import OpenAPI dans oto-core en première version ; premier paquet Python et rapport à blanc — décidé par le mainteneur (source : lot 4 de la bascule des connecteurs d'oto 1 dans la lib).
 - 2026-11-19 : module TypeScript (`validate`, `toDefinition`), validateur JSON Schema passé en paramètre, schéma distribué dans le paquet, garde de la projection sur chaque description — décidé par le mainteneur (source : lot 4 de la bascule des connecteurs d'oto 1 dans la lib).
+- 2026-11-19 : `connector.description` et `logo_domain` ajoutés au format, admis par le profil et repris d'oto 1 par `from_oto1` — décidé par le mainteneur (source : lecture de ces champs par oto-core).

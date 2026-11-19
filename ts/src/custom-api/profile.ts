@@ -68,8 +68,8 @@ export const MAX_BYTES = 256 * 1024
 
 const TOP_KEYS = ["connector", "functions"]
 const CONNECTOR_KEYS = [
-  "name", "label", "namespace", "version", "api_version", "base_url", "auth", "credential", "modes", "timeout_s",
-  "query_arrays", "headers", "rate_limit", "probe", "errors",
+  "name", "label", "namespace", "version", "api_version", "description", "logo_domain", "base_url", "auth", "credential",
+  "modes", "timeout_s", "query_arrays", "headers", "rate_limit", "probe", "errors",
 ]
 const FUNCTION_KEYS = [
   "name", "class", "act", "effect", "description", "input", "examples", "refusals", "checks", "expect", "call",
