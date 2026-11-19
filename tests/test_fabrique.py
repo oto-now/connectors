@@ -641,8 +641,13 @@ def test_gmail_levels_serve_reads_at_read_and_everything_at_full():
     assert all(served(f, levels["full"]["scopes"], implies) for f in functions)
 
 
+def _without_levels(connector: dict) -> bool:
+    """Un seul accès, sans niveaux (un connecteur à plusieurs accès en a dans chacun, règle 24)."""
+    return "accesses" not in connector and "access_levels" not in connector["auth"]
+
+
 @pytest.mark.parametrize("path", [p for p in sorted(CONNECTORS.glob("*/connector.yaml"))
-                                  if "access_levels" not in yaml.safe_load(p.read_text(encoding="utf-8"))["connector"]["auth"]],
+                                  if _without_levels(yaml.safe_load(p.read_text(encoding="utf-8"))["connector"])],
                          ids=lambda p: p.parent.name)
 def test_connector_without_levels_is_unchanged(path):
     """Un connecteur sans niveaux sort à l'octet près comme avant : son module est celui qui est commité, sans `accessLevels`
@@ -725,10 +730,14 @@ WEBMASTERS = "https://www.googleapis.com/auth/webmasters"
 WEBMASTERS_READONLY = "https://www.googleapis.com/auth/webmasters.readonly"
 
 
+def _access(description: dict, name: str) -> dict:
+    return next(a for a in description["connector"]["accesses"] if a["name"] == name)
+
+
 def test_search_console_levels_read_by_default_and_add_sitemap_at_full():
     """Deux niveaux : `read` par défaut sert les lectures ; `full` sert tout, `add_sitemap` exige le droit d'écriture."""
     description = check(_load(SEARCH_CONSOLE), SEARCH_CONSOLE)
-    auth = description.data["connector"]["auth"]
+    auth = _access(description.data, "service_account")["auth"]
     assert auth["kind"] == "oauth2_jwt_bearer" and "scopes" not in auth
     assert auth["access_levels"] == {"read": {"scopes": [WEBMASTERS_READONLY]}, "full": {"scopes": [WEBMASTERS]}}
     assert auth["scope_implies"] == {WEBMASTERS: [WEBMASTERS_READONLY]} and auth["default_level"] == "read"
@@ -742,6 +751,25 @@ def test_search_console_levels_read_by_default_and_add_sitemap_at_full():
     assert f'scopes: ["{WEBMASTERS}"],' in source
 
 
+def test_search_console_opens_by_a_service_account_or_a_google_sign_in():
+    """Règle 24 : deux accès, mêmes fonctions ; la connexion Google d'une personne lit son identité à l'adresse
+    OpenID de Google, que chaque niveau demande, et sert les lectures au niveau `read`."""
+    description = check(_load(SEARCH_CONSOLE), SEARCH_CONSOLE)
+    connector = description.data["connector"]
+    assert not {"auth", "credential", "modes"} & set(connector)
+    assert [(a["name"], a["auth"]["kind"], a["modes"]) for a in connector["accesses"]] == [
+        ("service_account", "oauth2_jwt_bearer", ["byo_org"]), ("google_account", "oauth2_user", ["byo_user"])]
+    auth = _access(description.data, "google_account")["auth"]
+    assert "credential" not in _access(description.data, "google_account")
+    assert auth["identity"] == {"url": "https://openidconnect.googleapis.com/v1/userinfo", "path": "email", "scopes": OPENID}
+    functions = description.data["functions"]
+    assert {f["name"] for f in functions if served(f, auth["access_levels"]["read"]["scopes"], auth["scope_implies"])} == {
+        f["name"] for f in functions if f["class"] == "read"}
+    source = connector_module(description).source
+    assert "accesses: [" in source and 'name: "google_account",' in source and "\n  auth:" not in source
+    assert 'credential: [],\n      modes: ["byo_user"],' in source
+
+
 @pytest.mark.parametrize("mutate, message", [
     (lambda a, f: a.update(default_level="admin"), "auth.default_level 'admin' is not a declared access level"),
     (lambda a, f: f[0].update(scopes=[WEBMASTERS]), "probe 'list_sites' is not served at access level 'read'"),
@@ -750,8 +778,42 @@ def test_search_console_levels_read_by_default_and_add_sitemap_at_full():
 ], ids=["default_level_unknown", "probe_not_served_at_read", "full_without_implication"])
 def test_search_console_level_rules_refuse(mutate, message):
     description = _load(SEARCH_CONSOLE)
-    mutate(description["connector"]["auth"], description["functions"])
+    mutate(_access(description, "service_account")["auth"], description["functions"])
+    with pytest.raises(DescriptionError, match=re.escape("access service_account: " + message)):
+        check(description, SEARCH_CONSOLE)
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: d["connector"]["accesses"][1].update(name="service_account"),
+     "access name(s) declared twice: service_account"),
+    (lambda d: _access(d, "google_account")["auth"]["access_levels"]["read"]["scopes"].remove("email"),
+     "access google_account: auth.identity 'https://openidconnect.googleapis.com/v1/userinfo' is not served at access level 'read'"),
+    (lambda d: _access(d, "service_account").update(credential=[
+        {"name": "service_account_key", "label": "Key", "secret": True}, {"name": "other", "label": "Other", "secret": True}]),
+     "access service_account: auth.kind oauth2_jwt_bearer takes a single credential field"),
+], ids=["access_twice", "identity_not_served_in_one_access", "rule_2_in_one_access"])
+def test_access_rules_refuse(mutate, message):
+    """Règle 24 : un nom par accès ; les règles qui lisent `auth`, `credential` ou `modes` sont jugées pour chaque accès,
+    et le refus nomme l'accès."""
+    description = _load(SEARCH_CONSOLE)
+    mutate(description)
     with pytest.raises(DescriptionError, match=re.escape(message)):
+        check(description, SEARCH_CONSOLE)
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda d: d["connector"].update(modes=["byo_org"]),
+    lambda d: d["connector"].update(auth={"kind": "none"}),
+    lambda d: d["connector"].update(accesses=d["connector"]["accesses"][:1]),
+    lambda d: _access(d, "google_account").update(credential=[{"name": "k", "label": "K", "secret": True}]),
+    lambda d: _access(d, "service_account")["auth"].pop("access_levels"),
+    lambda d: _access(d, "service_account").pop("label"),
+], ids=["modes_beside_accesses", "auth_beside_accesses", "a_single_access", "credential_in_a_consent",
+        "access_without_levels", "access_without_label"])
+def test_access_schema_refuses(mutate):
+    description = _load(SEARCH_CONSOLE)
+    mutate(description)
+    with pytest.raises(DescriptionError, match="does not match the description schema"):
         check(description, SEARCH_CONSOLE)
 
 # --- Règle 8 : compte de l'hôte et compte rattaché -----------------------------------

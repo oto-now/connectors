@@ -419,7 +419,8 @@ def test_scope_implies_is_optional():
     _validate(description)
 
 
-@pytest.mark.parametrize("path", [p for p in DESCRIPTIONS if "access_levels" not in _load(p)["connector"]["auth"]],
+@pytest.mark.parametrize("path", [p for p in DESCRIPTIONS if "accesses" not in _load(p)["connector"]
+                                  and "access_levels" not in _load(p)["connector"]["auth"]],
                          ids=lambda p: p.parent.name)
 def test_connector_without_levels_declares_no_function_scopes(path):
     """Un connecteur sans niveaux ne change pas : ni `scope_implies`, ni `scopes` sur une fonction."""

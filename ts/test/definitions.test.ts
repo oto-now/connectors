@@ -5,7 +5,7 @@
 import { Ajv2020 } from "ajv/dist/2020.js"
 import { describe, expect, it } from "vitest"
 import { connectors } from "../src"
-import type { BodyMap } from "../src/types"
+import type { AccessFields, BodyMap, Connector } from "../src/types"
 
 const ajv = new Ajv2020({ strictTypes: false, strictTuples: false, validateFormats: false, allErrors: true })
 ajv.addKeyword({ keyword: "personal", schemaType: "boolean" })
@@ -14,6 +14,9 @@ const bodyKeys = (body: BodyMap): string[] => Object.entries(body).flatMap(([key
 const bodyArguments = (body: BodyMap): string[] => Object.values(body).flatMap((value) => (typeof value === "string" ? [value] : bodyArguments(value)))
 
 const functions = connectors.flatMap((connector) => connector.functions.map((fn) => [fn.name, connector, fn] as const))
+/** Chaque connecteur tel que le voit chacun de ses accès : lui-même quand il n'en a qu'un, sinon un par `accesses`. */
+const views = connectors.flatMap((c): (readonly [string, Connector, AccessFields])[] =>
+  c.accesses === undefined ? [[c.name, c, c]] : c.accesses.map((access) => [`${c.name} (${access.name})`, c, access] as const))
 
 describe("generated definitions", () => {
   it("should accept an input property marked personal, and refuse a mark that is not a boolean", () => {
@@ -59,8 +62,8 @@ describe("generated definitions", () => {
     expect(ajv.validate(probe?.schema as object, {})).toBe(true)
   })
 
-  const consents = connectors.flatMap((c) => (c.auth.kind === "oauth2_user" ? [[c.name, c, c.auth] as const] : []))
-  it.each(consents)("%s: the identity of a consent is a read function callable with {} or an https address, and no credential", (_name, connector, auth) => {
+  const consents = views.flatMap(([name, c, access]) => (access.auth.kind === "oauth2_user" ? [[name, c, access.auth, access.credential] as const] : []))
+  it.each(consents)("%s: the identity of a consent is a read function callable with {} or an https address, and no credential", (_name, connector, auth, credential) => {
     if (auth.identity.url !== undefined) {
       expect(auth.identity.url).toMatch(/^https:\/\/[^\s{}?#]+$/)
       expect(auth.identity.scopes.length).toBeGreaterThan(0)
@@ -69,7 +72,7 @@ describe("generated definitions", () => {
       expect(identity?.class).toBe("read")
       expect(ajv.validate(identity?.schema as object, {})).toBe(true)
     }
-    expect(connector.credential).toEqual([])
+    expect(credential).toEqual([])
   })
 
   // Niveaux d'accès : une fonction est servie à un niveau quand chacun de ses droits est un droit du niveau ou impliqué par
@@ -92,8 +95,8 @@ describe("generated definitions", () => {
   })
 
   // Un compte de service à niveaux : `full` sert tout, la sonde est servie à chaque niveau, le niveau par défaut est déclaré.
-  const serviceAccounts = connectors.flatMap((c) =>
-    c.auth.kind === "oauth2_jwt_bearer" && c.auth.accessLevels ? [[c.name, c, c.auth.accessLevels, c.auth.scopeImplies ?? {}, c.auth.defaultLevel] as const] : [])
+  const serviceAccounts = views.flatMap(([name, c, { auth }]) =>
+    auth.kind === "oauth2_jwt_bearer" && auth.accessLevels ? [[name, c, auth.accessLevels, auth.scopeImplies ?? {}, auth.defaultLevel] as const] : [])
   it.each(serviceAccounts)("%s: a service account's levels: full serves every function, every level serves the probe", (_name, connector, levels, implies, defaultLevel) => {
     const full = covered(levels.full.scopes, implies)
     for (const fn of connector.functions) {
@@ -109,7 +112,7 @@ describe("generated definitions", () => {
   })
 
   it("google_search_console: read by default, add_sitemap at full only", () => {
-    const gsc = serviceAccounts.find(([name]) => name === "google_search_console")
+    const gsc = serviceAccounts.find(([name]) => name === "google_search_console (service_account)")
     if (gsc === undefined) throw new Error("google_search_console has no access levels")
     const [, connector, levels, implies, defaultLevel] = gsc
     expect(defaultLevel).toBe("read")
@@ -119,7 +122,16 @@ describe("generated definitions", () => {
     expect(connector.functions.find((fn) => fn.name === "google_search_console.add_sitemap")?.scopes).toEqual(["https://www.googleapis.com/auth/webmasters"])
   })
 
-  it.each(connectors.filter((c) => !((c.auth.kind === "oauth2_user" || c.auth.kind === "oauth2_jwt_bearer") && c.auth.accessLevels)).map((c) => [c.name, c] as const))(
+  it("google_search_console: a service account or a Google sign-in, the same functions", () => {
+    const gsc = connectors.find((c) => c.name === "google_search_console")
+    expect(gsc?.auth).toBeUndefined()
+    expect(gsc?.accesses?.map((a) => [a.name, a.auth.kind, a.modes])).toEqual([
+      ["service_account", "oauth2_jwt_bearer", ["byo_org"]],
+      ["google_account", "oauth2_user", ["byo_user"]],
+    ])
+  })
+
+  it.each(views.filter(([, , { auth }]) => !((auth.kind === "oauth2_user" || auth.kind === "oauth2_jwt_bearer") && auth.accessLevels)).map(([name, c]) => [name, c] as const))(
     "%s: without access levels, no function declares scopes",
     (_name, connector) => {
       for (const fn of connector.functions) expect(fn.scopes, fn.name).toBeUndefined()
@@ -132,8 +144,8 @@ describe("generated definitions", () => {
     if (fn.class === "read") expect(fn.act).toBe(false)
   })
 
-  it.each(connectors.map((c) => [c.name, c] as const))("%s: every credential field says who holds it", (_name, connector) => {
-    for (const field of connector.credential) expect(["account", "host"], field.name).toContain(field.holder)
+  it.each(views)("%s: every credential field says who holds it", (_name, _connector, access) => {
+    for (const field of access.credential) expect(["account", "host"], field.name).toContain(field.holder)
   })
 
   // Compte rattaché : l'identité n'est citée que par l'adresse de base, après l'hôte, et aucune fonction ne la prend.

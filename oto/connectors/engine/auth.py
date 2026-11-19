@@ -5,6 +5,8 @@
   every message, as any secret of the call (`secrets`).
 - `bearer`: `Authorization: Bearer <token>`.
 - `basic`: `Authorization: Basic base64(username:password)`, UTF-8; without `username`, an empty user name.
+- `oauth2_user`: `Authorization: Bearer <token>`, the access token of the person's consent, that the host obtained,
+  keeps and renews (`token`): the engine runs no consent and no renewal, and a 401 of the vendor is not replayed.
 - `oauth2_client_credentials` and `oauth2_jwt_bearer`: `Authorization: Bearer <token>`, the token exchanged
   (`client_credentials`, `service_account`) and kept in the memory of the process (`tokens`), by scope too: a service
   account signs for the scopes of the account's access level (`levels`); a 401 of the vendor is replayed once on a
@@ -26,7 +28,7 @@ from oto.tools.common.credentials import require
 
 from . import levels, tokens
 from .client_credentials import client_credentials_token, token_address
-from .errors import Unsupported
+from .errors import EngineError, Unsupported
 from .request import Signature, basic_header
 from .service_account import service_account_token
 
@@ -38,16 +40,22 @@ def fingerprint(connector: dict, credential: Mapping[str, str]) -> str:
     return hashlib.sha256(material.encode("utf-8")).hexdigest()
 
 
+class TokenMisplaced(EngineError, ValueError):
+    """The host passed a consent's access token for an authentication that signs with its credential: nothing was
+    sent."""
+
+
 class Signer:
     """The authentication of one call: `sign` gives the signature of a request; `renews`, whether a 401 is replayed
     once on a fresh signature; `secrets`, the values masked in any message."""
 
     renews = False
 
-    def __init__(self, connector: dict, credential: Mapping[str, str]):
+    def __init__(self, connector: dict, credential: Mapping[str, str], token: Optional[str] = None):
         self.connector = connector
         self.auth = connector["auth"]
         self.credential = dict(credential)
+        self.token = token
 
     def field(self, name: str) -> str:
         """The value of a credential field the authentication reads; `MissingCredential` when absent or empty."""
@@ -58,6 +66,8 @@ class Signer:
         """The values of the secret fields of the credential, longest first."""
         secret = {field["name"] for field in self.connector.get("credential", []) if field.get("secret")}
         values = {value for name, value in self.credential.items() if name in secret and isinstance(value, str) and value}
+        if self.token:
+            values.add(self.token)
         return sorted(values, key=len, reverse=True)
 
     def sign(self, fresh: bool = False) -> Signature:  # noqa: ARG002 — `fresh` matters to an exchange only
@@ -67,6 +77,8 @@ class Signer:
             return Signature()
         if kind == "bearer":
             return Signature(headers={"authorization": f"Bearer {self.field(auth['token'])}"})
+        if kind == "oauth2_user":
+            return Signature(headers={"authorization": f"Bearer {require(self.token, 'access_token')}"})
         if kind == "basic":
             username = self.field(auth["username"]) if "username" in auth else ""
             return Signature(headers={"authorization": basic_header(username, self.field(auth["password"]))})
@@ -121,11 +133,16 @@ EXCHANGES = ("oauth2_client_credentials", "oauth2_jwt_bearer")
 
 
 def signer(connector: dict, credential: Mapping[str, str], *, settings: Mapping[str, str],
-           session: requests.Session, timeout_s: float, level: Optional[str] = None) -> Signer:
+           session: requests.Session, timeout_s: float, level: Optional[str] = None,
+           token: Optional[str] = None) -> Signer:
     """The signer of the connector's authentication, for this credential; an exchange reaches its token endpoint by
     `session`, under the connector's delay `timeout_s`; a service account claims the scopes of `level`
-    (`levels.resolve`)."""
-    if connector["auth"]["kind"] in EXCHANGES:
+    (`levels.resolve`); a consent signs with `token`, the access token the host keeps."""
+    kind = connector["auth"]["kind"]
+    if token is not None and kind != "oauth2_user":
+        raise TokenMisplaced(f"{connector['name']}: an access token is only for auth oauth2_user; auth {kind} signs "
+                             "with its credential.")
+    if kind in EXCHANGES:
         return ExchangeSigner(connector, credential, settings=settings, session=session, timeout_s=timeout_s,
                               level=level)
-    return Signer(connector, credential)
+    return Signer(connector, credential, token)

@@ -7,6 +7,8 @@ parseur : elle lit les descriptions que `load_all` a validées et les modules qu
 """
 from __future__ import annotations
 
+from oto.connectors.engine.accesses import merged
+
 from .descriptions import REPO, Description
 from .typescript import Module
 
@@ -43,6 +45,11 @@ def kind(connector: dict) -> str:
     return KEY
 
 
+def access_connectors(connector: dict) -> list[dict]:
+    """Le bloc `connector` tel que le voit chacun de ses accès (règle 24) ; lui-même quand il n'en déclare qu'un."""
+    return [merged(connector, access) for access in connector["accesses"]] if "accesses" in connector else [connector]
+
+
 def _probe(connector: dict) -> str:
     probe = connector.get("probe")
     if probe is None:
@@ -77,20 +84,22 @@ def markdown_source(descriptions: list[Description], modules: list[Module]) -> s
         functions = description.data["functions"]
         classes = {c: sum(1 for f in functions if f["class"] == c) for c in CLASSES}
         cost = sum(1 for f in functions if "cost" in f)
-        connector_kind = kind(connector)
+        views = access_connectors(connector)
+        kinds = list(dict.fromkeys(kind(view) for view in views))
         rows.append(_row([
-            f"`{connector['name']}`", connector["label"], connector["version"], connector_kind,
-            _yes("platform" in connector["modes"]), len(functions), classes["read"], classes["write"],
-            classes["sensitive"], _probe(connector), cost, _yes("access_levels" in connector["auth"]),
-            skipped[connector["name"]],
+            f"`{connector['name']}`", connector["label"], connector["version"], " ou ".join(kinds),
+            _yes(any("platform" in view["modes"] for view in views)), len(functions), classes["read"],
+            classes["write"], classes["sensitive"], _probe(connector), cost,
+            _yes(all("access_levels" in view["auth"] for view in views)), skipped[connector["name"]],
         ]))
         totals["functions"] += len(functions)
         totals["skipped"] += skipped[connector["name"]]
         totals["cost"] += cost
         for c in CLASSES:
             totals[c] += classes[c]
-        by_kind[connector_kind][0] += 1
-        by_kind[connector_kind][1] += len(functions)
+        for connector_kind in kinds:
+            by_kind[connector_kind][0] += 1
+            by_kind[connector_kind][1] += len(functions)
     rows.append(_row([
         f"**total : {len(descriptions)}**", "", "", "", "", totals["functions"], totals["read"], totals["write"],
         totals["sensitive"], "", totals["cost"], "", totals["skipped"],
@@ -109,6 +118,8 @@ def markdown_source(descriptions: list[Description], modules: list[Module]) -> s
         f"4. un champ du `credential` en `holder: host` : {HOST_KEY} ;",
         f"5. `auth.kind: none` : {NO_KEY} ;",
         f"6. sinon (`api_key`, `bearer`, `basic`) : {KEY}.",
+        "",
+        "Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte dans « Par type » pour chacun.",
         "",
         "« Clé de la plateforme » : `modes` contient `platform`. Fonctions : par `class` (lecture, écriture, "
         "sensible). Sonde : `probe`, et son solde `probe.balance`. Avec coût : les fonctions qui portent `cost`. "

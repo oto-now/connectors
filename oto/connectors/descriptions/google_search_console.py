@@ -3,21 +3,46 @@
 DESCRIPTION = {'connector': {'name': 'google_search_console',
                'label': 'Google Search Console',
                'namespace': 'google_search_console',
-               'version': '1.1.0',
+               'version': '2.0.0',
                'api_version': 'v1',
                'base_url': 'https://searchconsole.googleapis.com',
-               'auth': {'kind': 'oauth2_jwt_bearer',
-                        'token_url': 'https://oauth2.googleapis.com/token',
-                        'access_levels': {'read': {'scopes': ['https://www.googleapis.com/auth/webmasters.readonly']},
-                                          'full': {'scopes': ['https://www.googleapis.com/auth/webmasters']}},
-                        'scope_implies': {'https://www.googleapis.com/auth/webmasters': ['https://www.googleapis.com/auth/webmasters.readonly']},
-                        'default_level': 'read',
-                        'key': 'service_account_key'},
-               'credential': [{'name': 'service_account_key',
-                               'label': 'Service account key (JSON file, its client_email added as a user of '
-                                        'each property)',
-                               'secret': True}],
-               'modes': ['byo_org'],
+               'accesses': [{'name': 'service_account',
+                             'label': 'Service account of the organization',
+                             'auth': {'kind': 'oauth2_jwt_bearer',
+                                      'token_url': 'https://oauth2.googleapis.com/token',
+                                      'access_levels': {'read': {'scopes': ['https://www.googleapis.com/auth/webmasters.readonly']},
+                                                        'full': {'scopes': ['https://www.googleapis.com/auth/webmasters']}},
+                                      'scope_implies': {'https://www.googleapis.com/auth/webmasters': ['https://www.googleapis.com/auth/webmasters.readonly']},
+                                      'default_level': 'read',
+                                      'key': 'service_account_key'},
+                             'credential': [{'name': 'service_account_key',
+                                             'label': 'Service account key (JSON file, its client_email '
+                                                      'added as a user of each property)',
+                                             'secret': True}],
+                             'modes': ['byo_org']},
+                            {'name': 'google_account',
+                             'label': 'Google sign-in of a person',
+                             'auth': {'kind': 'oauth2_user',
+                                      'authorize_url': 'https://accounts.google.com/o/oauth2/v2/auth',
+                                      'token_url': 'https://oauth2.googleapis.com/token',
+                                      'client_auth': 'body',
+                                      'access_levels': {'read': {'scopes': ['https://www.googleapis.com/auth/webmasters.readonly',
+                                                                            'openid',
+                                                                            'email']},
+                                                        'full': {'scopes': ['https://www.googleapis.com/auth/webmasters',
+                                                                            'openid',
+                                                                            'email']}},
+                                      'scope_implies': {'https://www.googleapis.com/auth/webmasters': ['https://www.googleapis.com/auth/webmasters.readonly']},
+                                      'authorize_params': {'access_type': 'offline',
+                                                           'prompt': 'select_account consent'},
+                                      'pkce': 'S256',
+                                      'refresh': 'refresh_token',
+                                      'rotates': False,
+                                      'expires_in_default': 3600,
+                                      'identity': {'url': 'https://openidconnect.googleapis.com/v1/userinfo',
+                                                   'path': 'email',
+                                                   'scopes': ['openid', 'email']}},
+                             'modes': ['byo_user']}],
                'probe': {'function': 'list_sites', 'non_empty': ['siteEntry']},
                'errors': [{'status': 400,
                            'code': 'invalid_request',
@@ -29,22 +54,25 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                           {'status': 401,
                            'code': 'access_rejected',
                            'retryable': False,
-                           'message': "Google rejected the service account's token: check that the key is "
-                                      'still valid and its service account enabled.'},
+                           'message': 'Google rejected the token: for a service account, check that the key '
+                                      'is still valid and its account enabled; for a Google sign-in, the '
+                                      'person must sign in again.'},
                           {'status': 403,
                            'body': {'path': 'error.errors.0.reason', 'equals': ['accessNotConfigured']},
                            'code': 'api_not_enabled',
                            'retryable': False,
                            'message': 'The Google Search Console API is not enabled in the Google Cloud '
-                                      'project of the service account: enable it in that project (APIs & '
-                                      'Services > Library), then retry.'},
+                                      'project of the service account, or of the OAuth application of a '
+                                      'Google sign-in: enable it in that project (APIs & Services > '
+                                      'Library), then retry.'},
                           {'status': 403,
                            'body': {'path': 'error.details.0.reason', 'equals': ['SERVICE_DISABLED']},
                            'code': 'api_not_enabled',
                            'retryable': False,
                            'message': 'The Google Search Console API is not enabled in the Google Cloud '
-                                      'project of the service account: enable it in that project (APIs & '
-                                      'Services > Library), then retry.'},
+                                      'project of the service account, or of the OAuth application of a '
+                                      'Google sign-in: enable it in that project (APIs & Services > '
+                                      'Library), then retry.'},
                           {'status': 403,
                            'body': {'path': 'error.errors.0.reason',
                                     'equals': ['quotaExceeded', 'dailyLimitExceeded']},
@@ -57,24 +85,23 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                            'body': {'path': 'error.message', 'contains': ['sufficient permission']},
                            'code': 'property_not_shared',
                            'retryable': False,
-                           'message': 'The service account is not a user of this property: add the '
+                           'message': 'The account is not a user of this property: pick one that list_sites '
+                                      'returns, or check the property name; for a service account, add the '
                                       'client_email of its key as a user (Restricted is enough) in Search '
-                                      'Console, Settings > Users and permissions, or check the property '
-                                      'name.'},
+                                      'Console, Settings > Users and permissions.'},
                           {'status': 403,
                            'body': {'path': 'error.errors.0.reason', 'equals': ['insufficientPermissions']},
                            'code': 'property_not_shared',
                            'retryable': False,
-                           'message': 'The service account is not a user of this property: add the '
+                           'message': 'The account is not a user of this property: pick one that list_sites '
+                                      'returns, or check the property name; for a service account, add the '
                                       'client_email of its key as a user (Restricted is enough) in Search '
-                                      'Console, Settings > Users and permissions, or check the property '
-                                      'name.'},
+                                      'Console, Settings > Users and permissions.'},
                           {'status': 403,
                            'code': 'permission_denied',
                            'retryable': False,
-                           'message': 'Google refused the call: the service account lacks a right on this '
-                                      'property, or a per-user limit was hit; the reason in the response '
-                                      'tells which.'},
+                           'message': 'Google refused the call: the account lacks a right on this property, '
+                                      'or a per-user limit was hit; the reason in the response tells which.'},
                           {'status': 404,
                            'code': 'not_found',
                            'retryable': False,
@@ -100,12 +127,12 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
  'functions': [{'name': 'list_sites',
                 'class': 'read',
                 'scopes': ['https://www.googleapis.com/auth/webmasters.readonly'],
-                'description': 'List the Search Console properties this service account can read, each with '
-                               'its permissionLevel (SITE_OWNER, SITE_FULL_USER, SITE_RESTRICTED_USER, '
+                'description': 'List the Search Console properties this account can read, each with its '
+                               'permissionLevel (SITE_OWNER, SITE_FULL_USER, SITE_RESTRICTED_USER, '
                                'SITE_UNVERIFIED_USER): {siteEntry: [{siteUrl, permissionLevel}]}. siteUrl is '
                                'the name every other function takes: sc-domain:example.com for a Domain '
                                'property, a full URL with a trailing slash for a URL-prefix property. An '
-                               "empty answer means the account's address was added to no property yet. Free.",
+                               'empty answer means the account was added to no property yet. Free.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every property shared with the account', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/webmasters/v3/sites'},
@@ -383,8 +410,8 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                                'answers {} on success. Submitting an address already submitted submits it '
                                'again. The sitemap must be reachable by Google and under the property; its '
                                'processing (isPending, errors, warnings) is read afterwards with '
-                               'get_sitemap. The service account must be an Owner or Full user of the '
-                               'property: Restricted only reads. Free.',
+                               'get_sitemap. The account must be an Owner or Full user of the property: '
+                               'Restricted only reads. Free.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_url', 'feedpath'],
@@ -408,17 +435,17 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                 'refusals': [{'code': 'owner_or_full_required',
                               'when': 403,
                               'body': {'path': 'error.message', 'contains': ['sufficient permission']},
-                              'message': 'The service account may not submit sitemaps for this property: in '
-                                         'Search Console, Settings > Users and permissions, give its '
-                                         'client_email the Owner or Full permission (Restricted only reads), '
-                                         'or check the property name.'},
+                              'message': 'The account may not submit sitemaps for this property: in Search '
+                                         'Console, Settings > Users and permissions, give it (a service '
+                                         'account: its client_email) the Owner or Full permission '
+                                         '(Restricted only reads), or check the property name.'},
                              {'code': 'owner_or_full_required',
                               'when': 403,
                               'body': {'path': 'error.errors.0.reason',
                                        'equals': ['insufficientPermissions']},
-                              'message': 'The service account may not submit sitemaps for this property: in '
-                                         'Search Console, Settings > Users and permissions, give its '
-                                         'client_email the Owner or Full permission (Restricted only reads), '
-                                         'or check the property name.'}],
+                              'message': 'The account may not submit sitemaps for this property: in Search '
+                                         'Console, Settings > Users and permissions, give it (a service '
+                                         'account: its client_email) the Owner or Full permission '
+                                         '(Restricted only reads), or check the property name.'}],
                 'call': {'method': 'PUT', 'path': '/webmasters/v3/sites/{site_url}/sitemaps/{feedpath}'},
                 'cost': {'per': 'request'}}]}

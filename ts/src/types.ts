@@ -479,7 +479,38 @@ export type ConnectorFunction = {
 /** Où lire le solde d'un compte payant dans la réponse de la sonde, et le seuil sous lequel elle n'est pas saine. */
 export type ProbeBalance = { readonly path: string; readonly min: number; readonly unit: string }
 
-export type Connector = {
+/** Qui peut porter un compte. */
+export type Mode = "platform" | "byo_user" | "byo_org"
+
+/**
+ * Comment un compte s'ouvre : son authentification, les champs de son credential (vide pour `oauth2_user` et `none`) et
+ * qui peut le porter.
+ */
+export type AccessFields = {
+  readonly auth: Auth
+  readonly credential: readonly CredentialField[]
+  readonly modes: readonly Mode[]
+}
+
+/**
+ * Un accès d'un connecteur qui s'ouvre par plusieurs (le compte de service d'une organisation, le consentement d'une
+ * personne) : `name`, que l'hôte garde avec chaque compte ouvert par cet accès, `label`, montré à qui connecte, et ses
+ * `auth` (avec des niveaux d'accès), `credential` et `modes`. Un compte s'ouvre par un seul accès ; les fonctions,
+ * l'adresse et la table d'erreurs sont communes.
+ */
+export type Access = { readonly name: string; readonly label: string } & AccessFields
+
+/** Un connecteur à un seul accès porte `auth`, `credential` et `modes` ; à plusieurs, `accesses` à leur place. */
+export type ConnectorAccess =
+  | (AccessFields & { readonly accesses?: undefined })
+  | {
+      readonly accesses: readonly Access[]
+      readonly auth?: undefined
+      readonly credential?: undefined
+      readonly modes?: undefined
+    }
+
+export type Connector = ConnectorAccess & {
   readonly name: string
   readonly label: string
   readonly namespace: string
@@ -495,13 +526,9 @@ export type Connector = {
   readonly baseUrl?: string
   /** Racine des chemins par valeur d'un réglage `choice` (une région) ; chacune peut citer l'identité du compte. */
   readonly baseUrls?: UrlsBySetting
-  readonly auth: Auth
-  /** Vide pour `oauth2_user` et `none`. */
-  readonly credential: readonly CredentialField[]
   /** Présente pour un compte rattaché chez un tiers qui héberge les comptes de ses utilisateurs. */
   readonly accountIdentity?: AccountIdentity
   readonly settings?: readonly Setting[]
-  readonly modes: readonly ("platform" | "byo_user" | "byo_org")[]
   readonly timeoutMs: number
   readonly queryArrays?: "repeat" | "brackets" | "comma"
   /** En-têtes constants de toute requête du connecteur ; jamais l'en-tête d'authentification. */

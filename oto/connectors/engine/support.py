@@ -1,16 +1,17 @@
 """What the engine runs, and the named refusal of the rest, judged before anything is sent.
 
 Not run, to be written on demand (oto-now/connectors#206, lot 5): the files of a multipart body (`call.files`), a
-rendered file (`output.file`), a background job (`background`), the consent of a person (`auth.kind: oauth2_user`), the
+rendered file (`output.file`), a background job (`background`), the
 identity of a linked account (`connector.account_identity`), and a function written by hand (`handwritten`, no `call`).
-A function that declares one is refused whole, never called halfway.
+A function that declares one is refused whole, never called halfway. The consent of a person (`auth.kind: oauth2_user`) is
+run with the access token the host passes: the consent itself and its renewal stay with the host.
 """
 from __future__ import annotations
 
 from .errors import Unsupported
 
 #: The kinds of `auth` the engine signs.
-AUTH_KINDS = ("none", "api_key", "bearer", "basic", "oauth2_client_credentials", "oauth2_jwt_bearer")
+AUTH_KINDS = ("none", "api_key", "bearer", "basic", "oauth2_user", "oauth2_client_credentials", "oauth2_jwt_bearer")
 
 
 def refuse_unsupported(description: dict, fn: dict) -> None:

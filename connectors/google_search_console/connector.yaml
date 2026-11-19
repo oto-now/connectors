@@ -8,24 +8,37 @@
 # Standard errors: https://developers.google.com/webmaster-tools/v1/errors
 #
 # Qualification
-# - Who holds the access: the organization, through a Google Cloud service account. No person signs in: the account
-#   sees exactly the Search Console properties to which its address (client_email of the key) was added as a user.
-# - How it authenticates: auth.kind oauth2_jwt_bearer (docs/conception/compte.md, "Le compte de service"). The
-#   credential is one secret field, the JSON key file of the service account pasted whole; the host signs an RS256
-#   assertion with it and exchanges it at https://oauth2.googleapis.com/token for a Bearer token. A key whose token_uri
-#   is another address is refused by the host. Domain-wide delegation (sub) is out of the mode.
-# - What a key allows: two access levels (docs/conception/niveaux-d-acces.md). read, the default (default_level),
-#   claims webmasters.readonly; full claims webmasters and adds add_sitemap. The level only decides the scope claim
-#   of the assertion: a service account consents to nothing, so a host that moves an account from read to full signs
-#   its next assertion with webmasters, without asking anyone again. scope_implies says webmasters covers
+# - Who holds the access: two accesses (docs/conception/compte.md, "Plusieurs accès"), one per account, the functions,
+#   the address and the error table shared:
+#   - service_account: the organization, through a Google Cloud service account. No person signs in: the account sees
+#     exactly the Search Console properties to which its address (client_email of the key) was added as a user.
+#   - google_account: a person, by signing in with Google (delegated access): the account sees exactly the properties
+#     that person's Google user can open in Search Console, at the permission Search Console gives it. No key, nothing
+#     to add to a property.
+# - How it authenticates:
+#   - service_account: auth.kind oauth2_jwt_bearer (docs/conception/compte.md, "Le compte de service"). The credential
+#     is one secret field, the JSON key file of the service account pasted whole; the host signs an RS256 assertion
+#     with it and exchanges it at https://oauth2.googleapis.com/token for a Bearer token. A key whose token_uri is
+#     another address is refused by the host. Domain-wide delegation (sub) is out of the mode.
+#   - google_account: auth.kind oauth2_user, the person's consent (authorization code, PKCE), with the OAuth
+#     application of the host or of the organization, as for google_drive and google_sheets. access_type=offline and
+#     prompt=consent bring a refresh token at each consent; Google does not rotate it. Incremental authorization
+#     (include_granted_scopes) is not asked for. The Search Console API has no read that says who consented: the
+#     identity is read on Google's OpenID Connect userinfo endpoint, whose scopes (openid, email) every level asks for.
+# - What an account allows: two access levels (docs/conception/niveaux-d-acces.md), the same scopes for both
+#   accesses. read claims or asks for webmasters.readonly; full, webmasters, and adds add_sitemap. For the service
+#   account, read is the default (default_level) and the level only decides the scope claim of the assertion: a
+#   service account consents to nothing, so a host that moves an account from read to full signs its next assertion
+#   with webmasters, without asking anyone again. For the Google sign-in, the consent asks for the scopes of the level,
+#   and moving to full asks for a new consent. scope_implies says webmasters covers
 #   webmasters.readonly: the authorizing page gives webmasters as "Read/write access" and webmasters.readonly as
 #   "Read-only access", and the discovery document lists both scopes, either one sufficing, on every read method
 #   (sites.list, sites.get, searchanalytics.query, urlInspection.index.inspect, sitemaps.list, sitemaps.get) while
 #   sitemaps.submit lists webmasters alone.
-# - Rights: they come from Search Console, not from the key or the level. Restricted is enough for every read; the
-#   permissions page gives "Submit sitemap" to Owner and Full user only, so add_sitemap needs the account added as
-#   Owner or Full on the property, whatever the level. The API says the level the account holds on each property
-#   (list_sites, permissionLevel).
+# - Rights: they come from Search Console, not from the key, the consent or the level. Restricted is enough for every
+#   read; the permissions page gives "Submit sitemap" to Owner and Full user only, so add_sitemap needs the service
+#   account, or the signed-in person, to be Owner or Full on the property, whatever the level. The API says the level
+#   the account holds on each property (list_sites, permissionLevel).
 # - What a call costs: nothing; the API is free, bounded by quotas.
 # - Does it commit: add_sitemap only (class write, served as google_search_console_act.add_sitemap): it submits a
 #   sitemap, which Google then crawls. Submitting an address already submitted submits it again. Every other function
@@ -61,20 +74,24 @@
 #   upper case. This file sends the lower-case form of the reference pages, whose dataState is stated case-insensitive.
 #
 # Errors
-# - The key refused: the host marks the account credential_rejected when the token exchange answers invalid_grant
-#   (key deleted or disabled, account deleted), before any call here. A 401 from the API itself is not marked: the
-#   host replays it once with a new token, as for oauth2_client_credentials (signal-de-refus.md, "Quand marquer").
+# - The key refused (service_account): the host marks the account credential_rejected when the token exchange answers
+#   invalid_grant (key deleted or disabled, account deleted), before any call here. A 401 from the API itself is not
+#   marked: the host replays it once with a new token, as for oauth2_client_credentials (signal-de-refus.md, "Quand
+#   marquer"). The consent refused (google_account): the host renews the token at its refresh_token; a 401 says the
+#   consent is no longer valid, as for google_drive.
 # - 403 reasons, from the standard errors page: accessNotConfigured (the API is not enabled in the Google Cloud
-#   project of the service account), also given as SERVICE_DISABLED in error.details by Google's current error model;
+#   project of the service account, or of the host's OAuth application for a Google sign-in), also given as SERVICE_DISABLED in error.details by Google's current error model;
 #   quotaExceeded and dailyLimitExceeded (marked quota_exhausted: a mark keeps the account callable and lifts at the
 #   first success); insufficientPermissions, and the message "User does not have sufficient permission for site",
-#   for a property the account was not added to. A 429 is a rate (not marked), unless its message says a daily quota.
+#   for a property the service account was not added to, or the signed-in person cannot open. A 429 is a rate (not marked), unless its message says a daily quota.
 #   These paths and texts come from the public reference, not checked by a real call.
 #
 # For the screen
-# - Catalogue: "Read Google Search Console: the properties shared with a service account, search performance
-#   (clicks, impressions, CTR, position), URL index status and sitemaps."
-# - Where to get the key: Google Cloud console, IAM & Admin > Service accounts > the account > Keys > Add key > JSON;
+# - Catalogue: "Read Google Search Console: the properties of a service account or of your Google account, search
+#   performance (clicks, impressions, CTR, position), URL index status and sitemaps."
+# - Google sign-in: one click, the person picks the Google account that is a user of the properties; the Google Cloud
+#   project of the OAuth application must have the Search Console API enabled.
+# - Where to get the key (service account): Google Cloud console, IAM & Admin > Service accounts > the account > Keys > Add key > JSON;
 #   enable "Google Search Console API" in the same project (APIs & Services > Library).
 # - Rights: in Search Console, Settings > Users and permissions > Add user, the client_email of the key, permission
 #   Restricted (enough to read), for each property the agent should see; Owner or Full to submit sitemaps, which also
@@ -82,47 +99,72 @@
 # - Pitfalls: a key sees no property until its address is added to one (the probe then fails, siteEntry empty); a
 #   Domain property is named sc-domain:example.com, a URL-prefix property by its full URL with a trailing slash.
 #
-# No Python client: oto 1 does not serve this connector. Values come from the public reference and the discovery
-# document, not checked by a real call.
+# No Python client: oto 1 serves both accesses by the Python engine (oto.connectors.engine, access and token for the
+# Google sign-in). Values come from the public reference and the discovery document, not checked by a real call.
 connector:
   name: google_search_console
   label: Google Search Console
   namespace: google_search_console
-  version: 1.1.0
+  version: 2.0.0
   api_version: v1
   base_url: https://searchconsole.googleapis.com
-  auth:
-    kind: oauth2_jwt_bearer
-    token_url: https://oauth2.googleapis.com/token
-    access_levels:
-      read: { scopes: ["https://www.googleapis.com/auth/webmasters.readonly"] }
-      full: { scopes: ["https://www.googleapis.com/auth/webmasters"] }
-    scope_implies:
-      "https://www.googleapis.com/auth/webmasters": ["https://www.googleapis.com/auth/webmasters.readonly"]
-    default_level: read
-    key: service_account_key
-  credential:
-    - { name: service_account_key, label: "Service account key (JSON file, its client_email added as a user of each property)", secret: true }
-  modes: [byo_org]
+  accesses:
+    - name: service_account
+      label: Service account of the organization
+      auth:
+        kind: oauth2_jwt_bearer
+        token_url: https://oauth2.googleapis.com/token
+        access_levels:
+          read: { scopes: ["https://www.googleapis.com/auth/webmasters.readonly"] }
+          full: { scopes: ["https://www.googleapis.com/auth/webmasters"] }
+        scope_implies:
+          "https://www.googleapis.com/auth/webmasters": ["https://www.googleapis.com/auth/webmasters.readonly"]
+        default_level: read
+        key: service_account_key
+      credential:
+        - { name: service_account_key, label: "Service account key (JSON file, its client_email added as a user of each property)", secret: true }
+      modes: [byo_org]
+    - name: google_account
+      label: Google sign-in of a person
+      auth:
+        kind: oauth2_user
+        authorize_url: https://accounts.google.com/o/oauth2/v2/auth
+        token_url: https://oauth2.googleapis.com/token
+        client_auth: body
+        access_levels:
+          read: { scopes: ["https://www.googleapis.com/auth/webmasters.readonly", openid, email] }
+          full: { scopes: ["https://www.googleapis.com/auth/webmasters", openid, email] }
+        scope_implies:
+          "https://www.googleapis.com/auth/webmasters": ["https://www.googleapis.com/auth/webmasters.readonly"]
+        authorize_params: { access_type: offline, prompt: select_account consent }
+        pkce: S256
+        refresh: refresh_token
+        rotates: false
+        expires_in_default: 3600
+        identity:
+          url: https://openidconnect.googleapis.com/v1/userinfo
+          path: email
+          scopes: [openid, email]
+      modes: [byo_user]
   probe: { function: list_sites, non_empty: [siteEntry] }
   errors:
     - { status: 400, code: invalid_request, retryable: false,
         message: "Search Console rejected the request as invalid: check the dates (YYYY-MM-DD), the dimensions, filters and aggregation, and the form of the property (sc-domain:example.com or a full URL with a trailing slash)." }
     - { status: 401, code: access_rejected, retryable: false,
-        message: "Google rejected the service account's token: check that the key is still valid and its service account enabled." }
+        message: "Google rejected the token: for a service account, check that the key is still valid and its account enabled; for a Google sign-in, the person must sign in again." }
     - { status: 403, body: { path: error.errors.0.reason, equals: [accessNotConfigured] }, code: api_not_enabled, retryable: false,
-        message: "The Google Search Console API is not enabled in the Google Cloud project of the service account: enable it in that project (APIs & Services > Library), then retry." }
+        message: "The Google Search Console API is not enabled in the Google Cloud project of the service account, or of the OAuth application of a Google sign-in: enable it in that project (APIs & Services > Library), then retry." }
     - { status: 403, body: { path: error.details.0.reason, equals: [SERVICE_DISABLED] }, code: api_not_enabled, retryable: false,
-        message: "The Google Search Console API is not enabled in the Google Cloud project of the service account: enable it in that project (APIs & Services > Library), then retry." }
+        message: "The Google Search Console API is not enabled in the Google Cloud project of the service account, or of the OAuth application of a Google sign-in: enable it in that project (APIs & Services > Library), then retry." }
     - { status: 403, body: { path: error.errors.0.reason, equals: [quotaExceeded, dailyLimitExceeded] }, code: quota_exhausted, retryable: false,
         marks_account: quota_exhausted,
         message: "A Search Console quota is spent (URL inspection allows 2,000 a day per property): retry tomorrow." }
     - { status: 403, body: { path: error.message, contains: [sufficient permission] }, code: property_not_shared, retryable: false,
-        message: "The service account is not a user of this property: add the client_email of its key as a user (Restricted is enough) in Search Console, Settings > Users and permissions, or check the property name." }
+        message: "The account is not a user of this property: pick one that list_sites returns, or check the property name; for a service account, add the client_email of its key as a user (Restricted is enough) in Search Console, Settings > Users and permissions." }
     - { status: 403, body: { path: error.errors.0.reason, equals: [insufficientPermissions] }, code: property_not_shared, retryable: false,
-        message: "The service account is not a user of this property: add the client_email of its key as a user (Restricted is enough) in Search Console, Settings > Users and permissions, or check the property name." }
+        message: "The account is not a user of this property: pick one that list_sites returns, or check the property name; for a service account, add the client_email of its key as a user (Restricted is enough) in Search Console, Settings > Users and permissions." }
     - { status: 403, code: permission_denied, retryable: false,
-        message: "Google refused the call: the service account lacks a right on this property, or a per-user limit was hit; the reason in the response tells which." }
+        message: "Google refused the call: the account lacks a right on this property, or a per-user limit was hit; the reason in the response tells which." }
     - { status: 404, code: not_found, retryable: false,
         message: "Not found in Search Console: check the property and the sitemap address." }
     - { status: 429, body: { path: error.message, contains: [per day] }, code: quota_exhausted, retryable: false,
@@ -138,11 +180,11 @@ functions:
     class: read
     scopes: ["https://www.googleapis.com/auth/webmasters.readonly"]
     description: >-
-      List the Search Console properties this service account can read, each with its permissionLevel
+      List the Search Console properties this account can read, each with its permissionLevel
       (SITE_OWNER, SITE_FULL_USER, SITE_RESTRICTED_USER, SITE_UNVERIFIED_USER): {siteEntry: [{siteUrl,
       permissionLevel}]}. siteUrl is the name every other function takes: sc-domain:example.com for a Domain
-      property, a full URL with a trailing slash for a URL-prefix property. An empty answer means the account's
-      address was added to no property yet. Free.
+      property, a full URL with a trailing slash for a URL-prefix property. An empty answer means the account was
+      added to no property yet. Free.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - title: Every property shared with the account
@@ -332,8 +374,8 @@ functions:
     description: >-
       Submit a sitemap for a property, so Google crawls the addresses it lists: answers {} on success. Submitting an
       address already submitted submits it again. The sitemap must be reachable by Google and under the property; its
-      processing (isPending, errors, warnings) is read afterwards with get_sitemap. The service account must be an
-      Owner or Full user of the property: Restricted only reads. Free.
+      processing (isPending, errors, warnings) is read afterwards with get_sitemap. The account must be an Owner or
+      Full user of the property: Restricted only reads. Free.
     input:
       type: object
       additionalProperties: false
@@ -348,9 +390,9 @@ functions:
         input: { site_url: "https://www.example.com/", feedpath: "https://www.example.com/sitemap_index.xml" }
     refusals:
       - { code: owner_or_full_required, when: 403, body: { path: error.message, contains: [sufficient permission] },
-          message: "The service account may not submit sitemaps for this property: in Search Console, Settings > Users and permissions, give its client_email the Owner or Full permission (Restricted only reads), or check the property name." }
+          message: "The account may not submit sitemaps for this property: in Search Console, Settings > Users and permissions, give it (a service account: its client_email) the Owner or Full permission (Restricted only reads), or check the property name." }
       - { code: owner_or_full_required, when: 403, body: { path: error.errors.0.reason, equals: [insufficientPermissions] },
-          message: "The service account may not submit sitemaps for this property: in Search Console, Settings > Users and permissions, give its client_email the Owner or Full permission (Restricted only reads), or check the property name." }
+          message: "The account may not submit sitemaps for this property: in Search Console, Settings > Users and permissions, give it (a service account: its client_email) the Owner or Full permission (Restricted only reads), or check the property name." }
     call:
       method: PUT
       path: "/webmasters/v3/sites/{site_url}/sitemaps/{feedpath}"

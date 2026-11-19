@@ -1,11 +1,11 @@
 # Le compte d'un connecteur
 
 - **Statut** : validé par le mainteneur le 29/09/2026 (issu du [format de description](format-de-description.md))
-- **Dernière révision** : 2026-11-06
+- **Dernière révision** : 2026-11-19
 
 ## Résumé
 
-Le bloc `connector` d'une description dit ce qu'est un compte : les champs de son credential, ses réglages non secrets (région, adresse), son authentification, consentement OAuth d'une personne et compte de service compris, et, pour un compte rattaché chez un tiers qui héberge les comptes de ses utilisateurs, l'identité de ce compte et les champs que fournit l'hôte. Le fichier nomme et décrit ; garder, chiffrer, rafraîchir et résoudre relèvent de l'hôte (oto-pkg : docs/conception/connecteurs-et-comptes.md). Les niveaux d'accès d'un consentement ont leur document : [niveaux d'accès](niveaux-d-acces.md).
+Le bloc `connector` d'une description dit ce qu'est un compte : les champs de son credential, ses réglages non secrets (région, adresse), son authentification, consentement OAuth d'une personne et compte de service compris, ses accès quand un même service s'ouvre par plusieurs (le compte de service d'une organisation ou la connexion d'une personne), et, pour un compte rattaché chez un tiers qui héberge les comptes de ses utilisateurs, l'identité de ce compte et les champs que fournit l'hôte. Le fichier nomme et décrit ; garder, chiffrer, rafraîchir et résoudre relèvent de l'hôte (oto-pkg : docs/conception/connecteurs-et-comptes.md). Les niveaux d'accès d'un consentement ont leur document : [niveaux d'accès](niveaux-d-acces.md).
 
 ## Contexte
 
@@ -43,7 +43,34 @@ L'identité d'un `oauth2_user` est exigée : `identity: { function: get_me, path
 
 En `oauth2_user`, `credential` est interdit (le schéma le refuse) : les jetons du consentement ne sont pas des champs, et `client_id`/`client_secret` appartiennent à l'application OAuth (celle de l'hôte par défaut, celle de l'organisation si elle en pose une), pas au compte ni au fichier.
 
-**Un accès propre, un connecteur.** Un compte se signe par un seul accès. Un service qui s'ouvre par deux accès distincts (l'application et la personne : le jeton du bot et celui d'un utilisateur Slack ; le courrier d'une boîte en accès d'application et l'accès délégué d'une personne chez Microsoft) se décrit en deux connecteurs, chacun son compte, plutôt qu'en un compte à deux jetons.
+**Un compte, un accès.** Un compte se signe par un seul accès, jamais par deux jetons choisis par fonction ou par argument. Quand deux accès servent les mêmes fonctions, à la même adresse, avec la même table d'erreurs (Search Console par le compte de service d'une organisation ou par la connexion Google d'une personne), le connecteur les déclare tous deux (« Plusieurs accès », ci-dessous) ; chaque compte s'ouvre par l'un d'eux. Quand ils servent des fonctions ou des adresses différentes (le jeton du bot et celui d'un utilisateur Slack ; le courrier d'une boîte en accès d'application et l'accès délégué d'une personne chez Microsoft), ce sont deux connecteurs, chacun son compte.
+
+### Plusieurs accès
+
+`accesses` (décidé le 2026-11-19) remplace `auth`, `credential` et `modes` : une liste d'au moins deux accès, chacun `{ name, label, auth, credential, modes }`, `credential` suivant la règle de son `auth` (interdit en `oauth2_user` et `none`). Les fonctions, l'adresse, les réglages, la sonde et la table d'erreurs sont communs.
+
+```yaml
+connector:
+  name: google_search_console
+  base_url: https://searchconsole.googleapis.com
+  accesses:
+    - name: service_account
+      label: Service account of the organization
+      auth: { kind: oauth2_jwt_bearer, token_url: https://oauth2.googleapis.com/token, access_levels: …, default_level: read, key: service_account_key }
+      credential:
+        - { name: service_account_key, label: Service account key, secret: true }
+      modes: [byo_org]
+    - name: google_account
+      label: Google sign-in of a person
+      auth: { kind: oauth2_user, authorize_url: …, token_url: …, access_levels: …, identity: … }
+      modes: [byo_user]
+```
+
+- **Le nom** de l'accès est gardé par l'hôte avec chaque compte : il dit, à chaque appel, comment ce compte se signe. Un compte ne change pas d'accès ; passer de l'un à l'autre, c'est connecter un autre compte.
+- **Les niveaux d'accès** sont exigés dans chaque accès (le schéma le refuse sinon) : chaque fonction déclare ses `scopes`, et ce sont les mêmes droits pour tous les accès. Chaque accès garde la sémantique de son mode : un consentement demande les droits du niveau, un compte de service les revendique.
+- **La fabrique** juge chaque accès comme un connecteur à un seul accès : le connecteur vu par cet accès (`auth`, `credential` et `modes` de l'accès à la place de `accesses`) passe les règles 2, 3, 5, 6, 7 et 8 ; un nom d'accès est unique (règle 24). Un refus nomme l'accès.
+- **L'exécution** : l'hôte passe le nom de l'accès du compte à chaque appel ; un connecteur à plusieurs accès sans ce nom, ou avec un nom qu'il ne déclare pas, est refusé avant tout envoi, jamais rabattu sur un accès par défaut ; un nom donné à un connecteur à un seul accès est refusé aussi.
+- **La sortie TypeScript** porte `accesses` à la place de `auth`, `credential` et `modes` (`ConnectorAccess`, `Access`, `ts/src/types.ts`) : un hôte qui lit `connector.auth` sans regarder `accesses` ne compile plus, plutôt que de lire un connecteur à moitié.
 
 ### Le compte de service
 
@@ -73,7 +100,7 @@ connector:
 
 ### Contrôles
 
-`tests/test_connector_descriptions.py` fait refuser, sur des variantes du fichier Sellsy : `client_auth` absent, `token_url` absent, `credential` absent, `token_url` et `token_urls` ensemble, `base_url` et `base_urls` ensemble, liste fermée d'une valeur, `text` sans motif ou à motif non ancré, `url` à liste, gabarit à `/` final, clé en query préfixée, clé sans place, `oauth2_user` avec un credential, avec `client_id`, sans identité, `rotates` hors `refresh_token`, `exchange` sans sa demande, paramètre d'autorisation réservé à l'hôte, PKCE inconnu ; pour l'identité à une adresse, sept de plus (sans droits ou à liste vide, avec aussi une fonction, hors `https`, avec une query, en gabarit, sans chemin) ; pour le compte de l'hôte et le compte rattaché, six de plus (`holder` inconnu, champ fourni par l'hôte dans un `oauth2_user`, identité à motif non ancré, sans motif, à nom invalide, à clé inconnue) ; pour `basic`, deux de plus (sans mot de passe, à identifiant vide) ; pour les niveaux d'accès, treize de plus (niveaux et `scopes` ensemble, sans `full`, `full` seul, niveau sans droits ou à liste vide, à clé inconnue ou à nom invalide, `scope_implies` sans niveaux ou à liste vide, niveaux hors `oauth2_user`, `scopes` d'une fonction sans niveaux, fonction sans `scopes` ou à liste vide dans un connecteur à niveaux). Les règles hors schéma sont les règles 2, 5, 6, 7 et 8 de la [fabrique](fabrique.md) ; pour le compte de service, onze de plus (sans `token_url`, sans `scopes` ou à liste vide, sans `key`, `token_url` en gabarit, à query, hors `https`, `token_urls`, niveaux d'accès, `sub`, sans `credential`). Les règles hors schéma sont aussi jugées par `tests/test_fabrique.py` (`key` qui ne nomme pas un champ, un second champ, un champ non secret, un en-tête `Authorization` constant). Les cas communs `connectors/_cases/auth.yaml` disent, sur des valeurs de champs, la requête signée ; `connectors/_cases/jwt_bearer.yaml`, l'échange du compte de service.
+`tests/test_connector_descriptions.py` fait refuser, sur des variantes du fichier Sellsy : `client_auth` absent, `token_url` absent, `credential` absent, `token_url` et `token_urls` ensemble, `base_url` et `base_urls` ensemble, liste fermée d'une valeur, `text` sans motif ou à motif non ancré, `url` à liste, gabarit à `/` final, clé en query préfixée, clé sans place, `oauth2_user` avec un credential, avec `client_id`, sans identité, `rotates` hors `refresh_token`, `exchange` sans sa demande, paramètre d'autorisation réservé à l'hôte, PKCE inconnu ; pour l'identité à une adresse, sept de plus (sans droits ou à liste vide, avec aussi une fonction, hors `https`, avec une query, en gabarit, sans chemin) ; pour le compte de l'hôte et le compte rattaché, six de plus (`holder` inconnu, champ fourni par l'hôte dans un `oauth2_user`, identité à motif non ancré, sans motif, à nom invalide, à clé inconnue) ; pour `basic`, deux de plus (sans mot de passe, à identifiant vide) ; pour les niveaux d'accès, treize de plus (niveaux et `scopes` ensemble, sans `full`, `full` seul, niveau sans droits ou à liste vide, à clé inconnue ou à nom invalide, `scope_implies` sans niveaux ou à liste vide, niveaux hors `oauth2_user`, `scopes` d'une fonction sans niveaux, fonction sans `scopes` ou à liste vide dans un connecteur à niveaux). Les règles hors schéma sont les règles 2, 5, 6, 7 et 8 de la [fabrique](fabrique.md) ; pour le compte de service, onze de plus (sans `token_url`, sans `scopes` ou à liste vide, sans `key`, `token_url` en gabarit, à query, hors `https`, `token_urls`, niveaux d'accès, `sub`, sans `credential`). Les règles hors schéma sont aussi jugées par `tests/test_fabrique.py` (`key` qui ne nomme pas un champ, un second champ, un champ non secret, un en-tête `Authorization` constant). Les cas communs `connectors/_cases/auth.yaml` disent, sur des valeurs de champs, la requête signée ; `connectors/_cases/jwt_bearer.yaml`, l'échange du compte de service. Pour plusieurs accès, `tests/test_fabrique.py` fait refuser un nom d'accès en double, une règle d'un seul accès (règles 2 et 7), `auth` ou `modes` à côté de `accesses`, un seul accès, un credential en `oauth2_user`, un accès sans niveaux ou sans libellé ; `tests/test_engine_exchanges.py` joue les deux accès de `google_search_console` contre le moteur.
 
 ## Décisions et alternatives écartées
 
@@ -81,7 +108,9 @@ connector:
 - **Un connecteur par région** (`typeform_eu`) : écarté le 2026-10-08 ; les fonctions et le contrat ne changent pas avec l'hôte.
 - **`oauth2_user` renvoyé à du code écrit à la main, le jeton passé en `bearer`** : écarté le 2026-10-08. Le consentement (adresses, scopes, PKCE, renouvellement, rotation, identité) se décrit, et l'hôte l'exécute une fois pour tous.
 - **L'identifiant et le secret du client OAuth dans `credential`** : écarté le 2026-10-08. Ils appartiennent à l'application, pas au compte d'une personne.
-- **Deux jetons dans un même compte, choisis par fonction ou par argument** : écarté le 2026-10-22, un second connecteur (« Un accès propre, un connecteur »).
+- **Deux jetons dans un même compte, choisis par fonction ou par argument** : écarté le 2026-10-22 (« Un compte, un accès »).
+- **Deux connecteurs pour deux accès aux mêmes fonctions** (`google_search_console` par compte de service, un second connecteur par la connexion Google d'une personne) : écarté le 2026-11-19. Les fonctions, leurs descriptions, la table d'erreurs et les recettes des agents seraient écrites deux fois et divergeraient ; seul le compte change. Deux connecteurs restent la règle quand les fonctions diffèrent.
+- **Un accès principal (`auth` au sommet) et des accès de plus à côté** : écarté le 2026-11-19. Un accès serait celui qu'on lit par défaut, et un hôte qui ignore les autres servirait un connecteur à moitié sans le savoir ; `accesses` remplace `auth`, et un hôte qui ne le lit pas échoue.
 - **Le compte de service en champs séparés (`client_email`, `private_key`) dans `credential`** : écarté le 2026-11-06. Le fournisseur donne un fichier ; le coller entier évite une recopie fautive (une clé PEM aux retours à la ligne perdus) et l'hôte le lit une fois.
 - **L'adresse de jeton lue dans la clé (`token_uri`)** : écarté le 2026-11-06. Un texte saisi désignerait la destination d'une assertion signée ; `token_url` est fixé par la description, et une clé qui en dit un autre est refusée.
 - **Le compte de service comme une variante d'`oauth2_client_credentials`** : écarté le 2026-11-06. Il n'a ni identifiant ni secret de client, et sa requête porte une assertion signée de la clé du compte ; un mode à part garde chaque branche du schéma fermée.
@@ -99,6 +128,7 @@ connector:
 
 - Oto-core exécute les réglages et leurs gabarits, `baseUrls`, `tokenUrls` en `oauth2_client_credentials`, la clé en en-tête ou en query, `clientAuth`, le consentement `oauth2_user` (`state` à usage unique, PKCE S256, renouvellement par `refresh_token` ou `exchange`, identité par une fonction ou une adresse), `holder` et `account_identity`, `basic` sans `username` (relu à son commit d26f513). En `oauth2_user`, il refuse encore à la déclaration les réglages, `tokenUrls` et `fromToken` (relu à son commit d3500b4) : `salesforce`, qui cite un réglage et l'instance de la réponse de jeton, n'y est pas servi tant qu'il ne les exécute pas ; il contrôle les niveaux d'accès sans les appliquer (le consentement demande les droits du niveau `full`).
 - `in: query`, `token_urls` et `exchange` ne servent à aucune description.
+- `accesses` (2026-11-19) est écrit dans le schéma, la fabrique (règle 24), la sortie TypeScript et son contrat, la carte du parc et le moteur Python (`access`, `oto/connectors/engine/accesses.py`) ; `google_search_console` 2.0.0 s'en sert le premier. Le moteur Python exécute l'accès `oauth2_user` avec le jeton que l'hôte passe (`token`), sans consentement ni renouvellement, qui restent à l'hôte. Oto-core ne lit pas encore `accesses` : un paquet antérieur, qui lit `auth`, refuse ce connecteur à la déclaration. Le backend d'oto 1 sert encore la connexion Google par son propre outil `search_console`, à retirer au profit du moteur (oto-now/connectors#244, lot 2).
 - `oauth2_jwt_bearer` (2026-11-06) est écrit dans le schéma, la fabrique (règle 2), la sortie TypeScript et son contrat (`ts/src/types.ts`) et les cas communs ; `google_search_console` s'en sert, avec des niveaux d'accès depuis sa version 1.1.0 (2026-11-13 : schéma, règle 7, `defaultLevel` dans la sortie, cas `assertion_at_default_level` et `assertion_at_level_full`, moteur Python par `access_level`). Oto-core ne l'exécute pas encore : un paquet antérieur refuse à la déclaration un mode inconnu. Le client Python `google_analytics` mène le même échange, écrit à la main (`oto/tools/google_analytics/auth.py`) : il refuse en plus une clé dont le `type` n'est pas `service_account` (un identifiant de client OAuth collé par erreur), ce que le format n'exige pas.
 - Les clients Python `typeform` et `amplitude` prennent leur région en paramètre ; `microsoft` garde son module de consentement écrit à la main (`oto/tools/microsoft/auth.py`), que la description recopie ; la lib ne connaît pas les niveaux.
 - `jefacture` : le renouvellement passe par une adresse propre (`/oauth2/refresh`) que le client appelle, alors que le format renouvelle à `token_url`.
@@ -124,3 +154,4 @@ connector:
 - 2026-11-03 : sorti de la note « Format de description » lors de son redécoupage en documents par sujet ; les résumés par connecteur sortent pour la carte du parc et l'en-tête de chaque description — décidé par le responsable produit (source : demande de rationalisation des connecteurs).
 - 2026-11-06 : septième mode, `oauth2_jwt_bearer`, le compte de service (RFC 7523) : un seul champ secret, le fichier JSON de la clé ; `token_url` fixe, `token_uri` étranger refusé ; assertion RS256 exacte et requête de jeton en formulaire ; cas communs `connectors/_cases/jwt_bearer.yaml` ; `sub` et l'assertion client par certificat hors périmètre — décidé par le mainteneur (source : lecture de Search Console par un agent).
 - 2026-11-13 : le compte de service reçoit des niveaux d'accès (`access_levels`, `scope_implies`) et un niveau par défaut (`default_level`), plutôt qu'un second connecteur ; le `scope` de l'assertion est celui du niveau du compte, sans consentement — décidé par le mainteneur (source : envoi d'un sitemap à Search Console).
+- 2026-11-19 : plusieurs accès à un même connecteur (`accesses`), quand ils servent les mêmes fonctions ; « Un accès propre, un connecteur » devient « Un compte, un accès » ; `google_search_console` 2.0.0, compte de service ou connexion Google d'une personne — décidé par le mainteneur (source : oto-now/connectors#244, lot 2, réunir le `search_console` d'oto 1 et `google_search_console`).

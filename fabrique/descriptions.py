@@ -151,6 +151,10 @@ pas dire :
    du corps entier ou une constante du corps : `body_list_without_body`), une méthode qui en envoie un, jamais `GET`
    (`body_list_method`), et pas de partie fichier, dont le corps est multipart (`body_list_multipart`). Les codes sont
    ceux des cas communs (`connectors/_cases/list_body.yaml`), jugés dans cet ordre.
+24. les accès (`connector.accesses`, un connecteur qui s'ouvre par plusieurs, voir docs/conception/compte.md,
+   « Plusieurs accès ») : chaque accès a un nom à lui ; les règles 2, 3, 5, 6, 7 et 8, qui lisent `auth`,
+   `credential` ou `modes`, sont jugées pour chaque accès, sur le connecteur tel que cet accès le voit (ses `auth`,
+   `credential` et `modes` à la place de `accesses`) : la sonde et chaque fonction servent à chaque accès.
 
 Un fichier fautif lève `DescriptionError`, qui nomme le fichier, la fonction et la
 règle : la fabrique ne génère alors rien.
@@ -164,6 +168,8 @@ from dataclasses import dataclass
 
 import yaml
 from jsonschema import Draft202012Validator
+
+from oto.connectors.engine.accesses import merged
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 CONNECTORS = REPO / "connectors"
@@ -1293,14 +1299,31 @@ def check(data: dict, path: pathlib.Path) -> Description:
     return Description(path=path, data=data)
 
 
+def access_views(data: dict, where: str) -> list[tuple[dict, str]]:
+    """Règle 24 : la description telle que la voit chacun de ses accès, avec où le dire ; elle-même pour un connecteur
+    qui ne déclare qu'un accès. Deux accès du même nom sont refusés."""
+    connector = data["connector"]
+    declared = connector.get("accesses")
+    if declared is None:
+        return [(data, where)]
+    names = [access["name"] for access in declared]
+    twice = sorted({name for name in names if names.count(name) > 1})
+    if twice:
+        raise DescriptionError(f"{where}: access name(s) declared twice: {', '.join(twice)}")
+    return [({**data, "connector": merged(connector, access)}, f"{where}: access {access['name']}") for access in declared]
+
+
 def check_rules(data: dict, where: str) -> None:
     """Les règles hors schéma, sur une description déjà validée par le schéma (`check`, et les cas du coût)."""
-    check_auth(data["connector"], where)
-    check_account_identity(data, where)
-    check_settings(data["connector"], where)
+    views = access_views(data, where)
+    for view, at in views:
+        check_auth(view["connector"], at)
+        check_account_identity(view, at)
+        check_settings(view["connector"], at)
     for function in data["functions"]:
         check_arguments(function, where)
-        check_constants(data["connector"], function, where)
+        for view, at in views:
+            check_constants(view["connector"], function, at)
         check_checks(function, where)
         check_act(function, where)
         check_timeout(data["connector"], function, where)
@@ -1315,8 +1338,9 @@ def check_rules(data: dict, where: str) -> None:
     twice = sorted({n for n in names if names.count(n) > 1})
     if twice:
         raise DescriptionError(f"{where}: function name(s) declared twice: {', '.join(twice)}")
-    check_probe(data, where)
-    check_access_levels(data, where)
+    for view, at in views:
+        check_probe(view, at)
+        check_access_levels(view, at)
     check_signals(data, where)
 
 

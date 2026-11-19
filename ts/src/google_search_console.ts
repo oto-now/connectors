@@ -7,7 +7,7 @@ export const listSites = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
-  description: "List the Search Console properties this service account can read, each with its permissionLevel (SITE_OWNER, SITE_FULL_USER, SITE_RESTRICTED_USER, SITE_UNVERIFIED_USER): {siteEntry: [{siteUrl, permissionLevel}]}. siteUrl is the name every other function takes: sc-domain:example.com for a Domain property, a full URL with a trailing slash for a URL-prefix property. An empty answer means the account's address was added to no property yet. Free.",
+  description: "List the Search Console properties this account can read, each with its permissionLevel (SITE_OWNER, SITE_FULL_USER, SITE_RESTRICTED_USER, SITE_UNVERIFIED_USER): {siteEntry: [{siteUrl, permissionLevel}]}. siteUrl is the name every other function takes: sc-domain:example.com for a Domain property, a full URL with a trailing slash for a URL-prefix property. An empty answer means the account was added to no property yet. Free.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every property shared with the account", input: {} },
@@ -269,7 +269,7 @@ export const addSitemap = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/webmasters"],
-  description: "Submit a sitemap for a property, so Google crawls the addresses it lists: answers {} on success. Submitting an address already submitted submits it again. The sitemap must be reachable by Google and under the property; its processing (isPending, errors, warnings) is read afterwards with get_sitemap. The service account must be an Owner or Full user of the property: Restricted only reads. Free.",
+  description: "Submit a sitemap for a property, so Google crawls the addresses it lists: answers {} on success. Submitting an address already submitted submits it again. The sitemap must be reachable by Google and under the property; its processing (isPending, errors, warnings) is read afterwards with get_sitemap. The account must be an Owner or Full user of the property: Restricted only reads. Free.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -292,8 +292,8 @@ export const addSitemap = defineFunction({
     { title: "Submit a sitemap index of a URL-prefix property", input: {"site_url": "https://www.example.com/", "feedpath": "https://www.example.com/sitemap_index.xml"} },
   ],
   refusals: [
-    { code: "owner_or_full_required", when: 403, message: "The service account may not submit sitemaps for this property: in Search Console, Settings > Users and permissions, give its client_email the Owner or Full permission (Restricted only reads), or check the property name.", body: {"path": "error.message", "contains": ["sufficient permission"]} },
-    { code: "owner_or_full_required", when: 403, message: "The service account may not submit sitemaps for this property: in Search Console, Settings > Users and permissions, give its client_email the Owner or Full permission (Restricted only reads), or check the property name.", body: {"path": "error.errors.0.reason", "equals": ["insufficientPermissions"]} },
+    { code: "owner_or_full_required", when: 403, message: "The account may not submit sitemaps for this property: in Search Console, Settings > Users and permissions, give it (a service account: its client_email) the Owner or Full permission (Restricted only reads), or check the property name.", body: {"path": "error.message", "contains": ["sufficient permission"]} },
+    { code: "owner_or_full_required", when: 403, message: "The account may not submit sitemaps for this property: in Search Console, Settings > Users and permissions, give it (a service account: its client_email) the Owner or Full permission (Restricted only reads), or check the property name.", body: {"path": "error.errors.0.reason", "equals": ["insufficientPermissions"]} },
   ],
   request: {
     method: "PUT",
@@ -310,32 +310,69 @@ export const connector = defineConnector({
   name: "google_search_console",
   label: "Google Search Console",
   namespace: "google_search_console",
-  version: "1.1.0",
+  version: "2.0.0",
   apiVersion: "v1",
   baseUrl: "https://searchconsole.googleapis.com",
-  auth: {
-    "kind": "oauth2_jwt_bearer",
-    "tokenUrl": "https://oauth2.googleapis.com/token",
-    "accessLevels": {
-      "read": {"scopes": ["https://www.googleapis.com/auth/webmasters.readonly"]},
-      "full": {"scopes": ["https://www.googleapis.com/auth/webmasters"]}
+  accesses: [
+    {
+      name: "service_account",
+      label: "Service account of the organization",
+      auth: {
+        "kind": "oauth2_jwt_bearer",
+        "tokenUrl": "https://oauth2.googleapis.com/token",
+        "accessLevels": {
+          "read": {"scopes": ["https://www.googleapis.com/auth/webmasters.readonly"]},
+          "full": {"scopes": ["https://www.googleapis.com/auth/webmasters"]}
+        },
+        "scopeImplies": {
+          "https://www.googleapis.com/auth/webmasters": ["https://www.googleapis.com/auth/webmasters.readonly"]
+        },
+        "defaultLevel": "read",
+        "key": "service_account_key"
+      },
+      credential: [{"name": "service_account_key", "label": "Service account key (JSON file, its client_email added as a user of each property)", "secret": true, "holder": "account"}],
+      modes: ["byo_org"],
     },
-    "scopeImplies": {"https://www.googleapis.com/auth/webmasters": ["https://www.googleapis.com/auth/webmasters.readonly"]},
-    "defaultLevel": "read",
-    "key": "service_account_key"
-  },
-  credential: [{"name": "service_account_key", "label": "Service account key (JSON file, its client_email added as a user of each property)", "secret": true, "holder": "account"}],
-  modes: ["byo_org"],
+    {
+      name: "google_account",
+      label: "Google sign-in of a person",
+      auth: {
+        "kind": "oauth2_user",
+        "authorizeUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+        "tokenUrl": "https://oauth2.googleapis.com/token",
+        "clientAuth": "body",
+        "accessLevels": {
+          "read": {"scopes": ["https://www.googleapis.com/auth/webmasters.readonly", "openid", "email"]},
+          "full": {"scopes": ["https://www.googleapis.com/auth/webmasters", "openid", "email"]}
+        },
+        "scopeImplies": {
+          "https://www.googleapis.com/auth/webmasters": ["https://www.googleapis.com/auth/webmasters.readonly"]
+        },
+        "authorizeParams": {"access_type": "offline", "prompt": "select_account consent"},
+        "pkce": "S256",
+        "refresh": "refresh_token",
+        "rotates": false,
+        "expiresInDefault": 3600,
+        "identity": {
+          "url": "https://openidconnect.googleapis.com/v1/userinfo",
+          "path": "email",
+          "scopes": ["openid", "email"]
+        }
+      },
+      credential: [],
+      modes: ["byo_user"],
+    },
+  ],
   timeoutMs: 30000,
   errors: [
     { status: 400, code: "invalid_request", message: "Search Console rejected the request as invalid: check the dates (YYYY-MM-DD), the dimensions, filters and aggregation, and the form of the property (sc-domain:example.com or a full URL with a trailing slash).", retryable: false },
-    { status: 401, code: "access_rejected", message: "Google rejected the service account's token: check that the key is still valid and its service account enabled.", retryable: false },
-    { status: 403, code: "api_not_enabled", message: "The Google Search Console API is not enabled in the Google Cloud project of the service account: enable it in that project (APIs & Services > Library), then retry.", retryable: false, body: {"path": "error.errors.0.reason", "equals": ["accessNotConfigured"]} },
-    { status: 403, code: "api_not_enabled", message: "The Google Search Console API is not enabled in the Google Cloud project of the service account: enable it in that project (APIs & Services > Library), then retry.", retryable: false, body: {"path": "error.details.0.reason", "equals": ["SERVICE_DISABLED"]} },
+    { status: 401, code: "access_rejected", message: "Google rejected the token: for a service account, check that the key is still valid and its account enabled; for a Google sign-in, the person must sign in again.", retryable: false },
+    { status: 403, code: "api_not_enabled", message: "The Google Search Console API is not enabled in the Google Cloud project of the service account, or of the OAuth application of a Google sign-in: enable it in that project (APIs & Services > Library), then retry.", retryable: false, body: {"path": "error.errors.0.reason", "equals": ["accessNotConfigured"]} },
+    { status: 403, code: "api_not_enabled", message: "The Google Search Console API is not enabled in the Google Cloud project of the service account, or of the OAuth application of a Google sign-in: enable it in that project (APIs & Services > Library), then retry.", retryable: false, body: {"path": "error.details.0.reason", "equals": ["SERVICE_DISABLED"]} },
     { status: 403, code: "quota_exhausted", message: "A Search Console quota is spent (URL inspection allows 2,000 a day per property): retry tomorrow.", retryable: false, body: {"path": "error.errors.0.reason", "equals": ["quotaExceeded", "dailyLimitExceeded"]}, marksAccount: "quota_exhausted" },
-    { status: 403, code: "property_not_shared", message: "The service account is not a user of this property: add the client_email of its key as a user (Restricted is enough) in Search Console, Settings > Users and permissions, or check the property name.", retryable: false, body: {"path": "error.message", "contains": ["sufficient permission"]} },
-    { status: 403, code: "property_not_shared", message: "The service account is not a user of this property: add the client_email of its key as a user (Restricted is enough) in Search Console, Settings > Users and permissions, or check the property name.", retryable: false, body: {"path": "error.errors.0.reason", "equals": ["insufficientPermissions"]} },
-    { status: 403, code: "permission_denied", message: "Google refused the call: the service account lacks a right on this property, or a per-user limit was hit; the reason in the response tells which.", retryable: false },
+    { status: 403, code: "property_not_shared", message: "The account is not a user of this property: pick one that list_sites returns, or check the property name; for a service account, add the client_email of its key as a user (Restricted is enough) in Search Console, Settings > Users and permissions.", retryable: false, body: {"path": "error.message", "contains": ["sufficient permission"]} },
+    { status: 403, code: "property_not_shared", message: "The account is not a user of this property: pick one that list_sites returns, or check the property name; for a service account, add the client_email of its key as a user (Restricted is enough) in Search Console, Settings > Users and permissions.", retryable: false, body: {"path": "error.errors.0.reason", "equals": ["insufficientPermissions"]} },
+    { status: 403, code: "permission_denied", message: "Google refused the call: the account lacks a right on this property, or a per-user limit was hit; the reason in the response tells which.", retryable: false },
     { status: 404, code: "not_found", message: "Not found in Search Console: check the property and the sitemap address.", retryable: false },
     { status: 429, code: "quota_exhausted", message: "A daily Search Console quota is spent (URL inspection allows 2,000 a day per property): retry tomorrow.", retryable: false, body: {"path": "error.message", "contains": ["per day"]}, marksAccount: "quota_exhausted" },
     { status: 429, code: "rate_limited", message: "Search Console is throttling these requests (per property: 1,200 performance queries and 600 URL inspections a minute): retry after a delay.", retryable: true },

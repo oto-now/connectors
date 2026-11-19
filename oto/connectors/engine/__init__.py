@@ -5,7 +5,8 @@
 
     result = engine.call(descriptions.load("serper"), "search", {"q": "oto"}, credential={"api_key": key})
 
-`call(description, function, arguments, *, credential, settings=None, session=None, access_level=None) -> dict`:
+`call(description, function, arguments, *, credential, settings=None, session=None, access_level=None, access=None,
+token=None) -> dict`:
 
 - `description`: a served description (`oto.connectors.descriptions.load`), or any description in the same form;
 - `function`: the name of one of its functions; `arguments`: its arguments, already validated by the host against the
@@ -17,6 +18,12 @@
   takes `auth.default_level`, else `full`. A level the description does not declare raises `UnknownAccessLevel`; a
   function the level does not serve is refused, `access_level_denied`. A service account claims the scopes of the
   level in its assertion;
+- `access`: for a connector that opens by several accesses (`connector.accesses`), the name of the account's, as the
+  host recorded it with the account; required then, refused otherwise (`UnknownAccess`). The call runs the
+  `auth`, `credential` and `modes` of that access;
+- `token`: for a consent (`auth.kind: oauth2_user`), the access token the host obtained, keeps and renews; required
+  then (`MissingCredential("access_token")`), refused for any other authentication (`TokenMisplaced`). A 401 is not
+  replayed: renewing the token is the host's;
 - `session`: the `requests.Session` to send with (a test passes a fake one); without it, a session of the engine's
   own, which reads nothing of the environment.
 
@@ -35,11 +42,13 @@ from oto.tools.common.errors import UpstreamHTTPError
 
 from .errors import (AccountSettingError, AddressRefused, EngineError, InvalidArguments, Refused, TokenRefused,
                      Unreachable, UnreadableAnswer, Unsupported)
+from .accesses import UnknownAccess
+from .auth import TokenMisplaced
 from .levels import UnknownAccessLevel
 from .run import Pages, call, execute
 
 __all__ = [
     "AccountSettingError", "AddressRefused", "EngineError", "InvalidArguments", "MissingCredential", "Pages", "Refused",
-    "TokenRefused", "UnknownAccessLevel", "Unreachable", "UnreadableAnswer", "UpstreamHTTPError", "Unsupported", "call",
-    "execute",
+    "TokenMisplaced", "TokenRefused", "UnknownAccess", "UnknownAccessLevel", "Unreachable", "UnreadableAnswer",
+    "UpstreamHTTPError", "Unsupported", "call", "execute",
 ]

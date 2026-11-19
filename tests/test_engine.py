@@ -66,14 +66,22 @@ def one(vendor: engine_fake.Vendor) -> dict:
 @pytest.mark.parametrize("name, fn_name, form", [
     ("pennylane_firm", "upload_dms_file", "call.files"),
     ("aircall", "get_call_recording", "output.file"),
-    ("gmail", "get_profile", "auth oauth2_user"),
     ("linkedin_unipile", "get_me", "account_identity"),
-], ids=["files", "output_file", "oauth2_user", "account_identity"])
+], ids=["files", "output_file", "account_identity"])
 def test_a_form_the_engine_does_not_run_is_refused_before_anything_is_sent(name, fn_name, form):
     vendor = engine_fake.Vendor()
     with pytest.raises(engine.Unsupported, match=form.replace(".", r"\.")):
         engine.call(descriptions.load(name), fn_name, {}, credential={}, session=engine_fake.session(vendor))
     assert vendor.requests == []
+
+
+def test_a_consent_signs_with_the_token_the_host_keeps():
+    """`oauth2_user` : le jeton du consentement, que l'hôte obtient, garde et renouvelle, part en Bearer."""
+    vendor = engine_fake.Vendor(answer(200, {"emailAddress": "someone@example.test"}))
+    result = engine.call(descriptions.load("gmail"), "get_profile", {}, credential={}, token="ya29.not-real",
+                         session=engine_fake.session(vendor))
+    assert result == {"emailAddress": "someone@example.test"}
+    assert sent(vendor.requests[0], "https://gmail.googleapis.com/gmail/v1")["headers"]["authorization"] == "Bearer ya29.not-real"
 
 
 def test_a_background_function_is_refused():
@@ -354,8 +362,10 @@ def test_a_refusal_of_the_function_comes_before_the_table_and_says_its_status():
 # --- de vraies descriptions du dépôt -----------------------------------------------------------------------------------
 
 def _bearer(description: dict) -> dict:
-    """La description, son compte remplacé par un jeton porteur : la requête hors de l'authentification."""
+    """La description, son compte (ou ses accès) remplacé par un jeton porteur : la requête hors de l'authentification."""
     changed = copy.deepcopy(description)
+    changed["connector"].pop("accesses", None)
+    changed["connector"]["modes"] = ["byo_org"]
     changed["connector"]["auth"] = {"kind": "bearer", "token": "token"}
     changed["connector"]["credential"] = [{"name": "token", "label": "Token", "secret": True}]
     return changed

@@ -273,6 +273,18 @@ def _auth(connector: str, auth: dict, indent: int = 1) -> str:
     return js_block(entries, indent)
 
 
+def _access(connector: str, access: dict) -> str:
+    """Un accès d'un connecteur qui s'ouvre par plusieurs : son nom, son libellé, son `auth`, son credential (vide en
+    `oauth2_user`) et ses `modes`."""
+    return _object([
+        ("name", js(access["name"])),
+        ("label", js(access["label"])),
+        ("auth", _auth(connector, access["auth"], 3)),
+        ("credential", js([_credential_field(f) for f in access.get("credential", [])])),
+        ("modes", js(access["modes"])),
+    ], 2)
+
+
 def _credential_field(field: dict) -> dict:
     """Un champ du credential, `holder` toujours dit (`account` par défaut)."""
     return {"name": field["name"], "label": field["label"], "secret": field["secret"], "holder": field.get("holder", "account")}
@@ -330,13 +342,17 @@ def connector_module(description: Description, source: str | None = None) -> Mod
         entries.append(("baseUrl", js(connector["base_url"])))
     if "base_urls" in connector:
         entries.append(("baseUrls", js(connector["base_urls"])))
-    entries.append(("auth", _auth(name, connector["auth"])))
-    entries.append(("credential", js([_credential_field(f) for f in connector.get("credential", [])])))
+    if "accesses" in connector:
+        entries.append(("accesses", _list([_access(name, access) for access in connector["accesses"]], 1)))
+    else:
+        entries.append(("auth", _auth(name, connector["auth"])))
+        entries.append(("credential", js([_credential_field(f) for f in connector.get("credential", [])])))
     if "account_identity" in connector:
         entries.append(("accountIdentity", js(connector["account_identity"])))
     if "settings" in connector:
         entries.append(("settings", js_block(connector["settings"], 1)))
-    entries.append(("modes", js(connector["modes"])))
+    if "modes" in connector:
+        entries.append(("modes", js(connector["modes"])))
     entries.append(("timeoutMs", js(connector.get("timeout_s", DEFAULT_TIMEOUT_S) * 1000)))
     if "query_arrays" in connector:
         entries.append(("queryArrays", js(connector["query_arrays"])))
