@@ -489,14 +489,14 @@ wheels = [
 
 [[package]]
 name = "france-opendata"
-version = "0.42.0"
+version = "0.52.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/35/01/f5d3a0333d9bdd61909b9f54c1fe60fcab161b3cbb851db7c7aef258d283/france_opendata-0.42.0.tar.gz", hash = "sha256:312cc4c3028433793f0187f479f5aef282e19b48759843fe813eef1e3646b5e6", size = 1100907, upload-time = "2026-09-01T11:04:15.598Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/42/ffde9fab0d24ae4abf30bd3288ec82cdd55906ed524dd90eb68e6348c2af/france_opendata-0.52.0.tar.gz", hash = "sha256:7928d6ae1d4632d21194c2ed1d12cd45de0a18d9013c29dea06679eb9bce1cbd", size = 1188756, upload-time = "2026-11-14T13:12:43.408Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f0/ca/d025d0af710fb90c417198f736575253023f6528ed195d2718282cec244e/france_opendata-0.42.0-py3-none-any.whl", hash = "sha256:90cd967df5c0d6f7f3392666f42e12c74554e51b1c1c866ecd687cdbd1313c4f", size = 1108833, upload-time = "2026-09-01T11:04:13.792Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/46/f1912d2450290fc19eca3205616fb30e93d8e8df96c2d6880e91d3989543/france_opendata-0.52.0-py3-none-any.whl", hash = "sha256:c5523d0798cd10502785905560f08bf215ba288eb2cb9489382cb12b06eb96c3", size = 1174610, upload-time = "2026-11-14T13:12:41.37Z" },
 ]
 
 [[package]]
@@ -1243,7 +1243,7 @@ requires-dist = [
     { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "duckdb", marker = "extra == 'stock'", specifier = ">=1.0" },
     { name = "faker", marker = "extra == 'anonymize'", specifier = ">=20.0.0" },
-    { name = "france-opendata", specifier = ">=0.7.0" },
+    { name = "france-opendata", specifier = ">=0.51.0" },
     { name = "google-api-python-client", marker = "extra == 'google'", specifier = ">=2.0.0" },
     { name = "google-auth", marker = "extra == 'google'", specifier = ">=2.0.0" },
     { name = "google-auth-oauthlib", marker = "extra == 'google'", specifier = ">=1.0.0" },

@@ -1399,7 +1399,7 @@ export const connector = defineConnector({
   name: "fod",
   label: "France Open Data",
   namespace: "fod",
-  version: "1.5.0",
+  version: "1.6.0",
   apiVersion: "france-opendata-service 3aa4d5d (routes unversioned)",
   baseUrl: "https://data.oto.zone",
   auth: {"kind": "bearer", "token": "api_key"},

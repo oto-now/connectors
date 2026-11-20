@@ -14,7 +14,7 @@ dependencies = [
     # Floor >=2.33.0 : CVE-2026-25645, CVE-2024-47081 (.netrc leak), CVE-2024-35195
     # (cert verification bypass), CVE-2023-32681 (Proxy-Authorization leak).
     "requests>=2.33.0",
-    "france-opendata>=0.7.0",
+    "france-opendata>=0.51.0",
     "pyyaml>=6.0",
     "defusedxml>=0.7.1",
     # Le profil Custom API (`oto.connectors.custom_api`) valide une définition d'org contre le schéma du format, à
