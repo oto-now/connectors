@@ -12,6 +12,7 @@ import importlib
 NAMES = ('affinity',
          'aircall',
          'allo',
+         'alma',
          'amplemarket',
          'amplitude',
          'apollo',

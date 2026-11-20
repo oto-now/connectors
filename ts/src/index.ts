@@ -2,6 +2,7 @@
 import * as affinity from "./affinity"
 import * as aircall from "./aircall"
 import * as allo from "./allo"
+import * as alma from "./alma"
 import * as amplemarket from "./amplemarket"
 import * as amplitude from "./amplitude"
 import * as apollo from "./apollo"
@@ -65,6 +66,7 @@ import type { Connector } from "./types"
 export { affinity }
 export { aircall }
 export { allo }
+export { alma }
 export { amplemarket }
 export { amplitude }
 export { apollo }
@@ -131,6 +133,7 @@ export const connectors: readonly Connector[] = [
   affinity.connector,
   aircall.connector,
   allo.connector,
+  alma.connector,
   amplemarket.connector,
   amplitude.connector,
   apollo.connector,
