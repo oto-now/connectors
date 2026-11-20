@@ -1395,17 +1395,726 @@ export const complianceCheckMutualTermination = defineFunction({
   cost: { per: "request" },
 })
 
+export const healthSearchMedicines = defineFunction({
+  name: "fod.health_search_medicines",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Search the French public medicines database (BDPM: ANSM, HAS and Assurance maladie) for medicines whose name or an active substance holds every word of q, accents and case ignored. Returns {total, medicaments: [{cis, denomination, forme, voies, substances, titulaires, statut_amm, commercialisation, alerte, lien}], source}; total counts every match, beyond limit. alerte is the database's warning on the medicine, if any. Pass cis to health_get_medicine for its full record and safety information. source.mise_a_jour is the date of the database, which its licence asks to quote. The first call after a restart of the service takes about 10 s.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["q"],
+    "properties": {
+      "q": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 120,
+        "description": "Name or active substance, such as ibuprofène or doliprane; every word must match."
+      },
+      "commercialises": {"type": "boolean", "default": false, "description": "true keeps only the medicines on the market."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "default": 20}
+    }
+  },
+  examples: [
+    { title: "Ibuprofen medicines on the market", input: {"q": "ibuprofène", "commercialises": true, "limit": 10} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/api/sante/medicaments",
+    pathParams: [],
+    query: {"q": "q", "commercialises": "commercialises", "limit": "limit"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthGetMedicine = defineFunction({
+  name: "fod.health_get_medicine",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Get the full record of one medicine of the French public medicines database by its CIS code: composition, presentations (CIP13, price, reimbursement rate), HAS opinions on medical benefit (smr) and its improvement (asmr) with the link to each opinion, prescription and dispensing conditions, generic groups, and the securite block: ANSM important safety information (text, dates, link), supply shortages and tensions (disponibilite), and whether it is a medicine of major therapeutic interest (interet_therapeutique_majeur, with its ATC code). Also date_amm, procedure_amm, surveillance_renforcee and source (with mise_a_jour, the date of the database).",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["cis"],
+    "properties": {
+      "cis": {
+        "type": "string",
+        "pattern": "^[0-9]{8}$",
+        "description": "CIS code, 8 digits, from a medicines search."
+      }
+    }
+  },
+  examples: [
+    { title: "Record of one medicine by its CIS code", input: {"cis": "60234100"} },
+  ],
+  refusals: [
+    { code: "medicine_not_found", when: "the response is null", message: "No medicine with this CIS code in the public medicines database: take the code from a medicines search." },
+  ],
+  expect: [
+    { kind: "non_empty", refusal: "medicine_not_found", path: "cis" },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/sante/medicaments/{cis}",
+    pathParams: ["cis"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthSearchClinicalTrials = defineFunction({
+  name: "fod.health_search_clinical_trials",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Search the ClinicalTrials.gov registry (U.S. National Library of Medicine, worldwide) for trials matching every criterion given; at least one of condition, intervention, promoteur, terme. pays keeps trials with at least one site in that country (France by default, English name as the registry writes it). Returns {total, essais: [{nct, titre, acronyme, statut, type, phases, effectif, promoteur, collaborateurs, conditions, interventions, dates, a_des_resultats, nb_sites_pays, villes_pays, lien}], page_suivante, source}; a date carries estimee true when it is planned. Site contacts are never returned.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "anyOf": [
+      {"required": ["condition"]},
+      {"required": ["intervention"]},
+      {"required": ["promoteur"]},
+      {"required": ["terme"]}
+    ],
+    "properties": {
+      "condition": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "Condition or disease, in English: glioblastoma."
+      },
+      "intervention": {"type": "string", "minLength": 1, "maxLength": 200, "description": "Drug, device or procedure."},
+      "promoteur": {"type": "string", "minLength": 1, "maxLength": 200, "description": "Lead sponsor or collaborator."},
+      "terme": {"type": "string", "minLength": 1, "maxLength": 200, "description": "Free text, searched everywhere."},
+      "pays": {
+        "type": "string",
+        "pattern": "^([A-Za-z][A-Za-z .'-]{1,59})?$",
+        "default": "France",
+        "description": "Country of a site, English name: France, Germany, United States; an empty string searches worldwide."
+      },
+      "statut": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string",
+          "enum": [
+            "ACTIVE_NOT_RECRUITING",
+            "COMPLETED",
+            "ENROLLING_BY_INVITATION",
+            "NOT_YET_RECRUITING",
+            "RECRUITING",
+            "SUSPENDED",
+            "TERMINATED",
+            "WITHDRAWN",
+            "AVAILABLE",
+            "NO_LONGER_AVAILABLE",
+            "TEMPORARILY_NOT_AVAILABLE",
+            "APPROVED_FOR_MARKETING",
+            "WITHHELD",
+            "UNKNOWN"
+          ]
+        },
+        "description": "Overall status of the trial, any of these."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "default": 20},
+      "page_token": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "page_suivante of the previous page."
+      },
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 5)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "default": 5,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Glioblastoma trials recruiting in France", input: {"condition": "glioblastoma", "statut": ["RECRUITING", "NOT_YET_RECRUITING"]} },
+    { title: "Trials of one sponsor in Germany", input: {"promoteur": "Institut Curie", "pays": "Germany", "limit": 10} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/api/sante/essais/clinicaltrials",
+    pathParams: [],
+    query: {"condition": "condition", "intervention": "intervention", "promoteur": "promoteur", "terme": "terme", "pays": "pays", "statut": "statut", "limit": "limit", "page_token": "page_token"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "page_token", next: "page_suivante", total: "total", maxPages: 5 },
+  cost: { per: "page" },
+})
+
+export const healthGetClinicalTrial = defineFunction({
+  name: "fod.health_get_clinical_trial",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Get one trial of the ClinicalTrials.gov registry by its NCT id: the fields of a search result, plus its brief summary (resume) and each site in the country asked (sites_pays: [{etablissement, ville, code_postal, statut}], France by default). Site contacts are never returned.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["nct"],
+    "properties": {
+      "nct": {
+        "type": "string",
+        "pattern": "^[Nn][Cc][Tt][0-9]{8}$",
+        "description": "NCT id: NCT followed by 8 digits."
+      },
+      "pays": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 60,
+        "default": "France",
+        "description": "Country whose sites are listed, English name."
+      }
+    }
+  },
+  examples: [
+    { title: "One trial and its French sites", input: {"nct": "NCT03958240"} },
+  ],
+  refusals: [
+    { code: "trial_not_found", when: "the response is null", message: "No trial with this NCT id in ClinicalTrials.gov." },
+  ],
+  expect: [
+    { kind: "non_empty", refusal: "trial_not_found", path: "nct" },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/sante/essais/clinicaltrials/{nct}",
+    pathParams: ["nct"],
+    query: {"pays": "pays"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthSearchEuClinicalTrials = defineFunction({
+  name: "fod.health_search_eu_clinical_trials",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Search the EU clinical trials register (CTIS, public portal of the European Medicines Agency) for trials matching every criterion given; at least one of texte, condition, promoteur, produit. Latest decision first. Returns {total, page, pages, essais: [{numero, titre, titre_court, statut, statut_code, phase, conditions, domaines_therapeutiques, produits, promoteur, type_promoteur, pays, effectif_prevu, date_decision, date_debut_ue, date_fin_ue, lien}], source}. Next page: page + 1 while page is below pages. The portal API is not documented by the EMA: an answer out of shape is refused, never read as an empty list.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "anyOf": [
+      {"required": ["texte"]},
+      {"required": ["condition"]},
+      {"required": ["promoteur"]},
+      {"required": ["produit"]}
+    ],
+    "properties": {
+      "texte": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "Every one of these words, anywhere."
+      },
+      "condition": {"type": "string", "minLength": 1, "maxLength": 200, "description": "Medical condition."},
+      "promoteur": {"type": "string", "minLength": 1, "maxLength": 200, "description": "Sponsor."},
+      "produit": {"type": "string", "minLength": 1, "maxLength": 200, "description": "Product name."},
+      "pays": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string",
+          "enum": [
+            "AT",
+            "BE",
+            "BG",
+            "HR",
+            "CY",
+            "CZ",
+            "DK",
+            "EE",
+            "FI",
+            "FR",
+            "DE",
+            "GR",
+            "HU",
+            "IS",
+            "IE",
+            "IT",
+            "LV",
+            "LI",
+            "LT",
+            "LU",
+            "MT",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "RO",
+            "SK",
+            "SI",
+            "ES",
+            "SE"
+          ]
+        },
+        "default": ["FR"],
+        "description": "Member states concerned, ISO alpha-2 (FR when absent)."
+      },
+      "statut": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "integer", "minimum": 1, "maximum": 12},
+        "description": "Portal status codes: 1 under evaluation, 2 authorised recruitment pending, 3 authorised recruiting, 4 ongoing recruiting, 5 recruitment ended, 6 temporarily halted, 7 suspended, 8 ended, 9 expired, 10 revoked, 11 not authorised, 12 cancelled."
+      },
+      "page": {"type": "integer", "minimum": 1, "default": 1},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "default": 20}
+    }
+  },
+  examples: [
+    { title: "Recruiting glioblastoma trials in France", input: {"condition": "glioblastoma", "statut": [3, 4]} },
+    { title: "Trials of one product in France and Belgium", input: {"produit": "pembrolizumab", "pays": ["FR", "BE"], "limit": 10} },
+  ],
+  refusals: [
+    { code: "upstream_answer_unreadable", when: 502, message: "The public source answered in a shape FOD cannot read: retrying unchanged fails the same way.", body: {"path": "detail", "contains": ["réponse amont inexploitable"]} },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/sante/essais/ctis",
+    pathParams: [],
+    query: {"texte": "texte", "condition": "condition", "promoteur": "promoteur", "produit": "produit", "pays": "pays", "statut": "statut", "page": "page", "limit": "limit"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthGetEuClinicalTrial = defineFunction({
+  name: "fod.health_get_eu_clinical_trial",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Get one trial of the EU register (CTIS) by its EU CT number: title, phase, overall status, plus its products (produits_detail: name, substance, form), its status in the country asked (statut_pays: statut, date_decision, recrutement_commence, effectif_prevu) and the sites there (sites_pays: [{etablissement, service, ville, code_postal}]), France by default. Site contacts are never returned.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["numero"],
+    "properties": {
+      "numero": {
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{6}-[0-9]{2}-[0-9]{2}$",
+        "description": "EU CT number: 2024-520051-24-00."
+      },
+      "pays": {
+        "type": "string",
+        "enum": [
+          "AT",
+          "BE",
+          "BG",
+          "HR",
+          "CY",
+          "CZ",
+          "DK",
+          "EE",
+          "FI",
+          "FR",
+          "DE",
+          "GR",
+          "HU",
+          "IS",
+          "IE",
+          "IT",
+          "LV",
+          "LI",
+          "LT",
+          "LU",
+          "MT",
+          "NL",
+          "NO",
+          "PL",
+          "PT",
+          "RO",
+          "SK",
+          "SI",
+          "ES",
+          "SE"
+        ],
+        "default": "FR",
+        "description": "Member state whose sites are listed, ISO alpha-2."
+      }
+    }
+  },
+  examples: [
+    { title: "One EU trial and its French sites", input: {"numero": "2024-520051-24-00"} },
+  ],
+  refusals: [
+    { code: "trial_not_found", when: "the response is null", message: "No trial with this EU CT number in CTIS." },
+    { code: "upstream_answer_unreadable", when: 502, message: "The public source answered in a shape FOD cannot read: retrying unchanged fails the same way.", body: {"path": "detail", "contains": ["réponse amont inexploitable"]} },
+  ],
+  expect: [
+    { kind: "non_empty", refusal: "trial_not_found", path: "numero" },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/sante/essais/ctis/{numero}",
+    pathParams: ["numero"],
+    query: {"pays": "pays"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthSearchPubmed = defineFunction({
+  name: "fod.health_search_pubmed",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Search PubMed (U.S. National Library of Medicine) in PubMed syntax (glioblastoma AND france[ad], [mh], [dp], [au]...), newest first, or by relevance. Returns {total, offset, traduction, articles: [{pmid, doi, pmcid, titre, revue, date, volume, numero, pages, types, langues, auteurs, lien}], source}; traduction is the query as PubMed understood it. No abstract here: health_get_europepmc_article with pmid gives it. Next page: offset + limit.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["query"],
+    "properties": {
+      "query": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 500,
+        "description": "PubMed query: glioblastoma AND france[ad]."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20},
+      "offset": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999,
+        "default": 0,
+        "description": "Results skipped: offset + limit of the previous page."
+      },
+      "tri": {
+        "type": "string",
+        "enum": ["date", "pertinence"],
+        "default": "date",
+        "description": "date (newest first) or pertinence (relevance)."
+      }
+    }
+  },
+  examples: [
+    { title: "Glioblastoma papers with a French affiliation", input: {"query": "glioblastoma AND france[ad]", "limit": 10} },
+  ],
+  refusals: [
+    { code: "query_not_processed", when: 502, message: "PubMed could not process this query: check its syntax (fields in brackets, AND, OR, NOT).", body: {"path": "detail", "contains": ["n'a pas traité la requête"]} },
+    { code: "upstream_answer_unreadable", when: 502, message: "The public source answered in a shape FOD cannot read: retrying unchanged fails the same way.", body: {"path": "detail", "contains": ["réponse amont inexploitable"]} },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/sante/publications/pubmed",
+    pathParams: [],
+    query: {"query": "query", "limit": "limit", "offset": "offset", "tri": "tri"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthGetPubmedArticle = defineFunction({
+  name: "fod.health_get_pubmed_article",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Get one PubMed record by its PMID: {pmid, doi, pmcid, titre, revue, revue_abregee, date, volume, numero, pages, types, langues, auteurs, lien, source}. No abstract: health_get_europepmc_article with the same pmid gives it.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["pmid"],
+    "properties": {"pmid": {"type": "string", "pattern": "^[0-9]{1,9}$", "description": "PubMed id, 1 to 9 digits."}}
+  },
+  examples: [
+    { title: "One PubMed record", input: {"pmid": "32182409"} },
+  ],
+  refusals: [
+    { code: "article_not_found", when: "the response is null", message: "No PubMed record with this PMID." },
+  ],
+  expect: [
+    { kind: "non_empty", refusal: "article_not_found", path: "pmid" },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/sante/publications/pubmed/{pmid}",
+    pathParams: ["pmid"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthSearchEuropepmc = defineFunction({
+  name: "fod.health_search_europepmc",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Search Europe PMC (EMBL-EBI: PubMed, PubMed Central, preprints...) in Europe PMC syntax (glioblastoma AND AFF:\"France\", AUTH:, PUB_YEAR:...). Returns {total, articles: [{id, base, pmid, pmcid, doi, titre, auteurs, revue, annee, date_publication, acces_libre, citations, lien}], curseur_suivant, source}. A malformed query returns zero results, like a query without match.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["query"],
+    "properties": {
+      "query": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 500,
+        "description": "Europe PMC query: glioblastoma AND AFF:\"France\"."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20},
+      "curseur": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "curseur_suivant of the previous page."
+      },
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 5)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "default": 5,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Glioblastoma papers with a French affiliation since 2024", input: {"query": "glioblastoma AND AFF:\"France\" AND PUB_YEAR:[2024 TO 2026]", "limit": 10} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/api/sante/publications/europepmc",
+    pathParams: [],
+    query: {"query": "query", "limit": "limit", "curseur": "curseur"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "curseur", next: "curseur_suivant", total: "total", maxPages: 5 },
+  cost: { per: "page" },
+})
+
+export const healthGetEuropepmcArticle = defineFunction({
+  name: "fod.health_get_europepmc_article",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Get one full Europe PMC record by pmid or by doi (exactly one): the fields of a search result plus resume (the abstract), affiliation, langue, types, mots_cles and textes_integraux: [{acces, format, site, url}], each full-text link saying whether it is open access or needs a subscription.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "oneOf": [{"required": ["pmid"]}, {"required": ["doi"]}],
+    "properties": {
+      "pmid": {"type": "string", "pattern": "^[0-9]{1,9}$", "description": "PubMed id, 1 to 9 digits."},
+      "doi": {
+        "type": "string",
+        "pattern": "^10\\.[0-9]{4,9}/[^\\s\"]+$",
+        "maxLength": 300,
+        "description": "DOI: 10.1056/NEJMoa2001017."
+      }
+    }
+  },
+  examples: [
+    { title: "Abstract of a PubMed record", input: {"pmid": "32182409"} },
+    { title: "A paper by its DOI", input: {"doi": "10.1056/NEJMoa2001017"} },
+  ],
+  refusals: [
+    { code: "article_not_found", when: "the response is null", message: "No Europe PMC record with this PMID or DOI." },
+  ],
+  expect: [
+    { kind: "non_empty", refusal: "article_not_found", path: "id" },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/sante/publications/europepmc/article",
+    pathParams: [],
+    query: {"pmid": "pmid", "doi": "doi"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthListInterestDeclarations = defineFunction({
+  name: "fod.health_list_interest_declarations",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the links of interest declared by health-sector companies to their beneficiaries (Transparence Santé), newest first: {total, declarations: [{type, identifiant, montant, date, periode, motif, convention_liee, entreprise: {raison_sociale, siren}, beneficiaire: {nom, prenom, categorie, identifiant, profession, structure, ville, departement}}], source}; never the postal address. montant null is a missing amount, not 0. Do not add amounts of different types: a payment or benefit can execute an agreement (convention_liee), the same money then appears twice. Personal data under licence CC BY-NC-SA 4.0, reuse restricted to transparency of links of interest (no strictly commercial use); credit required: \"Source : base Transparence - Santé (Direction Générale de la Santé), transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0.\" (source.attribution).",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "anyOf": [
+      {"required": ["entreprise"]},
+      {"required": ["siren"]},
+      {"required": ["beneficiaire"]},
+      {"required": ["rpps"]},
+      {"required": ["ville"]},
+      {"required": ["departement"]}
+    ],
+    "properties": {
+      "entreprise": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120,
+        "description": "Words of the declaring company's name."
+      },
+      "siren": {"type": "string", "pattern": "^[0-9]{9}$", "description": "SIREN of the declaring company."},
+      "beneficiaire": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120,
+        "personal": true,
+        "description": "Surname (and first name) of the beneficiary."
+      },
+      "rpps": {
+        "type": "string",
+        "pattern": "^[0-9]{11}$",
+        "personal": true,
+        "description": "RPPS id of the health professional, 11 digits."
+      },
+      "ville": {"type": "string", "minLength": 2, "maxLength": 80, "description": "Words of the beneficiary's town."},
+      "departement": {
+        "type": "string",
+        "pattern": "^([0-9]{2,3}|2[AaBb])$",
+        "description": "Department of the beneficiary: 75, 2A, 974."
+      },
+      "types": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "enum": ["avantage", "convention", "remuneration"]},
+        "description": "Kinds of link: avantage (benefit), convention (agreement), remuneration (payment)."
+      },
+      "date_min": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "YYYY-MM-DD."},
+      "date_max": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "YYYY-MM-DD."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20},
+      "offset": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999,
+        "default": 0,
+        "description": "Declarations skipped; offset + limit at most 10,000: narrow the filters beyond."
+      }
+    }
+  },
+  examples: [
+    { title: "Declarations of one company in 2025", input: {"siren": "552032534", "date_min": "2025-01-01", "date_max": "2025-12-31", "limit": 50} },
+    { title: "Payments to one health professional", input: {"rpps": "10001234567", "types": ["remuneration"]} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/api/sante/transparence/declarations",
+    pathParams: [],
+    query: {"entreprise": "entreprise", "siren": "siren", "beneficiaire": "beneficiaire", "rpps": "rpps", "ville": "ville", "departement": "departement", "types": "types", "date_min": "date_min", "date_max": "date_max", "limit": "limit", "offset": "offset"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const healthSumInterestsByCompany = defineFunction({
+  name: "fod.health_sum_interests_by_company",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "The declared links of interest (Transparence Santé) that match the filters, grouped by company and by type: {groupes: [{entreprise: {raison_sociale, siren}, type, montant_total, declarations, premiere, derniere}], suite, source}, largest total first; suite true means more groups after this page (no total is given). Do not add totals of different types: a payment or benefit can execute an agreement (convention_liee), the same money is then counted in both. Personal data under licence CC BY-NC-SA 4.0, reuse restricted to transparency of links of interest (no strictly commercial use); credit required: \"Source : base Transparence - Santé (Direction Générale de la Santé), transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0.\" (source.attribution).",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "anyOf": [
+      {"required": ["entreprise"]},
+      {"required": ["siren"]},
+      {"required": ["beneficiaire"]},
+      {"required": ["rpps"]},
+      {"required": ["ville"]},
+      {"required": ["departement"]}
+    ],
+    "properties": {
+      "entreprise": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120,
+        "description": "Words of the declaring company's name."
+      },
+      "siren": {"type": "string", "pattern": "^[0-9]{9}$", "description": "SIREN of the declaring company."},
+      "beneficiaire": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120,
+        "personal": true,
+        "description": "Surname (and first name) of the beneficiary."
+      },
+      "rpps": {
+        "type": "string",
+        "pattern": "^[0-9]{11}$",
+        "personal": true,
+        "description": "RPPS id of the health professional, 11 digits."
+      },
+      "ville": {"type": "string", "minLength": 2, "maxLength": 80, "description": "Words of the beneficiary's town."},
+      "departement": {
+        "type": "string",
+        "pattern": "^([0-9]{2,3}|2[AaBb])$",
+        "description": "Department of the beneficiary: 75, 2A, 974."
+      },
+      "types": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "enum": ["avantage", "convention", "remuneration"]},
+        "description": "Kinds of link: avantage (benefit), convention (agreement), remuneration (payment)."
+      },
+      "date_min": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "YYYY-MM-DD."},
+      "date_max": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "YYYY-MM-DD."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 99, "default": 50},
+      "offset": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9998,
+        "default": 0,
+        "description": "Groups skipped; offset + limit at most 9,999: narrow the filters beyond."
+      }
+    }
+  },
+  examples: [
+    { title: "Companies with links to one health professional", input: {"rpps": "10001234567"} },
+    { title: "Agreements and payments declared in Gironde in 2025", input: {"departement": "33", "types": ["convention", "remuneration"], "date_min": "2025-01-01"} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/api/sante/transparence/par-entreprise",
+    pathParams: [],
+    query: {"entreprise": "entreprise", "siren": "siren", "beneficiaire": "beneficiaire", "rpps": "rpps", "ville": "ville", "departement": "departement", "types": "types", "date_min": "date_min", "date_max": "date_max", "limit": "limit", "offset": "offset"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
 export const connector = defineConnector({
   name: "fod",
   label: "France Open Data",
   namespace: "fod",
-  version: "1.5.0",
-  apiVersion: "france-opendata-service 3aa4d5d (routes unversioned)",
+  version: "1.7.0",
+  apiVersion: "france-opendata-service 67ed5e3 (routes unversioned)",
   baseUrl: "https://data.oto.zone",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "FOD API key", "secret": true, "holder": "account"}],
   modes: ["platform", "byo_org"],
   timeoutMs: 60000,
+  queryArrays: "repeat",
   errors: [
     { status: 400, code: "invalid_request", message: "FOD or its upstream source rejected an argument as invalid; the message names the accepted values when there is a closed list.", retryable: false },
     { status: 401, code: "access_rejected", message: "FOD refused the API key: unknown, revoked or missing. Retrying unchanged fails the same way.", retryable: false, marksAccount: "credential_rejected" },
@@ -1448,5 +2157,17 @@ export const connector = defineConnector({
     taxGetBofipDocument,
     complianceScreenAssetFreeze,
     complianceCheckMutualTermination,
+    healthSearchMedicines,
+    healthGetMedicine,
+    healthSearchClinicalTrials,
+    healthGetClinicalTrial,
+    healthSearchEuClinicalTrials,
+    healthGetEuClinicalTrial,
+    healthSearchPubmed,
+    healthGetPubmedArticle,
+    healthSearchEuropepmc,
+    healthGetEuropepmcArticle,
+    healthListInterestDeclarations,
+    healthSumInterestsByCompany,
   ],
 })
