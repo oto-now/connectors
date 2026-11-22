@@ -43,9 +43,10 @@ def _functions() -> dict[str, dict]:
     return {f["name"]: f for f in _description()["functions"]}
 
 
-def test_the_description_is_version_1_8_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_8_0_or_later_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.8.0"
+    major, minor, _ = (int(n) for n in description["connector"]["version"].split("."))
+    assert (major, minor) >= (1, 8)
     check(description, FOD)
 
 

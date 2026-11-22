@@ -946,6 +946,755 @@ export const propertySearchBuildingPermits = defineFunction({
   cost: { per: "request" },
 })
 
+export const propertyGetParcelBuildings = defineFunction({
+  name: "fod.property_get_parcel_buildings",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Measure what is already built on a cadastral parcel (IGN BDTOPO): {nb_batiments, emprise_batie_m2, contenance_m2, ces_reel, hauteur_max_m, dont_constructions_legeres, par_usage: {usage: {nb, emprise_m2}}, batiments: [{cleabs, usage, nature, hauteur_m, emprise_m2, construction_legere}]}. Pass the parcel's geometry and contenance_m2 as the cadastral parcel at a point returns them. A building counts for the parcel when its centroid falls inside it. ces_reel (built footprint over parcel area) is null without contenance_m2; a low ratio in a dense zone flags under-used land. No building is an answer, not a failure.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["geometry"],
+    "properties": {
+      "geometry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "coordinates"],
+        "description": "GeoJSON geometry of the parcel, WGS 84, as the cadastral parcel returns it.",
+        "properties": {
+          "type": {"type": "string", "enum": ["Polygon", "MultiPolygon"]},
+          "coordinates": {"type": "array", "minItems": 1, "description": "GeoJSON coordinates, [longitude, latitude] pairs."}
+        }
+      },
+      "contenance_m2": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "description": "Cadastral area of the parcel, m²: gives ces_reel."
+      }
+    }
+  },
+  examples: [
+    { title: "Buildings on a parcel in Bordeaux", input: {"geometry": {"type": "Polygon", "coordinates": [[[-0.57521, 44.84172], [-0.57468, 44.84175], [-0.57465, 44.84139], [-0.57519, 44.84136], [-0.57521, 44.84172]]]}, "contenance_m2": 1710} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/bdtopo/bati",
+    pathParams: [],
+    query: {},
+    body: {"geometry": "geometry", "contenance_m2": "contenance_m2"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyGetSolarYield = defineFunction({
+  name: "fod.property_get_solar_yield",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Estimate the annual yield of a rooftop photovoltaic system of kwc kWp at a point (PVGIS 5.3, European Commission JRC), at the optimal tilt and azimuth: {productible_kwh_an, irradiance_kwh_m2_an, pertes_pct, optimal_slope_deg, optimal_azimuth_deg, inputs}. Physical data only, with 14% system losses assumed: tariffs, self-consumption and savings are the caller's assumptions.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["lat", "lon", "kwc"],
+    "properties": {
+      "lat": {"type": "number", "minimum": -90, "maximum": 90, "personal": true, "description": "Latitude, WGS 84."},
+      "lon": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180,
+        "personal": true,
+        "description": "Longitude, WGS 84."
+      },
+      "kwc": {"type": "number", "minimum": 1, "description": "Peak power installed, kWp."}
+    }
+  },
+  examples: [
+    { title: "Yield of 100 kWp on a warehouse roof near Bordeaux", input: {"lat": 44.8417, "lon": -0.5753, "kwc": 100} },
+  ],
+  refusals: [
+    { code: "solar_yield_unavailable", when: "the response is null", message: "PVGIS gave no yield for this point: it may lie outside its coverage, or PVGIS is unavailable; retry later before concluding." },
+  ],
+  expect: [
+    { kind: "non_empty", refusal: "solar_yield_unavailable", path: "productible_kwh_an" },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/foncier/pvgis/productible",
+    pathParams: [],
+    query: {"lat": "lat", "lon": "lon", "kwc": "kwc"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyGetIsochrone = defineFunction({
+  name: "fod.property_get_isochrone",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Get the area reachable from a point, or from which the point is reached, within a travel time or a distance, on foot or by car (IGN Géoplateforme routing on BD TOPO): {geometry (GeoJSON polygon), centroid: {lat, lon}, bbox, profile, direction, minutes, metres}. Exactly one of minutes and metres. The primitive of a catchment area: to know what lies within ten minutes' walk of a site, test points against the polygon. By car, departure and arrival differ (one-way streets).",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["lat", "lon"],
+    "oneOf": [{"required": ["minutes"]}, {"required": ["metres"]}],
+    "properties": {
+      "lat": {"type": "number", "minimum": -90, "maximum": 90, "personal": true, "description": "Latitude, WGS 84."},
+      "lon": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180,
+        "personal": true,
+        "description": "Longitude, WGS 84."
+      },
+      "minutes": {"type": "number", "exclusiveMinimum": 0, "description": "Travel time, in minutes."},
+      "metres": {"type": "integer", "minimum": 1, "description": "Travel distance, in metres."},
+      "profile": {"type": "string", "enum": ["pedestrian", "car"], "default": "pedestrian"},
+      "direction": {
+        "type": "string",
+        "enum": ["departure", "arrival"],
+        "default": "departure",
+        "description": "departure: reachable from the point; arrival: from where the point is reached."
+      }
+    }
+  },
+  examples: [
+    { title: "Ten minutes' walk around place Bellecour, Lyon", input: {"lat": 45.758381, "lon": 4.83276, "minutes": 10} },
+    { title: "Fifteen minutes' drive to a site near Bordeaux", input: {"lat": 44.8417, "lon": -0.5753, "minutes": 15, "profile": "car", "direction": "arrival"} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/api/foncier/ign/isochrone",
+    pathParams: [],
+    query: {"lat": "lat", "lon": "lon", "minutes": "minutes", "metres": "metres", "profile": "profile", "direction": "direction"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyListElectricityConsumption = defineFunction({
+  name: "fod.property_list_electricity_consumption",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the annual electricity consumption of business addresses on the distribution grid (Enedis open data), one row per address and NAF division as Enedis publishes it: {total, signals: [{ref_key, row_key, annee, code_commune, adresse, naf2, secteur, mwh, nombre_de_sites, raw}], tronque, lignes_ignorees, mwh_ignores}. An address with several divisions has several rows sharing ref_key: thresholding rows misses sites whose total alone passes the bar; for sites, sum by address or use the site grain. limit cuts in the dataset's order (commune code), not by consumption: when tronque is true, raise min_mwh or pass limit -1. Sites on the transmission grid, the largest consumers, are not here. Rows without an address are counted in lignes_ignorees.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["annee"],
+    "anyOf": [{"required": ["dept"]}, {"required": ["code_commune"]}, {"required": ["code_epci"]}],
+    "properties": {
+      "annee": {
+        "type": "string",
+        "pattern": "^[0-9]{4}$",
+        "description": "Year of consumption, such as 2024; Enedis publishes a year in the following one."
+      },
+      "dept": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B|97[1-6])$",
+        "description": "Department code, such as 33, 2A or 974."
+      },
+      "code_commune": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$"},
+        "description": "INSEE commune codes."
+      },
+      "code_epci": {
+        "type": "string",
+        "pattern": "^[0-9]{9}$",
+        "description": "SIREN of an intercommunal body (EPCI), such as a metropolis."
+      },
+      "naf2": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "pattern": "^[0-9]{2}$"},
+        "description": "NAF divisions, two digits (86 = health, 24 = metallurgy): the only precise sector filter."
+      },
+      "secteur": {
+        "type": "string",
+        "enum": ["INDUSTRIE", "TERTIAIRE", "AGRICULTURE"],
+        "description": "Coarse sector: a hospital and an office tower are both TERTIAIRE."
+      },
+      "min_mwh": {"type": "number", "minimum": 0, "description": "Minimum annual consumption of a row, MWh."},
+      "max_mwh": {"type": "number", "minimum": 0, "description": "Maximum annual consumption of a row, MWh."},
+      "limit": {
+        "type": "integer",
+        "minimum": -1,
+        "not": {"const": 0},
+        "default": 200,
+        "description": "Rows read; -1 = all."
+      }
+    }
+  },
+  examples: [
+    { title: "Health sector addresses above 1 GWh in Gironde, 2024", input: {"annee": "2024", "dept": "33", "naf2": ["86"], "min_mwh": 1000, "limit": -1} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/enedis/conso",
+    pathParams: [],
+    query: {},
+    body: {"annee": "annee", "dept": "dept", "code_commune": "code_commune", "code_epci": "code_epci", "naf2": "naf2", "secteur": "secteur", "min_mwh": "min_mwh", "max_mwh": "max_mwh", "limit": "limit"},
+    headers: {},
+  },
+  timeoutMs: 120000,
+  cost: { per: "request" },
+})
+
+export const propertyListElectricitySites = defineFunction({
+  name: "fod.property_list_electricity_sites",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List business sites on the distribution grid (Enedis open data) with their total annual electricity consumption, the NAF divisions of an address summed, largest first: {total, lignes_lues, signals: [{site_key, annee, code_commune, adresse, mwh, naf2_principal, naf2_detail, multi_naf2, secteurs, code_iris, nombre_de_sites}], lignes_ignorees, mwh_ignores}. min_mwh applies after the sum: the grain almost every question means. limit caps the rows read before the sum, in the dataset's order: with min_mwh, leave limit at -1 or read total as a floor. Sites on the transmission grid, the largest consumers, are read apart.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["annee"],
+    "anyOf": [{"required": ["dept"]}, {"required": ["code_commune"]}, {"required": ["code_epci"]}],
+    "properties": {
+      "annee": {
+        "type": "string",
+        "pattern": "^[0-9]{4}$",
+        "description": "Year of consumption, such as 2024; Enedis publishes a year in the following one."
+      },
+      "dept": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B|97[1-6])$",
+        "description": "Department code, such as 33, 2A or 974."
+      },
+      "code_commune": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$"},
+        "description": "INSEE commune codes."
+      },
+      "code_epci": {
+        "type": "string",
+        "pattern": "^[0-9]{9}$",
+        "description": "SIREN of an intercommunal body (EPCI), such as a metropolis."
+      },
+      "naf2": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "pattern": "^[0-9]{2}$"},
+        "description": "NAF divisions, two digits (86 = health, 24 = metallurgy): the only precise sector filter."
+      },
+      "secteur": {
+        "type": "string",
+        "enum": ["INDUSTRIE", "TERTIAIRE", "AGRICULTURE"],
+        "description": "Coarse sector: a hospital and an office tower are both TERTIAIRE."
+      },
+      "min_mwh": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Minimum annual consumption of a site, MWh, after the sum."
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": -1,
+        "not": {"const": 0},
+        "default": -1,
+        "description": "Rows read before the sum; -1 = all."
+      }
+    }
+  },
+  examples: [
+    { title: "Sites above 2 GWh in Bordeaux Métropole, 2024", input: {"annee": "2024", "code_epci": "243300316", "min_mwh": 2000} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/enedis/sites",
+    pathParams: [],
+    query: {},
+    body: {"annee": "annee", "dept": "dept", "code_commune": "code_commune", "code_epci": "code_epci", "naf2": "naf2", "secteur": "secteur", "min_mwh": "min_mwh", "limit": "limit"},
+    headers: {},
+  },
+  timeoutMs: 120000,
+  cost: { per: "request" },
+})
+
+export const propertyListTransmissionConsumption = defineFunction({
+  name: "fod.property_list_transmission_consumption",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the annual electricity consumption of sites on the transmission grid (ODRÉ, RTE), by IRIS, largest first: {total, annee, signals: [{ref_key, annee, code_iris, code_commune, nom_commune, mwh, pdl, maille, site_unique, geo_point, raw}]}. These sites, the largest consumers, are absent from the distribution data. maille site: one delivery point in the IRIS, the row is one site; iris_agrege: a sum. site_unique (true by default) keeps single-site IRIS only and hides the aggregates, where the largest consumers often are. The data lags a year behind Enedis: an empty answer comes with annees_disponibles, and is no proof of absence. No NAF code here.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["annee"],
+    "properties": {
+      "annee": {
+        "type": "string",
+        "pattern": "^[0-9]{4}$",
+        "description": "Year of consumption, such as 2023; read the years available first."
+      },
+      "dept": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B|97[1-6])$",
+        "description": "Department code, such as 33, 2A or 974."
+      },
+      "code_commune": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$"},
+        "description": "INSEE commune codes."
+      },
+      "min_mwh": {"type": "number", "minimum": 0, "description": "Consumption above this, MWh."},
+      "site_unique": {
+        "type": "boolean",
+        "default": true,
+        "description": "Keep only the IRIS with one delivery point; false adds the aggregated IRIS."
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": -1,
+        "not": {"const": 0},
+        "default": -1,
+        "description": "Rows read; -1 = all."
+      }
+    }
+  },
+  examples: [
+    { title: "Transmission-grid consumption in Savoie, aggregates included, 2023", input: {"annee": "2023", "dept": "73", "site_unique": false} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/odre/conso",
+    pathParams: [],
+    query: {},
+    body: {"annee": "annee", "dept": "dept", "code_commune": "code_commune", "min_mwh": "min_mwh", "site_unique": "site_unique", "limit": "limit"},
+    headers: {},
+  },
+  timeoutMs: 120000,
+  cost: { per: "request" },
+})
+
+export const propertyListTransmissionYears = defineFunction({
+  name: "fod.property_list_transmission_years",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the years the transmission grid consumption data (ODRÉ) carries, newest first: [\"2023\", ...]. It lags a year behind the distribution data: read it before crossing the two.",
+  schema: {"type": "object", "additionalProperties": false, "properties": {}},
+  examples: [
+    { title: "Years available", input: {} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/api/foncier/odre/annees",
+    pathParams: [],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyListCommuneSales = defineFunction({
+  name: "fod.property_list_commune_sales",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the property sales recorded in DVF (land registry transfers, from 2014) in a commune, most recent first, raw: {code_commune, type_local, years, count, mutations: [{id_mutation, date_mutation, nature_mutation, valeur_fonciere, type_bien, type_local, surface_reelle_bati, surface_terrain, nombre_locaux, prix_m2, vefa, id_parcelle, id_parcelles, adresse, latitude, longitude}]}. Every kind of property and transfer (off-plan sale, auction, exchange) unless filtered; type_local is set only for a single flat or house. For a clean price per m², read the commune's price statistics. DVF does not cover Alsace-Moselle and Mayotte. A dense commune (a Paris arrondissement) may time out on a first call while the source warms up: retry before concluding.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["code_commune"],
+    "properties": {
+      "code_commune": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$",
+        "description": "INSEE commune code, 5 characters (not the postal code)."
+      },
+      "type_local": {
+        "type": "string",
+        "enum": ["Appartement", "Maison"],
+        "description": "Only single dwellings of this kind."
+      },
+      "surface_min": {"type": "number", "minimum": 0, "description": "Minimum built area, m²."},
+      "surface_max": {"type": "number", "minimum": 0, "description": "Maximum built area, m²."},
+      "years": {
+        "type": "integer",
+        "minimum": 1,
+        "default": 2,
+        "description": "Depth in years, counted back from the latest year with data."
+      },
+      "limit": {"type": "integer", "minimum": 1, "default": 50, "description": "Most recent sales returned."}
+    }
+  },
+  examples: [
+    { title: "House sales in Pessac over three years", input: {"code_commune": "33318", "type_local": "Maison", "years": 3} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/dvf/comparables",
+    pathParams: [],
+    query: {},
+    body: {"code_commune": "code_commune", "type_local": "type_local", "surface_min": "surface_min", "surface_max": "surface_max", "years": "years", "limit": "limit"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyGetEnergyRatingStats = defineFunction({
+  name: "fod.property_get_energy_rating_stats",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "Get the distribution of the energy labels (DPE, A to G, ADEME) of a commune's dwellings: {code_commune, type_batiment, total, repartition_etiquettes: {A: count, ...}}. Counts diagnoses made since July 2021, not dwellings.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["code_commune"],
+    "properties": {
+      "code_commune": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$",
+        "description": "INSEE commune code, 5 characters (not the postal code)."
+      },
+      "type_batiment": {"type": "string", "enum": ["maison", "appartement", "immeuble"]}
+    }
+  },
+  examples: [
+    { title: "Energy labels of flats in Lyon 2e", input: {"code_commune": "69382", "type_batiment": "appartement"} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/dpe/stats",
+    pathParams: [],
+    query: {},
+    body: {"code_commune": "code_commune", "type_batiment": "type_batiment"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyListNonResidentialEnergyRatings = defineFunction({
+  name: "fod.property_list_non_residential_energy_ratings",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the energy performance diagnoses of non-residential buildings (tertiary DPE, ADEME, since July 2021): offices, shops, care, schools, hotels, largest floor area first: {total, sans_position, diagnostics: [{numero_dpe, date_etablissement, date_fin_validite, secteur_activite, categorie_erp, etiquette_dpe, etiquette_ges, surface_shon, surface_utile, occupants, annee_construction, adresse, code_commune, lambert_x, lambert_y, geocode, id_rnb, raw}]}. Says what a building is, where consumption data says how much. lambert_x and lambert_y are Lambert 93, the projection of the company register's establishments; sans_position counts the diagnoses without a position. total counts what came back: equal to size, more exist. A missing label is not a G.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "anyOf": [{"required": ["code_commune"]}, {"required": ["departement"]}],
+    "properties": {
+      "code_commune": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$"},
+        "description": "INSEE commune codes."
+      },
+      "departement": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B|97[1-6])$",
+        "description": "Department code, such as 33, 2A or 974."
+      },
+      "secteur": {
+        "type": "string",
+        "description": "ERP activity sector, the exact label of the source (in French).",
+        "enum": [
+          "M : Magasins de vente, centres commerciaux",
+          "autres tertiaires non ERP",
+          "W : Administrations, banques, bureaux",
+          "locaux d'entreprise (bureaux)",
+          "N : Restaurants et débits de boisson",
+          "J : Structures d’accueil pour personnes âgées ou personnes handicapées",
+          "U : Établissements de soins",
+          "R : Établissements d’éveil, d’enseignement, de formation, centres de vacances, centres de loisirs sans hébergement",
+          "O : Hôtels et pensions de famille",
+          "L : Salles d'auditions, de conférences, de réunions, de spectacles ou à usage multiple",
+          "GHW : Bureaux",
+          "X : Établissements sportifs couverts",
+          "T : Salles d'exposition à vocation commerciale",
+          "P : Salles de danse et salles de jeux",
+          "GHZ : Usage mixte",
+          "V : Établissements de divers cultes",
+          "S : Bibliothèques, centres de documentation",
+          "PA : Établissements de Plein Air",
+          "OA : Hôtels-restaurants d'Altitude",
+          "GA : Gares Accessibles au public (chemins de fer, téléphériques, remonte-pentes...)",
+          "Y : Musées",
+          "PS : Parcs de Stationnement couverts",
+          "GHR : Enseignement",
+          "GHU : Usage sanitaire",
+          "GHO : Hôtel",
+          "GHA : Habitation",
+          "REF : REFuges de montagne",
+          "CTS : Chapiteaux, Tentes et Structures toile",
+          "EF : Établissements flottants (eaux intérieures)",
+          "GHS : Dépôt d'archives",
+          "GHTC : tour de contrôle",
+          "SG : Structures Gonflables"
+        ]
+      },
+      "etiquette": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "enum": ["A", "B", "C", "D", "E", "F", "G"]},
+        "description": "Energy labels, any of them."
+      },
+      "surface_min": {"type": "number", "minimum": 0, "description": "Minimum gross floor area (SHON), m²."},
+      "size": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10000,
+        "default": 100,
+        "description": "Diagnoses returned; the source serves 10,000 at most."
+      }
+    }
+  },
+  examples: [
+    { title: "Care facilities rated F or G in Gironde", input: {"departement": "33", "secteur": "U : Établissements de soins", "etiquette": ["F", "G"]} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/dpe/tertiaire",
+    pathParams: [],
+    query: {},
+    body: {"code_commune": "code_commune", "departement": "departement", "secteur": "secteur", "etiquette": "etiquette", "surface_min": "surface_min", "size": "size"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyListGhgReports = defineFunction({
+  name: "fod.property_list_ghg_reports",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the greenhouse gas reports (BEGES, ADEME) organisations published, keyed by SIREN, latest reporting year first: {total, bilans: [{siren, raison_sociale, naf, annee_reporting, date_publication, obligee, tranche_salaries, rapport_url, objectif_2030, contact, entites_consolidees, electricite, emissions: {par_categorie, total, postes_declares, postes_absents, unite}, raw}]}. A missing post is not a zero: totals sum what was declared. electricite is a MWh estimate inferred from post 2.1 with the French average factor (certitude infere), never metered. contact is the declared officer, null when masked at source. The reporting year is not the publication year. total counts what came back: equal to size, more exist.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "siren": {"type": "string", "pattern": "^[0-9]{9}$", "description": "SIREN, 9 digits without spaces."},
+      "naf": {
+        "type": "string",
+        "pattern": "^[0-9]{2}(\\.?[0-9]{2}[A-Z])?$",
+        "description": "NAF code (86.10Z or 8610Z), or a two-digit division (86) for all its classes."
+      },
+      "annee": {"type": "integer", "minimum": 2000, "description": "Reporting year, not the publication year."},
+      "departement": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B|97[1-6])$",
+        "description": "Department code, such as 33, 2A or 974."
+      },
+      "obligee": {
+        "type": "boolean",
+        "description": "true: only organisations under the legal obligation (over 500 staff, large local authorities, the State)."
+      },
+      "size": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10000,
+        "default": 100,
+        "description": "Reports returned; the source serves 10,000 at most."
+      }
+    }
+  },
+  examples: [
+    { title: "Every report of one company", input: {"siren": "552032534"} },
+    { title: "Hospital reports in the Nord", input: {"naf": "86", "departement": "59", "size": 50} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/beges",
+    pathParams: [],
+    query: {},
+    body: {"siren": "siren", "naf": "naf", "annee": "annee", "departement": "departement", "obligee": "obligee", "size": "size"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyListBuildingOwners = defineFunction({
+  name: "fod.property_list_building_owners",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List buildings with the SIREN of their owner when it is a legal entity (BDNB, CSTB, from the land registry: an exact link, not an address match): {total, requetes, tronque, couverture_partielle, signaux: [{batiment_groupe_id, adresse, code_commune, proprietaire: {siren, denomination, nb_locaux}, autres_proprietaires, bati: {emprise_m2, hauteur_m, annee_construction, usage}, energie: {conso_pro_elec_kwh, conso_pro_gaz_kwh, millesime_conso, classe_dpe_tertiaire, classe_dpe}}]}. By siren, every building a company owns; by commune with emprise_min, a town's large buildings. Natural persons are anonymised at source: a missing building is not one without an owner. No offset: rows come by ascending owner SIREN, not by size; tronque true means more exist, narrow before concluding on a territory.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "anyOf": [
+      {"required": ["code_commune"]},
+      {"required": ["siren"]},
+      {"required": ["batiment_groupe_id"]},
+      {"required": ["departement"]}
+    ],
+    "properties": {
+      "code_commune": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$",
+        "description": "INSEE commune code, 5 characters (not the postal code)."
+      },
+      "siren": {"type": "string", "pattern": "^[0-9]{9}$", "description": "SIREN, 9 digits without spaces."},
+      "batiment_groupe_id": {
+        "type": "string",
+        "pattern": "^bdnb-bg-[0-9A-Z-]+$",
+        "description": "BDNB building group id, bdnb-bg-...."
+      },
+      "departement": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B|97[1-6])$",
+        "description": "Department code, such as 33, 2A or 974."
+      },
+      "emprise_min": {"type": "number", "minimum": 0, "description": "Minimum ground footprint, m²."},
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 500,
+        "default": 50,
+        "description": "Buildings returned; the source serves 10 per request, each 10 more is one more request."
+      }
+    }
+  },
+  examples: [
+    { title: "Buildings of 5,000 m² and more in Bordeaux", input: {"code_commune": "33063", "emprise_min": 5000} },
+    { title: "Every building one company owns", input: {"siren": "552032534", "limit": 100} },
+  ],
+  refusals: [],
+  request: {
+    method: "POST",
+    path: "/api/foncier/bdnb",
+    pathParams: [],
+    query: {},
+    body: {"code_commune": "code_commune", "siren": "siren", "batiment_groupe_id": "batiment_groupe_id", "departement": "departement", "emprise_min": "emprise_min", "limit": "limit"},
+    headers: {},
+  },
+  timeoutMs: 120000,
+  output: { strip: ["signaux.raw"] },
+  cost: { per: "request" },
+})
+
+export const propertyListPollutantEmitters = defineFunction({
+  name: "fod.property_list_pollutant_emitters",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the establishments that declared emissions of a pollutant to the IREP registry for a year, largest first, with SIRET and coordinates: {annee, total, tronque, sous_seuil, signaux: [{identifiant, nom, siret, adresse, code_commune, naf, latitude, longitude, polluant, milieu, quantite, unite, sous_seuil}]}. Where a GHG report covers a whole organisation, this names the site. Without polluant, fossil CO2 to air. A quantity declared below the reporting threshold comes back as quantite null with sous_seuil true, after the known ones: neither zero nor absence. CO2 has three labels (fossil, biomass, total): do not read the total as fossil.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "annee": {"type": "integer", "minimum": 2003, "default": 2024, "description": "Year of the registry."},
+      "departement": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B|97[1-6])$",
+        "description": "Department code, such as 33, 2A or 974."
+      },
+      "code_commune": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$",
+        "description": "INSEE commune code, 5 characters (not the postal code)."
+      },
+      "siret": {"type": "string", "pattern": "^[0-9]{14}$", "description": "SIRET, 14 digits without spaces."},
+      "polluant": {
+        "type": "string",
+        "maxLength": 200,
+        "description": "Exact label of the registry, in French: Dioxyde de carbone (CO2) d'origine non biomasse (the default), Oxydes d'azote (NOx/NO2)...; empty = every pollutant."
+      },
+      "milieu": {
+        "type": "string",
+        "enum": ["Air", "Eau (direct)", "Eau (indirect)", "Sol", ""],
+        "default": "Air",
+        "description": "Medium of the emission; empty = every medium."
+      },
+      "limit": {"type": "integer", "minimum": 1, "default": 50, "description": "Establishments returned."}
+    }
+  },
+  examples: [
+    { title: "Largest fossil CO2 emitters in the Nord, 2024", input: {"departement": "59", "limit": 20} },
+    { title: "Nitrogen oxides emitted in Dunkerque", input: {"code_commune": "59183", "polluant": "Oxydes d'azote (NOx/NO2)"} },
+  ],
+  refusals: [
+    { code: "pollutant_label_unknown", when: 400, message: "polluant or milieu is not an exact label of that year's IREP registry: labels are in French, accents and case kept, such as Dioxyde de carbone (CO2) d'origine non biomasse." },
+    { code: "registry_year_unpublished", when: 404, message: "The IREP registry of this year is not published: try an earlier year." },
+  ],
+  request: {
+    method: "POST",
+    path: "/api/foncier/irep",
+    pathParams: [],
+    query: {},
+    body: {"annee": "annee", "departement": "departement", "code_commune": "code_commune", "siret": "siret", "polluant": "polluant", "milieu": "milieu", "limit": "limit"},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const propertyListPointsOfInterest = defineFunction({
+  name: "fod.property_list_points_of_interest",
+  connector: "fod",
+  class: "read",
+  act: false,
+  description: "List the OpenStreetMap objects carrying a tag over a commune, a department or a box, in one call (Overpass): {selector, count, pois: [{osm_type, osm_id, name, lat, lon, postcode, tags}]}. selector is an OSM tag, key=value (amenity=parking, shop=laundry) or a bare key (shop). count equal to limit: more exist. Infrastructure (parking, schools, transport, public facilities) is well mapped; shops and businesses less so: a count of shops is a floor.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["selector"],
+    "oneOf": [{"required": ["commune"]}, {"required": ["departement"]}, {"required": ["bbox"]}],
+    "properties": {
+      "selector": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_:-]+(=[^\"\\\\]+)?$",
+        "description": "OSM tag, key=value or a bare key: amenity=parking, shop=laundry, amenity."
+      },
+      "commune": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B)[0-9]{3}$",
+        "description": "INSEE commune code, 5 characters (not the postal code)."
+      },
+      "departement": {
+        "type": "string",
+        "pattern": "^([0-9]{2}|2A|2B|97[1-6])$",
+        "description": "Department code, such as 33, 2A or 974."
+      },
+      "bbox": {
+        "type": "string",
+        "pattern": "^-?[0-9]+(\\.[0-9]+)?(,-?[0-9]+(\\.[0-9]+)?){3}$",
+        "description": "Box south,west,north,east, decimal degrees WGS 84: 44.83,-0.59,44.85,-0.56."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 5000, "default": 500, "description": "Objects returned."}
+    }
+  },
+  examples: [
+    { title: "Car parks in Marseille", input: {"selector": "amenity=parking", "commune": "13055"} },
+    { title: "Laundries in a box of central Bordeaux", input: {"selector": "shop=laundry", "bbox": "44.83,-0.59,44.85,-0.56"} },
+  ],
+  refusals: [
+    { code: "osm_unavailable", when: 500, message: "The public OpenStreetMap query service (Overpass) refused or did not answer, often when busy: retry in a few minutes, or narrow the area." },
+  ],
+  request: {
+    method: "GET",
+    path: "/api/osm/pois",
+    pathParams: [],
+    query: {"selector": "selector", "commune": "commune", "departement": "departement", "bbox": "bbox", "limit": "limit"},
+    body: {},
+    headers: {},
+  },
+  timeoutMs: 180000,
+  cost: { per: "request" },
+})
+
 export const urbanGetZoning = defineFunction({
   name: "fod.urban_get_zoning",
   connector: "fod",
@@ -2733,7 +3482,7 @@ export const connector = defineConnector({
   name: "fod",
   label: "France Open Data",
   namespace: "fod",
-  version: "1.8.0",
+  version: "1.9.0",
   apiVersion: "france-opendata-service a7cb702 (routes unversioned)",
   baseUrl: "https://data.oto.zone",
   auth: {"kind": "bearer", "token": "api_key"},
@@ -2772,6 +3521,20 @@ export const connector = defineConnector({
     propertyListComparableSales,
     propertyGetPriceStats,
     propertySearchBuildingPermits,
+    propertyGetParcelBuildings,
+    propertyGetSolarYield,
+    propertyGetIsochrone,
+    propertyListElectricityConsumption,
+    propertyListElectricitySites,
+    propertyListTransmissionConsumption,
+    propertyListTransmissionYears,
+    propertyListCommuneSales,
+    propertyGetEnergyRatingStats,
+    propertyListNonResidentialEnergyRatings,
+    propertyListGhgReports,
+    propertyListBuildingOwners,
+    propertyListPollutantEmitters,
+    propertyListPointsOfInterest,
     urbanGetZoning,
     urbanGetZoningRegulation,
     urbanStartRegulationIngestion,
