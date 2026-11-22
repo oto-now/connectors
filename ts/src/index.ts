@@ -55,6 +55,7 @@ import * as salesforce from "./salesforce"
 import * as sellsy from "./sellsy"
 import * as seranking from "./seranking"
 import * as serper from "./serper"
+import * as sirene from "./sirene"
 import * as sivan from "./sivan"
 import * as slack from "./slack"
 import * as slackUser from "./slack_user"
@@ -120,6 +121,7 @@ export { salesforce }
 export { sellsy }
 export { seranking }
 export { serper }
+export { sirene }
 export { sivan }
 export { slack }
 export { slackUser }
@@ -188,6 +190,7 @@ export const connectors: readonly Connector[] = [
   sellsy.connector,
   seranking.connector,
   serper.connector,
+  sirene.connector,
   sivan.connector,
   slack.connector,
   slackUser.connector,

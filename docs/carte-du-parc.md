@@ -73,6 +73,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `sellsy` | Sellsy | 1.0.1 | application du client (OAuth entre machines) | non | 2 | 2 | 0 | 0 | non | 2 | non | 0 |
 | `seranking` | SE Ranking | 1.1.0 | clé | non | 24 | 11 | 13 | 0 | oui, avec solde | 11 | non | 0 |
 | `serper` | Serper | 1.1.0 | clé | oui | 12 | 12 | 0 | 0 | non | 12 | non | 0 |
+| `sirene` | INSEE Sirene | 1.0.0 | clé | oui | 3 | 3 | 0 | 0 | oui | 0 | non | 0 |
 | `sivan` | Sivan | 1.1.0 | clé | non | 7 | 7 | 0 | 0 | oui | 7 | non | 0 |
 | `slack` | Slack | 1.1.0 | clé | non | 16 | 9 | 3 | 4 | oui | 16 | non | 0 |
 | `slack_user` | Slack (personal token) | 1.1.0 | clé | non | 10 | 5 | 2 | 3 | non | 10 | non | 0 |
@@ -80,7 +81,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `typeform` | Typeform | 1.2.0 | clé | non | 12 | 6 | 1 | 5 | non | 12 | non | 0 |
 | `wttj_ats` | Welcome to the Jungle ATS | 1.0.0 | clé | non | 10 | 7 | 3 | 0 | non | 0 | non | 0 |
 | `yousign` | Yousign | 1.1.1 | clé | non | 13 | 5 | 7 | 1 | oui | 0 | non | 0 |
-| **total : 63** |  |  |  |  | 1497 | 938 | 345 | 214 |  | 1008 |  | 0 |
+| **total : 64** |  |  |  |  | 1500 | 941 | 345 | 214 |  | 1008 |  | 0 |
 
 ## Par type
 
@@ -91,4 +92,4 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | compte de service (assertion signée) | 1 | 6 |
 | clé de l'hôte | 2 | 29 |
 | sans clé | 0 | 0 |
-| clé | 50 | 1385 |
+| clé | 51 | 1388 |

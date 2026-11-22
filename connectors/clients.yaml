@@ -45,6 +45,9 @@ described_by:
   microsoft/auth.py: microsoft
   microsoft/scopes.py: microsoft
   microsoft/_transport.py: microsoft
+  # La description sirene couvre le client de l'API Sirene de l'INSEE (client.py). Le stock Sirene (stock.py, un
+  # service d'oto) et la recherche d'entreprises (entreprises.py, réexportée de france-opendata) ne sont pas décrits.
+  sirene/client.py: sirene
 
 without_description:
   # De principe : pas le client d'un service.
@@ -142,7 +145,6 @@ without_description:
   serpapi: { category: before_the_rule, reason: "antérieur à la règle du 05/10 : pas encore décrit" }
   signwell: { category: before_the_rule, reason: "antérieur à la règle du 05/10 : pas encore décrit" }
   silae: { category: before_the_rule, reason: "antérieur à la règle du 05/10 : pas encore décrit" }
-  sirene: { category: before_the_rule, reason: "antérieur à la règle du 05/10 : pas encore décrit" }
   snitcher: { category: before_the_rule, reason: "antérieur à la règle du 05/10 : pas encore décrit" }
   spott: { category: before_the_rule, reason: "antérieur à la règle du 05/10 : pas encore décrit" }
   stripe: { category: before_the_rule, reason: "antérieur à la règle du 05/10 : pas encore décrit" }

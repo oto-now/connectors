@@ -1,0 +1,147 @@
+# yaml-language-server: $schema=../connector.schema.json
+# INSEE Sirene API 3.11 (https://api.insee.fr/api-sirene/3.11, portal https://portail-api.insee.fr), as the Python
+# client oto.tools.sirene (SireneClient, its logic in france_opendata.sirene 0.52.0) calls it, read on 2026-11-22.
+# The function names, the argument names and the request sent are the client's; tests/test_sirene_description.py reads
+# the client to keep both equal.
+#
+# Qualification (2026-11-22):
+# - Who holds the access: the account, by an API key created on the INSEE API portal (an account there, then a
+#   subscription to the Sirene API). The data are the public company register: the key identifies the caller, it does
+#   not open private data. Modes as oto 1: the user's or organization's own key, or a platform key.
+# - Authentication: the key in the header X-INSEE-Api-Key-Integration. The client also takes the portal's former
+#   OAuth client credentials (a token fetched with a base64 client_id:client_secret); a connector has one way in, the
+#   key, and the former credentials are left to the client.
+# - What a key allows: read only, fixed rights; the API writes nothing.
+# - Cost: free. No balance to read.
+# - Commitment: none, every function is a read.
+# - What the agent must not see: nothing secret comes back (no address that opens content, no token). Units under
+#   partial diffusion (statutDiffusion P, which replaced the non-diffusible status in 2023) come back with fields
+#   masked; their data must neither be redistributed whole nor used for prospecting, and the descriptions say it.
+# - Limits: 30 requests per minute per key (INSEE's open-data rate); a 429 beyond. The client's read timeout is
+#   30 s, the format's default.
+# - Address: one, the same for every account.
+# - Owner of the access: a public administration's service open to anyone with an account; not a client's back
+#   office.
+#
+# Scope: the two identity lookups, get_siret (an establishment by SIRET) and get_by_siren (a legal unit by SIREN,
+# whose current period names the NIC of its headquarters), and get_service_status, the probe. Left to the client,
+# named: get_headquarters, get_establishments, search and search_siret build the INSEE query q from their arguments
+# (siren:<siren> AND etablissementSiege:true, filters joined by AND and OR), which the format does not say; and
+# get_headquarters also reshapes the answer. The headquarters with its address is read in two calls: get_by_siren,
+# then get_siret on the SIREN followed by nicSiegeUniteLegale. get_service_status (GET /informations) is no method of
+# the client: it is the free read without argument the probe needs.
+#
+# Answers are kept whole: get_siret answers {header, etablissement}, get_by_siren {header, uniteLegale}; the client
+# returns the inner object, the description says where to read. The historised values (name, activity, state,
+# headquarters NIC) sit in the periods list, the current period first (dateFin null).
+#
+# Errors: 301, a duplicate unit merged into another (no redirect is followed); 400, a malformed number; 401, the key
+# refused, marking the account; 403, a unit the key may not read; 404, unknown number; 406, an Accept header refused
+# (the constant one is JSON); 429, the rate; 5xx, INSEE unavailable. The codes are those the API documents; none was
+# checked against a real call with a key on this date.
+connector:
+  name: sirene
+  label: INSEE Sirene
+  description: >-
+    The French national company register (Sirene) from INSEE's official API:
+    an establishment by its SIRET, a legal unit by its SIREN, with legal
+    form, activity code (NAF), headcount band, state and address.
+  logo_domain: insee.fr
+  namespace: sirene
+  version: 1.0.0
+  api_version: "3.11"
+  base_url: https://api.insee.fr/api-sirene/3.11
+  auth: { kind: api_key, in: header, name: X-INSEE-Api-Key-Integration, key: api_key }
+  credential:
+    - { name: api_key, label: INSEE API key, secret: true }
+  # As oto 1: the user's or organization's own key, or a platform key.
+  modes: [platform, byo_user, byo_org]
+  headers: { Accept: application/json }
+  rate_limit: { requests: 30, seconds: 60 }
+  probe: { function: get_service_status }
+  errors:
+    - { status: 301, code: unit_merged, retryable: false,
+        message: "INSEE: this number belongs to a duplicate unit merged into another one; the company has a current number to look up instead." }
+    - { status: 400, code: invalid_request, retryable: false,
+        message: "INSEE rejected the number as malformed: a SIREN has 9 digits, a SIRET 14." }
+    - { status: 401, code: key_refused, retryable: false, marks_account: credential_rejected,
+        message: "INSEE refused the API key: unknown, revoked, or not subscribed to the Sirene API on the INSEE API portal." }
+    - { status: 403, code: not_available, retryable: false,
+        message: "INSEE does not give this unit's data to this key." }
+    - { status: 404, code: not_found, retryable: false,
+        message: "Unknown to the Sirene register: check the number." }
+    - { status: 406, code: not_acceptable, retryable: false,
+        message: "INSEE refused the requested answer format." }
+    - { status: 429, code: rate_limited, retryable: true,
+        message: "INSEE rate limit reached (30 requests per minute per key): retry in a minute." }
+    - { status: [500, 502, 503, 504], code: upstream_unavailable, retryable: true,
+        message: "The INSEE Sirene API is unavailable or busy: retry later." }
+
+functions:
+  - name: get_siret
+    class: read
+    description: >-
+      Fetch one French establishment from the official Sirene register by its
+      SIRET (14 digits). Returns {header, etablissement: {siret, siren, nic,
+      etablissementSiege, dateCreationEtablissement,
+      trancheEffectifsEtablissement, statutDiffusionEtablissement,
+      adresseEtablissement {numeroVoie..., libelleVoie..., codePostal...,
+      libelleCommune...}, uniteLegale {denominationUniteLegale,
+      categorieJuridiqueUniteLegale, activitePrincipaleUniteLegale, ...},
+      periodesEtablissement [{dateFin, etatAdministratifEtablissement (A
+      active, F closed), activitePrincipaleEtablissement, enseigne1..., ...}]}};
+      the current period has dateFin null. Free; 30 calls per minute per key.
+      A unit under partial diffusion (statut P) comes back with fields masked:
+      its data must not be redistributed whole nor used for prospecting.
+    input:
+      type: object
+      additionalProperties: false
+      required: [siret]
+      properties:
+        siret: { type: string, pattern: "^[0-9]{14}$", description: "SIRET, 14 digits without spaces." }
+    examples:
+      - title: An establishment by its SIRET
+        input: { siret: "55203253400646" }
+    call: { method: GET, path: "/siret/{siret}" }
+
+  - name: get_by_siren
+    class: read
+    description: >-
+      Fetch one French legal unit (company) from the official Sirene register
+      by its SIREN (9 digits). Returns {header, uniteLegale: {siren,
+      dateCreationUniteLegale, trancheEffectifsUniteLegale,
+      categorieEntreprise, statutDiffusionUniteLegale, prenom1UniteLegale,
+      periodesUniteLegale [{dateFin, etatAdministratifUniteLegale (A active, C
+      ceased), denominationUniteLegale, nomUniteLegale,
+      categorieJuridiqueUniteLegale, activitePrincipaleUniteLegale,
+      nicSiegeUniteLegale, ...}]}}; the current period has dateFin null. The
+      headquarters SIRET is the SIREN followed by nicSiegeUniteLegale of the
+      current period: fetch it by SIRET for its address. Free; 30 calls per
+      minute per key. A unit under partial diffusion (statut P) comes back
+      with fields masked: its data must not be redistributed whole nor used
+      for prospecting.
+    input:
+      type: object
+      additionalProperties: false
+      required: [siren]
+      properties:
+        siren: { type: string, pattern: "^[0-9]{9}$", description: "SIREN, 9 digits without spaces." }
+    examples:
+      - title: A company by its SIREN
+        input: { siren: "552032534" }
+    call: { method: GET, path: "/siren/{siren}" }
+
+  - name: get_service_status
+    class: read
+    description: >-
+      Read the state of the INSEE Sirene API and the dates of the last updates
+      of its data (GET /informations): whether the service is up, and how
+      fresh the register it answers from is. Free. Not needed before a lookup.
+    input:
+      type: object
+      additionalProperties: false
+      properties: {}
+    examples:
+      - title: State of the service
+        input: {}
+    call: { method: GET, path: "/informations" }
