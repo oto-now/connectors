@@ -18,6 +18,7 @@ type Valid = {
   changes: Change[]
   namespaces: string[]
   connector: { [key: string]: unknown }
+  host?: unknown
   functions?: unknown
   served?: { [name: string]: unknown }
 }
@@ -45,6 +46,7 @@ describe("host profile cases", () => {
       expect(exampleProblems(document, compile)).toEqual([])
       expect(ruleProblems(document)).toEqual([])
     }
+    if (c.host !== undefined) expect(result.definition.host).toStrictEqual(c.host)
     if (c.functions !== undefined) expect(result.definition.functions).toStrictEqual(c.functions)
     if (c.served !== undefined) {
       const served = Object.fromEntries(documents.flatMap((d: any) => d.functions.map((f: any) => [`${d.connector.name}.${f.name}`, f])))

@@ -7,7 +7,7 @@
 // l'appelant sert déjà (ses fonctions, ses connecteurs), qu'aucun espace de l'hôte ne reprend. La définition :
 //
 //   { host: { functions: "/me/functions", roles, families },
-//     functions: { "projet.lister": { label, family, roles, summary } },   // dans l'ordre du document
+//     functions: { "projet.lister": { label, family, roles, summary, scope } },   // dans l'ordre du document
 //     connectors: [ un document du format par espace de noms, dans l'ordre d'apparition ] }
 //
 // Chaque opération est une fonction nommée par son `operationId`, `espace.verbe`, gardé tel quel : l'espace est son
@@ -15,6 +15,8 @@
 // description est celle de l'opération. Chaque connecteur lit l'adresse de l'hôte dans le réglage `address`, suivie du
 // serveur relatif du document, et s'authentifie en `host_delegated`. Une fonction sensible se confirme par les deux temps
 // de l'API (`confirm: { by: host }`) : `confirm`, paramètre de query réservé à ce protocole, n'est jamais un argument.
+// Une famille d'`x-oto` est son libellé, ou `{ label, scope }` : le scope OAuth demandé pour le jeton de ses fonctions,
+// que chacune porte (`scope`, `null` pour une famille sans scope).
 
 import { internalHost } from "./address"
 import { standardErrors } from "./errors"
@@ -49,12 +51,13 @@ export const CONFIRM_RESERVED = "host_confirm_reserved"
 export const CONFIRM_MISSING = "host_confirm_missing"
 export const SCHEMA_INVALID = "host_schema_invalid"
 export const RULE_BROKEN = "host_rule_broken"
+export const SCOPE_INVALID = "host_scope_invalid"
 /** Les codes du profil lui-même ; un document reçoit aussi ceux de l'import (`openapi_*`). */
 export const HOST_CODES = [
   OPENAPI_VERSION, SERVER_NOT_RELATIVE, ROOT_INVALID, EXTENSION_UNKNOWN, EXTENSION_MISSING, EXTENSION_INVALID,
   OPERATION_ID_INVALID, NAME_COLLISION, NAMESPACE_RESERVED, NAMESPACE_ACT, SUMMARY_INVALID, DESCRIPTION_INVALID,
   CLASS_MISMATCH, INPUT_NOT_CLOSED, EXAMPLE_MISSING, EXAMPLE_INVALID, CONFIRM_RESERVED, CONFIRM_MISSING, SCHEMA_INVALID,
-  RULE_BROKEN,
+  RULE_BROKEN, SCOPE_INVALID,
 ] as const
 /** Les juges du format, leurs codes dits dans ceux du profil. */
 const JUDGED: { [code: string]: string } = {
@@ -66,12 +69,15 @@ const JUDGED: { [code: string]: string } = {
 const OPERATION_ID = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/
 const IDENTIFIER = /^[a-z][a-z0-9_]*$/
 const URI = /^[a-z][a-z0-9+.-]*:\S+$/
+/** Un scope OAuth (RFC 6749 §3.3) : des jetons d'ASCII imprimable sauf l'espace, `"` et `\`, séparés d'une espace. */
+const SCOPE = /^[\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*$/
 const FUNCTIONS_PATH = /^\/[^/{}?#\s][^{}?#\s]*$/
 const MAX_OPERATION_ID = 64
 const MAX_SUMMARY = 90
 const MAX_DESCRIPTION = 1000
 const ROOT = "x-oto"
 const ROOT_KEYS = ["functions", "issuer", "resource", "roles", "families"]
+const FAMILY_KEYS = ["label", "scope"]
 const EXTENSIONS = ["x-oto-class", "x-oto-effect", "x-oto-examples", "x-oto-roles", "x-oto-label", "x-oto-family", "x-oto-output"]
 const REQUIRED = ["x-oto-class", "x-oto-roles", "x-oto-label", "x-oto-family"]
 const CLASSES = ["read", "write", "sensitive"]
@@ -96,9 +102,46 @@ export type HostResult = { definition: Json | null; problems: HostProblem[] }
 const blank = (value: unknown): boolean => typeof value !== "string" || !value.trim()
 const chars = (text: string): number => Array.from(text.trim()).length
 
-/** Une table d'identifiants vers des textes, non vide : les rôles et les familles de la racine. */
+/** Une table d'identifiants vers des textes, non vide : les rôles de la racine. */
 const labels = (value: unknown): boolean =>
   isObject(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, text]) => IDENTIFIER.test(key) && !blank(text))
+
+/** Les familles de la racine, chacune un libellé ou `{ label, scope }` ; `null` sur un défaut, chacun nommé. */
+function familiesOf(value: unknown, problems: HostProblem[]): Json | null {
+  const at = `${ROOT}.families`
+  if (!isObject(value) || !Object.keys(value).length || !Object.keys(value).every((key) => IDENTIFIER.test(key))) {
+    problems.push(problem(ROOT_INVALID, at, "the families, a table of identifiers to a label or to {label, scope}, not empty"))
+    return null
+  }
+  const found = problems.length
+  for (const [key, family] of Object.entries(value)) {
+    if (typeof family === "string") {
+      if (blank(family)) problems.push(problem(ROOT_INVALID, `${at}.${key}`, "the label of the family, not blank"))
+      continue
+    }
+    if (!isObject(family)) {
+      problems.push(problem(ROOT_INVALID, `${at}.${key}`, "a label, or {label, scope}"))
+      continue
+    }
+    for (const name of Object.keys(family))
+      if (!FAMILY_KEYS.includes(name))
+        problems.push(problem(EXTENSION_UNKNOWN, `${at}.${key}.${name}`, `${repr(name)} is not a key of a family (${FAMILY_KEYS.join(", ")})`))
+    if (blank(family.label)) problems.push(problem(ROOT_INVALID, `${at}.${key}.label`, "the label of the family, not blank"))
+    const scope = family.scope
+    if (!(typeof scope === "string" && SCOPE.test(scope)))
+      problems.push(
+        problem(
+          SCOPE_INVALID,
+          `${at}.${key}.scope`,
+          `${repr(scope)} is not an OAuth scope (RFC 6749 §3.3): tokens of printable ASCII but " and \\, separated by one space; a family without a scope is written as its label alone`,
+        ),
+      )
+  }
+  return problems.length > found ? null : { ...value }
+}
+
+/** Le scope OAuth d'une famille de la racine, `null` pour une famille écrite par son seul libellé. */
+const scopeOf = (family: unknown): string | null => (isObject(family) ? family.scope : null)
 
 function unknownExtensions(node: Json, at: string, known: readonly string[]): HostProblem[] {
   const where = at ? `${at}.` : ""
@@ -136,10 +179,10 @@ function rootOf(document: Json, problems: HostProblem[]): Json {
     )
   if (typeof root.resource === "string" && URI.test(root.resource)) sound.resource = root.resource
   else problems.push(problem(ROOT_INVALID, `${ROOT}.resource`, "the resource indicator of the API at the issuer, an absolute URI"))
-  for (const key of ["roles", "families"]) {
-    if (labels(root[key])) sound[key] = { ...root[key] }
-    else problems.push(problem(ROOT_INVALID, `${ROOT}.${key}`, `the ${key}, a table of identifiers to texts, not empty`))
-  }
+  if (labels(root.roles)) sound.roles = { ...root.roles }
+  else problems.push(problem(ROOT_INVALID, `${ROOT}.roles`, "the roles, a table of identifiers to texts, not empty"))
+  const families = familiesOf(root.families, problems)
+  if (families !== null) sound.families = families
   return sound
 }
 
@@ -191,7 +234,7 @@ function extensions(operation: Json, method: string, at: string, root: Json, pro
   if ("x-oto-label" in operation && blank(operation["x-oto-label"]))
     problems.push(problem(EXTENSION_INVALID, `${at}.x-oto-label`, "the label shown to the person, not blank"))
   const family = operation["x-oto-family"]
-  if ("x-oto-family" in operation && "families" in root && !(typeof family === "string" && family in root.families))
+  if ("x-oto-family" in operation && "families" in root && !(typeof family === "string" && Object.hasOwn(root.families, family)))
     problems.push(problem(EXTENSION_INVALID, `${at}.x-oto-family`, `${repr(family)} is not a family of x-oto`))
   const roles = operation["x-oto-roles"]
   if (
@@ -199,7 +242,7 @@ function extensions(operation: Json, method: string, at: string, root: Json, pro
     (!Array.isArray(roles) ||
       !roles.length ||
       new Set(roles.map(String)).size !== roles.length ||
-      ("roles" in root && roles.some((role) => !(typeof role === "string" && role in root.roles))))
+      ("roles" in root && roles.some((role) => !(typeof role === "string" && Object.hasOwn(root.roles, role)))))
   )
     problems.push(problem(EXTENSION_INVALID, `${at}.x-oto-roles`, "a list of roles of x-oto, each once, not empty"))
   const output = operation["x-oto-output"]
@@ -304,11 +347,13 @@ function operationOf(document: Json, path: string, method: string, item: Json, o
   fn.call = call
   if (isObject(operation["x-oto-output"])) fn.output = { ...operation["x-oto-output"] }
   if (cls === "sensitive") fn.confirm = { by: "host" }
+  const family = operation["x-oto-family"]
   const meta = {
     label: operation["x-oto-label"],
-    family: operation["x-oto-family"],
+    family,
     roles: operation["x-oto-roles"],
     summary: String(operation.summary || "").trim(),
+    scope: typeof family === "string" ? scopeOf(Object.hasOwn(root.families ?? {}, family) ? root.families[family] : null) : null,
   }
   return { at, name, namespace, function: fn, meta, problems }
 }

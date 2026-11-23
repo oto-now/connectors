@@ -10,7 +10,7 @@ be none of them.
 The definition:
 
     {"host": {"functions": "/me/functions", "roles": {...}, "families": {...}},
-     "functions": {"projet.lister": {"label", "family", "roles", "summary"}},   # in the document's order
+     "functions": {"projet.lister": {"label", "family", "roles", "summary", "scope"}},   # in the document's order
      "connectors": [<a document of the format per namespace, in order of appearance>]}
 
 Each operation is a function named by its `operationId`, `namespace.verb`, kept as it is: the namespace is its
@@ -18,7 +18,9 @@ connector, the verb its name. Its class, effect, examples and output are its `x-
 the operation's. Each connector reads the host's address from the setting `address`, followed by the relative server
 of the document, and authenticates by `host_delegated`: the token comes from the host that runs the function, for the
 issuer and the resource the document names (`x-oto`). A sensitive function is confirmed by the API's own two steps
-(`confirm: {by: host}`): `confirm`, a query parameter reserved to that protocol, is never an argument.
+(`confirm: {by: host}`): `confirm`, a query parameter reserved to that protocol, is never an argument. A family of
+`x-oto` is its label, or `{label, scope}`: the OAuth scope the token of its functions is asked with, carried by each of
+them (`scope`, `None` for a family without one).
 """
 
 from __future__ import annotations
@@ -56,6 +58,7 @@ CONFIRM_RESERVED = "host_confirm_reserved"
 CONFIRM_MISSING = "host_confirm_missing"
 SCHEMA_INVALID = "host_schema_invalid"
 RULE_BROKEN = "host_rule_broken"
+SCOPE_INVALID = "host_scope_invalid"
 #: The codes of the profile itself; a document also gets those of the import (`openapi_*`).
 CODES = (
     OPENAPI_VERSION,
@@ -78,6 +81,7 @@ CODES = (
     CONFIRM_MISSING,
     SCHEMA_INVALID,
     RULE_BROKEN,
+    SCOPE_INVALID,
 )
 #: The judges of the format, their codes said in the profile's.
 JUDGED = {p.SCHEMA_INVALID: SCHEMA_INVALID, p.EXAMPLE_INVALID: EXAMPLE_INVALID, p.RULE_BROKEN: RULE_BROKEN}
@@ -85,11 +89,14 @@ JUDGED = {p.SCHEMA_INVALID: SCHEMA_INVALID, p.EXAMPLE_INVALID: EXAMPLE_INVALID, 
 OPERATION_ID = re.compile(r"^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$")
 IDENTIFIER = re.compile(r"^[a-z][a-z0-9_]*$")
 URI = re.compile(r"^[a-z][a-z0-9+.-]*:\S+$")
+#: An OAuth scope (RFC 6749 §3.3): tokens of printable ASCII but the space, `"` and `\`, separated by one space.
+SCOPE = re.compile(r"^[\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*$")
 MAX_OPERATION_ID = 64
 MAX_SUMMARY = 90
 MAX_DESCRIPTION = 1000
 ROOT = "x-oto"
 ROOT_KEYS = ("functions", "issuer", "resource", "roles", "families")
+FAMILY_KEYS = ("label", "scope")
 EXTENSIONS = ("x-oto-class", "x-oto-effect", "x-oto-examples", "x-oto-roles", "x-oto-label", "x-oto-family", "x-oto-output")
 REQUIRED = ("x-oto-class", "x-oto-roles", "x-oto-label", "x-oto-family")
 CLASSES = ("read", "write", "sensitive")
@@ -107,12 +114,49 @@ def _blank(value: Any) -> bool:
 
 
 def _labels(value: Any) -> bool:
-    """A table of identifiers to texts, not empty: the roles and the families of the root."""
+    """A table of identifiers to texts, not empty: the roles of the root."""
     return (
         isinstance(value, dict)
         and bool(value)
         and all(IDENTIFIER.match(str(key)) and not _blank(text) for key, text in value.items())
     )
+
+
+def _families(value: Any, problems: list[Problem]) -> dict | None:
+    """The families of the root, each a label or `{label, scope}`; `None` with a fault, each fault named."""
+    at = f"{ROOT}.families"
+    if not (isinstance(value, dict) and value and all(isinstance(k, str) and IDENTIFIER.match(k) for k in value)):
+        problems.append(Problem(ROOT_INVALID, at, "the families, a table of identifiers to a label or to "
+                                "{label, scope}, not empty"))
+        return None
+    found = len(problems)
+    for key, family in value.items():
+        if isinstance(family, str):
+            if _blank(family):
+                problems.append(Problem(ROOT_INVALID, f"{at}.{key}", "the label of the family, not blank"))
+            continue
+        if not isinstance(family, dict):
+            problems.append(Problem(ROOT_INVALID, f"{at}.{key}", "a label, or {label, scope}"))
+            continue
+        problems += [
+            Problem(EXTENSION_UNKNOWN, f"{at}.{key}.{name}", f"{name!r} is not a key of a family "
+                    f"({', '.join(FAMILY_KEYS)})")
+            for name in family
+            if name not in FAMILY_KEYS
+        ]
+        if _blank(family.get("label")):
+            problems.append(Problem(ROOT_INVALID, f"{at}.{key}.label", "the label of the family, not blank"))
+        scope = family.get("scope")
+        if not (isinstance(scope, str) and SCOPE.fullmatch(scope)):
+            problems.append(Problem(SCOPE_INVALID, f"{at}.{key}.scope", f"{scope!r} is not an OAuth scope "
+                                    "(RFC 6749 §3.3): tokens of printable ASCII but \" and \\, separated by one space; "
+                                    "a family without a scope is written as its label alone"))
+    return None if len(problems) > found else dict(value)
+
+
+def _scope(family: Any) -> str | None:
+    """The OAuth scope of a family of the root, `None` for a family written as its label alone."""
+    return family["scope"] if isinstance(family, dict) else None
 
 
 def _unknown(node: dict, at: str, known: tuple) -> list[Problem]:
@@ -163,12 +207,13 @@ def _root(document: dict, problems: list[Problem]) -> dict:
     else:
         problems.append(Problem(ROOT_INVALID, f"{ROOT}.resource", "the resource indicator of the API at the issuer, "
                                 "an absolute URI"))
-    for key in ("roles", "families"):
-        if _labels(root.get(key)):
-            sound[key] = dict(root[key])
-        else:
-            problems.append(Problem(ROOT_INVALID, f"{ROOT}.{key}", f"the {key}, a table of identifiers to texts, "
-                                    "not empty"))
+    if _labels(root.get("roles")):
+        sound["roles"] = dict(root["roles"])
+    else:
+        problems.append(Problem(ROOT_INVALID, f"{ROOT}.roles", "the roles, a table of identifiers to texts, not empty"))
+    families = _families(root.get("families"), problems)
+    if families is not None:
+        sound["families"] = families
     return sound
 
 
@@ -336,11 +381,13 @@ def _operation(document: dict, path: str, method: str, item: dict, operation: di
         function["output"] = dict(operation["x-oto-output"])
     if cls == "sensitive":
         function["confirm"] = {"by": "host"}
+    family = operation.get("x-oto-family")
     meta = {
         "label": operation.get("x-oto-label"),
-        "family": operation.get("x-oto-family"),
+        "family": family,
         "roles": operation.get("x-oto-roles"),
         "summary": str(operation.get("summary") or "").strip(),
+        "scope": _scope(root.get("families", {}).get(family)) if isinstance(family, str) else None,
     }
     return {"at": at, "name": name, "namespace": namespace, "function": function, "meta": meta, "problems": problems}
 

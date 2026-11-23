@@ -41,6 +41,8 @@ def test_valid(case):
         schema_problems, matches = _schema_problems(document, [])
         assert schema_problems == [] and matches
         assert _example_problems(document) == [] and _rule_problems(document) == []
+    if "host" in case:
+        assert definition["host"] == case["host"]
     if "functions" in case:
         assert definition["functions"] == case["functions"]
     if "served" in case:

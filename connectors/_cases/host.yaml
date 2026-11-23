@@ -8,8 +8,8 @@
 # - reserved: the namespaces the caller already serves, passed to every case;
 # - documents: base documents, by name (parsed objects);
 # - valid: a base, changed by `changes` (as below), and what its definition gives: `namespaces` (the connectors, in
-#   order), `functions` (the host's metadata of each function, whole), `served` (each function of the format by its
-#   qualified name, whole) and `connector` (keys of each connector block);
+#   order), `host` (the block of the host, whole), `functions` (the host's metadata of each function, whole), `served`
+#   (each function of the format by its qualified name, whole) and `connector` (keys of each connector block);
 # - refused: a base changed by `changes`, each a dotted path (a list index as a number) and either `value` (set) or
 #   `remove: true`; or `text`, a document given as a text. `problems` is the set of the problems found, each its code
 #   and its place, and `rules` the rules of the format named by `host_rule_broken`, when they have a code.
@@ -107,12 +107,13 @@ valid:
     namespaces: [project, share]
     functions:
       project.list: { label: See my projects, family: project, roles: [admin, coach, member],
-                      summary: "Projects the person can see, with their stage and link." }
+                      summary: "Projects the person can see, with their stage and link.", scope: null }
       project.read: { label: See a project, family: project, roles: [admin, coach, member],
-                      summary: "One project, with its stages." }
-      project.rename: { label: Rename a project, family: project, roles: [admin, coach], summary: Rename a project. }
+                      summary: "One project, with its stages.", scope: null }
+      project.rename: { label: Rename a project, family: project, roles: [admin, coach], summary: Rename a project.,
+                        scope: null }
       share.create: { label: Share a project outside, family: share, roles: [admin, coach],
-                      summary: Share a project with an outside person. }
+                      summary: Share a project with an outside person., scope: null }
     connector:
       base_url: "{address}/api/v2"
       settings: [{ name: address, label: Address of the host, type: url }]
@@ -169,6 +170,47 @@ valid:
       - { path: servers, remove: true }
     namespaces: [project, share]
     connector: { base_url: "{address}" }
+
+  # A family is its label, or {label, scope}: each function carries the scope of its family, null without one; the
+  # families are kept as written.
+  - name: family_scope
+    base: projects_and_shares
+    changes:
+      - { path: x-oto.families.project, value: { label: Projects, scope: "projects:read projects:write" } }
+    namespaces: [project, share]
+    connector: {}
+    host:
+      functions: /me/functions
+      roles: { admin: Administrator, coach: Coach, member: Member }
+      families: { project: { label: Projects, scope: "projects:read projects:write" }, share: Shares }
+    functions:
+      project.list: { label: See my projects, family: project, roles: [admin, coach, member],
+                      summary: "Projects the person can see, with their stage and link.",
+                      scope: "projects:read projects:write" }
+      project.read: { label: See a project, family: project, roles: [admin, coach, member],
+                      summary: "One project, with its stages.", scope: "projects:read projects:write" }
+      project.rename: { label: Rename a project, family: project, roles: [admin, coach], summary: Rename a project.,
+                        scope: "projects:read projects:write" }
+      share.create: { label: Share a project outside, family: share, roles: [admin, coach],
+                      summary: Share a project with an outside person., scope: null }
+
+  # Families may share a scope: the host grants the same token to both.
+  - name: shared_scope
+    base: projects_and_shares
+    changes:
+      - { path: x-oto.families, value: { project: { label: Projects, scope: projects },
+                                         share: { label: Shares, scope: projects } } }
+    namespaces: [project, share]
+    connector: {}
+    functions:
+      project.list: { label: See my projects, family: project, roles: [admin, coach, member],
+                      summary: "Projects the person can see, with their stage and link.", scope: projects }
+      project.read: { label: See a project, family: project, roles: [admin, coach, member],
+                      summary: "One project, with its stages.", scope: projects }
+      project.rename: { label: Rename a project, family: project, roles: [admin, coach], summary: Rename a project.,
+                        scope: projects }
+      share.create: { label: Share a project outside, family: share, roles: [admin, coach],
+                      summary: Share a project with an outside person., scope: projects }
 
 refused:
   - name: swagger_2
@@ -426,3 +468,42 @@ refused:
     text: |
       {"title": "not an API description"}
     problems: [[openapi_not_a_document, ""]]
+
+  # The object form of a family is there to carry a scope: without one, a family is written as its label alone.
+  - name: scope_missing
+    base: projects_and_shares
+    changes:
+      - { path: x-oto.families.project, value: { label: Projects } }
+    problems: [[host_scope_invalid, x-oto.families.project.scope]]
+
+  # RFC 6749 §3.3: tokens of %x21 / %x23-5B / %x5D-7E, separated by one space.
+  - name: scope_invalid
+    base: projects_and_shares
+    changes:
+      - path: x-oto.families
+        value:
+          project: { label: Projects, scope: 'projects"read' }
+          share: { label: Shares, scope: 'projects\read' }
+          quote: { label: Quotes, scope: "projects  read" }
+          note: { label: Notes, scope: "" }
+          task: { label: Tasks, scope: [projects] }
+          file: { label: Files, scope: "projets:lecture é" }
+          mail: { label: Mails, scope: " projects" }
+    problems:
+      - [host_scope_invalid, x-oto.families.project.scope]
+      - [host_scope_invalid, x-oto.families.share.scope]
+      - [host_scope_invalid, x-oto.families.quote.scope]
+      - [host_scope_invalid, x-oto.families.note.scope]
+      - [host_scope_invalid, x-oto.families.task.scope]
+      - [host_scope_invalid, x-oto.families.file.scope]
+      - [host_scope_invalid, x-oto.families.mail.scope]
+
+  - name: family_invalid
+    base: projects_and_shares
+    changes:
+      - { path: x-oto.families.project, value: { label: " ", scope: projects, audience: https://api.example.test } }
+      - { path: x-oto.families.share, value: 42 }
+    problems:
+      - [host_root_invalid, x-oto.families.project.label]
+      - [host_extension_unknown, x-oto.families.project.audience]
+      - [host_root_invalid, x-oto.families.share]

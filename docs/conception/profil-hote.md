@@ -1,7 +1,7 @@
 # Le profil hôte : les fonctions d'un hôte décrites en OpenAPI
 
 - **Statut** : validé par Alexis le 22/11/2026 (contrat et jeton) ; forme de la description proposée
-- **Dernière révision** : 2026-11-22
+- **Dernière révision** : 2026-11-23
 
 ## Résumé
 
@@ -25,7 +25,7 @@ Un hôte expose ses propres fonctions métier dans une API REST décrite en Open
 - OpenAPI 3.1 (3.0 accepté) ; Swagger 2.0 est refusé (`host_openapi_version`). `servers` absent ou un seul serveur relatif (`/api/v2`), sans variables : l'adresse est un réglage de l'organisation, le document le même pour toutes.
 - Par opération : `operationId` au motif `^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$`, 64 caractères au plus ; `summary` de 1 à 90 caractères, la ligne d'index ; `description` de 1 à 1 000 caractères, le contrat que lit l'assistant ; paramètres de chemin et de query, et un corps JSON objet fermé (`additionalProperties: false`).
 - Extensions lues, toutes en `x-oto-*` ; une clé `x-oto-*` inconnue est refusée, les autres `x-*` sont ignorées. `x-oto-class` (obligatoire : `read`, `write` ou `sensitive` ; `GET` exige `read`, les autres verbes `write` ou `sensitive`), `x-oto-effect` (`send` ou `destroy`, fonction sensible seulement), `x-oto-examples` (obligatoire : une liste d'arguments, chemin, query et corps fusionnés, sous les noms de l'API), `x-oto-roles` (obligatoire, des rôles de la racine), `x-oto-label` (obligatoire), `x-oto-family` (obligatoire, une famille de la racine), `x-oto-output` (`items`, `strip`, `projection`).
-- À la racine, `x-oto` : `functions` (le chemin de `/me/functions`), `issuer` (l'émetteur des jetons, en https vers un hôte public, tel que ses jetons le nomment), `resource` (l'indicateur de ressource de l'API chez l'émetteur, une URI absolue), `roles` et `families` (des identifiants vers des textes). `resource` est un ajout à la note de conception d'oto-core : l'échange de jeton et le consentement le demandent tous deux.
+- À la racine, `x-oto` : `functions` (le chemin de `/me/functions`), `issuer` (l'émetteur des jetons, en https vers un hôte public, tel que ses jetons le nomment), `resource` (l'indicateur de ressource de l'API chez l'émetteur, une URI absolue), `roles` (des identifiants vers des textes) et `families` (des identifiants vers un libellé, ou vers `{ label, scope }`). `scope` est le scope OAuth (RFC 6749 §3.3 : des jetons d'ASCII imprimable sauf `"` et `\`, séparés d'une espace) que l'échange et le consentement demandent pour les fonctions de la famille ; facultatif, jamais déduit : une famille écrite par son seul libellé n'en a pas, et la forme objet l'exige. Plusieurs familles peuvent partager un scope. `resource` est un ajout à la note de conception d'oto-core : l'échange de jeton et le consentement le demandent tous deux.
 - Une fonction sensible déclare `confirm`, un paramètre de query booléen, et une réponse `202`. `confirm` est réservé au protocole des deux temps : jamais un argument. Tout autre nom qui, normalisé comme un argument, vaut `confirm` est refusé, quelle que soit sa place (chemin, query, en-tête, cookie, propriété du corps) et sa casse (`Confirm`, `CONFIRM`) : l'assistant ne doit jamais pouvoir sauter le premier temps. Le paramètre est refusé aussi sur une fonction qui n'est pas sensible.
 
 ### La définition rendue
@@ -33,9 +33,10 @@ Un hôte expose ses propres fonctions métier dans une API REST décrite en Open
 `from_host_openapi(document, *, reserved)` (Python) et `fromHostOpenApi(document, { compile, reserved, yaml? })` (TypeScript) rendent `{ definition, problems }`. `reserved` : les espaces que l'appelant sert déjà, aucun n'étant repris par l'hôte. La définition :
 
 ```yaml
-host: { functions: /me/functions, roles: { admin: Administrator, … }, families: { project: Projects, … } }
+host: { functions: /me/functions, roles: { admin: Administrator, … }, families: { project: { label: Projects, scope: "projects:read" }, share: Shares } }
 functions:                        # les métadonnées de l'hôte, dans l'ordre du document
-  project.list: { label: See my projects, family: project, roles: [admin, coach, member], summary: … }
+  project.list: { label: See my projects, family: project, roles: [admin, coach, member], summary: …, scope: "projects:read" }
+  share.create: { label: Share a project outside, family: share, roles: [admin, coach], summary: …, scope: null }
 connectors:                       # un document du format par espace de noms, dans l'ordre d'apparition
   - connector:
       name: project               # l'espace, avant le point
@@ -52,11 +53,11 @@ connectors:                       # un document du format par espace de noms, da
       - { name: list, class: read, description: …, input: …, examples: [{ title: Example 1, input: {} }], call: …, output: … }
 ```
 
-Le nom servi d'une fonction est `<connecteur>.<nom>`, donc l'`operationId` tel quel. Les arguments passent en snake_case comme dans l'import (le nom de l'API reste dans `call`), et les clés de `x-oto-examples` les suivent. Une fonction sensible porte `confirm: { by: host }`.
+Le nom servi d'une fonction est `<connecteur>.<nom>`, donc l'`operationId` tel quel. Les arguments passent en snake_case comme dans l'import (le nom de l'API reste dans `call`), et les clés de `x-oto-examples` les suivent. Une fonction sensible porte `confirm: { by: host }`. `host.families` reste tel qu'écrit ; chaque fonction de `functions` porte le `scope` de sa famille (`null` pour une famille sans scope), pour que l'hôte qui exécute le lise sans recalcul.
 
 ### Le jeton : `host_delegated`
 
-`auth: { kind: host_delegated, issuer, resource }`, un huitième mode du [compte](compte.md), sans `credential`. Il dit : le jeton vient de l'hôte qui exécute, jamais d'un compte ; pour chaque appel, l'hôte obtient de `issuer` un jeton de la personne dont l'audience est `resource`, et l'envoie en `Authorization: Bearer`. Deux voies, sans repli silencieux entre elles :
+`auth: { kind: host_delegated, issuer, resource }`, un huitième mode du [compte](compte.md), sans `credential`. Il dit : le jeton vient de l'hôte qui exécute, jamais d'un compte ; pour chaque appel, l'hôte obtient de `issuer` un jeton de la personne dont l'audience est `resource`, avec le `scope` de la fonction s'il en a un, et l'envoie en `Authorization: Bearer`. Deux voies, sans repli silencieux entre elles :
 
 1. client first-party : échange de jeton (RFC 8693) du jeton reçu, `grant_type=urn:ietf:params:oauth:grant-type:token-exchange`, `subject_token`, `resource`, l'hôte authentifié comme application M2M ;
 2. client third-party : le consentement de la personne (code d'autorisation), dont l'hôte garde le jeton de rafraîchissement, le mécanisme d'`oauth2_user`.
@@ -68,7 +69,7 @@ Un appel qui ne passe par aucune des deux est refusé, avec une erreur explicite
 Trois temps, comme le profil Custom API : le document et ses extensions ; puis, sur un document sans problème, chaque connecteur construit passe le schéma du format, ses exemples, puis les règles du format. Chaque problème dit sa place dans le document OpenAPI (`paths./shares.post.x-oto-class`).
 
 - Lecture et import : `openapi_not_a_document`, `openapi_too_large`, `openapi_method_not_supported`, `openapi_body_not_json`, `openapi_body_not_object`, `openapi_cookie_parameter`, `openapi_ref_external`, `openapi_ref_too_deep`, `openapi_ref_missing`, `openapi_too_many_operations`, `openapi_server_variables`, `custom_api_argument_name_collision`.
-- Profil : `host_openapi_version`, `host_server_not_relative`, `host_root_invalid`, `host_extension_unknown`, `host_extension_missing`, `host_extension_invalid`, `host_operation_id_invalid`, `host_name_collision`, `host_namespace_reserved`, `host_namespace_act` (un espace en `_act`, le côté qui agit), `host_summary_invalid`, `host_description_invalid`, `host_class_mismatch`, `host_input_not_closed`, `host_example_missing`, `host_confirm_reserved`, `host_confirm_missing`.
+- Profil : `host_openapi_version`, `host_server_not_relative`, `host_root_invalid`, `host_extension_unknown`, `host_extension_missing`, `host_extension_invalid`, `host_operation_id_invalid`, `host_name_collision`, `host_namespace_reserved`, `host_namespace_act` (un espace en `_act`, le côté qui agit), `host_summary_invalid`, `host_description_invalid`, `host_class_mismatch`, `host_input_not_closed`, `host_example_missing`, `host_confirm_reserved`, `host_confirm_missing`, `host_scope_invalid` (le scope d'une famille absent de la forme objet, ou hors de la RFC 6749 §3.3, à `x-oto.families.<famille>.scope`). Une famille ni texte ni objet, ou au libellé vide, est un `host_root_invalid` à sa place (`x-oto.families.<famille>`, `….label`) ; une clé inconnue d'une famille, un `host_extension_unknown`.
 - Format : `host_schema_invalid`, `host_example_invalid`, `host_rule_broken` (la règle dans `rule`, `strip_path_overlaps`…).
 
 ## Décisions et alternatives écartées
@@ -78,6 +79,7 @@ Trois temps, comme le profil Custom API : le document et ses extensions ; puis, 
 - **Un document du format par espace de noms** (proposé) : le nom `espace.verbe` est exactement `<connecteur>.<fonction>` ; un seul connecteur aurait réécrit les noms.
 - **`confirm: { by: host }` plutôt qu'un gabarit** (proposé) : le récapitulatif vient de l'hôte, qui sait le rédiger ; un gabarit inventé aurait menti à la personne.
 - **Libellés, familles, rôles et `summary` hors du format** (proposé) : ce sont des données de présentation de l'hôte, sans sens pour un connecteur partagé ; ils vivent à côté des documents, dans `functions` de la définition. Les ajouter au format reste possible le jour où un autre consommateur s'en sert.
+- **Le scope sur la famille, en forme objet facultative** (proposé le 23/11/2026) : une famille est son libellé, comme avant, ou `{ label, scope }`. Les documents déjà écrits restent valides, et le scope suit l'unité que la personne voit (la famille) plutôt que chaque opération. Une table `scopes` à part, à côté de `families`, aurait gardé les familles intactes mais dédoublé leurs clés ; une extension `x-oto-scope` par opération aurait laissé deux fonctions d'une même famille demander des droits différents. La forme objet exige son scope : une famille sans scope s'écrit par son seul libellé, et rien ne se devine.
 - **La classe déclarée, non déduite** (Alexis, 22/11/2026) : seule la déclaration distingue `write` de `sensitive` ; le verbe ne sert qu'au contrôle de cohérence.
 - **Les formes de l'hôte refusées hors du profil** : `host_delegated` et `confirm.by` sont refusés par le profil Custom API et, pour un connecteur partagé, par la règle 26 de la [fabrique](fabrique.md).
 
@@ -97,10 +99,11 @@ Trois temps, comme le profil Custom API : le document et ses extensions ; puis, 
 
 ## Questions ouvertes
 
-- Les droits demandés (`scope`) à l'échange et au consentement : rien n'est décrit ; l'hôte demande l'audience seule. À dire si l'API de l'hôte filtre par droits.
+- Une fonction sans scope (famille écrite par son libellé) : l'hôte qui exécute demande l'audience seule. Faut-il, pour un hôte qui filtre par droits, exiger un scope sur chaque famille ?
 - `modes: [byo_user]` est porté parce que le schéma l'exige avec `auth` ; il ne sert qu'à oto 1.
 - 100 opérations au plus, la borne de l'import.
 
 ## Historique
 
+- 2026-11-23 : scope OAuth par famille (`{ label, scope }`, RFC 6749 §3.3), porté par chaque fonction de la définition, code `host_scope_invalid` — demandé pour l'échange et le consentement, forme proposée.
 - 2026-11-22 : profil hôte, import OpenAPI porté en TypeScript, mode `host_delegated` (échange RFC 8693 ou consentement, sans repli), `confirm.by: host`, règle 26 — contrat et jeton décidés par Alexis, forme de la description proposée (source : la conception des fonctions d'un hôte, dans oto-core).
