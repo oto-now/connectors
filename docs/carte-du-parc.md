@@ -55,7 +55,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `mailpool` | Mailpool | 1.2.0 | clé | non | 22 | 16 | 6 | 0 | non | 22 | non | 0 |
 | `malibou` | Malibou | 1.0.0 | clé | non | 4 | 4 | 0 | 0 | oui | 4 | non | 0 |
 | `meta_ads` | Meta Ads | 1.1.0 | clé | non | 8 | 8 | 0 | 0 | non | 0 | non | 0 |
-| `microsoft` | Microsoft 365 (SharePoint, OneDrive) | 3.2.0 | connexion d'une personne (OAuth) | non | 13 | 13 | 0 | 0 | non | 13 | oui | 0 |
+| `microsoft` | Microsoft 365 (SharePoint, OneDrive) | 3.2.1 | connexion d'une personne (OAuth) | non | 13 | 13 | 0 | 0 | non | 13 | oui | 0 |
 | `microsoft_app` | Microsoft 365 mail (application access) | 1.0.0 | application du client (OAuth entre machines) | non | 6 | 4 | 1 | 1 | non | 0 | non | 0 |
 | `mistral` | Mistral AI | 1.0.1 | clé de l'hôte | oui | 1 | 1 | 0 | 0 | non | 1 | non | 0 |
 | `modjo` | Modjo | 1.0.0 | clé | non | 29 | 26 | 2 | 1 | oui | 29 | non | 0 |

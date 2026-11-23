@@ -41,3 +41,9 @@ def test_admin_a_part():
                  or "EnableDisable" in s}
     assert ecritures == {"LicenseAssignment.ReadWrite.All", "User.EnableDisableAccount.All",
                          "GroupMember.ReadWrite.All"}
+
+
+def test_boites_partagees_a_part_du_courrier():
+    assert scopes.short(scopes.MAIL_SHARED) == {"Mail.Read.Shared"}
+    assert not set(scopes.MAIL_SHARED) & set(scopes.MAIL)
+    assert scopes.short(scopes.MAIL_SHARED) <= scopes.normalize("mail.read.shared User.Read")

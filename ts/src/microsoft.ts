@@ -514,7 +514,7 @@ export const connector = defineConnector({
   name: "microsoft",
   label: "Microsoft 365 (SharePoint, OneDrive)",
   namespace: "microsoft",
-  version: "3.2.0",
+  version: "3.2.1",
   apiVersion: "v1.0",
   baseUrl: "https://graph.microsoft.com/v1.0",
   auth: {

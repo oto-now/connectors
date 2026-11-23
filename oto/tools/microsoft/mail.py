@@ -32,6 +32,19 @@ a draft first.
   message has actually left, which can take a moment.
 - Folder arguments accept a folder id or a well-known name (`inbox`,
   `archive`, `deleteditems`, `drafts`, `sentitems`, `junkemail`).
+
+## Shared and delegated mailboxes
+
+The reading methods take an optional `mailbox` (an address or a user id): they
+then read `/users/{mailbox}/…` instead of `/me/…`, still on behalf of the
+signed-in person. Graph serves it only if that person was given access to the
+mailbox in Exchange (Full Access, or read permission on the folders read) AND
+the grant carries the delegated scope `Mail.Read.Shared` (`scopes.MAIL_SHARED`,
+consentable by the person, no administrator required by Microsoft). It is read
+only: writing, drafting and sending always act on the person's own mailbox
+(`/me`). A 403 or 404 from Graph on such a call raises `MailboxAccessError`,
+which names the mailbox and Graph's error code — never a silent fallback on the
+person's own mailbox.
 """
 from __future__ import annotations
 
@@ -39,7 +52,9 @@ import base64
 import html
 import re
 import time
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from contextlib import contextmanager
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional
+from urllib.parse import quote
 
 from ..common import UpstreamHTTPError
 from ..common.credentials import require
@@ -59,6 +74,25 @@ _IMMUTABLE_IDS = 'IdType="ImmutableId"'
 _SENT_FIELDS = "id,webLink,sentDateTime"
 #: Waits before each read of a just-sent message — about 10 s in all.
 _SENT_POLL_DELAYS = (0.5, 1.0, 1.5, 2.0, 2.5, 2.5)
+
+
+class MailboxAccessError(UpstreamHTTPError):
+    """Graph refused (403) or did not find (404) what was read in another mailbox
+    than the person's own. `mailbox` is the mailbox asked for, `graph_code` the code
+    Graph gave (`ErrorAccessDenied`, `ErrorItemNotFound`…, `None` if absent)."""
+
+    def __init__(self, mailbox: str, error: UpstreamHTTPError):
+        super().__init__(error.status_code, error.body, service=error.service,
+                         method=error.method, url=error.url, retry_after=error.retry_after)
+        detail = (error.body or {}).get("error") if isinstance(error.body, dict) else None
+        detail = detail if isinstance(detail, dict) else {}
+        self.mailbox = mailbox
+        self.graph_code = detail.get("code")
+        graph_message = detail.get("message") or error.body
+        self.args = (f"No access to mailbox {mailbox}: Microsoft Graph answered HTTP "
+                     f"{error.status_code} {self.graph_code or '(no code)'}: {graph_message}. "
+                     "Reading it needs the signed-in person to have access to this mailbox "
+                     "in Exchange and the delegated permission Mail.Read.Shared.",)
 
 
 def _recipients(addresses: Iterable[str], name: str) -> List[Dict[str, Any]]:
@@ -125,7 +159,8 @@ def _above_quote(body_html: str, draft_body: Mapping[str, Any]) -> str:
 
 
 class MailClient(GraphBase):
-    """The signed-in person's Outlook mailbox."""
+    """The signed-in person's Outlook mailbox; read only, the shared or delegated
+    mailboxes she was given access to (`mailbox`)."""
 
     def _request(self, method: str, path_or_url: str, **kwargs: Any) -> Any:
         """Every request asks for immutable ids, alongside the call's own `Prefer`."""
@@ -135,21 +170,41 @@ class MailClient(GraphBase):
         return super()._request(method, path_or_url, headers=headers, **kwargs)
 
     @staticmethod
-    def _message(message_id: str) -> str:
-        return f"/me/messages/{segment(message_id, 'message_id')}"
+    def _root(mailbox: Optional[str]) -> str:
+        """`/me`, or `/users/{mailbox}` for a shared or delegated mailbox."""
+        if mailbox is None:
+            return "/me"
+        return f"/users/{quote(require(mailbox, 'mailbox'), safe='@')}"
+
+    @classmethod
+    def _message(cls, message_id: str, mailbox: Optional[str] = None) -> str:
+        return f"{cls._root(mailbox)}/messages/{segment(message_id, 'message_id')}"
+
+    @staticmethod
+    @contextmanager
+    def _reading(mailbox: Optional[str]) -> Iterator[None]:
+        """A 403 or 404 on another mailbox becomes a `MailboxAccessError`."""
+        try:
+            yield
+        except UpstreamHTTPError as e:
+            if mailbox is not None and e.status_code in (403, 404):
+                raise MailboxAccessError(mailbox, e) from e
+            raise
 
     # ================================================================
     # Reading
     # ================================================================
 
-    def list_folders(self, *, limit: int = 500) -> List[Dict[str, Any]]:
-        """GET /me/mailFolders — the top-level folders (`id`, `displayName`,
-        counts of items and unread items)."""
-        return self._paged("/me/mailFolders", limit=limit)
+    def list_folders(self, *, limit: int = 500, mailbox: Optional[str] = None
+                     ) -> List[Dict[str, Any]]:
+        """GET /me/mailFolders (or /users/{mailbox}/mailFolders) — the top-level
+        folders (`id`, `displayName`, counts of items and unread items)."""
+        with self._reading(mailbox):
+            return self._paged(f"{self._root(mailbox)}/mailFolders", limit=limit)
 
     def search_messages(self, query: Optional[str] = None, *, folder: Optional[str] = None,
-                        top: int = 25, unread: Optional[bool] = None
-                        ) -> List[Dict[str, Any]]:
+                        top: int = 25, unread: Optional[bool] = None,
+                        mailbox: Optional[str] = None) -> List[Dict[str, Any]]:
         """GET /me/messages (or /me/mailFolders/{folder}/messages) — at most `top`
         messages, without their body (`bodyPreview` only).
 
@@ -159,9 +214,12 @@ class MailClient(GraphBase):
             folder: a folder id or a well-known name; every folder when omitted.
             unread: `True` / `False` to keep only unread / read messages. Not
                 combinable with `query` (Graph refuses `$filter` with `$search`).
+            mailbox: a shared or delegated mailbox (address or user id), read
+                under `/users/{mailbox}`; the person's own when omitted.
         """
-        path = (f"/me/mailFolders/{segment(folder, 'folder')}/messages" if folder
-                else "/me/messages")
+        root = self._root(mailbox)
+        path = (f"{root}/mailFolders/{segment(folder, 'folder')}/messages" if folder
+                else f"{root}/messages")
         params: Dict[str, Any] = {"$select": _LIST_FIELDS}
         if query is not None:
             if unread is not None:
@@ -173,27 +231,34 @@ class MailClient(GraphBase):
             if unread is not None:
                 params["$filter"] = (f"receivedDateTime ge 1900-01-01T00:00:00Z and "
                                      f"isRead eq {'false' if unread else 'true'}")
-        return self._paged(path, params, limit=top)
+        with self._reading(mailbox):
+            return self._paged(path, params, limit=top)
 
-    def get_message(self, message_id: str, *, body: str = "text") -> Dict[str, Any]:
-        """GET /me/messages/{id} — the whole message, its body as `text` (default,
-        what an agent reads) or `html`."""
+    def get_message(self, message_id: str, *, body: str = "text",
+                    mailbox: Optional[str] = None) -> Dict[str, Any]:
+        """GET /me/messages/{id} (or /users/{mailbox}/messages/{id}) — the whole
+        message, its body as `text` (default, what an agent reads) or `html`."""
         if body not in BODY_TYPES:
             raise ValueError(f"body must be one of {', '.join(BODY_TYPES)}")
-        return self._json("GET", self._message(message_id),
-                          headers={"Prefer": f'outlook.body-content-type="{body}"'})
+        with self._reading(mailbox):
+            return self._json("GET", self._message(message_id, mailbox),
+                              headers={"Prefer": f'outlook.body-content-type="{body}"'})
 
-    def list_attachments(self, message_id: str) -> List[Dict[str, Any]]:
-        """GET /me/messages/{id}/attachments — name, type and size of each
-        attachment, without its content (see `get_attachment`)."""
-        return self._paged(f"{self._message(message_id)}/attachments",
-                           {"$select": _ATTACHMENT_FIELDS}, limit=500, page_size=None)
+    def list_attachments(self, message_id: str, *, mailbox: Optional[str] = None
+                         ) -> List[Dict[str, Any]]:
+        """GET /me/messages/{id}/attachments (or under /users/{mailbox}) — name,
+        type and size of each attachment, without its content (see `get_attachment`)."""
+        with self._reading(mailbox):
+            return self._paged(f"{self._message(message_id, mailbox)}/attachments",
+                               {"$select": _ATTACHMENT_FIELDS}, limit=500, page_size=None)
 
-    def get_attachment(self, message_id: str, attachment_id: str) -> Dict[str, Any]:
-        """GET /me/messages/{id}/attachments/{id} — one attachment; a file's content
-        is in `contentBytes`, base64-encoded."""
-        return self._json("GET", f"{self._message(message_id)}/attachments/"
-                                 f"{segment(attachment_id, 'attachment_id')}")
+    def get_attachment(self, message_id: str, attachment_id: str, *,
+                       mailbox: Optional[str] = None) -> Dict[str, Any]:
+        """GET /me/messages/{id}/attachments/{id} (or under /users/{mailbox}) — one
+        attachment; a file's content is in `contentBytes`, base64-encoded."""
+        with self._reading(mailbox):
+            return self._json("GET", f"{self._message(message_id, mailbox)}/attachments/"
+                                     f"{segment(attachment_id, 'attachment_id')}")
 
     # ================================================================
     # Writing — drafts first, sending is a separate step

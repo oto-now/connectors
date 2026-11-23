@@ -19,6 +19,10 @@ IDENTITY = ("offline_access", "User.Read")
 FILES = (GRAPH + "Files.ReadWrite.All", GRAPH + "Sites.ReadWrite.All")
 #: The person's mailbox: read, draft, move, delete, send.
 MAIL = (GRAPH + "Mail.ReadWrite", GRAPH + "Mail.Send")
+#: Reading the shared or delegated mailboxes the person was given access to in Exchange
+#: (`MailClient(…, mailbox=…)` reads). Apart from `MAIL`: a grant that predates it still
+#: covers the person's own mailbox. No admin consent required by Microsoft.
+MAIL_SHARED = (GRAPH + "Mail.Read.Shared",)
 #: The person's calendars: read and write events.
 CALENDAR = (GRAPH + "Calendars.ReadWrite",)
 #: Teams and channels the person belongs to, posting in channels, chats. No admin consent.
@@ -60,7 +64,7 @@ def _strip(scope: str) -> str:
 
 
 _CANONICAL = {_strip(s).lower(): _strip(s)
-              for group in (IDENTITY, FILES, MAIL, CALENDAR, TEAMS, NOTES, DIRECTORY, TEAMS_ADMIN,
+              for group in (IDENTITY, FILES, MAIL, MAIL_SHARED, CALENDAR, TEAMS, NOTES, DIRECTORY, TEAMS_ADMIN,
                              REFRESH, POWERBI)
               for s in group}
 _CANONICAL.update({s: s for s in OIDC})

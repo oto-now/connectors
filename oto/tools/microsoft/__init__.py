@@ -12,11 +12,11 @@ from .auth import Grant, MicrosoftAuthError, MicrosoftGrantExpired
 from .calendar import CalendarClient
 from .directory import DirectoryClient
 from .files import FilesClient
-from .mail import MailClient
+from .mail import MailboxAccessError, MailClient
 from .onenote import OneNoteClient
 from .powerbi import PowerBIClient
 from .teams import TeamsClient, image_refs
 from .workbook import WorkbookClient
 
-__all__ = ["auth", "scopes", "FilesClient", "MailClient", "CalendarClient", "TeamsClient", "image_refs",
+__all__ = ["auth", "scopes", "FilesClient", "MailClient", "MailboxAccessError", "CalendarClient", "TeamsClient", "image_refs",
            "OneNoteClient", "PowerBIClient", "DirectoryClient", "WorkbookClient", "Grant", "MicrosoftAuthError", "MicrosoftGrantExpired"]

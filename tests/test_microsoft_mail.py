@@ -293,3 +293,87 @@ def test_reponse_avec_content_id_invalide_rien_n_est_ecrit(calls, client):
         client.create_reply_draft("m1", body_html="", attachments=[
             {"name": "logo.png", "content_bytes": b"P", "content_id": "<logo>"}])
     assert calls == []
+
+
+# --- Boîtes partagées ou déléguées : lecture seule, sous /users/{mailbox} ---------
+
+BOITE = "accueil@contoso.com"
+
+
+def test_lectures_sur_une_boite_partagee(calls, client):
+    calls.responses.extend([_Resp({"value": []}), _Resp({"value": []}), _Resp({"id": "m1"}),
+                            _Resp({"value": []}), _Resp({"id": "a1"})])
+    client.list_folders(mailbox=BOITE)
+    client.search_messages("facture", folder="inbox", mailbox=BOITE)
+    client.get_message("AAMk=", mailbox=BOITE)
+    client.list_attachments("m1", mailbox=BOITE)
+    client.get_attachment("m1", "a1", mailbox=BOITE)
+    base = f"{G}/users/accueil@contoso.com"
+    assert [c["url"] for c in calls] == [
+        f"{base}/mailFolders", f"{base}/mailFolders/inbox/messages",
+        f"{base}/messages/AAMk%3D", f"{base}/messages/m1/attachments",
+        f"{base}/messages/m1/attachments/a1"]
+    assert all(c["headers"]["Authorization"] == "Bearer AT-personne" for c in calls)
+    assert all(c["headers"]["Prefer"].startswith('IdType="ImmutableId"') for c in calls)
+
+
+def test_boite_par_id_et_toutes_ses_lectures(calls, client):
+    calls.responses.append(_Resp({"value": []}))
+    client.search_messages(mailbox="0b3c1f2e-aaaa-bbbb-cccc-1234567890ab", unread=True)
+    assert calls[0]["url"] == f"{G}/users/0b3c1f2e-aaaa-bbbb-cccc-1234567890ab/messages"
+
+
+def test_sans_boite_la_sienne(calls, client):
+    calls.responses.append(_Resp({"value": []}))
+    client.list_folders()
+    assert calls[0]["url"] == f"{G}/me/mailFolders"
+
+
+def test_boite_vide_refusee(calls, client):
+    from oto.tools.common.credentials import MissingCredential
+    with pytest.raises(MissingCredential):
+        client.list_folders(mailbox="")
+    assert not calls
+
+
+def test_boite_segment_encode(calls, client):
+    calls.responses.append(_Resp({"value": []}))
+    client.list_folders(mailbox="a/b?c")
+    assert calls[0]["url"] == f"{G}/users/a%2Fb%3Fc/mailFolders"
+
+
+@pytest.mark.parametrize("status,code", [(403, "ErrorAccessDenied"), (404, "ErrorInvalidUser")])
+def test_refus_sur_une_boite_nomme_la_boite_et_le_code(calls, client, status, code):
+    from oto.tools.microsoft import MailboxAccessError
+    calls.responses.append(_Resp({"error": {"code": code, "message": "Access is denied."}},
+                                 status_code=status))
+    with pytest.raises(MailboxAccessError) as e:
+        client.get_message("m1", mailbox=BOITE)
+    err = e.value
+    assert isinstance(err, UpstreamHTTPError) and err.status_code == status
+    assert err.mailbox == BOITE and err.graph_code == code
+    assert f"No access to mailbox {BOITE}" in str(err) and code in str(err)
+    assert len(calls) == 1  # aucun repli sur /me
+
+
+def test_refus_sur_sa_propre_boite_inchange(calls, client):
+    from oto.tools.microsoft import MailboxAccessError
+    calls.responses.append(_Resp({"error": {"code": "ErrorItemNotFound"}}, status_code=404))
+    with pytest.raises(UpstreamHTTPError) as e:
+        client.get_message("m1")
+    assert not isinstance(e.value, MailboxAccessError)
+
+
+def test_autre_erreur_sur_une_boite_non_requalifiee(calls, client):
+    from oto.tools.microsoft import MailboxAccessError
+    calls.responses.append(_Resp({"error": {"code": "TooManyRequests"}}, status_code=429))
+    with pytest.raises(UpstreamHTTPError) as e:
+        client.list_folders(mailbox=BOITE)
+    assert e.value.status_code == 429 and not isinstance(e.value, MailboxAccessError)
+
+
+def test_ecritures_sans_parametre_de_boite():
+    import inspect
+    for name in ("create_draft", "create_reply_draft", "add_attachments", "send_draft",
+                 "sent_message", "move", "delete"):
+        assert "mailbox" not in inspect.signature(getattr(MailClient, name)).parameters
