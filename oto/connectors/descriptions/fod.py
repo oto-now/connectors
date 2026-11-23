@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'fod',
                'label': 'France Open Data',
                'namespace': 'fod',
-               'version': '1.10.0',
+               'version': '1.11.0',
                'api_version': 'france-opendata-service a7cb702 (routes unversioned)',
                'base_url': 'https://data.oto.zone',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -647,6 +647,351 @@ DESCRIPTION = {'connector': {'name': 'fod',
                          'path': '/api/accords/text/{acco_id}',
                          'query': {'offset': 'offset', 'max_chars': 'max_chars'}},
                 'timeout_s': 90,
+                'cost': {'per': 'request'}},
+               {'name': 'company_get_stock_info',
+                'class': 'read',
+                'description': 'Get the vintage of the SIRENE stock FOD reads: {millesime, built_at, '
+                               'age_days, rows, total_rows, source_url, size_bytes, mtime}. millesime is the '
+                               'date of the INSEE monthly file (YYYYMMDD); age_days counts the days since '
+                               'FOD built its copy; build_info "absent" means the vintage is unknown. The '
+                               'stock functions answer as of that file, not live: a company created or '
+                               'closed since is not in it, the live register (company_get) is. Quote the '
+                               'vintage with a figure drawn from the stock.',
+                'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
+                'examples': [{'title': 'Vintage of the stock', 'input': {}}],
+                'call': {'method': 'GET', 'path': '/api/sirene/info'},
+                'output': {'strip': ['path']},
+                'cost': {'per': 'request'}},
+               {'name': 'company_search_establishments',
+                'class': 'read',
+                'description': 'Enumerate French establishments in the SIRENE stock (every establishment, '
+                               'head offices and branches, active or closed) by cumulative filters, ordered '
+                               'by SIRET: {items: [{siren, siret, nic, is_siege, etat, date_creation, '
+                               'denomination, enseigne_1, naf, tranche_effectifs, annee_effectifs, '
+                               'caractere_employeur, numero_voie, type_voie, libelle_voie, code_postal, '
+                               'libelle_commune, code_commune, ...}], count, limit, offset}. Use it for '
+                               'exhaustive lists a search engine caps: every bakery of a department, every '
+                               'site of a brand, head offices of 100 to 499 employees in a department. The '
+                               "company's name is not in this stock: denomination is the establishment's "
+                               'usual name, empty for most; read the names by listing the legal units of the '
+                               'SIRENs. To find a company by its name, use the company search. count equal '
+                               'to limit: more may follow, pass offset + limit. A department or a postal '
+                               'code narrows the scan to one part of the stock; without one the scan reads '
+                               'all of France and may be stopped.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'anyOf': [{'required': ['naf']},
+                                    {'required': ['code_commune']},
+                                    {'required': ['code_postal']},
+                                    {'required': ['departement']},
+                                    {'required': ['denomination']},
+                                    {'required': ['enseigne']}],
+                          'properties': {'naf': {'type': 'string',
+                                                 'pattern': '^[0-9]{2}\\.?[0-9]{2}[A-Z]$',
+                                                 'description': 'Main activity code of the establishment '
+                                                                '(NAF rev. 2), with or without the dot: '
+                                                                '47.11F or 4711F.'},
+                                         'code_commune': {'type': 'string',
+                                                          'pattern': '^([0-9]{2}|2A|2B)[0-9]{3}$',
+                                                          'description': "INSEE code of the establishment's "
+                                                                         'commune; Paris, Lyon and Marseille '
+                                                                         'by arrondissement (13201, not '
+                                                                         '13055).'},
+                                         'code_postal': {'type': 'string',
+                                                         'pattern': '^[0-9]{5}$',
+                                                         'description': 'Postal code of the establishment.'},
+                                         'departement': {'type': 'string',
+                                                         'pattern': '^([0-9]{2}|97[1-6])$',
+                                                         'description': "Start of the establishment's postal "
+                                                                        'code: two digits in mainland France '
+                                                                        '(20 for Corsica, not 2A or 2B), '
+                                                                        'three overseas (971).'},
+                                         'denomination': {'type': 'string',
+                                                          'minLength': 2,
+                                                          'maxLength': 120,
+                                                          'description': "Part of the establishment's usual "
+                                                                         'name, case ignored; rarely '
+                                                                         'filled.'},
+                                         'enseigne': {'type': 'string',
+                                                      'minLength': 2,
+                                                      'maxLength': 120,
+                                                      'description': "Part of one of the establishment's "
+                                                                     'signs (enseigne), case ignored: '
+                                                                     'carrefour express.'},
+                                         'active_only': {'type': 'boolean',
+                                                         'default': True,
+                                                         'description': 'false also returns closed '
+                                                                        'establishments.'},
+                                         'sieges_only': {'type': 'boolean',
+                                                         'default': False,
+                                                         'description': 'true keeps head offices only.'},
+                                         'tranche_effectifs': {'type': 'array',
+                                                               'minItems': 1,
+                                                               'items': {'type': 'string',
+                                                                         'enum': ['NN',
+                                                                                  '00',
+                                                                                  '01',
+                                                                                  '02',
+                                                                                  '03',
+                                                                                  '11',
+                                                                                  '12',
+                                                                                  '21',
+                                                                                  '22',
+                                                                                  '31',
+                                                                                  '32',
+                                                                                  '41',
+                                                                                  '42',
+                                                                                  '51',
+                                                                                  '52',
+                                                                                  '53']},
+                                                               'description': 'INSEE headcount bands of the '
+                                                                              'establishment, any of them '
+                                                                              '(00 = none, 01 = 1-2, 11 = '
+                                                                              '10-19, 21 = 50-99, 22 = '
+                                                                              '100-199, 31 = 200-249, 32 = '
+                                                                              '250-499 ... 53 = 10,000 and '
+                                                                              'more).'},
+                                         'limit': {'type': 'integer',
+                                                   'minimum': 1,
+                                                   'maximum': 1000,
+                                                   'default': 100},
+                                         'offset': {'type': 'integer',
+                                                    'minimum': 0,
+                                                    'default': 0,
+                                                    'description': 'Establishments skipped: the next page is '
+                                                                   'offset + limit.'}}},
+                'examples': [{'title': 'Supermarkets of the Bouches-du-Rhône',
+                              'input': {'naf': '47.11F', 'departement': '13', 'limit': 200}},
+                             {'title': 'Head offices of 100 to 499 employees in Gironde',
+                              'input': {'departement': '33',
+                                        'sieges_only': True,
+                                        'tranche_effectifs': ['22', '31', '32']}}],
+                'refusals': [{'code': 'stock_scan_too_long',
+                              'when': 504,
+                              'message': 'The scan of the SIRENE stock was stopped after 90 s: narrow it (a '
+                                         'department or a postal code, a shorter list) rather than retrying '
+                                         'unchanged.'}],
+                'call': {'method': 'POST',
+                         'path': '/api/sirene/search',
+                         'body': {'naf': 'naf',
+                                  'code_commune': 'code_commune',
+                                  'code_postal': 'code_postal',
+                                  'departement': 'departement',
+                                  'denomination': 'denomination',
+                                  'enseigne': 'enseigne',
+                                  'active_only': 'active_only',
+                                  'sieges_only': 'sieges_only',
+                                  'tranche_effectifs': 'tranche_effectifs',
+                                  'limit': 'limit',
+                                  'offset': 'offset'}},
+                'timeout_s': 150,
+                'cost': {'per': 'request'}},
+               {'name': 'company_list_headquarters_addresses',
+                'class': 'read',
+                'description': 'Get the head office of many French companies at once from the SIRENE stock, '
+                               'in one scan, as an address: {siren: {siren, siret, is_headquarters, street, '
+                               'postal_code, city, code_commune, status, naf, denomination, lambert_x, '
+                               'lambert_y, tranche_effectifs, annee_effectifs, caractere_employeur}}. status '
+                               'is active or closed. A SIREN without a head office in the stock is absent '
+                               'from the answer. Use it to enrich a list of companies (address, activity, '
+                               'size of the head office) far faster than one lookup each; the company names '
+                               'come from the legal units.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['sirens'],
+                          'properties': {'sirens': {'type': 'array',
+                                                    'minItems': 1,
+                                                    'maxItems': 1000,
+                                                    'items': {'type': 'string', 'pattern': '^[0-9]{9}$'},
+                                                    'description': 'SIRENs, 9 digits each, 1,000 at most per '
+                                                                   'call.'}}},
+                'examples': [{'title': 'Head offices of three companies',
+                              'input': {'sirens': ['552032534', '441639465', '855200887']}}],
+                'refusals': [{'code': 'stock_scan_too_long',
+                              'when': 504,
+                              'message': 'The scan of the SIRENE stock was stopped after 90 s: narrow it (a '
+                                         'department or a postal code, a shorter list) rather than retrying '
+                                         'unchanged.'}],
+                'call': {'method': 'POST', 'path': '/api/sirene/enrich', 'body': {'sirens': 'sirens'}},
+                'timeout_s': 150,
+                'cost': {'per': 'request'}},
+               {'name': 'company_list_headquarters',
+                'class': 'read',
+                'description': 'Get the head office record of many French companies at once from the SIRENE '
+                               'stock, in one scan, with every column the stock holds: {siren: {siren, '
+                               'siret, nic, is_siege, etat, date_creation, date_debut, denomination, '
+                               'enseigne_1, naf, tranche_effectifs, annee_effectifs, caractere_employeur, '
+                               'numero_voie, type_voie, libelle_voie, code_postal, libelle_commune, '
+                               'code_commune, code_cedex, lambert_x, lambert_y, date_dernier_traitement, '
+                               '...}}. etat A is active, F closed. A SIREN without a head office in the '
+                               'stock is absent. The head office addresses give the same companies in a '
+                               'shorter form.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['sirens'],
+                          'properties': {'sirens': {'type': 'array',
+                                                    'minItems': 1,
+                                                    'maxItems': 1000,
+                                                    'items': {'type': 'string', 'pattern': '^[0-9]{9}$'},
+                                                    'description': 'SIRENs, 9 digits each, 1,000 at most per '
+                                                                   'call.'}}},
+                'examples': [{'title': 'Head office records of two companies',
+                              'input': {'sirens': ['552032534', '441639465']}}],
+                'refusals': [{'code': 'stock_scan_too_long',
+                              'when': 504,
+                              'message': 'The scan of the SIRENE stock was stopped after 90 s: narrow it (a '
+                                         'department or a postal code, a shorter list) rather than retrying '
+                                         'unchanged.'}],
+                'call': {'method': 'POST', 'path': '/api/sirene/sieges', 'body': {'sirens': 'sirens'}},
+                'timeout_s': 150,
+                'cost': {'per': 'request'}},
+               {'name': 'company_list_legal_units',
+                'class': 'read',
+                'description': 'Get the legal unit of many French companies at once from the SIRENE stock of '
+                               'legal units, in one scan: {items: {siren: {siren, denomination, sigle, nom, '
+                               'nom_usage, etat, date_creation, categorie_entreprise, '
+                               'annee_categorie_entreprise, tranche_effectifs, categorie_juridique, naf, '
+                               'nic_siege, ess, societe_mission, caractere_employeur, statut_diffusion, '
+                               '...}}, count}. denomination is the company name (null for a sole trader, '
+                               'whose name is nom). categorie_entreprise (PME, ETI, GE) is computed by INSEE '
+                               'over the whole group: a small subsidiary of a large group is GE, which no '
+                               'headcount band shows. An unknown SIREN is absent, never an empty entry; '
+                               'categorie_entreprise null is a category not given. A unit with '
+                               'statut_diffusion P is under partial diffusion: its data must not be '
+                               'redistributed whole nor used for prospecting.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['sirens'],
+                          'properties': {'sirens': {'type': 'array',
+                                                    'minItems': 1,
+                                                    'maxItems': 1000,
+                                                    'items': {'type': 'string', 'pattern': '^[0-9]{9}$'},
+                                                    'description': 'SIRENs, 9 digits each, 1,000 at most per '
+                                                                   'call.'}}},
+                'examples': [{'title': 'Size category of three companies',
+                              'input': {'sirens': ['552032534', '441639465', '855200887']}}],
+                'refusals': [{'code': 'stock_scan_too_long',
+                              'when': 504,
+                              'message': 'The scan of the SIRENE stock was stopped after 90 s: narrow it (a '
+                                         'department or a postal code, a shorter list) rather than retrying '
+                                         'unchanged.'},
+                             {'code': 'legal_unit_stock_unavailable',
+                              'when': 501,
+                              'message': 'FOD does not hold the stock of legal units on this instance: no '
+                                         'category can be read here, which says nothing of the companies.'}],
+                'call': {'method': 'POST',
+                         'path': '/api/sirene/unites-legales',
+                         'body': {'sirens': 'sirens'}},
+                'timeout_s': 150,
+                'cost': {'per': 'request'}},
+               {'name': 'company_list_establishments_by_siret',
+                'class': 'read',
+                'description': 'Get many French establishments at once from the SIRENE stock by their SIRET, '
+                               'in one scan, with their headcount: {items: {siret: {siren, siret, '
+                               'is_headquarters, street, postal_code, city, code_commune, status, naf, '
+                               'denomination, tranche_effectifs, annee_effectifs, caractere_employeur, '
+                               '...}}, erreurs: [{siret, code}], count}. tranche_effectifs is the '
+                               "establishment's INSEE headcount band for the year annee_effectifs, null when "
+                               'not filled; caractere_employeur O (employs staff) or N. Errors are per '
+                               'SIRET, never for the list: siret_invalide (not 14 digits), introuvable (not '
+                               'in the stock). A SIRET given twice is read once.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['sirets'],
+                          'properties': {'sirets': {'type': 'array',
+                                                    'minItems': 1,
+                                                    'maxItems': 1000,
+                                                    'items': {'type': 'string', 'pattern': '^[0-9]{14}$'},
+                                                    'description': 'SIRETs, 14 digits each, 1,000 at most '
+                                                                   'per call.'}}},
+                'examples': [{'title': 'Headcount of two sites',
+                              'input': {'sirets': ['55203253400703', '55203253400646']}}],
+                'refusals': [{'code': 'stock_scan_too_long',
+                              'when': 504,
+                              'message': 'The scan of the SIRENE stock was stopped after 90 s: narrow it (a '
+                                         'department or a postal code, a shorter list) rather than retrying '
+                                         'unchanged.'}],
+                'call': {'method': 'POST', 'path': '/api/sirene/sirets', 'body': {'sirets': 'sirets'}},
+                'timeout_s': 150,
+                'cost': {'per': 'request'}},
+               {'name': 'company_get_headquarters',
+                'class': 'read',
+                'description': 'Get the head office of one French company from the SIRENE stock, with every '
+                               'column the stock holds (same record as the head office records of many). The '
+                               'head office whose period is still open is kept. For many companies, read '
+                               'them in one call.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['siren'],
+                          'properties': {'siren': {'type': 'string',
+                                                   'pattern': '^[0-9]{9}$',
+                                                   'description': 'SIREN, 9 digits without spaces.'}}},
+                'examples': [{'title': 'Head office of Danone', 'input': {'siren': '552032534'}}],
+                'refusals': [{'code': 'stock_scan_too_long',
+                              'when': 504,
+                              'message': 'The scan of the SIRENE stock was stopped after 90 s: narrow it (a '
+                                         'department or a postal code, a shorter list) rather than retrying '
+                                         'unchanged.'},
+                             {'code': 'headquarters_not_found',
+                              'when': 'the response is null',
+                              'message': 'No head office for this SIREN in the SIRENE stock: an unknown '
+                                         "SIREN, or a company created after the stock's vintage."}],
+                'expect': [{'kind': 'non_empty', 'refusal': 'headquarters_not_found', 'path': 'siren'}],
+                'call': {'method': 'GET', 'path': '/api/sirene/siege/{siren}'},
+                'cost': {'per': 'request'}},
+               {'name': 'company_list_establishments',
+                'class': 'read',
+                'description': 'List every establishment of one French company from the SIRENE stock, head '
+                               'office first, then the latest: [{siret, is_siege, etat, denomination, '
+                               'enseigne_1, naf, tranche_effectifs, code_postal, libelle_commune, '
+                               'code_commune, ...}]. Use it to map the sites, branches or shops of a '
+                               'company. Empty list when the SIREN is unknown or, with active_only, has no '
+                               'open establishment.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['siren'],
+                          'properties': {'siren': {'type': 'string',
+                                                   'pattern': '^[0-9]{9}$',
+                                                   'description': 'SIREN, 9 digits without spaces.'},
+                                         'active_only': {'type': 'boolean',
+                                                         'default': True,
+                                                         'description': 'false also returns closed '
+                                                                        'establishments.'}}},
+                'examples': [{'title': 'Open establishments of Danone', 'input': {'siren': '552032534'}}],
+                'refusals': [{'code': 'stock_scan_too_long',
+                              'when': 504,
+                              'message': 'The scan of the SIRENE stock was stopped after 90 s: narrow it (a '
+                                         'department or a postal code, a shorter list) rather than retrying '
+                                         'unchanged.'}],
+                'call': {'method': 'GET',
+                         'path': '/api/sirene/etablissements/{siren}',
+                         'query': {'active_only': 'active_only'}},
+                'timeout_s': 150,
+                'cost': {'per': 'request'}},
+               {'name': 'company_get_establishment',
+                'class': 'read',
+                'description': 'Get one French establishment from the SIRENE stock by its SIRET, with every '
+                               'column the stock holds: activity, headcount band and its year, employer '
+                               'status, address, state (etat A active, F closed). The name of the company is '
+                               'not in it: read its legal unit.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['siret'],
+                          'properties': {'siret': {'type': 'string',
+                                                   'pattern': '^[0-9]{14}$',
+                                                   'description': 'SIRET, 14 digits without spaces.'}}},
+                'examples': [{'title': 'One establishment', 'input': {'siret': '55203253400703'}}],
+                'refusals': [{'code': 'stock_scan_too_long',
+                              'when': 504,
+                              'message': 'The scan of the SIRENE stock was stopped after 90 s: narrow it (a '
+                                         'department or a postal code, a shorter list) rather than retrying '
+                                         'unchanged.'},
+                             {'code': 'establishment_not_found',
+                              'when': 'the response is null',
+                              'message': 'No establishment with this SIRET in the SIRENE stock: an unknown '
+                                         "SIRET, or one created after the stock's vintage."}],
+                'expect': [{'kind': 'non_empty', 'refusal': 'establishment_not_found', 'path': 'siret'}],
+                'call': {'method': 'GET', 'path': '/api/sirene/siret/{siret}'},
                 'cost': {'per': 'request'}},
                {'name': 'property_geocode_address',
                 'class': 'read',
@@ -2938,6 +3283,152 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'expect': [{'kind': 'non_empty', 'refusal': 'medicine_not_found', 'path': 'cis'}],
                 'call': {'method': 'GET', 'path': '/api/sante/medicaments/{cis}'},
                 'cost': {'per': 'request'}},
+               {'name': 'health_search_establishments',
+                'class': 'read',
+                'description': 'Search the national directory of health and social-care establishments '
+                               '(FINESS, about 100,000: hospitals, care homes, pharmacies, laboratories, '
+                               'health centres, home-care services) by name or FINESS code: {count, results: '
+                               '[{finess_et, finess_ej, rs, rs_longue, adresse, cp_commune, commune_code, '
+                               'departement_code, departement, tel, categorie_code, categorie, '
+                               'categorie_agregee, siret, ape}]}. finess_et is the establishment, finess_ej '
+                               'the legal entity that runs it; siret links to the company register. count is '
+                               'the number returned, never the total: count equal to limit means more match, '
+                               'narrow by department or category. The first call after a restart of the '
+                               'service loads the file, up to a minute.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['q'],
+                          'properties': {'q': {'type': 'string',
+                                               'minLength': 2,
+                                               'maxLength': 120,
+                                               'description': 'Words of the name (every word must appear, '
+                                                              'with the postal code and town, accents and '
+                                                              'case ignored), or the start of a FINESS code, '
+                                                              'digits only.'},
+                                         'departement': {'type': 'string',
+                                                         'pattern': '^([0-9]{2}|2[AB]|9[A-FJ])$',
+                                                         'description': 'FINESS department code: 75, 2A; '
+                                                                        'overseas 9A (Guadeloupe) to 9F and '
+                                                                        '9J, not 971.'},
+                                         'categorie': {'type': 'string',
+                                                       'minLength': 2,
+                                                       'maxLength': 120,
+                                                       'description': 'Part of the category label, accents '
+                                                                      'and case ignored: centre hospitalier, '
+                                                                      'personnes âgées dépendantes (care '
+                                                                      'homes; the label holds no acronym '
+                                                                      'such as EHPAD), pharmacie.'},
+                                         'limit': {'type': 'integer',
+                                                   'minimum': 1,
+                                                   'maximum': 100,
+                                                   'default': 20}}},
+                'examples': [{'title': 'Hospitals in Bordeaux',
+                              'input': {'q': 'bordeaux',
+                                        'departement': '33',
+                                        'categorie': 'centre hospitalier'}},
+                             {'title': 'Establishments whose FINESS code starts with 330781',
+                              'input': {'q': '330781'}}],
+                'call': {'method': 'GET',
+                         'path': '/api/sante/finess/search',
+                         'query': {'q': 'q',
+                                   'departement': 'departement',
+                                   'categorie': 'categorie',
+                                   'limit': 'limit'}},
+                'timeout_s': 150,
+                'cost': {'per': 'request'}},
+               {'name': 'health_get_establishment',
+                'class': 'read',
+                'description': 'Get one establishment of the FINESS directory by its exact code, as an '
+                               'establishment (finess_et) or as the legal entity that runs it (finess_ej, '
+                               'the first of its establishments then): same fields as a search result.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['code'],
+                          'properties': {'code': {'type': 'string',
+                                                  'pattern': '^[0-9][0-9AB][0-9]{7}$',
+                                                  'description': 'FINESS code, 9 characters (2A and 2B for '
+                                                                 'Corsica): 330781196.'}}},
+                'examples': [{'title': 'The legal entity of the Bordeaux university hospital',
+                              'input': {'code': '330781196'}}],
+                'refusals': [{'code': 'finess_not_found',
+                              'when': 'the response is null',
+                              'message': 'No establishment or legal entity with this FINESS code: search by '
+                                         'name to find the code.'}],
+                'expect': [{'kind': 'non_empty', 'refusal': 'finess_not_found', 'path': 'finess_et'}],
+                'call': {'method': 'GET', 'path': '/api/sante/finess/{code}'},
+                'timeout_s': 150,
+                'cost': {'per': 'request'}},
+               {'name': 'health_search_quality_evaluations',
+                'class': 'read',
+                'description': 'Search the quality evaluations of social and medico-social establishments '
+                               'and services (ESSMS: care homes, disability services, child protection...) '
+                               'published by the HAS, one row per establishment and evaluation: {total, '
+                               'returned, results: [{finess_geo, raison_sociale, region_libelle, '
+                               'departement_code, essms_categ_finess_libelle, essms_secteur, '
+                               'essms_type_structure, essms_statut_juridique, eval_date_debut, '
+                               'indice_qualite}]}. total counts every match, beyond limit. finess_geo is the '
+                               'FINESS code of the establishment. Labels match exactly: read the values '
+                               'first (regions are upper case without accents, ILE DE FRANCE). Without a '
+                               'filter, every evaluation.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'properties': {'region_libelle': {'type': 'string',
+                                                            'minLength': 2,
+                                                            'maxLength': 80,
+                                                            'description': 'Region exactly as the values '
+                                                                           'list it: ILE DE FRANCE.'},
+                                         'departement_code': {'type': 'string',
+                                                              'pattern': '^[0-9AB]{2,3}$',
+                                                              'description': 'Department code: 33, 2A, 974.'},
+                                         'secteur': {'type': 'string', 'enum': ['Social', 'Médico-social']},
+                                         'type_structure': {'type': 'string',
+                                                            'enum': ['Etablissement', 'Service']},
+                                         'statut_juridique': {'type': 'string',
+                                                              'minLength': 2,
+                                                              'maxLength': 120,
+                                                              'description': 'Legal status exactly as the '
+                                                                             'values list it.'},
+                                         'annee_min': {'type': 'integer',
+                                                       'minimum': 2000,
+                                                       'maximum': 2100,
+                                                       'description': 'Earliest year the evaluation began.'},
+                                         'annee_max': {'type': 'integer',
+                                                       'minimum': 2000,
+                                                       'maximum': 2100,
+                                                       'description': 'Latest year the evaluation began.'},
+                                         'limit': {'type': 'integer',
+                                                   'minimum': 1,
+                                                   'maximum': 500,
+                                                   'default': 50}}},
+                'examples': [{'title': 'Medico-social establishments evaluated in Gironde since 2024',
+                              'input': {'departement_code': '33',
+                                        'secteur': 'Médico-social',
+                                        'type_structure': 'Etablissement',
+                                        'annee_min': 2024}}],
+                'call': {'method': 'POST',
+                         'path': '/api/sante/essms/search',
+                         'body': {'region_libelle': 'region_libelle',
+                                  'departement_code': 'departement_code',
+                                  'secteur': 'secteur',
+                                  'type_structure': 'type_structure',
+                                  'statut_juridique': 'statut_juridique',
+                                  'annee_min': 'annee_min',
+                                  'annee_max': 'annee_max',
+                                  'limit': 'limit'}},
+                'timeout_s': 120,
+                'cost': {'per': 'request'}},
+               {'name': 'health_list_quality_evaluation_values',
+                'class': 'read',
+                'description': 'List the values the quality evaluations of ESSMS can be filtered by, each '
+                               'with its number of rows: {region_libelle, essms_secteur, '
+                               'essms_type_structure, essms_statut_juridique, essms_categ_finess_libelle, '
+                               'annees}, each a list of [value, count], largest first (annees by year). Read '
+                               'it before a search: the filters take these labels exactly.',
+                'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
+                'examples': [{'title': 'Filter values of the ESSMS evaluations', 'input': {}}],
+                'call': {'method': 'GET', 'path': '/api/sante/essms/dimensions'},
+                'timeout_s': 120,
+                'cost': {'per': 'request'}},
                {'name': 'health_search_clinical_trials',
                 'class': 'read',
                 'description': 'Search the ClinicalTrials.gov registry (U.S. National Library of Medicine, '
@@ -3782,4 +4273,205 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                          'base.'}],
                 'expect': [{'kind': 'non_empty', 'refusal': 'scheme_not_found', 'path': 'id_aid'}],
                 'call': {'method': 'GET', 'path': '/api/fr/aides/{id_aid}'},
+                'cost': {'per': 'request'}},
+               {'name': 'ecosystem_search_directory',
+                'class': 'read',
+                'description': 'Search the directory of the French Tech Aix-Marseille ecosystem (about 700 '
+                               'start-ups, support structures and service providers of the region), read '
+                               "live from the capital's site: {total, results: [{slug, nom, type, secteurs, "
+                               'pitch, dirigeant, email, telephone, website, ville, code_postal, adresse, '
+                               'date_creation, effectif, ca, fonds_leves, recrute, recherche_fonds, besoins, '
+                               'link}]}. Only this capital, not every French Tech. dirigeant, email and '
+                               'telephone are the persons the companies declared, personal data published '
+                               'for the ecosystem: reuse them within the GDPR. ca and the other figures are '
+                               'declared once by the company and not kept up to date. Without all_results, '
+                               'the first page only (per_page entries), and ville filters that page; total '
+                               'counts what is returned. secteur and type_annuaire take a term exactly as '
+                               'the results name it in secteurs and type.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'properties': {'query': {'type': 'string',
+                                                   'minLength': 2,
+                                                   'maxLength': 120,
+                                                   'description': 'Words searched in the name and the text '
+                                                                  'of each entry.'},
+                                         'secteur': {'type': 'string',
+                                                     'minLength': 2,
+                                                     'maxLength': 120,
+                                                     'description': "One sector, exactly as an entry's "
+                                                                    'secteurs names it, case ignored.'},
+                                         'type_annuaire': {'type': 'string',
+                                                           'minLength': 2,
+                                                           'maxLength': 120,
+                                                           'description': 'One kind of entry, exactly as an '
+                                                                          "entry's type names it, case "
+                                                                          'ignored: une start-up, une '
+                                                                          'structure d’accompagnement, '
+                                                                          'Partenaire écosystème, Services '
+                                                                          'aux start-up, une personnalité '
+                                                                          'qualifiée.'},
+                                         'ville': {'type': 'string',
+                                                   'minLength': 2,
+                                                   'maxLength': 80,
+                                                   'description': 'Town, exact match, case ignored: '
+                                                                  'Marseille.'},
+                                         'all_results': {'type': 'boolean',
+                                                         'default': False,
+                                                         'description': 'true reads every page of the '
+                                                                        'directory before filtering by town: '
+                                                                        'several requests to the site.'},
+                                         'per_page': {'type': 'integer',
+                                                      'minimum': 1,
+                                                      'maximum': 100,
+                                                      'default': 100}}},
+                'examples': [{'title': 'Start-ups speaking of artificial intelligence in Marseille',
+                              'input': {'query': 'intelligence artificielle',
+                                        'ville': 'Marseille',
+                                        'all_results': True}}],
+                'refusals': [{'code': 'unknown_directory_term',
+                              'when': 500,
+                              'message': 'secteur or type_annuaire names no term of the directory: take the '
+                                         'term from the secteurs or type of a result, or search without '
+                                         'it.'}],
+                'call': {'method': 'POST',
+                         'path': '/api/frenchtech/annuaire/search',
+                         'body': {'query': 'query',
+                                  'secteur': 'secteur',
+                                  'type_annuaire': 'type_annuaire',
+                                  'ville': 'ville',
+                                  'all_results': 'all_results',
+                                  'per_page': 'per_page'}},
+                'timeout_s': 120,
+                'cost': {'per': 'request'}},
+               {'name': 'ecosystem_get_directory_entry',
+                'class': 'read',
+                'description': 'Get one entry of the French Tech Aix-Marseille directory by its slug, the '
+                               'slug of a search result: same fields as a result (pitch, director, contact, '
+                               'sectors, figures declared by the company, needs).',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['slug'],
+                          'properties': {'slug': {'type': 'string',
+                                                  'pattern': '^[a-z0-9]+(-[a-z0-9]+)*$',
+                                                  'maxLength': 200,
+                                                  'description': 'Slug of a directory entry, as a search '
+                                                                 'result gives it.'}}},
+                'examples': [{'title': 'One directory entry', 'input': {'slug': 'hsti-france-2'}}],
+                'refusals': [{'code': 'directory_entry_not_found',
+                              'when': 'the response is null',
+                              'message': 'No directory entry with this slug: take it from a directory '
+                                         'search.'}],
+                'expect': [{'kind': 'non_empty', 'refusal': 'directory_entry_not_found', 'path': 'slug'}],
+                'call': {'method': 'GET', 'path': '/api/frenchtech/annuaire/{slug}'},
+                'cost': {'per': 'request'}},
+               {'name': 'ecosystem_list_members',
+                'class': 'read',
+                'description': 'List the member pages of the French Tech Aix-Marseille community, named '
+                               'persons: {total, results: [{slug, titre, date, resume, link, '
+                               "localisation}]}. titre is the person's name, resume the start of the page. "
+                               'Personal data published by the site: reuse within the GDPR. Without '
+                               'all_results, the latest 100; total counts what is returned.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'properties': {'query': {'type': 'string',
+                                                   'minLength': 2,
+                                                   'maxLength': 120,
+                                                   'personal': True,
+                                                   'description': 'Words searched in the member pages, such '
+                                                                  'as a name.'},
+                                         'all_results': {'type': 'boolean',
+                                                         'default': False,
+                                                         'description': 'true reads every page of the site: '
+                                                                        'several requests.'}}},
+                'examples': [{'title': 'Latest member pages', 'input': {}}],
+                'call': {'method': 'GET',
+                         'path': '/api/frenchtech/membres',
+                         'query': {'query': 'query', 'all_results': 'all_results'}},
+                'timeout_s': 120,
+                'cost': {'per': 'request'}},
+               {'name': 'ecosystem_list_events',
+                'class': 'read',
+                'description': 'List the events of the French Tech Aix-Marseille agenda (meetups, '
+                               'conferences), newest publication first: {total, results: [{slug, titre, '
+                               'date, resume, link, localisation}]}. date is when the page was published, '
+                               'not when the event takes place: read it in resume or on the page. Without '
+                               'all_results, the latest 50.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'properties': {'query': {'type': 'string',
+                                                   'minLength': 2,
+                                                   'maxLength': 120,
+                                                   'description': 'Words searched in the title and text.'},
+                                         'all_results': {'type': 'boolean',
+                                                         'default': False,
+                                                         'description': 'true reads every page of the site: '
+                                                                        'several requests.'}}},
+                'examples': [{'title': 'Events about fundraising', 'input': {'query': 'levée de fonds'}}],
+                'call': {'method': 'GET',
+                         'path': '/api/frenchtech/evenements',
+                         'query': {'query': 'query', 'all_results': 'all_results'}},
+                'timeout_s': 120,
+                'cost': {'per': 'request'}},
+               {'name': 'ecosystem_list_calls',
+                'class': 'read',
+                'description': 'List the calls for applications relayed by French Tech Aix-Marseille (calls '
+                               'for projects, competitions, calls for expressions of interest), newest '
+                               'publication first: {total, results: [{slug, titre, date, resume, link, '
+                               'localisation}]}. The deadline is in the text, not in a field: read resume or '
+                               'the page before saying a call is open. Without all_results, the latest 50.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'properties': {'query': {'type': 'string',
+                                                   'minLength': 2,
+                                                   'maxLength': 120,
+                                                   'description': 'Words searched in the title and text.'},
+                                         'all_results': {'type': 'boolean',
+                                                         'default': False,
+                                                         'description': 'true reads every page of the site: '
+                                                                        'several requests.'}}},
+                'examples': [{'title': 'Calls about health', 'input': {'query': 'santé'}}],
+                'call': {'method': 'GET',
+                         'path': '/api/frenchtech/appels',
+                         'query': {'query': 'query', 'all_results': 'all_results'}},
+                'timeout_s': 120,
+                'cost': {'per': 'request'}},
+               {'name': 'ecosystem_list_funding',
+                'class': 'read',
+                'description': 'List the funding schemes French Tech Aix-Marseille presents to start-ups: '
+                               '{total, results: [{slug, titre, date, resume, link, type_financement, '
+                               'montant_maximum, critere_elegibilite, stade, localisation}]}, the last five '
+                               'lists of labels. A selection by the site, not the State reference base of '
+                               'public funding schemes, which the funding search covers. Without '
+                               'all_results, the latest 100.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'properties': {'query': {'type': 'string',
+                                                   'minLength': 2,
+                                                   'maxLength': 120,
+                                                   'description': 'Words searched in the title and text.'},
+                                         'all_results': {'type': 'boolean',
+                                                         'default': False,
+                                                         'description': 'true reads every page of the site: '
+                                                                        'several requests.'}}},
+                'examples': [{'title': 'Funding for innovation', 'input': {'query': 'innovation'}}],
+                'call': {'method': 'GET',
+                         'path': '/api/frenchtech/financements',
+                         'query': {'query': 'query', 'all_results': 'all_results'}},
+                'timeout_s': 120,
+                'cost': {'per': 'request'}},
+               {'name': 'ecosystem_list_central_services',
+                'class': 'read',
+                'description': 'List the appointments French Tech Central Aix-Marseille offers with State '
+                               'correspondents and partners (research tax credit and JEI status, public '
+                               'procurement, export, European and national funding, business and labour '
+                               'law...), read live from its booking page: {company, scenarios: [{name, '
+                               'duration, price}]}. Gives who a start-up can meet, not the free slots: '
+                               'booking is done on the page.',
+                'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
+                'examples': [{'title': 'Appointments offered', 'input': {}}],
+                'refusals': [{'code': 'central_services_unavailable',
+                              'when': 500,
+                              'message': 'The booking page of French Tech Central answered without its list '
+                                         'of appointments: retry later.'}],
+                'call': {'method': 'GET', 'path': '/api/frenchtech/ftc_scenarios'},
                 'cost': {'per': 'request'}}]}

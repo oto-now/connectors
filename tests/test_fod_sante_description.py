@@ -1,7 +1,8 @@
 """La description `fod` 1.7.0 : les routes santé du service (médicaments, essais cliniques,
 publications, Transparence Santé) entrent en lecture seule.
 
-Chaque fonction `health_` est une lecture en GET sous `/api/sante/`. Les deux fonctions
+Chaque fonction `health_` de 1.7.0 est une lecture en GET sous `/api/sante/` ; 1.11.0
+en ajoute d'autres (FINESS, ESSMS), dont une en POST. Les deux fonctions
 Transparence Santé disent la licence CC BY-NC-SA 4.0, sa restriction, l'attribution que
 la source exige, et qu'on n'additionne pas des montants de types différents (exposition
 validée par Alexis le 2026-11-21).
@@ -51,7 +52,7 @@ def test_the_description_is_version_1_7_0_or_later_and_passes_the_fabrique():
 
 def test_each_health_function_is_a_get_read_on_its_route():
     functions = _functions()
-    assert {n for n in functions if n.startswith("health_")} == set(HEALTH)
+    assert set(HEALTH) <= {n for n in functions if n.startswith("health_")}
     for name, path in HEALTH.items():
         function = functions[name]
         assert function["class"] == "read", name
