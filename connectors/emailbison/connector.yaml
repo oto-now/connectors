@@ -1,0 +1,1115 @@
+# yaml-language-server: $schema=../connector.schema.json
+# EmailBison API (its OpenAPI 3.0.3 "API Reference" 1.0.0, served at /api/reference.openapi on each instance, and the
+# guides at docs.emailbison.com, read on 2026-11-23): cold email outreach for teams that run it on their own
+# EmailBison instance. No Python client: this description is the connector.
+#
+# Qualification sheet (docs/conception/concevoir-un-connecteur.md, step 1).
+# - Who holds the access: the organization (one workspace API token) or a person who keeps their own; never the
+#   platform. modes: byo_user, byo_org.
+# - Authentication: Authorization: Bearer <API token>. Tokens are made in EmailBison, Settings, Developer API, New API
+#   Token, of two types: an api-user token reaches the ONE workspace it was made in; a super-admin token acts as the
+#   person who made it, in whichever workspace that person has switched to, which moves under the agent. The screen
+#   asks for an api-user token.
+# - What a token allows: the reference names no scope and no read-only token; a token reads and acts. Nothing to probe
+#   beyond the token itself.
+# - Cost: the reference prices no call. The instance's plan bounds sending; a call cannot bill. No balance read: probe
+#   without balance.
+# - What engages: adding leads or a lead list to a campaign, resuming a campaign (an active campaign emails its leads
+#   on its schedule), a reply (it leaves at once), a webhook (it sends lead data to an outside address), deleting a
+#   webhook (it stops what it fed). All are sensitive and confirmed. Writes: creating and updating leads, tags on
+#   leads, a reply's interest and read state (interest fires the workspace's webhooks unless skip_webhooks), pausing a
+#   campaign, stopping future emails of some leads, the blacklists.
+# - What an agent must not see: a reply attachment's download_url (a signed address that opens without a login),
+#   stripped wherever a reply is answered; a reply's raw MIME body and headers, stripped too (size, and the headers
+#   carry routing and authentication results). A sender email's answer names its IMAP and SMTP servers and ports, never
+#   a password, in the reference: no strip names them. GET /sender-emails/{id}/oauth-access-token (a mailbox's own
+#   OAuth token) and the API token and headless UI token routes are never described.
+# - Limits: unknown, the reference states no rate and no 429; a 429 is still declared, retryable. Lists answer 15
+#   items a page; the cursor lists take pagination_type=cursor (a constant here), then cursor = meta.next_cursor,
+#   paginated below, ten pages at most. list_lead_lists has no cursor in the reference: page is an argument, the
+#   page number of a paginated answer, which the reference does not name for this route.
+# - Address: each customer has an instance at its own address, the one they log in to (a white-label domain or a
+#   host of EmailBison's): a url setting, instance_url, cited by base_url. The engine guards it at each request
+#   (https only, never a private host, no redirect followed).
+# - Owner of the access: a commercial product sold to many companies. Allowed here.
+#
+# Errors. The reference documents no error answer. 401: the token is missing, invalid or revoked; the host always sends
+# it, so a 401 is the token: marks the account credential_rejected. 403: the token's user may not do this, or the
+# object is in another workspace. 404: no such object in the workspace. 422: the request failed validation (a field
+# missing or invalid). 429: retryable, marks nothing. 5xx: not retryable, an action may have gone through.
+#
+# Choices.
+# - Query booleans: the reference types read and without_tags as booleans and does not say how a query string
+#   carries one; a choice here, they are integers 1 or 0 (what a validator of booleans accepts in a query, where
+#   "true" may be refused). Body booleans stay JSON booleans.
+# - Lean answers: list_replies drops each reply's html_body (text_body stays; get_reply keeps both); list_replies,
+#   get_reply, get_reply_thread and reply_to_email drop raw_body, headers and attachments' download_url;
+#   get_reply_thread drops html_body too; list_campaign_scheduled_emails drops each email's body (its subject stays).
+#   list_campaigns, list_leads, list_campaign_leads, list_sender_emails and list_campaign_sender_emails keep a
+#   projection of each item: ids, names, statuses, counts and dates, without a campaign's tracking and unsubscribe
+#   settings (get_campaign has them), a lead's custom variables and notes (get_lead has them), an account's
+#   signature, IMAP and SMTP servers (get_sender_email has them). list_lead_lists drops each list's import
+#   error_messages. These are size choices, not secrets.
+# - Narrower than the reference, named: create_webhook takes an https address only and the 19 event ids the
+#   reference lists; lead_ids take at most 500 ids, campaign_ids, sender_email_ids and tag_ids 100, recipients 50
+#   (bounds of this file; the reference states none, except 500 leads for create_leads); dates are YYYY-MM-DD; a lead
+#   is named by its id or its email, as the reference allows, in get_lead, update_lead and list_lead_sent_emails;
+#   reply_to_email takes a sender and recipients, or reply_all.
+# - Names as the API has them, except path ids, named after their object (campaign_id, lead_id, reply_id,
+#   sender_email_id, webhook_id) so one name means one thing across functions.
+#
+# Not described, and why: account and password, profile picture; workspaces, members, users and API tokens
+# (administration); sender email creation, bulk upload, signatures, daily limits, MX checks, moves between workspaces,
+# OAuth sessions and a mailbox's OAuth token (an inbox's own credentials); warmup; custom tracking domains; campaign
+# creation, duplication, settings, schedules and sequence steps' edition (copy and schedules are written in EmailBison
+# by a person); test emails; composing a new email and forwarding (send beyond a reply); reply templates; ignore
+# phrases; lead lists' creation (no route of the reference adds a lead to a list) and CSV import (multipart); lead
+# status, unsubscribe and moving leads between campaigns; the events log, webhook deliveries, attempts, test events and
+# sample payloads.
+# Deletion: only a webhook's (the agent removes what it created); deleting leads, replies, campaigns, tags or
+# blacklist entries is left out, irreversible and done in EmailBison.
+#
+# Values checked against the public reference only: no real call was made (no EmailBison token was available).
+connector:
+  name: emailbison
+  label: EmailBison
+  description: >-
+    EmailBison, cold email outreach on your own instance: read campaigns and their stats, sequence steps, leads, the
+    master inbox replies and conversation threads, sending accounts, tags and webhooks; create and update leads, tag
+    them, add leads or a lead list to a campaign, pause or resume a campaign, reply to an email, mark a reply
+    interested or read, blacklist an address or a domain, and register webhooks that wake agents on replies.
+  logo_domain: emailbison.com
+  namespace: emailbison
+  version: 1.0.2
+  api_version: "1.0.0"
+  base_url: "{instance_url}/api"
+  auth: { kind: bearer, token: api_key }
+  credential:
+    - { name: api_key, label: API token, secret: true }
+  settings:
+    - { name: instance_url, label: EmailBison address (the one you log in to), type: url }
+  # oto 1 only: the organization's or the person's own token, never a shared one.
+  modes: [byo_user, byo_org]
+  timeout_s: 60
+  query_arrays: brackets
+  probe: { function: get_account, non_empty: [data.id] }
+  errors:
+    - { status: 400, code: invalid_request, retryable: false,
+        message: "EmailBison rejected the request as invalid: check the arguments." }
+    - { status: 401, code: key_refused, retryable: false, marks_account: credential_rejected,
+        message: "EmailBison does not accept this API token: it was revoked or mistyped, or the address is not the instance's. Create an api-user token in EmailBison, Settings, Developer API, and set it again." }
+    - { status: 403, code: forbidden, retryable: false,
+        message: "EmailBison refused the call (403): the token's user may not do this, or the object belongs to another workspace than the token's." }
+    - { status: 404, code: not_found, retryable: false,
+        message: "Not found in this EmailBison workspace: check the id." }
+    - { status: 422, code: validation_failed, retryable: false,
+        message: "EmailBison could not validate the request: a field is missing or invalid. Check the arguments against the function's schema." }
+    - { status: 429, code: rate_limited, retryable: true,
+        message: "EmailBison rate limit reached: retry in a minute." }
+    - { status: [500, 502, 503, 504], code: upstream_unavailable, retryable: false,
+        message: "EmailBison failed or timed out. A read can be retried; an action may have gone through: check before repeating it." }
+
+
+functions:
+  # --- Account and workspace ---------------------------------------------------------------------------------------
+
+  - name: get_account
+    class: read
+    description: >-
+      The EmailBison user this API token belongs to and its current workspace
+      (team: id, name). Free. Use it to check the connection and to know
+      which workspace the token reaches.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: The account, input: {} }
+    call: { method: GET, path: /users }
+
+  - name: get_workspace_stats
+    class: read
+    description: >-
+      The workspace's totals between two dates (YYYY-MM-DD, both included):
+      emails_sent, total_leads_contacted, opened, unique opens and replies per
+      contact, bounced, unsubscribed, interested, each with its percentage.
+      Values come as text.
+    input:
+      type: object
+      additionalProperties: false
+      required: [start_date, end_date]
+      properties:
+        start_date: &date { type: string, pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", description: "YYYY-MM-DD." }
+        end_date: *date
+    examples:
+      - { title: November so far, input: { start_date: "2026-11-01", end_date: "2026-11-23" } }
+    call: { method: GET, path: /workspaces/v1.1/stats, query: { start_date: start_date, end_date: end_date } }
+
+  - name: get_daily_stats
+    class: read
+    description: >-
+      Day by day counts between two dates (YYYY-MM-DD), for the whole
+      workspace or some campaigns and sending accounts: one series per event
+      (Sent, Replied, Total Opens, Unique Opens, Bounced, Unsubscribed,
+      Interested), each [{label, color, dates: [[date, count]]}].
+    input:
+      type: object
+      additionalProperties: false
+      required: [start_date, end_date]
+      properties:
+        start_date: *date
+        end_date: *date
+        campaign_ids: &ids { type: array, minItems: 1, maxItems: 100, items: { type: integer, minimum: 1 } }
+        sender_email_ids: *ids
+    examples:
+      - { title: One campaign over a week, input: { start_date: "2026-11-16", end_date: "2026-11-22", campaign_ids: [16] } }
+    call:
+      method: GET
+      path: /campaign-events/stats
+      query: { start_date: start_date, end_date: end_date, campaign_ids: campaign_ids, sender_email_ids: sender_email_ids }
+
+  # --- Campaigns ---------------------------------------------------------------------------------------------------
+
+  - name: list_campaigns
+    class: read
+    description: >-
+      The workspace's campaigns, 15 a page: items [{id, name, type, status,
+      completion_percentage, emails_sent, opened, unique_opens, replied,
+      unique_replies, bounced, unsubscribed, interested, total_leads,
+      total_leads_contacted, daily limits, tags, dates}] and next_cursor;
+      tracking and unsubscribe settings are in get_campaign. search is a
+      search term; status filters; tag_ids keeps campaigns with these tags.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        search: { type: string, minLength: 1, description: "A search term." }
+        status:
+          type: string
+          enum: [draft, launching, active, stopped, completed, paused, failed, queued, archived]
+        tag_ids: *ids
+        cursor: &cursor { type: string, minLength: 1, description: "next_cursor of the previous page." }
+    examples:
+      - { title: The active campaigns, input: { status: active } }
+      - { title: Campaigns named like a word, input: { search: webinar } }
+    call:
+      method: GET
+      path: /campaigns
+      query: { search: search, status: status, tag_ids: tag_ids, cursor: cursor }
+      constants: { query: { pagination_type: cursor } }
+    pagination: &pages { kind: cursor, request_param: cursor, next: meta.next_cursor, max_pages: 10 }
+    output:
+      items: data
+      projection: [id, name, type, status, completion_percentage, emails_sent, opened, unique_opens, replied,
+                   unique_replies, bounced, unsubscribed, interested, total_leads, total_leads_contacted,
+                   max_emails_per_day, max_new_leads_per_day, tags, created_at, updated_at]
+
+  - name: get_campaign
+    class: read
+    description: >-
+      One EmailBison campaign by id: status, completion_percentage, counts
+      (sent, opens, replies, bounces, unsubscribes, interested, leads),
+      sending limits, tracking and unsubscribe settings, tags. The email copy
+      is in get_campaign_sequence_steps.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: &id { type: integer, minimum: 1 }
+    examples:
+      - { title: One campaign, input: { campaign_id: 6 } }
+    refusals:
+      - &campaign_not_found { code: campaign_not_found, when: 404, message: "No campaign with this id in this EmailBison workspace." }
+    call: { method: GET, path: "/campaigns/{campaign_id}" }
+
+  - name: get_campaign_stats
+    class: read
+    description: >-
+      A campaign's totals between two dates (YYYY-MM-DD): emails sent, leads
+      contacted, opens, unique replies, bounces, unsubscribes, interested and
+      their percentages, plus sequence_step_stats [{sequence_step_id,
+      email_subject, sent, unique_replies, bounced, interested, …}] to compare
+      steps. Values come as text. Read only, though served in POST.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id, start_date, end_date]
+      properties:
+        campaign_id: *id
+        start_date: *date
+        end_date: *date
+    examples:
+      - { title: A campaign's month, input: { campaign_id: 6, start_date: "2026-11-01", end_date: "2026-11-30" } }
+    refusals:
+      - *campaign_not_found
+    call:
+      method: POST
+      path: "/campaigns/{campaign_id}/stats"
+      body: { start_date: start_date, end_date: end_date }
+
+  - name: get_campaign_sequence_steps
+    class: read
+    description: >-
+      A campaign's sequence: sequence_id and sequence_steps [{id, order,
+      email_subject, email_body, wait_in_days, variant, variant_from_step_id,
+      thread_reply, active}], the email copy as written in EmailBison, with
+      its {VARIABLES}.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: *id
+    examples:
+      - { title: The steps of a campaign, input: { campaign_id: 6 } }
+    refusals:
+      - *campaign_not_found
+    call: { method: GET, path: "/campaigns/v1.1/{campaign_id}/sequence-steps" }
+
+  - name: list_campaign_leads
+    class: read
+    description: >-
+      The leads of one campaign, 15 a page: items [{id, first_name,
+      last_name, email, title, company, status, lead_campaign_data,
+      overall_stats, dates}] and next_cursor; custom variables and notes
+      are in get_lead. search is a search term; lead_campaign_status:
+      in_sequence, sequence_finished, sequence_stopped, never_contacted,
+      replied; verification_statuses and tags filter too.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: *id
+        search: &lead_search { type: string, minLength: 1, personal: true, description: "A search term (a name, an email)." }
+        lead_campaign_status: &lead_campaign_status
+          type: string
+          enum: [in_sequence, sequence_finished, sequence_stopped, never_contacted, replied]
+        verification_statuses: &verification_statuses
+          type: array
+          minItems: 1
+          items: { type: string, enum: [verifying, verified, risky, unknown, unverified, inactive, bounced, unsubscribed] }
+        tag_ids: *ids
+        excluded_tag_ids: *ids
+        without_tags: &flag { type: integer, enum: [0, 1], description: "1 for yes, 0 for no." }
+        cursor: *cursor
+    examples:
+      - { title: Leads of a campaign who replied, input: { campaign_id: 6, lead_campaign_status: replied } }
+    refusals:
+      - *campaign_not_found
+    call:
+      method: GET
+      path: "/campaigns/{campaign_id}/leads"
+      query: { search: search, "filters[lead_campaign_status]": lead_campaign_status,
+               "filters[verification_statuses]": verification_statuses, "filters[tag_ids]": tag_ids,
+               "filters[excluded_tag_ids]": excluded_tag_ids, "filters[without_tags]": without_tags, cursor: cursor }
+      constants: { query: { pagination_type: cursor } }
+    pagination: *pages
+    output:
+      items: data
+      projection: &lead_projection [id, first_name, last_name, email, title, company, status, lead_campaign_data,
+                                    overall_stats, created_at, updated_at]
+
+  - name: list_campaign_sender_emails
+    class: read
+    description: >-
+      The sending accounts (sender emails) attached to one campaign, 15 a
+      page: items [{id, name, email, daily_limit, type, status,
+      warmup_enabled, sent, reply, bounce and interested counts, tags}] and
+      next_cursor; signature and servers are in get_sender_email.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: *id
+        cursor: *cursor
+    examples:
+      - { title: The accounts sending a campaign, input: { campaign_id: 6 } }
+    refusals:
+      - *campaign_not_found
+    call:
+      method: GET
+      path: "/campaigns/{campaign_id}/sender-emails"
+      query: { cursor: cursor }
+      constants: { query: { pagination_type: cursor } }
+    pagination: *pages
+    output:
+      items: data
+      projection: &sender_projection [id, name, email, daily_limit, type, status, warmup_enabled, emails_sent_count,
+                                      total_replied_count, unique_replied_count, bounced_count, interested_leads_count,
+                                      total_leads_contacted_count, tags]
+
+  - name: list_campaign_scheduled_emails
+    class: read
+    description: >-
+      The emails of one campaign, scheduled or past, 15 a page: items [{id,
+      email_subject, status, scheduled_date, scheduled_date_local, sent_at,
+      opens, clicks, replies, interested, lead, sender_email}] and
+      next_cursor; each body is left out. status: scheduled, sent,
+      failed, paused, stopped, bounced, unsubscribed; scheduled_date
+      (YYYY-MM-DD) keeps one day.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: *id
+        status: { type: string, enum: [scheduled, sent, failed, paused, stopped, bounced, unsubscribed] }
+        scheduled_date: *date
+        cursor: *cursor
+    examples:
+      - { title: What a campaign sends next, input: { campaign_id: 6, status: scheduled } }
+    refusals:
+      - *campaign_not_found
+    call:
+      method: GET
+      path: "/campaigns/{campaign_id}/scheduled-emails"
+      query: { status: status, scheduled_date: scheduled_date, cursor: cursor }
+      constants: { query: { pagination_type: cursor } }
+    pagination: *pages
+    output: { items: data, strip: [email_body] }
+
+  # --- Leads -------------------------------------------------------------------------------------------------------
+
+  - name: list_leads
+    class: read
+    description: >-
+      The workspace's leads, 15 a page: items [{id, first_name, last_name,
+      email, title, company, status, lead_campaign_data, overall_stats,
+      dates}] and next_cursor; custom variables and notes are in
+      get_lead. search is a search term (a name, an email);
+      lead_campaign_status, verification_statuses and tags filter. Use it to
+      find a lead before creating it again.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        search: *lead_search
+        lead_campaign_status: *lead_campaign_status
+        verification_statuses: *verification_statuses
+        tag_ids: *ids
+        excluded_tag_ids: *ids
+        without_tags: *flag
+        cursor: *cursor
+    examples:
+      - { title: A lead by email, input: { search: jane.doe@example.com } }
+      - { title: Leads with a tag, input: { tag_ids: [3] } }
+    call:
+      method: GET
+      path: /leads
+      query: { search: search, "filters[lead_campaign_status]": lead_campaign_status,
+               "filters[verification_statuses]": verification_statuses, "filters[tag_ids]": tag_ids,
+               "filters[excluded_tag_ids]": excluded_tag_ids, "filters[without_tags]": without_tags, cursor: cursor }
+      constants: { query: { pagination_type: cursor } }
+    pagination: *pages
+    output: { items: data, projection: *lead_projection }
+
+  - name: get_lead
+    class: read
+    description: >-
+      One lead by its id or its email: names, email, title, company, notes,
+      verification status, custom_variables, lead_campaign_data (its
+      campaigns and their state) and overall_stats (sent, opens, replies).
+    input:
+      type: object
+      additionalProperties: false
+      required: [lead_id]
+      properties:
+        lead_id: &lead_ref { type: string, pattern: "^([0-9]+|\\S+@\\S+)$", personal: true, description: "The lead's id, or its email." }
+    examples:
+      - { title: A lead by id, input: { lead_id: "326217" } }
+      - { title: A lead by email, input: { lead_id: jane.doe@example.com } }
+    refusals:
+      - &lead_not_found { code: lead_not_found, when: 404, message: "No lead with this id or email in this EmailBison workspace." }
+    call: { method: GET, path: "/leads/{lead_id}" }
+
+  - name: list_lead_sent_emails
+    class: read
+    description: >-
+      The campaign emails already sent to one lead (by id or email):
+      [{campaign_id, sender_email_id, sequence_step_id, email_subject,
+      email_body, status, sent_at, opens, clicks, replies, interested}]. The
+      replies themselves are in list_replies (lead_id).
+    input:
+      type: object
+      additionalProperties: false
+      required: [lead_id]
+      properties:
+        lead_id: *lead_ref
+    examples:
+      - { title: What a lead received, input: { lead_id: "326217" } }
+    refusals:
+      - *lead_not_found
+    call: { method: GET, path: "/leads/{lead_id}/sent-emails" }
+
+  - name: list_lead_lists
+    class: read
+    description: >-
+      The workspace's lead lists, 15 a page: data [{id, name, status,
+      leads_processed, leads_succeeded, leads_failed, dates}] and meta (the
+      page and the last one); import error messages are left out. page picks
+      a page. A list is added to a campaign by add_lead_list_to_campaign.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        page: { type: integer, minimum: 1, description: "Page number, 1 first." }
+    examples:
+      - { title: The lead lists, input: {} }
+    call: { method: GET, path: /lead-lists, query: { page: page } }
+    output:
+      strip: [data.error_messages]
+      sample:
+        data: [{ id: 12, name: Webinar, status: done, error_messages: ["row 3: invalid email"] }]
+        meta: { current_page: 1, last_page: 1 }
+
+  - name: list_custom_variables
+    class: read
+    description: >-
+      The workspace's custom lead variables [{id, name}]: the names a lead's
+      custom_variables may use, and the {VARIABLES} sequence steps cite.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: The custom variables, input: {} }
+    call: { method: GET, path: /custom-variables }
+
+  - name: list_tags
+    class: read
+    description: >-
+      The workspace's tags [{id, name, default}], to filter campaigns, leads
+      and sending accounts, and to tag leads.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: The tags, input: {} }
+    call: { method: GET, path: /tags }
+
+  # --- Master inbox ------------------------------------------------------------------------------------------------
+
+  - name: list_replies
+    class: read
+    description: >-
+      Replies in the master inbox, 15 a page: items [{id,
+      folder, subject, read, interested, automated_reply, text_body,
+      date_received, type, campaign_id, lead_id, lead, sender_email_id,
+      from_name, from_email_address, to, cc, attachments}] and
+      next_cursor; html_body is left out (get_reply has it). folder:
+      inbox, sent, spam, bounced, all; status: interested, automated_reply,
+      not_automated_reply; read 1 or 0.
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        search: { type: string, minLength: 1, personal: true, description: "A search term." }
+        folder: { type: string, enum: [inbox, sent, spam, bounced, all] }
+        status: { type: string, enum: [interested, automated_reply, not_automated_reply] }
+        read: *flag
+        campaign_id: *id
+        sender_email_id: *id
+        lead_id: *id
+        tag_ids: *ids
+        cursor: *cursor
+    examples:
+      - { title: Unread interested replies, input: { folder: inbox, status: interested, read: 0 } }
+      - { title: Replies of one campaign, input: { campaign_id: 6 } }
+    call:
+      method: GET
+      path: /replies
+      query: { search: search, folder: folder, status: status, read: read, campaign_id: campaign_id,
+               sender_email_id: sender_email_id, lead_id: lead_id, tag_ids: tag_ids, cursor: cursor }
+      constants: { query: { pagination_type: cursor } }
+    pagination: *pages
+    output:
+      items: data
+      strip: [html_body, raw_body, headers, attachments.download_url]
+      sample:
+        data:
+          - { id: 45, text_body: Hello, html_body: "<p>Hello</p>", raw_body: "MIME", headers: "Received: x",
+              attachments: [{ id: 8, file_name: sample.pdf, download_url: "https://bison.example.test/reply-attachments/0/download?signature=0" }] }
+
+  - name: get_reply
+    class: read
+    description: >-
+      One reply by id: subject, folder, read and interest flags, text_body
+      and html_body, sender, recipients, campaign, lead, the sending account
+      that received it, and attachments (names, without their download
+      address).
+    input:
+      type: object
+      additionalProperties: false
+      required: [reply_id]
+      properties:
+        reply_id: *id
+    examples:
+      - { title: One reply, input: { reply_id: 45 } }
+    refusals:
+      - &reply_not_found { code: reply_not_found, when: 404, message: "No reply with this id in this EmailBison workspace." }
+    call: { method: GET, path: "/replies/{reply_id}" }
+    output:
+      strip: [data.raw_body, data.headers, data.attachments.download_url]
+      sample:
+        data: { id: 45, text_body: Hello, raw_body: "MIME", headers: "Received: x",
+                attachments: [{ id: 8, file_name: sample.pdf, download_url: "https://bison.example.test/reply-attachments/0/download?signature=0" }] }
+
+  - name: get_reply_thread
+    class: read
+    description: >-
+      The whole conversation of a reply: data.current_reply, older_messages
+      and newer_messages, each with subject, text_body, sender, recipients
+      and date (html_body left out). Read it before answering with
+      reply_to_email.
+    input:
+      type: object
+      additionalProperties: false
+      required: [reply_id]
+      properties:
+        reply_id: *id
+    examples:
+      - { title: The thread of a reply, input: { reply_id: 239 } }
+    refusals:
+      - *reply_not_found
+    call: { method: GET, path: "/replies/{reply_id}/conversation-thread" }
+    output:
+      strip:
+        - data.current_reply.html_body
+        - data.current_reply.raw_body
+        - data.current_reply.headers
+        - data.current_reply.attachments.download_url
+        - data.older_messages.html_body
+        - data.older_messages.raw_body
+        - data.older_messages.headers
+        - data.older_messages.attachments.download_url
+        - data.newer_messages.html_body
+        - data.newer_messages.raw_body
+        - data.newer_messages.headers
+        - data.newer_messages.attachments.download_url
+      sample:
+        data:
+          current_reply: { id: 239, text_body: Hello, html_body: "<p>Hello</p>", raw_body: "MIME", headers: "Received: x", attachments: [{ id: 8, file_name: sample.pdf, download_url: "https://bison.example.test/reply-attachments/0/download?signature=0" }] }
+          older_messages:
+            - { id: 239, text_body: Hello, html_body: "<p>Hello</p>", raw_body: "MIME", headers: "Received: x", attachments: [{ id: 8, file_name: sample.pdf, download_url: "https://bison.example.test/reply-attachments/0/download?signature=0" }] }
+          newer_messages:
+            - { id: 239, text_body: Hello, html_body: "<p>Hello</p>", raw_body: "MIME", headers: "Received: x", attachments: [{ id: 8, file_name: sample.pdf, download_url: "https://bison.example.test/reply-attachments/0/download?signature=0" }] }
+
+  # --- Sending accounts --------------------------------------------------------------------------------------------
+
+  - name: list_sender_emails
+    class: read
+    description: >-
+      The workspace's sending accounts, 15 a page: items [{id, name, email,
+      daily_limit, type, status, warmup_enabled, emails_sent_count,
+      total_replied_count, bounced_count, interested_leads_count, tags}] and
+      next_cursor; signature and servers are in get_sender_email.
+      status: connected, not_connected, pending_move, pending_deletion. A
+      reply is sent from one of them (sender_email_id).
+    input:
+      type: object
+      additionalProperties: false
+      properties:
+        search: { type: string, minLength: 1, description: "A search term (a name, an email)." }
+        status: { type: string, enum: [connected, not_connected, pending_move, pending_deletion] }
+        tag_ids: *ids
+        excluded_tag_ids: *ids
+        without_tags: *flag
+        cursor: *cursor
+    examples:
+      - { title: Disconnected accounts, input: { status: not_connected } }
+    call:
+      method: GET
+      path: /sender-emails
+      query: { search: search, status: status, tag_ids: tag_ids, excluded_tag_ids: excluded_tag_ids,
+               without_tags: without_tags, cursor: cursor }
+      constants: { query: { pagination_type: cursor } }
+    pagination: *pages
+    output: { items: data, projection: *sender_projection }
+
+  - name: get_sender_email
+    class: read
+    description: >-
+      One sending account by id or email: name, email, signature, IMAP and
+      SMTP servers and ports, daily_limit, type, status, warmup_enabled and
+      its counts.
+    input:
+      type: object
+      additionalProperties: false
+      required: [sender_email_id]
+      properties:
+        sender_email_id: { type: string, pattern: "^([0-9]+|\\S+@\\S+)$", description: "The account's id, or its email." }
+    examples:
+      - { title: One sending account, input: { sender_email_id: "20" } }
+    refusals:
+      - { code: sender_email_not_found, when: 404, message: "No sending account with this id or email in this EmailBison workspace." }
+    call: { method: GET, path: "/sender-emails/{sender_email_id}" }
+
+  # --- Webhooks ----------------------------------------------------------------------------------------------------
+
+  - name: list_webhooks
+    class: read
+    description: >-
+      The workspace's webhooks [{id, name, url, enabled, events}].
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: The webhooks, input: {} }
+    call: { method: GET, path: /webhook-url }
+
+  - name: list_webhook_event_types
+    class: read
+    description: >-
+      The webhook event types [{id, name}] a webhook may subscribe to
+      (create_webhook events): email_sent, lead_replied, lead_interested,
+      untracked_reply_received, email_bounced, lead_unsubscribed, …
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: The event types, input: {} }
+    call: { method: GET, path: /webhook-events/event-types }
+
+  # --- Writes ------------------------------------------------------------------------------------------------------
+
+  - name: create_lead
+    class: write
+    description: >-
+      Create ONE lead (contact) in the workspace: first_name and email
+      required, last_name, title, company, notes, custom_variables [{name,
+      value}] (names from list_custom_variables). The email must be new to
+      the workspace. Emails no one: add_leads_to_campaign does. Answers the
+      lead with its id.
+    input:
+      type: object
+      additionalProperties: false
+      required: [first_name, email]
+      properties: &lead_fields
+        first_name: { type: string, minLength: 1, personal: true }
+        last_name: { type: string, personal: true }
+        email: { type: string, pattern: "^\\S+@\\S+$", personal: true }
+        title: { type: string }
+        company: { type: string }
+        notes: { type: string, personal: true }
+        custom_variables: &custom_variables
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [name, value]
+            properties:
+              name: { type: string, minLength: 1 }
+              value: { type: [string, "null"], personal: true }
+    examples:
+      - title: A lead with a variable
+        input: { first_name: Jane, last_name: Doe, email: jane.doe@example.com, company: Example, custom_variables: [{ name: event, value: Spring fair }] }
+    call:
+      method: POST
+      path: /leads
+      body: { first_name: first_name, last_name: last_name, email: email, title: title, company: company,
+              notes: notes, custom_variables: custom_variables }
+
+  - name: create_leads
+    class: write
+    description: >-
+      Create up to 500 leads in one call, each as in create_lead (first_name
+      and email required). Personal domains (gmail.com…) are skipped unless
+      the instance allows them. Emails no one. Answers the leads created with
+      their ids.
+    input:
+      type: object
+      additionalProperties: false
+      required: [leads]
+      properties:
+        leads:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            type: object
+            additionalProperties: false
+            required: [first_name, email]
+            properties: *lead_fields
+    examples:
+      - title: Two leads
+        input: { leads: [{ first_name: Jane, email: jane.doe@example.com }, { first_name: John, email: john.roe@example.com, company: Example }] }
+    call: { method: POST, path: /leads/multiple, body: { leads: leads } }
+
+  - name: update_lead
+    class: write
+    description: >-
+      Change fields of ONE lead (by id or email): names, email, title,
+      company, notes, custom_variables. A field or variable not given is
+      kept. Answers the lead.
+    input:
+      type: object
+      additionalProperties: false
+      required: [lead_id]
+      minProperties: 2
+      properties:
+        lead_id: *lead_ref
+        first_name: { type: string, minLength: 1, personal: true }
+        last_name: { type: string, personal: true }
+        email: { type: string, pattern: "^\\S+@\\S+$", personal: true }
+        title: { type: string }
+        company: { type: string }
+        notes: { type: string, personal: true }
+        custom_variables: *custom_variables
+    examples:
+      - { title: A new title, input: { lead_id: "326217", title: Head of Sales } }
+    refusals:
+      - *lead_not_found
+    call:
+      method: PATCH
+      path: "/leads/{lead_id}"
+      body: { first_name: first_name, last_name: last_name, email: email, title: title, company: company,
+              notes: notes, custom_variables: custom_variables }
+
+  - name: create_tag
+    class: write
+    description: >-
+      Create a tag in the workspace. Answers it with its id, for
+      tag_leads.
+    input:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+    examples:
+      - { title: A tag, input: { name: Hot lead } }
+    call: { method: POST, path: /tags, body: { name: name } }
+
+  - name: tag_leads
+    class: write
+    description: >-
+      Put tags (tag_ids) on leads (lead_ids). skip_webhooks true fires no
+      webhook for it.
+    input:
+      type: object
+      additionalProperties: false
+      required: [tag_ids, lead_ids]
+      properties: &tagging
+        tag_ids: *ids
+        lead_ids: &lead_ids { type: array, minItems: 1, maxItems: 500, items: { type: integer, minimum: 1 } }
+        skip_webhooks: &skip_webhooks { type: boolean, description: "true: no webhook fires for this action." }
+    examples:
+      - { title: Tag two leads, input: { tag_ids: [3], lead_ids: [326217, 326218] } }
+    call:
+      method: POST
+      path: /tags/attach-to-leads
+      body: { tag_ids: tag_ids, lead_ids: lead_ids, skip_webhooks: skip_webhooks }
+
+  - name: untag_leads
+    class: write
+    description: >-
+      Take tags (tag_ids) off leads (lead_ids). skip_webhooks true fires no
+      webhook for it.
+    input:
+      type: object
+      additionalProperties: false
+      required: [tag_ids, lead_ids]
+      properties: *tagging
+    examples:
+      - { title: Untag a lead, input: { tag_ids: [3], lead_ids: [326217] } }
+    call:
+      method: POST
+      path: /tags/remove-from-leads
+      body: { tag_ids: tag_ids, lead_ids: lead_ids, skip_webhooks: skip_webhooks }
+
+  - name: mark_reply_interested
+    class: write
+    description: >-
+      Mark a reply, and its lead in the campaign, as interested (nothing
+      changes if already so). The workspace's lead_interested webhooks fire,
+      unless skip_webhooks is true.
+    input:
+      type: object
+      additionalProperties: false
+      required: [reply_id]
+      properties: &reply_mark
+        reply_id: *id
+        skip_webhooks: *skip_webhooks
+    examples:
+      - { title: An interested reply, input: { reply_id: 45 } }
+    refusals:
+      - *reply_not_found
+    call: { method: PATCH, path: "/replies/{reply_id}/mark-as-interested", body: { skip_webhooks: skip_webhooks } }
+
+  - name: mark_reply_not_interested
+    class: write
+    description: >-
+      Mark a reply as not interested. Webhooks fire unless skip_webhooks is
+      true.
+    input:
+      type: object
+      additionalProperties: false
+      required: [reply_id]
+      properties: *reply_mark
+    examples:
+      - { title: A reply not interested, input: { reply_id: 45 } }
+    refusals:
+      - *reply_not_found
+    call: { method: PATCH, path: "/replies/{reply_id}/mark-as-not-interested", body: { skip_webhooks: skip_webhooks } }
+
+  - name: mark_reply_read
+    class: write
+    description: >-
+      Mark a reply read (read true) or unread (read false) in the master
+      inbox.
+    input:
+      type: object
+      additionalProperties: false
+      required: [reply_id, read]
+      properties:
+        reply_id: *id
+        read: { type: boolean }
+    examples:
+      - { title: Mark read, input: { reply_id: 45, read: true } }
+    refusals:
+      - *reply_not_found
+    call: { method: PATCH, path: "/replies/{reply_id}/mark-as-read-or-unread", body: { read: read } }
+
+  - name: pause_campaign
+    class: write
+    description: >-
+      Pause a campaign: it stops sending until resumed. Answers the campaign
+      with its new status.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: *id
+    examples:
+      - { title: Pause a campaign, input: { campaign_id: 6 } }
+    refusals:
+      - *campaign_not_found
+    call: { method: PATCH, path: "/campaigns/{campaign_id}/pause" }
+
+  - name: stop_future_emails
+    class: write
+    description: >-
+      Stop the future emails of some leads (lead_ids) in one campaign: their
+      sequence ends there, the rest of the campaign goes on. Use it when a
+      lead answered elsewhere or asked to stop.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id, lead_ids]
+      properties:
+        campaign_id: *id
+        lead_ids: *lead_ids
+    examples:
+      - { title: Stop one lead, input: { campaign_id: 6, lead_ids: [326217] } }
+    refusals:
+      - *campaign_not_found
+    call: { method: POST, path: "/campaigns/{campaign_id}/leads/stop-future-emails", body: { lead_ids: lead_ids } }
+
+  - name: blacklist_email
+    class: write
+    description: >-
+      Add an email address to the workspace's blacklist: no campaign emails
+      it again. skip_webhooks true fires no webhook for it.
+    input:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email: { type: string, pattern: "^\\S+@\\S+$", personal: true }
+        skip_webhooks: *skip_webhooks
+    examples:
+      - { title: Blacklist an address, input: { email: jane.doe@example.com } }
+    call: { method: POST, path: /blacklisted-emails, body: { email: email, skip_webhooks: skip_webhooks } }
+
+  - name: blacklist_domain
+    class: write
+    description: >-
+      Add a domain to the workspace's blacklist: no campaign emails anyone at
+      it again. skip_webhooks true fires no webhook for it.
+    input:
+      type: object
+      additionalProperties: false
+      required: [domain]
+      properties:
+        domain: { type: string, pattern: "^[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$" }
+        skip_webhooks: *skip_webhooks
+    examples:
+      - { title: Blacklist a domain, input: { domain: example.com } }
+    call: { method: POST, path: /blacklisted-domains, body: { domain: domain, skip_webhooks: skip_webhooks } }
+
+  # --- What engages ------------------------------------------------------------------------------------------------
+
+  - name: add_leads_to_campaign
+    class: sensitive
+    effect: send
+    description: >-
+      Add existing leads (lead_ids, up to 500) to a campaign: an active
+      campaign starts emailing them on its schedule (synced every 5 minutes).
+      Leads already in sequence in another campaign are skipped unless
+      allow_parallel_sending is true. Answers success and a message.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id, lead_ids]
+      properties:
+        campaign_id: *id
+        lead_ids: *lead_ids
+        allow_parallel_sending: &parallel { type: boolean, description: "true: add leads even if in sequence in another campaign." }
+    examples:
+      - { title: Two leads into a campaign, input: { campaign_id: 6, lead_ids: [326217, 326218] } }
+    refusals:
+      - *campaign_not_found
+    call:
+      method: POST
+      path: "/campaigns/{campaign_id}/leads/attach-leads"
+      body: { lead_ids: lead_ids, allow_parallel_sending: allow_parallel_sending }
+    confirm:
+      summary: "Add these leads to EmailBison campaign {campaign_id}: an active campaign starts emailing them."
+
+  - name: add_lead_list_to_campaign
+    class: sensitive
+    effect: send
+    description: >-
+      Add every lead of a lead list (lead_list_id, from list_lead_lists) to a
+      campaign: an active campaign starts emailing them on its schedule.
+      allow_parallel_sending as in add_leads_to_campaign.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id, lead_list_id]
+      properties:
+        campaign_id: *id
+        lead_list_id: *id
+        allow_parallel_sending: *parallel
+    examples:
+      - { title: A list into a campaign, input: { campaign_id: 6, lead_list_id: 12 } }
+    refusals:
+      - *campaign_not_found
+    call:
+      method: POST
+      path: "/campaigns/{campaign_id}/leads/attach-lead-list"
+      body: { lead_list_id: lead_list_id, allow_parallel_sending: allow_parallel_sending }
+    confirm:
+      summary: "Add lead list {lead_list_id} to EmailBison campaign {campaign_id}: an active campaign starts emailing its leads."
+
+  - name: resume_campaign
+    class: sensitive
+    effect: send
+    description: >-
+      Resume a paused campaign: it emails its leads again on its schedule.
+      Answers the campaign with its new status.
+    input:
+      type: object
+      additionalProperties: false
+      required: [campaign_id]
+      properties:
+        campaign_id: *id
+    examples:
+      - { title: Resume a campaign, input: { campaign_id: 6 } }
+    refusals:
+      - *campaign_not_found
+    call: { method: PATCH, path: "/campaigns/{campaign_id}/resume" }
+    confirm:
+      summary: "Resume EmailBison campaign {campaign_id}: it starts emailing its leads again."
+
+  - name: reply_to_email
+    class: sensitive
+    effect: send
+    description: >-
+      Answer a reply (reply_id): the email leaves at once. Either reply_all
+      true (the right sending account and the original recipients), or
+      sender_email_id and to_emails [{email_address, name}]. message is the
+      body, content_type html or text; cc_emails and bcc_emails add
+      recipients; inject_previous_email_body quotes the email answered. Read
+      get_reply_thread first. Answers the sent reply.
+    input:
+      type: object
+      additionalProperties: false
+      required: [reply_id, message]
+      if: { properties: { reply_all: { const: true } }, required: [reply_all] }
+      then: true
+      else: { required: [sender_email_id, to_emails] }
+      properties:
+        reply_id: *id
+        message: { type: string, minLength: 1, personal: true }
+        content_type: { type: string, enum: [html, text] }
+        reply_all: { type: boolean }
+        sender_email_id: *id
+        to_emails: &recipients
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: object
+            additionalProperties: false
+            required: [email_address]
+            properties:
+              email_address: { type: string, pattern: "^\\S+@\\S+$", personal: true }
+              name: { type: [string, "null"], personal: true }
+        cc_emails: *recipients
+        bcc_emails: *recipients
+        inject_previous_email_body: { type: boolean }
+    examples:
+      - { title: Reply to all, input: { reply_id: 239, reply_all: true, message: "Thanks, Tuesday 10am works for me.", content_type: text } }
+      - title: Reply from one account
+        input: { reply_id: 239, sender_email_id: 25057, to_emails: [{ email_address: jane.doe@example.com, name: Jane Doe }], message: "Hi Jane, here is the link.", content_type: text }
+    refusals:
+      - *reply_not_found
+    call:
+      method: POST
+      path: "/replies/{reply_id}/reply"
+      body: { message: message, content_type: content_type, reply_all: reply_all, sender_email_id: sender_email_id,
+              to_emails: to_emails, cc_emails: cc_emails, bcc_emails: bcc_emails,
+              inject_previous_email_body: inject_previous_email_body }
+    output:
+      strip: [data.reply.raw_body, data.reply.headers, data.reply.attachments.download_url]
+      sample:
+        data:
+          success: true
+          reply: { id: 240, text_body: Thanks, raw_body: "MIME", headers: "Received: x",
+                   attachments: [{ id: 8, file_name: sample.pdf, download_url: "https://bison.example.test/reply-attachments/0/download?signature=0" }] }
+    confirm:
+      summary: "Send this reply to EmailBison reply {reply_id} now: the email leaves at once."
+
+  - name: create_webhook
+    class: sensitive
+    effect: send
+    description: >-
+      Register a webhook: EmailBison POSTs each chosen event (with its lead
+      and email data) to url, an https address. events from
+      list_webhook_event_types, e.g. lead_replied, lead_interested. Answers
+      the webhook with its id.
+    input:
+      type: object
+      additionalProperties: false
+      required: [name, url, events]
+      properties:
+        name: { type: string, minLength: 1 }
+        url: { type: string, pattern: "^https://\\S+$" }
+        events:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum: [email_sent, email_send_failed, manual_email_sent, manual_email_send_failed, lead_first_contacted,
+                   lead_replied, lead_interested, lead_unsubscribed, untracked_reply_received, email_opened,
+                   email_bounced, email_account_added, email_account_removed, email_account_disconnected,
+                   email_account_reconnected, blacklisted_email_added, blacklisted_email_removed,
+                   blacklisted_domain_added, blacklisted_domain_removed]
+    examples:
+      - { title: Wake on replies, input: { name: Replies to the agent, url: "https://hooks.example.com/emailbison", events: [lead_replied, lead_interested] } }
+    call: { method: POST, path: /webhook-url, body: { name: name, url: url, events: events } }
+    confirm:
+      summary: "Send EmailBison events {events} with their lead data to {url}."
+
+  - name: delete_webhook
+    class: sensitive
+    effect: destroy
+    description: >-
+      Delete a webhook by id (from list_webhooks): what it fed stops at once.
+    input:
+      type: object
+      additionalProperties: false
+      required: [webhook_id]
+      properties:
+        webhook_id: *id
+    examples:
+      - { title: Delete a webhook, input: { webhook_id: 1 } }
+    refusals:
+      - { code: webhook_not_found, when: 404, message: "No webhook with this id in this EmailBison workspace." }
+    call: { method: DELETE, path: "/webhook-url/{webhook_id}" }
+    confirm:
+      summary: "Delete EmailBison webhook {webhook_id}: what it fed stops."

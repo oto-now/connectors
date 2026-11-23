@@ -14,6 +14,7 @@ import * as dataforseo from "./dataforseo"
 import * as demodesk from "./demodesk"
 import * as dropcontact from "./dropcontact"
 import * as elevenlabs from "./elevenlabs"
+import * as emailbison from "./emailbison"
 import * as fillout from "./fillout"
 import * as fod from "./fod"
 import * as folk from "./folk"
@@ -79,6 +80,7 @@ export { dataforseo }
 export { demodesk }
 export { dropcontact }
 export { elevenlabs }
+export { emailbison }
 export { fillout }
 export { fod }
 export { folk }
@@ -147,6 +149,7 @@ export const connectors: readonly Connector[] = [
   demodesk.connector,
   dropcontact.connector,
   elevenlabs.connector,
+  emailbison.connector,
   fillout.connector,
   fod.connector,
   folk.connector,

@@ -32,6 +32,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `demodesk` | Demodesk | 1.0.1 | clé | non | 9 | 9 | 0 | 0 | oui | 0 | non | 0 |
 | `dropcontact` | Dropcontact | 1.0.0 | clé | oui | 3 | 2 | 1 | 0 | oui, avec solde | 1 | non | 0 |
 | `elevenlabs` | ElevenLabs | 1.0.1 | clé | non | 4 | 4 | 0 | 0 | oui | 4 | non | 0 |
+| `emailbison` | EmailBison | 1.0.2 | clé | non | 42 | 23 | 13 | 6 | oui | 0 | non | 0 |
 | `fillout` | Fillout | 1.0.0 | clé | non | 8 | 4 | 1 | 3 | oui | 8 | non | 0 |
 | `fod` | France Open Data | 1.8.0 | clé | oui | 55 | 55 | 0 | 0 | oui | 55 | non | 0 |
 | `folk` | folk | 1.0.1 | clé | non | 62 | 23 | 21 | 18 | oui | 62 | non | 0 |
@@ -80,7 +81,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `typeform` | Typeform | 1.2.0 | clé | non | 12 | 6 | 1 | 5 | non | 12 | non | 0 |
 | `wttj_ats` | Welcome to the Jungle ATS | 1.0.0 | clé | non | 10 | 7 | 3 | 0 | non | 0 | non | 0 |
 | `yousign` | Yousign | 1.1.1 | clé | non | 13 | 5 | 7 | 1 | oui | 0 | non | 0 |
-| **total : 63** |  |  |  |  | 1509 | 950 | 345 | 214 |  | 1020 |  | 0 |
+| **total : 64** |  |  |  |  | 1551 | 973 | 358 | 220 |  | 1020 |  | 0 |
 
 ## Par type
 
@@ -91,4 +92,4 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | compte de service (assertion signée) | 1 | 6 |
 | clé de l'hôte | 2 | 29 |
 | sans clé | 0 | 0 |
-| clé | 50 | 1397 |
+| clé | 51 | 1439 |
