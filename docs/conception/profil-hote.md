@@ -25,7 +25,7 @@ Un hôte expose ses propres fonctions métier dans une API REST décrite en Open
 - OpenAPI 3.1 (3.0 accepté) ; Swagger 2.0 est refusé (`host_openapi_version`). `servers` absent ou un seul serveur relatif (`/api/v2`), sans variables : l'adresse est un réglage de l'organisation, le document le même pour toutes.
 - Par opération : `operationId` au motif `^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$`, 64 caractères au plus ; `summary` de 1 à 90 caractères, la ligne d'index ; `description` de 1 à 1 000 caractères, le contrat que lit l'assistant ; paramètres de chemin et de query, et un corps JSON objet fermé (`additionalProperties: false`).
 - Extensions lues, toutes en `x-oto-*` ; une clé `x-oto-*` inconnue est refusée, les autres `x-*` sont ignorées. `x-oto-class` (obligatoire : `read`, `write` ou `sensitive` ; `GET` exige `read`, les autres verbes `write` ou `sensitive`), `x-oto-effect` (`send` ou `destroy`, fonction sensible seulement), `x-oto-examples` (obligatoire : une liste d'arguments, chemin, query et corps fusionnés, sous les noms de l'API), `x-oto-roles` (obligatoire, des rôles de la racine), `x-oto-label` (obligatoire), `x-oto-family` (obligatoire, une famille de la racine), `x-oto-output` (`items`, `strip`, `projection`).
-- À la racine, `x-oto` : `functions` (le chemin de `/me/functions`), `issuer` (l'émetteur des jetons, en https vers un hôte public, tel que ses jetons le nomment), `resource` (l'indicateur de ressource de l'API chez l'émetteur, une URI absolue), `roles` (des identifiants vers des textes) et `families` (des identifiants vers un libellé, ou vers `{ label, scope }`). `scope` est le scope OAuth (RFC 6749 §3.3 : des jetons d'ASCII imprimable sauf `"` et `\`, séparés d'une espace) que l'échange et le consentement demandent pour les fonctions de la famille ; facultatif, jamais déduit : une famille écrite par son seul libellé n'en a pas, et la forme objet l'exige. Plusieurs familles peuvent partager un scope. `resource` est un ajout à la note de conception d'oto-core : l'échange de jeton et le consentement le demandent tous deux.
+- À la racine, `x-oto` : `functions` (le chemin de la route des fonctions de la personne, relatif à l'adresse : `/me/functions`, voir plus bas), `issuer` (l'émetteur des jetons, en https vers un hôte public, tel que ses jetons le nomment), `resource` (l'indicateur de ressource de l'API chez l'émetteur, une URI absolue), `roles` (des identifiants vers des textes) et `families` (des identifiants vers un libellé, ou vers `{ label, scope }`). `scope` est le scope OAuth (RFC 6749 §3.3 : des jetons d'ASCII imprimable sauf `"` et `\`, séparés d'une espace) que l'échange et le consentement demandent pour les fonctions de la famille ; facultatif, jamais déduit : une famille écrite par son seul libellé n'en a pas, et la forme objet l'exige. Plusieurs familles peuvent partager un scope. `resource` est un ajout à la note de conception d'oto-core : l'échange de jeton et le consentement le demandent tous deux.
 - Une fonction sensible déclare `confirm`, un paramètre de query booléen, et une réponse `202`. `confirm` est réservé au protocole des deux temps : jamais un argument. Tout autre nom qui, normalisé comme un argument, vaut `confirm` est refusé, quelle que soit sa place (chemin, query, en-tête, cookie, propriété du corps) et sa casse (`Confirm`, `CONFIRM`) : l'assistant ne doit jamais pouvoir sauter le premier temps. Le paramètre est refusé aussi sur une fonction qui n'est pas sensible.
 
 ### La définition rendue
@@ -57,12 +57,34 @@ Le nom servi d'une fonction est `<connecteur>.<nom>`, donc l'`operationId` tel q
 
 ### Le jeton : `host_delegated`
 
-`auth: { kind: host_delegated, issuer, resource }`, un huitième mode du [compte](compte.md), sans `credential`. Il dit : le jeton vient de l'hôte qui exécute, jamais d'un compte ; pour chaque appel, l'hôte obtient de `issuer` un jeton de la personne dont l'audience est `resource`, avec le `scope` de la fonction s'il en a un, et l'envoie en `Authorization: Bearer`. Deux voies, sans repli silencieux entre elles :
+`auth: { kind: host_delegated, issuer, resource }`, un huitième mode du [compte](compte.md), sans `credential`. Il dit : le jeton vient de l'hôte qui exécute, jamais d'un compte ; pour chaque appel, l'hôte obtient de `issuer` un jeton de la personne dont l'audience est `resource`, avec le `scope` de la fonction s'il en a un (sauf pour la route des fonctions de la personne, ci-dessous), et l'envoie en `Authorization: Bearer`. Deux voies, sans repli silencieux entre elles :
 
 1. client first-party : échange de jeton (RFC 8693) du jeton reçu, `grant_type=urn:ietf:params:oauth:grant-type:token-exchange`, `subject_token`, `resource`, l'hôte authentifié comme application M2M ;
 2. client third-party : le consentement de la personne (code d'autorisation), dont l'hôte garde le jeton de rafraîchissement, le mécanisme d'`oauth2_user`.
 
 Un appel qui ne passe par aucune des deux est refusé, avec une erreur explicite. Les points d'accès sont ceux que l'émetteur publie (ses métadonnées), et les clients de l'hôte chez l'émetteur sont les siens, jamais dans la description, comme l'application OAuth d'un `oauth2_user`.
+
+### La route des fonctions de la personne : `x-oto.functions`
+
+Le contrat qu'oto-core implémente (« Fonctions d'un hôte (3/3) ») :
+
+- **Appel** : `GET <adresse><x-oto.functions>`, par exemple `GET https://host.example.test/me/functions`. Le chemin vient tel quel de `x-oto.functions`, sans le serveur relatif du document. La lib l'exige déjà : présent, relatif à l'adresse, commençant par `/`, sans variable, query ni fragment (`host_root_invalid` à `x-oto.functions`). La route n'a pas à figurer dans `paths` : ce n'est pas une fonction.
+- **Jeton** : celui de la personne pour l'API, obtenu par l'une des deux voies (échange ou consentement), mais **sans scope**. Il ne porte que l'audience `resource`, et l'hôte doit l'accepter sur cette route.
+- **Réponse** : `200`, en JSON, la liste des `operationId` que la personne peut appeler :
+
+  ```json
+  {
+    "type": "object",
+    "required": ["functions"],
+    "properties": {
+      "functions": { "type": "array", "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$" } }
+    }
+  }
+  ```
+
+  Par exemple : `{"functions": ["project.list", "project.read"]}`.
+- **Cache** : oto garde la liste 5 minutes.
+- **Portée** : la liste filtre ce qu'oto montre à la personne, jamais l'appel. L'hôte reste juge à chaque appel d'une fonction, et refuse ce que la personne ne peut pas faire par un `403` en `application/problem+json`.
 
 ### Les problèmes
 
@@ -93,7 +115,7 @@ Trois temps, comme le profil Custom API : le document et ses extensions ; puis, 
 ## Écart avec le code
 
 - Écrit : l'import OpenAPI en TypeScript (`fromOpenApi`, `standardErrors`), le profil en Python et en TypeScript, `host_delegated` et `confirm.by: host` dans le schéma, les types TypeScript et `toDefinition`, la règle 26, les cas communs et leurs tests (`tests/test_host_cases.py`, `ts/test/host.test.ts`).
-- Le moteur Python de la lib n'exécute pas `host_delegated` : il le refuse (`Unsupported`). L'exécution (échange, consentement, rafraîchissement, `/me/functions`, confirmation relayée, `problem+json`) reste à écrire dans oto-core, puis dans le backend d'oto 1.
+- Le moteur Python de la lib n'exécute pas `host_delegated` : il le refuse (`Unsupported`). L'exécution (échange, consentement, rafraîchissement, la route des fonctions de la personne, confirmation relayée, `problem+json`) relève d'oto-core, puis du backend d'oto 1.
 - La lecture d'un document par son adresse (`read_url`) n'existe qu'en Python ; l'hôte TypeScript lit le document avec sa propre garde d'adresse.
 - Les messages des problèmes de schéma diffèrent entre Python et TypeScript (les codes et les places sont les mêmes) ; un `info.version` écrit en nombre décimal (`1.0`) se lit `1.0` en Python et `1` en TypeScript.
 
@@ -105,5 +127,6 @@ Trois temps, comme le profil Custom API : le document et ses extensions ; puis, 
 
 ## Historique
 
+- 2026-11-23 : contrat de la route des fonctions de la personne (`x-oto.functions`) : appel, jeton sans scope, réponse, cache de 5 minutes, filtre de l'affichage et non de l'appel — tel qu'oto-core l'implémente.
 - 2026-11-23 : scope OAuth par famille (`{ label, scope }`, RFC 6749 §3.3), porté par chaque fonction de la définition, code `host_scope_invalid` — demandé pour l'échange et le consentement, forme proposée.
 - 2026-11-22 : profil hôte, import OpenAPI porté en TypeScript, mode `host_delegated` (échange RFC 8693 ou consentement, sans repli), `confirm.by: host`, règle 26 — contrat et jeton décidés par Alexis, forme de la description proposée (source : la conception des fonctions d'un hôte, dans oto-core).
