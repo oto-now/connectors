@@ -230,9 +230,17 @@ export function checkArguments(fn: Json, where: string): void {
   }
 }
 
-/** Règle 2 : une référence de `auth` désigne un champ de `credential` existant ; en `oauth2_jwt_bearer`, le seul, secret. */
+/**
+ * Règle 2 : une référence de `auth` désigne un champ de `credential` existant ; en `oauth2_jwt_bearer`, le seul, secret.
+ * En `oauth2_user`, l'indicateur de ressource ne se déclare que par `resource`, jamais dans `authorize_params`.
+ */
 export function checkAuth(connector: Json, where: string): void {
   const auth = connector.auth
+  if (auth.authorize_params !== undefined && "resource" in auth.authorize_params)
+    throw new DescriptionError(
+      `${where}: auth.authorize_params.resource: declare the resource indicator (RFC 8707) as auth.resource, ` +
+        "which the host sets at the authorization, the code exchange and each renewal; remove it from authorize_params",
+    )
   const credential: Json[] = connector.credential ?? []
   const fields = new Set(credential.map((field) => field.name as string))
   for (const reference of AUTH_REFERENCES) {

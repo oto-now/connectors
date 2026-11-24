@@ -177,6 +177,14 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 - La lib ne sert ni ce refus ni `connector.connect`. Aucun type ni schéma de la lib ne les porte encore : le contrat vit dans ce document, et chaque plateforme l'implémente.
 - La collision de code est résolue : `mailpool` et `modjo` nommaient `not_enabled` un refus du service tiers (une fonction non ouverte chez lui) ; il s'appelle `upstream_not_enabled` depuis leur version 2.0.0, et la règle 27 de la [fabrique](fabrique.md) refuse `not_enabled` à tout refus d'un connecteur partagé.
 
+- oto.cx sert ce refus avec des écarts, voulus pour ne casser aucun client de sa surface déjà servie :
+  - **Codes d'erreur** : ses codes restent les siens (connecteur coupé par l'organisation ou l'équipe, argument invalide), et non `not_enabled` en 403. Les champs du contrat (`reason`, `gesture`, `connector`, `space`, `url`) sont portés dans l'enveloppe d'erreur de la plateforme, et le message se termine par l'adresse à ouvrir.
+  - **Champs non servis** : `administrators`, `shared_accounts`, `account_id` et `access`. `connector.connect` refuse `access`, car aucun connecteur n'y déclare plusieurs accès.
+  - **Équipe** : `team:<…>` porte l'identifiant numérique de l'équipe, pas son slug.
+  - **Compte qui sert déjà** : un compte dont la clé appartient au tenant ou à la plateforme est rendu avec `owner.kind: "org"`, et sa description le dit. Le contrat n'a pas de catégorie pour ce cas.
+  - **Coupure en amont** : un connecteur coupé par le tenant ou la plateforme n'a pas d'adresse, et `connector.connect` répond par un refus propre en 409.
+  - **Alignement sur `not_enabled`** : il est possible, sans date. Ce serait une rupture d'une surface servie, avec le parcours qu'elle demande (réglage d'instance, trace des usages, retrait une fois les usages à zéro), pour un gain faible.
+
 ## Questions ouvertes
 
 - Crédits épuisés : si la lib déclare un jour la page de facturation du fournisseur, le refus `quota_exhausted` pourra la porter. Faut-il l'ajouter au format ?
@@ -190,3 +198,4 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 - 2026-11-24 : `host_delegated` donne `oauth` quand l'émetteur refuse l'échange à un client tiers ; le propriétaire personnel d'un compte perd `userId` — décidé par le mainteneur.
 - 2026-11-24 : `account_id` dans l'adresse et dans `details`, les cas de refus (compte sans secret, clé refusée devenue un refus de connexion ; crédits épuisés et clé de l'hôte hors du contrat) — décidé par le mainteneur, d'après l'implémentation d'oto-core.
 - 2026-11-24 : `not_enabled` désigne ce seul refus ; le refus du service tiers de `mailpool` et `modjo` devient `upstream_not_enabled` (version 2.0.0 de chacun), et la règle 27 de la fabrique réserve le code à la plateforme — décidé par le mainteneur.
+- 2026-11-24 : écarts d'oto.cx notés (codes d'erreur gardés, champs non servis, équipe par identifiant numérique, clé du tenant en `org`, coupure en amont), et l'alignement sur `not_enabled` laissé possible sans date — décidé par le mainteneur.

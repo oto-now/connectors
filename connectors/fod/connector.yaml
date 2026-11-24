@@ -171,10 +171,13 @@
 # - oauth: a person signs in to France Open Data (oauth2_user, authorization
 #   code with PKCE S256). The issuer is https://auth.data.oto.zone/oidc; its
 #   discovery document, read the same day, gives the authorize and token
-#   endpoints, S256 and client_secret_post. The audience
-#   https://data.oto.zone/api is set as the default API of the issuer: a
-#   token asked without resource carries it, renewal included; the consent
-#   still names it in resource. FOD's only scope is read; openid and
+#   endpoints, S256 and client_secret_post. A real trial on 2026-11-24 showed
+#   that without resource at the token request the issuer returns an opaque
+#   token, which FOD refuses; with resource at renewal it returns a JWT whose
+#   aud is https://data.oto.zone/api and whose scope is read, and the refresh
+#   token rotates. The exchange of the code through a platform is still to be
+#   checked. The access therefore sets auth.resource.
+#   FOD's only scope is read; openid and
 #   offline_access bring the subject and a refresh token, which the issuer
 #   rotates. Without a valid token or key, FOD answers 401 with a
 #   WWW-Authenticate header pointing to /.well-known/oauth-protected-resource.
@@ -182,9 +185,9 @@
 # recognises: for a token {type: oauth, sub, email} (email only when the
 # token carries it), for a key {type: cle, consommateur: "cle:<fingerprint>"};
 # sub is the identity of a signed-in account. Read against the service
-# source at 4d9f735 (app/compte.py). No real token has been issued yet: the
-# first end-to-end run (exchange, then renewal, checking aud and the read
-# scope) remains to be done.
+# source at 4d9f735 (app/compte.py). The real trial above settles the audience
+# and the scope; the exchange of the code through a platform remains to be
+# checked.
 connector:
   name: fod
   label: France Open Data
@@ -209,7 +212,8 @@ connector:
         token_url: https://auth.data.oto.zone/oidc/token
         client_auth: body
         scopes: [openid, offline_access, read]
-        authorize_params: { resource: "https://data.oto.zone/api", prompt: consent }
+        resource: https://data.oto.zone/api
+        authorize_params: { prompt: consent }
         pkce: S256
         refresh: refresh_token
         rotates: true

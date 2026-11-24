@@ -239,6 +239,26 @@ def _unknown_pkce(d):
     _oauth2_user(d, pkce="plain")
 
 
+def _resource_not_https(d):
+    _oauth2_user(d, resource="http://api.example.test")
+
+
+def _resource_not_absolute(d):
+    _oauth2_user(d, resource="api.example.test")
+
+
+def _resource_with_fragment(d):
+    _oauth2_user(d, resource="https://api.example.test/v1#part")
+
+
+def _resource_template(d):
+    _oauth2_user(d, resource="https://{domain}.example.test")
+
+
+def _resource_list(d):
+    _oauth2_user(d, resource=["https://api.example.test"])
+
+
 def _jwt_bearer(d, **changes):
     """Sellsy en compte de service : un seul champ, le fichier JSON de la clé."""
     d["connector"]["auth"] = {
@@ -364,6 +384,14 @@ def test_oauth2_user_mutation_base_is_valid():
     _validate(description)
 
 
+@pytest.mark.parametrize("resource", ["https://api.example.test", "https://api.example.test/", "https://api.example.test/v1"])
+def test_oauth2_user_with_resource_is_valid(resource):
+    """L'indicateur de ressource (RFC 8707) : une adresse https absolue, fixe, sans fragment, une seule."""
+    description = _sellsy()
+    _oauth2_user(description, resource=resource)
+    _validate(description)
+
+
 @pytest.mark.parametrize("mutate", [
     _drop_class, _unknown_key, _call_and_handwritten, _neither_call_nor_handwritten,
     _sensitive_without_confirm, _input_not_strict, _no_examples, _example_outside_input,
@@ -377,6 +405,7 @@ def test_oauth2_user_mutation_base_is_valid():
     _api_key_without_place, _basic_without_password, _basic_with_empty_username, _oauth2_user_with_token_credential, _oauth2_user_with_client_id,
     _oauth2_user_without_identity, _rotates_without_refresh_token, _exchange_without_its_grant,
     _authorize_param_set_by_the_host, _unknown_pkce,
+    _resource_not_https, _resource_not_absolute, _resource_with_fragment, _resource_template, _resource_list,
     _jwt_bearer_without_token_url, _jwt_bearer_without_scopes, _jwt_bearer_with_empty_scopes, _jwt_bearer_without_key,
     _jwt_bearer_token_url_template, _jwt_bearer_token_url_with_query, _jwt_bearer_token_url_not_https,
     _jwt_bearer_with_token_urls, _jwt_bearer_with_sub, _jwt_bearer_without_credential,
