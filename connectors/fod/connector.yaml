@@ -1,7 +1,8 @@
 # yaml-language-server: $schema=../connector.schema.json
 # France Open Data (FOD), Otomata's service over French public data:
 #   https://data.oto.zone/openapi.json
-# Every /api/* route needs Authorization: Bearer <key>, one key per consumer.
+# Every /api/* route needs Authorization: Bearer <key>, one key per consumer,
+# or the OAuth access token of a person (two accesses, below).
 # FOD holds no third-party credential for the routes described here.
 #
 # Read only. urban_start_regulation_ingestion starts a background job that fills
@@ -163,19 +164,61 @@
 # d'hébergement pour personnes âgées dépendantes"); the French Tech
 # directory types and the French Tech Central appointments were read live
 # the same day.
+#
+# On 2026-11-24, two accesses (docs/conception/compte.md, "Plusieurs accès"),
+# the functions, the address and the error table shared, no access levels:
+# - key: the organization's FOD API key, as before, a Bearer header.
+# - oauth: a person signs in to France Open Data (oauth2_user, authorization
+#   code with PKCE S256). The issuer is https://auth.data.oto.zone/oidc; its
+#   discovery document, read the same day, gives the authorize and token
+#   endpoints, S256 and client_secret_post. A real trial on 2026-11-24 showed
+#   that without resource at the token request the issuer returns an opaque
+#   token, which FOD refuses; with resource at renewal it returns a JWT whose
+#   aud is https://data.oto.zone/api and whose scope is read, and the refresh
+#   token rotates. The exchange of the code through a platform is still to be
+#   checked. The access therefore sets auth.resource.
+#   FOD's only scope is read; openid and
+#   offline_access bring the subject and a refresh token, which the issuer
+#   rotates. Without a valid token or key, FOD answers 401 with a
+#   WWW-Authenticate header pointing to /.well-known/oauth-protected-resource.
+# account_get (GET /api/moi), outside the ten families, says the account FOD
+# recognises: for a token {type: oauth, sub, email} (email only when the
+# token carries it), for a key {type: cle, consommateur: "cle:<fingerprint>"};
+# sub is the identity of a signed-in account. Read against the service
+# source at 4d9f735 (app/compte.py). The real trial above settles the audience
+# and the scope; the exchange of the code through a platform remains to be
+# checked.
 connector:
   name: fod
   label: France Open Data
   namespace: fod
-  version: 1.11.0
-  api_version: "france-opendata-service a7cb702 (routes unversioned)"
+  version: 2.0.0
+  api_version: "france-opendata-service 4d9f735 (routes unversioned)"
   base_url: https://data.oto.zone
-  auth:
-    kind: bearer
-    token: api_key
-  credential:
-    - { name: api_key, label: FOD API key, secret: true }
-  modes: [platform, byo_org]
+  accesses:
+    - name: key
+      label: FOD API key of the organization
+      auth:
+        kind: bearer
+        token: api_key
+      credential:
+        - { name: api_key, label: FOD API key, secret: true }
+      modes: [platform, byo_org]
+    - name: oauth
+      label: Sign-in of a person to France Open Data
+      auth:
+        kind: oauth2_user
+        authorize_url: https://auth.data.oto.zone/oidc/auth
+        token_url: https://auth.data.oto.zone/oidc/token
+        client_auth: body
+        scopes: [openid, offline_access, read]
+        resource: https://data.oto.zone/api
+        authorize_params: { prompt: consent }
+        pkce: S256
+        refresh: refresh_token
+        rotates: true
+        identity: { function: account_get, path: sub }
+      modes: [byo_user]
   timeout_s: 60
   query_arrays: repeat
   probe: { function: law_list_codes, non_empty: [codes] }
@@ -183,7 +226,7 @@ connector:
     - { status: 400, code: invalid_request, retryable: false,
         message: "FOD or its upstream source rejected an argument as invalid; the message names the accepted values when there is a closed list." }
     - { status: 401, code: access_rejected, retryable: false, marks_account: credential_rejected,
-        message: "FOD refused the API key: unknown, revoked or missing. Retrying unchanged fails the same way." }
+        message: "FOD refused the key or the sign-in token: unknown, revoked, expired or missing. Retrying unchanged fails the same way." }
     - { status: 404, code: not_found, retryable: false,
         message: "Not found in FOD: check the identifier." }
     - { status: 422, code: invalid_arguments, retryable: false,
@@ -196,6 +239,21 @@ connector:
         message: "FOD or the public source behind it is temporarily unavailable or busy: retry later." }
 
 functions:
+  # --- The account ----------------------------------------------------------
+  - name: account_get
+    class: read
+    description: >-
+      Get the account FOD recognises for this call. For a person signed in:
+      {type: "oauth", sub, email}, email only when the sign-in token carries
+      it. For an organization key: {type: "cle", consommateur:
+      "cle:<fingerprint>"}, the fingerprint naming the key, never the key.
+      Nothing of the data is read.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - { title: Who the call acts as, input: {} }
+    call: { method: GET, path: /api/moi }
+    cost: { per: request }
+
   # --- Companies: identity, officers, legal notices, accounts --------------
   - name: company_search
     class: read
