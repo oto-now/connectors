@@ -83,14 +83,21 @@ export const connectorSchema: JsonSchema = {
               {
                 "required": [
                   "accesses"
-                ]
+                ],
+                "properties": {
+                  "accesses": {
+                    "contains": {
+                      "$ref": "#/$defs/access_with_levels"
+                    }
+                  }
+                }
               }
             ]
           }
         }
       },
       "then": {
-        "$comment": "A connector with access levels (each of its accesses has them): every function declares the scopes it requires.",
+        "$comment": "A connector with access levels (in its auth, or in every one of its accesses): every function declares the scopes it requires.",
         "properties": {
           "functions": {
             "items": {
@@ -750,6 +757,30 @@ export const connectorSchema: JsonSchema = {
               "base_urls"
             ]
           }
+        },
+        {
+          "$comment": "Several accesses: access levels in every access or in none. Without levels, each access opens the whole connector.",
+          "if": {
+            "required": [
+              "accesses"
+            ],
+            "properties": {
+              "accesses": {
+                "contains": {
+                  "$ref": "#/$defs/access_with_levels"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "accesses": {
+                "items": {
+                  "$ref": "#/$defs/access_with_levels"
+                }
+              }
+            }
+          }
         }
       ],
       "dependentSchemas": {
@@ -845,7 +876,7 @@ export const connectorSchema: JsonSchema = {
       }
     },
     "access": {
-      "description": "One access of a connector that opens by several: its name (recorded with each account that opens by it), its label (shown to whoever connects) and its auth, credential and modes, with access levels.",
+      "description": "One access of a connector that opens by several: its name (recorded with each account that opens by it), its label (shown to whoever connects) and its auth, credential and modes. Access levels are in every access of the connector or in none: without them, each access opens the whole connector (an oauth2_user keeps scopes).",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -862,16 +893,7 @@ export const connectorSchema: JsonSchema = {
           "$ref": "#/$defs/text"
         },
         "auth": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/auth"
-            },
-            {
-              "required": [
-                "access_levels"
-              ]
-            }
-          ]
+          "$ref": "#/$defs/auth"
         },
         "credential": {
           "$ref": "#/$defs/credential"
@@ -885,6 +907,16 @@ export const connectorSchema: JsonSchema = {
           "$ref": "#/$defs/credential_of_auth"
         }
       ]
+    },
+    "access_with_levels": {
+      "$comment": "An access whose auth declares access levels.",
+      "properties": {
+        "auth": {
+          "required": [
+            "access_levels"
+          ]
+        }
+      }
     },
     "auth": {
       "description": "Other keys depend on kind. Values naming a secret refer to connector.credential[].name; a URL template cites connector.settings[].name.",

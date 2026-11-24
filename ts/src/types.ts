@@ -508,8 +508,9 @@ export type AccessFields = {
 /**
  * Un accès d'un connecteur qui s'ouvre par plusieurs (le compte de service d'une organisation, le consentement d'une
  * personne) : `name`, que l'hôte garde avec chaque compte ouvert par cet accès, `label`, montré à qui connecte, et ses
- * `auth` (avec des niveaux d'accès), `credential` et `modes`. Un compte s'ouvre par un seul accès ; les fonctions,
- * l'adresse et la table d'erreurs sont communes.
+ * `auth`, `credential` et `modes`. Un compte s'ouvre par un seul accès ; les fonctions, l'adresse et la table d'erreurs
+ * sont communes. Les niveaux d'accès (`accessLevels`) sont dans tous les accès ou dans aucun : sans eux, chaque accès
+ * ouvre tout le connecteur, et aucune fonction ne porte de `scopes`.
  */
 export type Access = { readonly name: string; readonly label: string } & AccessFields
 

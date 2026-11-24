@@ -65,7 +65,7 @@ Un connecteur partagé se décrit dans un fichier YAML, `connectors/<nom>/connec
 | `base_url` | sauf `base_urls` ou tout `handwritten` | Racine `https://` des chemins d'appel, sans `/` final ; gabarit possible sur les réglages. |
 | `base_urls` | non, exclusif de `base_url` | Une racine par valeur d'un réglage `choice` : `{ setting: region, values: { us: …, eu: … } }`. |
 | `auth` | sauf `accesses` | Mode d'authentification, voir [compte](compte.md). |
-| `accesses` | non, exclusif de `auth`, `credential` et `modes` | Plusieurs accès aux mêmes fonctions, au moins deux : `name`, `label`, `auth` (à niveaux d'accès), `credential`, `modes` ; voir [compte](compte.md), « Plusieurs accès ». |
+| `accesses` | non, exclusif de `auth`, `credential` et `modes` | Plusieurs accès aux mêmes fonctions, au moins deux : `name`, `label`, `auth` (niveaux d'accès dans tous les accès ou dans aucun), `credential`, `modes` ; voir [compte](compte.md), « Plusieurs accès ». |
 | `credential` | sauf `none`, `oauth2_user` et `accesses` | Champs fournis par le consommateur : `name`, `label`, `secret` (booléen), `holder` (`account` par défaut, ou `host`) ; un seul, secret, en `oauth2_jwt_bearer` : voir [compte](compte.md). |
 | `account_identity` | non | Identité d'un compte rattaché chez un tiers : `name`, `label`, `pattern` (expression ancrée), citée par `base_url` seulement, voir [compte](compte.md). |
 | `settings` | non | Réglages non secrets d'un compte, voir [compte](compte.md). |

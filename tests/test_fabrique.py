@@ -855,14 +855,69 @@ def test_access_rules_refuse(mutate, message):
     lambda d: d["connector"].update(auth={"kind": "none"}),
     lambda d: d["connector"].update(accesses=d["connector"]["accesses"][:1]),
     lambda d: _access(d, "google_account").update(credential=[{"name": "k", "label": "K", "secret": True}]),
-    lambda d: _access(d, "service_account")["auth"].pop("access_levels"),
     lambda d: _access(d, "service_account").pop("label"),
+    lambda d: d["functions"][0].pop("scopes"),
 ], ids=["modes_beside_accesses", "auth_beside_accesses", "a_single_access", "credential_in_a_consent",
-        "access_without_levels", "access_without_label"])
+        "access_without_label", "function_without_scopes_beside_levels"])
 def test_access_schema_refuses(mutate):
     description = _load(SEARCH_CONSOLE)
     mutate(description)
     with pytest.raises(DescriptionError, match="does not match the description schema"):
+        check(description, SEARCH_CONSOLE)
+
+
+def _accesses_without_levels() -> dict:
+    """Search Console ouvert par la clé d'une organisation (`bearer`) ou par la connexion d'une personne à une seule
+    portée (`oauth2_user` à `scopes`) : deux accès sans niveaux, des fonctions sans `scopes`."""
+    description = _load(SEARCH_CONSOLE)
+    google_account = _access(description, "google_account")["auth"]
+    del google_account["access_levels"], google_account["scope_implies"]
+    google_account["scopes"] = [WEBMASTERS, "openid", "email"]
+    description["connector"]["accesses"][0] = {
+        "name": "organization_key", "label": "Key of the organization", "auth": {"kind": "bearer", "token": "api_key"},
+        "credential": [{"name": "api_key", "label": "API key", "secret": True}], "modes": ["byo_org"]}
+    for function in description["functions"]:
+        function.pop("scopes")
+    return description
+
+
+def test_accesses_without_levels_pass():
+    """Règle 25 : les niveaux dans tous les accès ou dans aucun ; sans niveaux, chaque accès ouvre tout le connecteur
+    et la sortie ne porte ni `accessLevels` ni `scopes` de fonction."""
+    description = check(_accesses_without_levels(), SEARCH_CONSOLE)
+    source = connector_module(description).source
+    assert 'auth: {"kind": "bearer", "token": "api_key"},' in source and "accessLevels" not in source
+    assert f'"scopes": ["{WEBMASTERS}", "openid", "email"]\n' in source and "\n    scopes:" not in source
+
+
+def _levels_in_the_consent_only(description: dict) -> None:
+    auth = description["connector"]["accesses"][1]["auth"]
+    del auth["scopes"]
+    auth["access_levels"] = {"read": {"scopes": ["openid", "email"]}, "full": {"scopes": [WEBMASTERS, "openid", "email"]}}
+
+
+@pytest.mark.parametrize("mutate, at, end", [
+    (_levels_in_the_consent_only, "connector/accesses/0/auth: ", "'access_levels' is a required property"),
+    (lambda d: d["functions"][0].update(scopes=[WEBMASTERS]), "functions/0: ",
+     "should not be valid under {'required': ['scopes']}"),
+], ids=["levels_in_one_access_only", "function_scopes_without_levels"])
+def test_accesses_without_levels_schema_refuses(mutate, at, end):
+    """Des niveaux dans un accès seulement : refusé à l'adresse de l'accès qui n'en a pas ; une fonction à `scopes`
+    dans un connecteur sans niveaux : refusée."""
+    description = _accesses_without_levels()
+    mutate(description)
+    with pytest.raises(DescriptionError, match=re.escape("does not match the description schema at " + at)) as refused:
+        check(description, SEARCH_CONSOLE)
+    assert str(refused.value).endswith(end)
+
+
+def test_levels_in_one_access_only_refused_from_the_committed_description():
+    """La description commitée, un accès privé de ses niveaux : refusée à son adresse."""
+    description = _load(SEARCH_CONSOLE)
+    auth = _access(description, "service_account")["auth"]
+    del auth["access_levels"], auth["scope_implies"], auth["default_level"]
+    auth["scopes"] = [WEBMASTERS]
+    with pytest.raises(DescriptionError, match=re.escape("at connector/accesses/0/auth: 'access_levels' is a required property")):
         check(description, SEARCH_CONSOLE)
 
 # --- Règle 8 : compte de l'hôte et compte rattaché -----------------------------------
