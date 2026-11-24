@@ -35,6 +35,7 @@ GET /api/loi/article
 GET /api/loi/codes
 GET /api/loi/search
 GET /api/loi/versions
+GET /api/moi
 GET /api/osm/pois
 GET /api/reglement
 GET /api/reglements
