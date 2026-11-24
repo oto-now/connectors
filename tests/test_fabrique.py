@@ -464,6 +464,34 @@ def test_added_rules_refuse(path, mutate, message):
         check(description, path)
 
 
+# --- Règle 27 : `not_enabled` réservé au refus « connexion requise » de la plateforme --------------------
+
+MAILPOOL = CONNECTORS / "mailpool" / "connector.yaml"
+
+
+def _forbidden(d):
+    return next(e for e in d["connector"]["errors"] if e["status"] == 403)
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda d: _forbidden(d).update(code="not_enabled"), "connector.errors: the code 'not_enabled' is reserved"),
+    (lambda d: d["functions"][0].setdefault("refusals", []).append(
+        {"code": "not_enabled", "when": 403, "message": "Not enabled."}),
+     "refusals: the code 'not_enabled' is reserved"),
+], ids=["errors", "refusals"])
+def test_not_enabled_is_reserved_to_the_platform(mutate, message):
+    description = _load(MAILPOOL)
+    mutate(description)
+    with pytest.raises(DescriptionError, match=re.escape(message)):
+        check(description, MAILPOOL)
+
+
+def test_a_refusal_of_the_service_is_upstream_not_enabled():
+    for name in ("mailpool", "modjo"):
+        description = _load(CONNECTORS / name / "connector.yaml")
+        assert [e["code"] for e in description["connector"]["errors"] if e["status"] == 403] == ["upstream_not_enabled"]
+
+
 def test_probe_without_balance_may_cost():
     """Le coût n'est refusé qu'à la fonction d'une sonde qui lit un solde."""
     description = _load(PENNYLANE)

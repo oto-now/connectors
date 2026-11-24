@@ -162,7 +162,11 @@ pas dire :
    ne porte ni `auth.kind: host_delegated` (le jeton vient de l'hôte qui exécute, pour l'API d'un hôte décrite en
    OpenAPI) ni `confirm.by: host` (les deux temps de l'API elle-même) : ces formes n'appartiennent qu'à la définition
    que le profil hôte tire d'un document OpenAPI (`oto.connectors.custom_api.host`). Jugée sur
-   `connectors/<nom>/connector.yaml` seulement (`check`), accès compris.
+   `connectors/<nom>/connector.yaml` seulement (`check`), accès compris ;
+27. le code réservé (docs/conception/refus-de-connexion.md, 2026-11-24) : aucun refus d'un connecteur partagé, ni dans
+   la table `errors` ni dans les `refusals` d'une fonction, ne s'appelle `not_enabled`, le refus « connexion requise »
+   de la plateforme ; un refus du service tiers prend le préfixe `upstream_` (`upstream_not_enabled`). Jugée sur
+   `connectors/<nom>/connector.yaml` seulement (`check`).
 
 Les règles 1 à 5, 9 à 11, 15, 18, 20, 22 et 23 vivent dans la lib (`oto/connectors/rules/`), une seule copie, que le profil Custom
 API applique aussi à la définition d'une organisation ; ce module les applique et les réexporte.
@@ -823,6 +827,7 @@ def check(data: dict, path: pathlib.Path) -> Description:
         raise DescriptionError(f"{where}: connector.name {data['connector']['name']!r} is not the folder name")
     check_prefix(data["connector"], where)
     check_host_forms(data, where)
+    check_reserved_code(data, where)
     check_rules(data, where)
     return Description(path=path, data=data)
 
@@ -852,6 +857,26 @@ def check_host_forms(data: dict, where: str) -> None:
             raise DescriptionError(
                 f"{where}: function {function['name']}: confirm.by host belongs to the definition of a host's API "
                 "(host profile), never to a shared connector"
+            )
+
+
+# Le refus « connexion requise » de la plateforme (docs/conception/refus-de-connexion.md) : aucun refus d'un connecteur
+# ne porte son code, que l'hôte servirait sinon pour deux causes.
+PLATFORM_CODE = "not_enabled"
+
+
+def check_reserved_code(data: dict, where: str) -> None:
+    """Règle 27 : `not_enabled` est le refus « connexion requise » de la plateforme, jamais un refus d'un connecteur."""
+    if any(entry["code"] == PLATFORM_CODE for entry in data["connector"]["errors"]):
+        raise DescriptionError(
+            f"{where}: connector.errors: the code {PLATFORM_CODE!r} is reserved to the platform's connection refusal; "
+            "name a refusal of the service upstream_<cause>"
+        )
+    for function in data["functions"]:
+        if any(refusal["code"] == PLATFORM_CODE for refusal in function.get("refusals", [])):
+            raise DescriptionError(
+                f"{where}: function {function['name']}: refusals: the code {PLATFORM_CODE!r} is reserved to the "
+                "platform's connection refusal; name a refusal of the service upstream_<cause>"
             )
 
 

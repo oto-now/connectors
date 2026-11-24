@@ -141,7 +141,7 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 ## Écart avec le code
 
 - La lib ne sert ni ce refus ni `connector.connect`. Aucun type ni schéma de la lib ne les porte encore : le contrat vit dans ce document, et chaque plateforme l'implémente.
-- Le code `not_enabled` existe déjà dans la table `errors` de connecteurs (`mailpool`, `modjo`), pour un refus du service tiers (une fonction non ouverte chez lui). Ce refus-là n'a pas de `details.reason`, ce qui le distingue de celui de la plateforme.
+- La collision de code est résolue : `mailpool` et `modjo` nommaient `not_enabled` un refus du service tiers (une fonction non ouverte chez lui) ; il s'appelle `upstream_not_enabled` depuis leur version 2.0.0, et la règle 27 de la [fabrique](fabrique.md) refuse `not_enabled` à tout refus d'un connecteur partagé.
 
 ## Questions ouvertes
 
@@ -149,8 +149,8 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 - `auth.kind: none` : aucun compte, donc ni `no_account` ni `reconnect`. Seul `connector_off` s'applique.
 - La forme d'un élément de `shared_accounts`, et celle d'`account` dans la sortie de `connector.connect`, restent à fixer avec la règle de partage des plateformes.
 - Un compte d'organisation (`byo_org`) à connecter : le geste revient-il toujours à un administrateur, avec `administrators` ?
-- Le code `not_enabled` partagé avec des refus de services tiers (« Écart avec le code ») : faut-il renommer ceux des connecteurs ?
 
 ## Historique
 
 - 2026-11-24 : contrat commun du refus « connexion requise » (`not_enabled`, `details`, règles de l'adresse, geste selon `auth.kind`, `connector.connect`) servi par oto.now et oto.cx — proposé par le mainteneur.
+- 2026-11-24 : `not_enabled` désigne ce seul refus ; le refus du service tiers de `mailpool` et `modjo` devient `upstream_not_enabled` (version 2.0.0 de chacun), et la règle 27 de la fabrique réserve le code à la plateforme — décidé par le mainteneur.
