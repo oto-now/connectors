@@ -1,6 +1,6 @@
 # Le refus « connexion requise »
 
-- **Statut** : accepté par le mainteneur le 24/11/2026
+- **Statut** : proposé
 - **Dernière révision** : 2026-11-24
 
 ## Résumé
@@ -18,7 +18,7 @@ Quand un agent appelle une fonction d'un connecteur qui n'est pas activé, sans 
 - Un refus unique, typé, lisible par un agent (`details`) et par une personne (le message, qui se termine par l'adresse à ouvrir).
 - Une adresse sûre à relayer : stable, sans secret, qui revérifie tout à l'ouverture.
 - La même correspondance entre `auth.kind` et le geste sur les deux plateformes.
-- Hors objectif : les pages elles-mêmes (consentement, saisie de clé, activation), le stockage des comptes et la règle de partage des comptes, qui relèvent de chaque plateforme (oto-pkg : docs/conception/connecteurs-et-comptes.md). Hors objectif aussi : les refus du service tiers, qui restent ceux de la table `errors` ([erreurs et signal de refus](signal-de-refus.md)).
+- Hors objectif : les pages elles-mêmes (consentement, saisie de clé, activation), le stockage des comptes et la règle de partage des comptes, qui relèvent de chaque plateforme (oto-pkg : docs/conception/connecteurs-et-comptes.md). Hors objectif aussi : les refus du service tiers, qui restent ceux de la table `errors` ([erreurs et signal de refus](signal-de-refus.md)), sauf une clé refusée par le fournisseur sur un compte à clé, qui est désormais un refus de connexion (« Les cas de refus », ci-dessous).
 
 ## Conception
 
@@ -32,15 +32,14 @@ Un 403, de code `not_enabled`. Le message est en anglais, en clair, et se termin
 - `access` : le nom de l'accès, seulement quand le connecteur en déclare plusieurs (`accesses`) ;
 - `space` : l'espace où le geste se fait, `me`, `team:<slug>` ou `org` ;
 - `url` : la page du geste ;
+- `account_id` (facultatif) : le compte existant que le geste répare (sa clé à saisir), quand il y en a un ;
 - `administrators` (facultatif) : quand le geste revient à un administrateur, ceux qui peuvent le faire, par leur nom seul, `[{ name }]` ;
 - `shared_accounts` (facultatif) : les comptes personnels déjà partagés avec la personne, dont elle peut se servir en les nommant, `[{ id, label, owner, description }]`, où `owner` est le nom de la personne qui partage et `description` celle que le compte porte (`null` sans description).
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["reason", "gesture", "connector", "space", "url"],
+  "type": "object", "additionalProperties": false, "required": ["reason", "gesture", "connector", "space", "url"],
   "properties": {
     "reason": { "enum": ["connector_off", "no_account", "reconnect"] },
     "gesture": { "enum": ["oauth", "key", "hosted_link", "admin_activation"] },
@@ -48,24 +47,17 @@ Un 403, de code `not_enabled`. Le message est en anglais, en clair, et se termin
     "access": { "type": "string", "minLength": 1 },
     "space": { "$ref": "#/$defs/space" },
     "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "account_id": { "type": "string", "minLength": 1 },
     "administrators": { "$ref": "#/$defs/administrators" },
-    "shared_accounts": {
-      "type": "array",
-      "items": {
-        "type": "object", "additionalProperties": false, "required": ["id", "label", "owner", "description"],
-        "properties": {
-          "id": { "type": "string", "minLength": 1 }, "label": { "type": "string", "minLength": 1 },
-          "owner": { "type": "string", "minLength": 1 }, "description": { "type": ["string", "null"] }
-        }
-      }
-    }
+    "shared_accounts": { "type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["id", "label", "owner", "description"],
+      "properties": { "id": { "type": "string", "minLength": 1 }, "label": { "type": "string", "minLength": 1 },
+                      "owner": { "type": "string", "minLength": 1 }, "description": { "type": ["string", "null"] } } } }
   },
   "$defs": {
     "space": { "type": "string", "pattern": "^(me|org|team:[^\\s:]+)$" },
-    "administrators": {
-      "type": "array",
-      "items": { "type": "object", "additionalProperties": false, "required": ["name"], "properties": { "name": { "type": "string", "minLength": 1 } } }
-    }
+    "administrators": { "type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["name"], "properties": { "name": { "type": "string", "minLength": 1 } } } }
   }
 }
 ```
@@ -73,12 +65,25 @@ Un 403, de code `not_enabled`. Le message est en anglais, en clair, et se termin
 ### L'adresse
 
 - **Stable**, sur l'origine de la plateforme. Elle ne nomme que le connecteur, l'accès et l'espace, sans secret, sans code ni jeton : on peut la relayer, l'afficher ou la journaliser.
+- **Un compte désigné** : l'adresse peut porter `account_id=<id>`, pour saisir la clé de ce compte (après une clé refusée, par exemple). La page la réserve à qui gère le compte, et revérifie que le compte est bien du connecteur, de l'accès et de l'espace de l'adresse. `activate` (l'adresse d'une activation par un administrateur) et `account_id` ensemble sont refusés.
 - **Revérifiée** : la page lit la personne connectée et revérifie ses droits dans l'espace. Le `space` de l'adresse n'est qu'une proposition, jamais cru : une personne qui n'a pas de droit sur l'espace demandé ne le reçoit pas.
 - **Ouvrir ne fait rien** : l'ouverture de la page (`GET`) ne démarre rien et n'écrit rien. La page montre le geste et un bouton, qui envoie un `POST` de même origine. Ce `POST` pose la demande, puis redirige vers le tiers (consentement, lien hébergé) ou mène la saisie ou l'activation.
 - **OAuth** : le `state` naît au `POST`. Il est à usage unique, valable 10 minutes, et lié à la personne, à l'organisation et au connecteur. Un retour dont le `state` ne correspond pas aux trois est refusé.
 - **Relink** : rattacher de nouveau un compte déjà rattaché depuis une autre organisation n'a lieu que par ce `POST`, et la page l'annonce avant le bouton.
 - **Activation** : l'activation par un administrateur est une confirmation explicite sur la page, jamais l'effet de l'ouverture du lien.
 - **Retour** : la page finale dit à la personne de revenir à son agent, qui rejoue l'appel. Elle n'affiche jamais un texte lu dans l'adresse : une raison d'échec passe par une liste blanche de raisons connues, et le succès est dit par un texte générique.
+
+### Les cas de refus
+
+| Situation | `reason` | `gesture` | `account_id` |
+|---|---|---|---|
+| connecteur non activé dans l'espace | `connector_off` | `admin_activation` | non |
+| aucun compte utilisable | `no_account` | selon `auth.kind` | non |
+| un compte existe, sans secret | `no_account` | `key` | oui |
+| consentement expiré ou révoqué | `reconnect` | `oauth` | non |
+| clé refusée par le fournisseur sur un compte à clé (`marks_account: credential_rejected`) | `reconnect` | `key` | oui |
+
+Une clé refusée sur un compte à clé n'est plus un `credential_rejected` rendu tel quel : c'est un `not_enabled`, qui mène à la saisie d'une nouvelle clé. Ne sont pas des refus de connexion, et restent sans adresse : des crédits épuisés (`quota_exhausted`), et la clé de l'hôte refusée (`credential_rejected` sur un champ `holder: host`), que personne de l'organisation ne peut réparer.
 
 ### Le geste selon `auth.kind`
 
@@ -110,49 +115,41 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 {
   "input": {
     "type": "object", "additionalProperties": false, "required": ["connector"],
-    "properties": {
-      "connector": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
-      "space": { "$ref": "#/$defs/space" },
-      "access": { "type": "string", "minLength": 1 }
-    }
+    "properties": { "connector": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" }, "space": { "$ref": "#/$defs/space" },
+                    "access": { "type": "string", "minLength": 1 } }
   },
-  "output": {
-    "oneOf": [
-      {
-        "type": "object", "additionalProperties": false, "required": ["url", "gesture", "connector", "space", "by"],
-        "properties": {
-          "url": { "type": "string", "format": "uri", "pattern": "^https://" },
-          "gesture": { "enum": ["oauth", "key", "hosted_link", "admin_activation"] },
-          "connector": { "type": "string" }, "access": { "type": "string", "minLength": 1 },
-          "space": { "$ref": "#/$defs/space" }, "by": { "enum": ["user", "administrator"] },
-          "administrators": { "$ref": "#/$defs/administrators" }
-        }
-      },
-      {
-        "type": "object", "additionalProperties": false, "required": ["gesture", "connector", "space", "account"],
-        "properties": {
-          "gesture": { "const": "none" },
-          "connector": { "type": "string" }, "access": { "type": "string", "minLength": 1 },
-          "space": { "$ref": "#/$defs/space" },
-          "account": {
-            "type": "object", "additionalProperties": false, "required": ["id", "label", "mode", "owner"],
-            "properties": {
-              "id": { "type": "string", "minLength": 1 }, "label": { "type": "string", "minLength": 1 },
-              "mode": { "type": "string", "minLength": 1 },
-              "owner": {
-                "oneOf": [
-                  { "type": "object", "additionalProperties": false, "required": ["kind", "description"],
-                    "properties": { "kind": { "enum": ["org", "team"] }, "description": { "type": "string" } } },
-                  { "type": "object", "additionalProperties": false, "required": ["kind", "name", "yours"],
-                    "properties": { "kind": { "const": "user" }, "name": { "type": "string" }, "yours": { "type": "boolean" } } }
-                ]
-              }
-            }
+  "output": { "oneOf": [
+    {
+      "type": "object", "additionalProperties": false, "required": ["url", "gesture", "connector", "space", "by"],
+      "properties": {
+        "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "gesture": { "enum": ["oauth", "key", "hosted_link", "admin_activation"] },
+        "connector": { "type": "string" }, "access": { "type": "string", "minLength": 1 },
+        "space": { "$ref": "#/$defs/space" }, "by": { "enum": ["user", "administrator"] },
+        "administrators": { "$ref": "#/$defs/administrators" }
+      }
+    },
+    {
+      "type": "object", "additionalProperties": false, "required": ["gesture", "connector", "space", "account"],
+      "properties": {
+        "gesture": { "const": "none" }, "connector": { "type": "string" }, "access": { "type": "string", "minLength": 1 },
+        "space": { "$ref": "#/$defs/space" },
+        "account": {
+          "type": "object", "additionalProperties": false, "required": ["id", "label", "mode", "owner"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 }, "label": { "type": "string", "minLength": 1 },
+            "mode": { "type": "string", "minLength": 1 },
+            "owner": { "oneOf": [
+              { "type": "object", "additionalProperties": false, "required": ["kind", "description"],
+                "properties": { "kind": { "enum": ["org", "team"] }, "description": { "type": "string" } } },
+              { "type": "object", "additionalProperties": false, "required": ["kind", "name", "yours"],
+                "properties": { "kind": { "const": "user" }, "name": { "type": "string" }, "yours": { "type": "boolean" } } }
+            ] }
           }
         }
       }
-    ]
-  }
+    }
+  ] }
 }
 ```
 
@@ -182,10 +179,14 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 
 ## Questions ouvertes
 
+- Crédits épuisés : si la lib déclare un jour la page de facturation du fournisseur, le refus `quota_exhausted` pourra la porter. Faut-il l'ajouter au format ?
+- Quand le geste revient aux responsables d'une équipe, ou à la personne propriétaire d'un compte personnel, ils ne sont nommés que dans le message, pas dans `details`. Faut-il un champ `managers: [{ name }]`, comme `administrators` ?
+- Un champ ou un réglage du compte manquant alors que le secret est présent (« has no <champ> yet ») reste un refus sans adresse. Faut-il le mener à la même page ?
 - Le code `not_enabled` partagé avec des refus de services tiers (« Écart avec le code ») : faut-il renommer ceux des connecteurs ?
 
 ## Historique
 
 - 2026-11-24 : contrat commun du refus « connexion requise » (`not_enabled`, `details`, règles de l'adresse, geste selon `auth.kind`, `connector.connect`) servi par oto.now et oto.cx — proposé par le mainteneur.
 - 2026-11-24 : formes fixées d'après l'implémentation d'oto-core : `administrators` en `[{ name }]` sans identifiant, `account` et `shared_accounts`, `team:<slug>`, `connector`, `access` et `by` dans la sortie de `connector.connect`, `hosted_link` par `account_identity`, `none` sans geste ; l'ouverture (`GET`) ne fait plus rien, le geste passe par un `POST` de même origine (CSRF), retour sans texte lu dans l'adresse — décidé par le mainteneur.
-- 2026-11-24 : `host_delegated` donne `oauth` quand l'émetteur refuse l'échange à un client tiers ; le propriétaire personnel d'un compte perd `userId` ; page acceptée — décidé par le mainteneur.
+- 2026-11-24 : `host_delegated` donne `oauth` quand l'émetteur refuse l'échange à un client tiers ; le propriétaire personnel d'un compte perd `userId` — décidé par le mainteneur.
+- 2026-11-24 : `account_id` dans l'adresse et dans `details`, les cas de refus (compte sans secret, clé refusée devenue un refus de connexion ; crédits épuisés et clé de l'hôte hors du contrat) — décidé par le mainteneur, d'après l'implémentation d'oto-core.

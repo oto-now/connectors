@@ -32,7 +32,7 @@ Les documents de conception de ce dépôt : pour chaque sujet, **comment** c'est
 | [Niveaux d'accès](niveaux-d-acces.md) | Comment ouvrir un connecteur OAuth en lecture seule, ou à un sous-ensemble de ses droits ? | validé avec Alexis le 14/10/2026 |
 | [Custom API](custom-api.md) | Comment une organisation décrit-elle un outil que le catalogue n'a pas, et comment reprend-on les définitions d'oto 1 ? | validé avec le mainteneur le 19/11/2026 ; révisé le 22/11/2026 |
 | [Le profil hôte](profil-hote.md) | Comment les fonctions d'un hôte, décrites en OpenAPI, deviennent-elles des connecteurs servis sous le jeton de la personne ? | validé par Alexis le 22/11/2026 (contrat et jeton) ; forme proposée |
-| [Le refus « connexion requise »](refus-de-connexion.md) | Que rend une plateforme quand un connecteur n'est pas activé, n'a pas de compte ou doit être reconnecté, et comment la personne lève-t-elle ce refus ? | accepté par le mainteneur le 24/11/2026 |
+| [Le refus « connexion requise »](refus-de-connexion.md) | Que rend une plateforme quand un connecteur n'est pas activé, n'a pas de compte ou doit être reconnecté, et comment la personne lève-t-elle ce refus ? | proposé |
 
 ## Anciens identifiants → document
 
