@@ -30,10 +30,10 @@ Un 403, de code `not_enabled`. Le message est en anglais, en clair, et se termin
 - `gesture` : `oauth` (un consentement), `key` (une clé ou des identifiants à saisir), `hosted_link` (un lien hébergé par le tiers qui rattache le compte) ou `admin_activation` (un administrateur active le connecteur) ;
 - `connector` : le nom du connecteur ;
 - `access` : le nom de l'accès, seulement quand le connecteur en déclare plusieurs (`accesses`) ;
-- `space` : l'espace où le geste se fait, `me`, `team:<id>` ou `org` ;
+- `space` : l'espace où le geste se fait, `me`, `team:<slug>` ou `org` ;
 - `url` : la page du geste ;
-- `administrators` (facultatif) : quand le geste revient à un administrateur, ceux qui peuvent le faire, `[{ userId, name }]` ;
-- `shared_accounts` (facultatif) : les comptes déjà partagés dans l'espace dont la personne pourrait se servir.
+- `administrators` (facultatif) : quand le geste revient à un administrateur, ceux qui peuvent le faire, par leur nom seul, `[{ name }]` ;
+- `shared_accounts` (facultatif) : les comptes personnels déjà partagés avec la personne, dont elle peut se servir en les nommant, `[{ id, label, owner, description }]`, où `owner` est le nom de la personne qui partage et `description` celle que le compte porte (`null` sans description).
 
 ```json
 {
@@ -46,18 +46,26 @@ Un 403, de code `not_enabled`. Le message est en anglais, en clair, et se termin
     "gesture": { "enum": ["oauth", "key", "hosted_link", "admin_activation"] },
     "connector": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
     "access": { "type": "string", "minLength": 1 },
-    "space": { "type": "string", "pattern": "^(me|org|team:[^\\s:]+)$" },
+    "space": { "$ref": "#/$defs/space" },
     "url": { "type": "string", "format": "uri", "pattern": "^https://" },
-    "administrators": {
+    "administrators": { "$ref": "#/$defs/administrators" },
+    "shared_accounts": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["userId", "name"],
-        "properties": { "userId": { "type": "string", "minLength": 1 }, "name": { "type": "string", "minLength": 1 } }
+        "type": "object", "additionalProperties": false, "required": ["id", "label", "owner", "description"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 }, "label": { "type": "string", "minLength": 1 },
+          "owner": { "type": "string", "minLength": 1 }, "description": { "type": ["string", "null"] }
+        }
       }
-    },
-    "shared_accounts": { "type": "array" }
+    }
+  },
+  "$defs": {
+    "space": { "type": "string", "pattern": "^(me|org|team:[^\\s:]+)$" },
+    "administrators": {
+      "type": "array",
+      "items": { "type": "object", "additionalProperties": false, "required": ["name"], "properties": { "name": { "type": "string", "minLength": 1 } } }
+    }
   }
 }
 ```
@@ -66,9 +74,11 @@ Un 403, de code `not_enabled`. Le message est en anglais, en clair, et se termin
 
 - **Stable**, sur l'origine de la plateforme. Elle ne nomme que le connecteur, l'accès et l'espace, sans secret, sans code ni jeton : on peut la relayer, l'afficher ou la journaliser.
 - **Revérifiée** : la page lit la personne connectée et revérifie ses droits dans l'espace. Le `space` de l'adresse n'est qu'une proposition, jamais cru : une personne qui n'a pas de droit sur l'espace demandé ne le reçoit pas.
-- **OAuth** : la page redirige aussitôt vers le tiers. Le `state` est créé à ce moment. Il est à usage unique, valable 10 minutes, et lié à la personne, à l'organisation et au connecteur. Un retour dont le `state` ne correspond pas aux trois est refusé.
+- **Ouvrir ne fait rien** : l'ouverture de la page (`GET`) ne démarre rien et n'écrit rien. La page montre le geste et un bouton, qui envoie un `POST` de même origine. Ce `POST` pose la demande, puis redirige vers le tiers (consentement, lien hébergé) ou mène la saisie ou l'activation.
+- **OAuth** : le `state` naît au `POST`. Il est à usage unique, valable 10 minutes, et lié à la personne, à l'organisation et au connecteur. Un retour dont le `state` ne correspond pas aux trois est refusé.
+- **Relink** : rattacher de nouveau un compte déjà rattaché depuis une autre organisation n'a lieu que par ce `POST`, et la page l'annonce avant le bouton.
 - **Activation** : l'activation par un administrateur est une confirmation explicite sur la page, jamais l'effet de l'ouverture du lien.
-- **Retour** : la page finale dit à la personne de revenir à son agent, qui rejoue l'appel.
+- **Retour** : la page finale dit à la personne de revenir à son agent, qui rejoue l'appel. Elle n'affiche jamais un texte lu dans l'adresse : une raison d'échec passe par une liste blanche de raisons connues, et le succès est dit par un texte générique.
 
 ### Le geste selon `auth.kind`
 
@@ -77,46 +87,70 @@ Pour `reason` `no_account` ou `reconnect`, le geste suit le mode d'authentificat
 | `auth.kind` | `gesture` |
 |---|---|
 | `oauth2_user` | `oauth` |
+| un accès qui déclare `account_identity` (compte rattaché chez un tiers qui héberge les comptes de ses utilisateurs), quel que soit son mode | `hosted_link` |
 | `api_key`, `bearer`, `basic`, `oauth2_client_credentials`, `oauth2_jwt_bearer` | `key` |
 | `host_delegated` | aucun : le jeton vient de l'hôte qui exécute ([le profil hôte](profil-hote.md)), et la personne n'a rien à connecter |
+| `none` | aucun : le connecteur n'a pas de compte, donc ni `no_account` ni `reconnect` |
 
 Pour `reason` `connector_off`, le geste est `admin_activation`, quel que soit le mode.
+
+Le geste se fait par la personne elle-même, ou revient à un administrateur quand l'espace ne lui est pas permis : un compte de l'organisation se connecte par un administrateur de l'organisation, un compte d'équipe par un administrateur ou un responsable de l'équipe. `administrators` les nomme alors.
 
 ### La fonction de catalogue `connector.connect`
 
 Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 
 - Entrée : `{ connector, space?, access? }`. `space` est par défaut celui que la plateforme choisirait pour la personne. `access` est exigé quand le connecteur a plusieurs accès, et refusé sinon, comme à l'exécution.
-- Sortie : `{ url, gesture, space, administrators? }`, avec les mêmes règles que `details`. Quand un compte marche déjà, la sortie est `{ gesture: "none", account }`, où `account` désigne ce compte.
+- Sortie : `{ url, gesture, connector, access?, space, by, administrators? }`, avec les mêmes règles que `details`. `by` dit qui fait le geste : `user` (la personne) ou `administrator` (l'adresse est à transmettre à l'un des `administrators`).
+- Quand un compte marche déjà dans l'espace, pour l'accès demandé : `{ gesture: "none", connector, access?, space, account }`, sans adresse. `account` est `{ id, label, mode, owner }`. `owner` vaut `{ kind: "org" | "team", description }` pour un compte d'organisation ou d'équipe, ou `{ kind: "user", userId, name, yours }` pour le compte de la personne.
+
+`$defs` est celui du schéma de `details`, ci-dessus.
 
 ```json
 {
   "input": {
-    "type": "object",
-    "additionalProperties": false,
-    "required": ["connector"],
+    "type": "object", "additionalProperties": false, "required": ["connector"],
     "properties": {
       "connector": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
-      "space": { "type": "string", "pattern": "^(me|org|team:[^\\s:]+)$" },
+      "space": { "$ref": "#/$defs/space" },
       "access": { "type": "string", "minLength": 1 }
     }
   },
   "output": {
     "oneOf": [
       {
-        "type": "object",
-        "required": ["url", "gesture", "space"],
+        "type": "object", "additionalProperties": false, "required": ["url", "gesture", "connector", "space", "by"],
         "properties": {
-          "url": { "type": "string", "format": "uri" },
+          "url": { "type": "string", "format": "uri", "pattern": "^https://" },
           "gesture": { "enum": ["oauth", "key", "hosted_link", "admin_activation"] },
-          "space": { "type": "string" },
-          "administrators": { "type": "array" }
+          "connector": { "type": "string" }, "access": { "type": "string", "minLength": 1 },
+          "space": { "$ref": "#/$defs/space" }, "by": { "enum": ["user", "administrator"] },
+          "administrators": { "$ref": "#/$defs/administrators" }
         }
       },
       {
-        "type": "object",
-        "required": ["gesture", "account"],
-        "properties": { "gesture": { "const": "none" }, "account": {} }
+        "type": "object", "additionalProperties": false, "required": ["gesture", "connector", "space", "account"],
+        "properties": {
+          "gesture": { "const": "none" },
+          "connector": { "type": "string" }, "access": { "type": "string", "minLength": 1 },
+          "space": { "$ref": "#/$defs/space" },
+          "account": {
+            "type": "object", "additionalProperties": false, "required": ["id", "label", "mode", "owner"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 }, "label": { "type": "string", "minLength": 1 },
+              "mode": { "type": "string", "minLength": 1 },
+              "owner": {
+                "oneOf": [
+                  { "type": "object", "additionalProperties": false, "required": ["kind", "description"],
+                    "properties": { "kind": { "enum": ["org", "team"] }, "description": { "type": "string" } } },
+                  { "type": "object", "additionalProperties": false, "required": ["kind", "userId", "name", "yours"],
+                    "properties": { "kind": { "const": "user" }, "userId": { "type": "string", "minLength": 1 },
+                                    "name": { "type": "string" }, "yours": { "type": "boolean" } } }
+                ]
+              }
+            }
+          }
+        }
       }
     ]
   }
@@ -129,13 +163,17 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 - **L'adresse dans le message, en dernier** (proposé) : un agent qui ne lit pas `details` relaie quand même le geste à la personne.
 - **Une adresse porteuse d'un jeton ou d'un `state`** : écartée. Elle serait un secret à relayer par l'agent, visible dans ses traces. Le `state` naît à l'ouverture, côté plateforme.
 - **Le `space` de l'adresse cru tel quel** : écarté. L'adresse passe par l'agent, et n'importe qui peut la réécrire.
+- **La redirection vers le tiers dès l'ouverture (`GET`)** : abandonnée le 2026-11-24, pour la falsification de requête (CSRF). Un lien ouvert par un aperçu, ou glissé dans une page tierce, lançait un consentement ou un relink que la personne n'avait pas demandé. Le `POST` de même origine porte désormais le geste.
+- **Les identifiants des administrateurs dans `administrators`** : écartés le 2026-11-24. Le refus et `connector.connect` partent vers des clients MCP, qui n'ont pas à connaître les identifiants internes de la plateforme. Le nom suffit à la personne pour savoir à qui transmettre l'adresse.
 - **L'activation à l'ouverture du lien** : écartée. Un aperçu de lien, ou un clic par erreur, activerait un connecteur pour tout un espace.
 
 ## Sécurité et confidentialité
 
-- L'adresse ne porte ni secret, ni code, ni jeton. Le `state` OAuth est à usage unique, borné à 10 minutes, et lié à la personne, à l'organisation et au connecteur.
+- L'adresse ne porte ni secret, ni code, ni jeton. Le `state` OAuth naît au `POST` ; il est à usage unique, borné à 10 minutes, et lié à la personne, à l'organisation et au connecteur.
+- L'ouverture (`GET`) ne démarre ni n'écrit rien. Seul un `POST` de même origine pose une demande, un relink compris.
 - La page revérifie l'identité et les droits à chaque ouverture. Rien de ce que porte l'adresse n'accorde un droit.
-- `administrators` ne nomme que des administrateurs de l'espace, à une personne qui en est membre, par leur identifiant et leur nom, jamais leur adresse électronique.
+- La page de retour n'affiche aucun texte lu dans l'adresse : raisons en liste blanche, succès générique.
+- `administrators` ne nomme que des administrateurs de l'espace, à une personne qui en est membre, par leur nom seul : ni identifiant interne, ni adresse électronique.
 - `shared_accounts` ne montre d'un compte partagé que ce que la règle de partage de la plateforme montre déjà à la personne, jamais son secret.
 
 ## Écart avec le code
@@ -145,12 +183,10 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 
 ## Questions ouvertes
 
-- `hosted_link` : aucun `auth.kind` n'y mène dans la table. Le cas visé est un compte rattaché chez un tiers qui héberge les comptes de ses utilisateurs (`account_identity`, champs en `holder: host`), dont l'identité s'écrit par un service qui la vérifie auprès du tiers. Faut-il le dire par `account_identity` plutôt que par `auth.kind` ?
-- `auth.kind: none` : aucun compte, donc ni `no_account` ni `reconnect`. Seul `connector_off` s'applique.
-- La forme d'un élément de `shared_accounts`, et celle d'`account` dans la sortie de `connector.connect`, restent à fixer avec la règle de partage des plateformes.
-- Un compte d'organisation (`byo_org`) à connecter : le geste revient-il toujours à un administrateur, avec `administrators` ?
+- `host_delegated` : la table dit « aucun geste », mais la voie du consentement (client third-party, [le profil hôte](profil-hote.md)) demande bien un consentement de la personne, que l'hôte qui exécute peut mener par cette même page (`gesture: oauth`). Faut-il l'écrire dans la table ?
 - Le code `not_enabled` partagé avec des refus de services tiers (« Écart avec le code ») : faut-il renommer ceux des connecteurs ?
 
 ## Historique
 
 - 2026-11-24 : contrat commun du refus « connexion requise » (`not_enabled`, `details`, règles de l'adresse, geste selon `auth.kind`, `connector.connect`) servi par oto.now et oto.cx — proposé par le mainteneur.
+- 2026-11-24 : formes fixées d'après l'implémentation d'oto-core : `administrators` en `[{ name }]` sans identifiant, `account` et `shared_accounts`, `team:<slug>`, `connector`, `access` et `by` dans la sortie de `connector.connect`, `hosted_link` par `account_identity`, `none` sans geste ; l'ouverture (`GET`) ne fait plus rien, le geste passe par un `POST` de même origine (CSRF), retour sans texte lu dans l'adresse — décidé par le mainteneur.
