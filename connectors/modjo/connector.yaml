@@ -10,7 +10,7 @@ connector:
   name: modjo
   label: Modjo
   namespace: modjo
-  version: 1.0.0
+  version: 2.0.0
   api_version: v2
   base_url: https://api.modjo.ai/v2
   auth:
@@ -28,7 +28,7 @@ connector:
         message: "Modjo rejected the request as invalid: check the arguments." }
     - { status: 401, code: access_rejected, retryable: false, marks_account: credential_rejected,
         message: "Modjo rejected the API key: it is missing, invalid or revoked." }
-    - { status: 403, code: not_enabled, retryable: false,
+    - { status: 403, code: upstream_not_enabled, retryable: false,
         message: "This Modjo feature is not enabled for the workspace." }
     - { status: 404, code: not_found, retryable: false,
         message: "Modjo object not found." }

@@ -175,14 +175,13 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 ## Écart avec le code
 
 - La lib ne sert ni ce refus ni `connector.connect`. Aucun type ni schéma de la lib ne les porte encore : le contrat vit dans ce document, et chaque plateforme l'implémente.
-- Le code `not_enabled` existe déjà dans la table `errors` de connecteurs (`mailpool`, `modjo`), pour un refus du service tiers (une fonction non ouverte chez lui). Ce refus-là n'a pas de `details.reason`, ce qui le distingue de celui de la plateforme.
+- La collision de code est résolue : `mailpool` et `modjo` nommaient `not_enabled` un refus du service tiers (une fonction non ouverte chez lui) ; il s'appelle `upstream_not_enabled` depuis leur version 2.0.0, et la règle 27 de la [fabrique](fabrique.md) refuse `not_enabled` à tout refus d'un connecteur partagé.
 
 ## Questions ouvertes
 
 - Crédits épuisés : si la lib déclare un jour la page de facturation du fournisseur, le refus `quota_exhausted` pourra la porter. Faut-il l'ajouter au format ?
 - Quand le geste revient aux responsables d'une équipe, ou à la personne propriétaire d'un compte personnel, ils ne sont nommés que dans le message, pas dans `details`. Faut-il un champ `managers: [{ name }]`, comme `administrators` ?
 - Un champ ou un réglage du compte manquant alors que le secret est présent (« has no <champ> yet ») reste un refus sans adresse. Faut-il le mener à la même page ?
-- Le code `not_enabled` partagé avec des refus de services tiers (« Écart avec le code ») : faut-il renommer ceux des connecteurs ?
 
 ## Historique
 
@@ -190,3 +189,4 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 - 2026-11-24 : formes fixées d'après l'implémentation d'oto-core : `administrators` en `[{ name }]` sans identifiant, `account` et `shared_accounts`, `team:<slug>`, `connector`, `access` et `by` dans la sortie de `connector.connect`, `hosted_link` par `account_identity`, `none` sans geste ; l'ouverture (`GET`) ne fait plus rien, le geste passe par un `POST` de même origine (CSRF), retour sans texte lu dans l'adresse — décidé par le mainteneur.
 - 2026-11-24 : `host_delegated` donne `oauth` quand l'émetteur refuse l'échange à un client tiers ; le propriétaire personnel d'un compte perd `userId` — décidé par le mainteneur.
 - 2026-11-24 : `account_id` dans l'adresse et dans `details`, les cas de refus (compte sans secret, clé refusée devenue un refus de connexion ; crédits épuisés et clé de l'hôte hors du contrat) — décidé par le mainteneur, d'après l'implémentation d'oto-core.
+- 2026-11-24 : `not_enabled` désigne ce seul refus ; le refus du service tiers de `mailpool` et `modjo` devient `upstream_not_enabled` (version 2.0.0 de chacun), et la règle 27 de la fabrique réserve le code à la plateforme — décidé par le mainteneur.

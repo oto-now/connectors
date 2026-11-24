@@ -24,6 +24,7 @@ Une description dit les refus d'un appel dans une table structurée : `errors`, 
 
 - `errors` (exigée, sur `connector`) : `status` (un ou plusieurs codes HTTP), `code` (refus nommé), `message` (anglais), `retryable`, et facultatifs `body` et `marks_account` ; la première entrée qui s'applique l'emporte : les entrées les plus précises d'abord, une entrée générale en dernier pour un statut.
 - `refusals` (sur une fonction) : `code`, `when` (statut HTTP ou condition en texte), `message` : surcharge ou complète la table commune ; sous un statut seulement, `body` et `marks_account` comme dans la table. L'hôte essaie les refus à statut de la fonction, puis la table du connecteur.
+- Un `code` n'est jamais `not_enabled`, le refus « connexion requise » de la plateforme ([refus de connexion](refus-de-connexion.md), règle 27 de la [fabrique](fabrique.md)) ; un refus du service tiers qui a besoin d'un préfixe prend `upstream_` (`upstream_not_enabled`).
 - Un message de refus dit le fait, au plus une condition, jamais le nom d'un outil : la lib ne connaît pas les outils de l'appelant. Il est fixe : un détail que rend le tiers (le droit manquant que nomme Slack sous `missing_scope`) n'est pas relayé.
 - Un 5xx ne se déclare pas rejouable sur une écriture : elle a pu passer.
 
@@ -90,3 +91,4 @@ La fabrique refuse (règle 10, [fabrique](fabrique.md)) : `body` ou `marks_accou
 - 2026-10-21 : une condition sur le corps a deux opérateurs exclusifs, `equals` et `contains` (minuscules Unicode par défaut, sans locale ; une valeur qui n'est pas un texte ne contient rien) ; cas communs de la table d'erreurs — décidé par le superviseur.
 - 2026-10-23 : un 401 que la référence dit aussi un droit manquant ne marque pas — décidé par le mainteneur.
 - 2026-11-03 : sorti de la note « Format de description » lors de son redécoupage en documents par sujet ; les résumés par connecteur sortent pour la carte du parc et l'en-tête de chaque description — décidé par le responsable produit (source : demande de rationalisation des connecteurs).
+- 2026-11-24 : `not_enabled` réservé à la plateforme (règle 27 de la fabrique) — décidé par le mainteneur.
