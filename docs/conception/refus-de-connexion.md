@@ -1,6 +1,6 @@
 # Le refus « connexion requise »
 
-- **Statut** : proposé
+- **Statut** : accepté par le mainteneur le 24/11/2026
 - **Dernière révision** : 2026-11-24
 
 ## Résumé
@@ -89,7 +89,7 @@ Pour `reason` `no_account` ou `reconnect`, le geste suit le mode d'authentificat
 | `oauth2_user` | `oauth` |
 | un accès qui déclare `account_identity` (compte rattaché chez un tiers qui héberge les comptes de ses utilisateurs), quel que soit son mode | `hosted_link` |
 | `api_key`, `bearer`, `basic`, `oauth2_client_credentials`, `oauth2_jwt_bearer` | `key` |
-| `host_delegated` | aucun : le jeton vient de l'hôte qui exécute ([le profil hôte](profil-hote.md)), et la personne n'a rien à connecter |
+| `host_delegated` | aucun tant que l'échange de jeton réussit ([le profil hôte](profil-hote.md)) ; `oauth` si l'émetteur refuse l'échange parce que le client est tiers : le consentement de la personne à oto, sur la même page `/connect` (détail : oto-core, docs/conception/fonctions-d-un-hote.md, « Fonctions d'un hôte (2/3) ») |
 | `none` | aucun : le connecteur n'a pas de compte, donc ni `no_account` ni `reconnect` |
 
 Pour `reason` `connector_off`, le geste est `admin_activation`, quel que soit le mode.
@@ -102,7 +102,7 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 
 - Entrée : `{ connector, space?, access? }`. `space` est par défaut celui que la plateforme choisirait pour la personne. `access` est exigé quand le connecteur a plusieurs accès, et refusé sinon, comme à l'exécution.
 - Sortie : `{ url, gesture, connector, access?, space, by, administrators? }`, avec les mêmes règles que `details`. `by` dit qui fait le geste : `user` (la personne) ou `administrator` (l'adresse est à transmettre à l'un des `administrators`).
-- Quand un compte marche déjà dans l'espace, pour l'accès demandé : `{ gesture: "none", connector, access?, space, account }`, sans adresse. `account` est `{ id, label, mode, owner }`. `owner` vaut `{ kind: "org" | "team", description }` pour un compte d'organisation ou d'équipe, ou `{ kind: "user", userId, name, yours }` pour le compte de la personne.
+- Quand un compte marche déjà dans l'espace, pour l'accès demandé : `{ gesture: "none", connector, access?, space, account }`, sans adresse. `account` est `{ id, label, mode, owner }`. `owner` vaut `{ kind: "org" | "team", description }` pour un compte d'organisation ou d'équipe, ou `{ kind: "user", name, yours }` pour le compte de la personne. `account.id`, comme l'`id` de chaque `shared_accounts`, est l'identifiant d'une ressource, pas d'une personne : l'agent le cite pour désigner un compte dans un appel.
 
 `$defs` est celui du schéma de `details`, ci-dessus.
 
@@ -143,9 +143,8 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
                 "oneOf": [
                   { "type": "object", "additionalProperties": false, "required": ["kind", "description"],
                     "properties": { "kind": { "enum": ["org", "team"] }, "description": { "type": "string" } } },
-                  { "type": "object", "additionalProperties": false, "required": ["kind", "userId", "name", "yours"],
-                    "properties": { "kind": { "const": "user" }, "userId": { "type": "string", "minLength": 1 },
-                                    "name": { "type": "string" }, "yours": { "type": "boolean" } } }
+                  { "type": "object", "additionalProperties": false, "required": ["kind", "name", "yours"],
+                    "properties": { "kind": { "const": "user" }, "name": { "type": "string" }, "yours": { "type": "boolean" } } }
                 ]
               }
             }
@@ -164,7 +163,7 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 - **Une adresse porteuse d'un jeton ou d'un `state`** : écartée. Elle serait un secret à relayer par l'agent, visible dans ses traces. Le `state` naît à l'ouverture, côté plateforme.
 - **Le `space` de l'adresse cru tel quel** : écarté. L'adresse passe par l'agent, et n'importe qui peut la réécrire.
 - **La redirection vers le tiers dès l'ouverture (`GET`)** : abandonnée le 2026-11-24, pour la falsification de requête (CSRF). Un lien ouvert par un aperçu, ou glissé dans une page tierce, lançait un consentement ou un relink que la personne n'avait pas demandé. Le `POST` de même origine porte désormais le geste.
-- **Les identifiants des administrateurs dans `administrators`** : écartés le 2026-11-24. Le refus et `connector.connect` partent vers des clients MCP, qui n'ont pas à connaître les identifiants internes de la plateforme. Le nom suffit à la personne pour savoir à qui transmettre l'adresse.
+- **Les identifiants de personnes** (`userId` dans `administrators` et dans le propriétaire d'un compte) : écartés le 2026-11-24. Le refus et `connector.connect` partent vers des clients MCP, qui n'ont pas à connaître les identifiants internes des personnes ; le nom suffit. L'identifiant d'un compte reste : c'est celui d'une ressource, que l'agent cite pour la désigner.
 - **L'activation à l'ouverture du lien** : écartée. Un aperçu de lien, ou un clic par erreur, activerait un connecteur pour tout un espace.
 
 ## Sécurité et confidentialité
@@ -183,10 +182,10 @@ Elle rend sur demande ce que donne le refus, sans attendre un appel qui échoue.
 
 ## Questions ouvertes
 
-- `host_delegated` : la table dit « aucun geste », mais la voie du consentement (client third-party, [le profil hôte](profil-hote.md)) demande bien un consentement de la personne, que l'hôte qui exécute peut mener par cette même page (`gesture: oauth`). Faut-il l'écrire dans la table ?
 - Le code `not_enabled` partagé avec des refus de services tiers (« Écart avec le code ») : faut-il renommer ceux des connecteurs ?
 
 ## Historique
 
 - 2026-11-24 : contrat commun du refus « connexion requise » (`not_enabled`, `details`, règles de l'adresse, geste selon `auth.kind`, `connector.connect`) servi par oto.now et oto.cx — proposé par le mainteneur.
 - 2026-11-24 : formes fixées d'après l'implémentation d'oto-core : `administrators` en `[{ name }]` sans identifiant, `account` et `shared_accounts`, `team:<slug>`, `connector`, `access` et `by` dans la sortie de `connector.connect`, `hosted_link` par `account_identity`, `none` sans geste ; l'ouverture (`GET`) ne fait plus rien, le geste passe par un `POST` de même origine (CSRF), retour sans texte lu dans l'adresse — décidé par le mainteneur.
+- 2026-11-24 : `host_delegated` donne `oauth` quand l'émetteur refuse l'échange à un client tiers ; le propriétaire personnel d'un compte perd `userId` ; page acceptée — décidé par le mainteneur.
