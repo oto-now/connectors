@@ -83,8 +83,14 @@ def check_arguments(function: dict, where: str) -> None:
 
 def check_auth(connector: dict, where: str) -> None:
     """Règle 2 : une référence de `auth` désigne un champ de `credential` existant ; en `oauth2_jwt_bearer`, le seul
-    champ, secret."""
+    champ, secret. En `oauth2_user`, l'indicateur de ressource ne se déclare que par `resource`, jamais dans
+    `authorize_params` : l'hôte le pose à l'autorisation, à l'échange du code et à chaque renouvellement."""
     auth = connector["auth"]
+    if "resource" in auth.get("authorize_params", {}):
+        raise DescriptionError(
+            f"{where}: auth.authorize_params.resource: declare the resource indicator (RFC 8707) as auth.resource, "
+            "which the host sets at the authorization, the code exchange and each renewal; remove it from authorize_params"
+        )
     fields = {field["name"] for field in connector.get("credential", [])}
     for reference in AUTH_REFERENCES:
         if reference in auth and auth[reference] not in fields:

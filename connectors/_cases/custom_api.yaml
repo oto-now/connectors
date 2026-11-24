@@ -273,6 +273,12 @@ refused:
     changes: [{ path: functions.0.output.strip, value: [internal_notes, internal_notes.author] }]
     codes: [custom_api_rule_broken]
     rules: [strip_path_overlaps]
+  - name: resource_in_authorize_params
+    base: acme_planning
+    changes:
+      - { path: connector.auth.resource, value: "https://api.acme-planning.test" }
+      - { path: connector.auth.authorize_params, value: { resource: "https://api.acme-planning.test" } }
+    codes: [custom_api_rule_broken]
   - name: token_of_the_host
     base: acme_planning
     changes:

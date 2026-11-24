@@ -1124,7 +1124,7 @@ export const connectorSchema: JsonSchema = {
               }
             },
             "authorize_params": {
-              "description": "Constant parameters added to the authorization URL. Never one the host sets itself.",
+              "description": "Constant parameters added to the authorization URL. Never one the host sets itself, nor resource: the resource indicator is declared by resource (a rule of the fabrique, with its message).",
               "type": "object",
               "minProperties": 1,
               "propertyNames": {
@@ -1148,6 +1148,11 @@ export const connectorSchema: JsonSchema = {
             "pkce": {
               "description": "Proof key for code exchange, by SHA-256.",
               "const": "S256"
+            },
+            "resource": {
+              "description": "The resource indicator (RFC 8707) of the API at the provider, one only: the host sets it as resource in the authorization URL, in the body of the code exchange, and in the body of each renewal (refresh_token or exchange). A fixed https address, without fragment.",
+              "type": "string",
+              "pattern": "^https://[^\\s{}#/?]+([/?][^\\s{}#]*)?$"
             },
             "refresh": {
               "description": "refresh_token: the refresh token grant; exchange: the current access token is exchanged for a new one; none: the token lives until it expires or is revoked, then the person consents again.",

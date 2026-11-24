@@ -118,7 +118,7 @@ export type ServiceAccountScopes =
  * n'est ni dans la description ni dans `credential` : c'est celle de l'hôte, ou celle que pose l'organisation. Les jetons
  * qu'il rend ne sont pas des champs de `credential`. Le point de jeton reçoit un corps en formulaire ; les `scopes` se
  * joignent par des espaces ; `authorizeParams` s'ajoutent à l'adresse d'autorisation, jamais un paramètre que l'hôte
- * pose lui-même (`client_id`, `redirect_uri`, `response_type`, `scope`, `state`, `code_challenge*`).
+ * pose lui-même (`client_id`, `redirect_uri`, `response_type`, `scope`, `state`, `code_challenge*`) ni `resource`.
  */
 export type OAuthUser = {
   readonly kind: "oauth2_user"
@@ -127,6 +127,13 @@ export type OAuthUser = {
   readonly authorizeParams?: { readonly [param: string]: string }
   /** Preuve de possession du code (PKCE), par SHA-256. */
   readonly pkce?: "S256"
+  /**
+   * L'indicateur de ressource de l'API chez le fournisseur (RFC 8707), un seul : une adresse https fixe, sans fragment.
+   * Déclaré, l'hôte DOIT le poser, tel quel, en paramètre `resource` aux trois endroits : l'adresse d'autorisation, le
+   * corps de l'échange du code, et le corps de chaque renouvellement (`refresh_token`, ou `exchange`). Un émetteur qui
+   * ne le reçoit pas à la demande de jeton peut rendre un jeton sans la bonne audience. Jamais dans `authorizeParams`.
+   */
+  readonly resource?: string
   /** Durée de vie, en secondes, d'un jeton d'accès dont la réponse n'en donne pas. */
   readonly expiresInDefault?: number
   /**

@@ -582,6 +582,23 @@ def test_account_rules_refuse(mutate, message):
         check(description, SELLSY)
 
 
+def test_resource_in_authorize_params_is_refused():
+    """`resource` se déclare par `auth.resource`, posé aux trois endroits ; jamais dans `authorize_params`, avec ou sans
+    `auth.resource` à côté."""
+    for changes in ({"resource": "https://api.example.test"}, {}):
+        description = _load(SELLSY)
+        _consent(description, authorize_params={"resource": "https://api.example.test"}, **changes)
+        with pytest.raises(DescriptionError, match=re.escape(
+                "auth.authorize_params.resource: declare the resource indicator (RFC 8707) as auth.resource")):
+            check(description, SELLSY)
+
+
+def test_resource_is_carried_to_typescript():
+    description = _load(SELLSY)
+    _consent(description, resource="https://api.example.test")
+    assert '"resource": "https://api.example.test"' in connector_module(check(description, SELLSY)).source
+
+
 def test_oauth2_user_without_credential_is_refused_by_the_schema():
     description = _load(SELLSY)
     _consent(description)
