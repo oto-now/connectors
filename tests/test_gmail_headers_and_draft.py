@@ -146,3 +146,42 @@ def test_send_draft_sends_the_draft_by_id(client):
     assert client.send_draft("r-42") == {"id": "m9", "threadId": "t9"}
     client.service.users().drafts().send.assert_called_with(
         userId="me", body={"id": "r-42"})
+
+
+# ── Modifier un brouillon existant : même brouillon, même fil ────────────────
+
+def _existing(client, headers: dict, thread_id="t1"):
+    client.service.users().drafts().get().execute.return_value = {
+        "id": "d1", "message": {"id": "m0", "threadId": thread_id, "payload": {
+            "headers": [{"name": k, "value": v} for k, v in headers.items()]}}}
+    client.service.users().drafts().update().execute.return_value = {
+        "id": "d1", "message": {"id": "m2", "threadId": thread_id}}
+
+
+def _update_call(client):
+    return client.service.users().drafts().update.call_args.kwargs
+
+
+def test_update_draft_replaces_body_and_keeps_the_rest(client):
+    _existing(client, {"To": "a@x.fr", "Subject": "Devis", "Cc": "b@y.fr"})
+    out = client.update_draft("d1", body="Nouveau **texte**")
+    call = _update_call(client)
+    assert call["id"] == "d1" and call["body"]["id"] == "d1"
+    assert call["body"]["message"]["threadId"] == "t1"
+    msg = message_from_string(base64.urlsafe_b64decode(
+        call["body"]["message"]["raw"]).decode())
+    assert (msg["To"], msg["Subject"], msg["Cc"]) == ("a@x.fr", "Devis", "b@y.fr")
+    html = [p for p in msg.walk() if p.get_content_type() == "text/html"][0]
+    assert "<strong>texte</strong>" in html.get_payload(decode=True).decode()
+    assert out == {"id": "d1", "message_id": "m2", "threadId": "t1"}
+
+
+def test_update_draft_overrides_recipients_and_keeps_the_thread_headers(client):
+    _existing(client, {"To": "a@x.fr", "Subject": "Re: Devis",
+                       "In-Reply-To": "<p@mail>", "References": "<o@mail> <p@mail>"})
+    client.update_draft("d1", body="b", to="c@z.fr", subject="Re: Devis v2", markdown=False)
+    msg = message_from_string(base64.urlsafe_b64decode(
+        _update_call(client)["body"]["message"]["raw"]).decode())
+    assert (msg["To"], msg["Subject"]) == ("c@z.fr", "Re: Devis v2")
+    assert msg["In-Reply-To"] == "<p@mail>"
+    assert msg["References"] == "<o@mail> <p@mail>"

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'gmail',
                'label': 'Gmail',
                'namespace': 'gmail',
-               'version': '1.1.0',
+               'version': '1.1.1',
                'api_version': 'v1',
                'base_url': 'https://gmail.googleapis.com/gmail/v1',
                'auth': {'kind': 'oauth2_user',

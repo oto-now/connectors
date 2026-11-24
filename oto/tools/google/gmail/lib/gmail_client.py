@@ -347,6 +347,50 @@ class GmailClient:
         msg = draft['message']
         return {'id': draft['id'], 'message_id': msg['id'], 'threadId': msg.get('threadId', '')}
 
+    def update_draft(
+        self,
+        draft_id: str,
+        body: str,
+        html: Optional[str] = None,
+        to: Optional[str] = None,
+        subject: Optional[str] = None,
+        cc: Optional[str] = None,
+        bcc: Optional[str] = None,
+        attachments: Optional[list[str]] = None,
+        markdown: bool = True,
+    ) -> dict:
+        """Replace the content of an existing draft, which stays the same draft (same id).
+
+        The body is replaced whole, attachments included: a draft's former
+        attachments are not carried over. `to`, `subject`, `cc`, `bcc` left at None
+        keep the draft's current value. The thread is kept: a draft written as a
+        reply stays filed in its conversation, with its threading headers.
+        Same markdown contract as `create_draft`.
+        """
+        current = self.service.users().drafts().get(
+            userId='me', id=draft_id, format='metadata').execute()
+        msg = current.get('message', {})
+        headers = {h['name'].lower(): h['value']
+                   for h in msg.get('payload', {}).get('headers', [])}
+        if html is None and markdown:
+            html = _markdown_to_html_fragment(body)
+        pick = lambda value, name: headers.get(name) if value is None else value
+        message = self._build_message(pick(to, 'to') or '', pick(subject, 'subject') or '',
+                                      body, html, pick(cc, 'cc') or None,
+                                      pick(bcc, 'bcc') or None, attachments)
+        if headers.get('in-reply-to'):
+            message['In-Reply-To'] = headers['in-reply-to']
+            message['References'] = headers.get('references') or headers['in-reply-to']
+        raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
+        msg_body: dict = {'raw': raw}
+        if msg.get('threadId'):
+            msg_body['threadId'] = msg['threadId']
+        draft = self.service.users().drafts().update(
+            userId='me', id=draft_id, body={'id': draft_id, 'message': msg_body},
+        ).execute()
+        out = draft['message']
+        return {'id': draft['id'], 'message_id': out['id'], 'threadId': out.get('threadId', '')}
+
     def list_drafts(self, max_results: int = 20) -> list[dict]:
         """List drafts with metadata (id, message_id, to, subject, snippet)."""
         resp = self.service.users().drafts().list(userId='me', maxResults=max_results).execute()
