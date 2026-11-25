@@ -456,6 +456,13 @@ export type ConnectorFunction = {
    */
   readonly act: boolean
   /**
+   * Lecture libre : gratuite chez le tiers et sans effet, ni chez lui ni chez nous ; un hôte peut l'exécuter sans
+   * demander l'accord à chaque appel. Toujours une lecture (`class: "read"`, `act: false`) par `GET`, sans corps, sans
+   * `cost`, `background` ni `async`, paginée seulement sur un connecteur sans `quota` ni `rateLimit` (règle 28 de la
+   * fabrique). Absent : l'hôte demande l'accord comme pour toute autre fonction.
+   */
+  readonly freeRead?: true
+  /**
    * Présent si et seulement si le connecteur a des niveaux d'accès (`OAuthScopes`) : les droits que la fonction exige,
    * tous. `class` dit ce que fait la fonction, `scopes` ce qu'elle exige.
    */

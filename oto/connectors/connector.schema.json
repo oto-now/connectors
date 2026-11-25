@@ -799,6 +799,10 @@
           "description": "Whether the function commits or destroys (send, trash, archive, move): the host serves it as <connector>_act.<function>. Defaults from class: read false, write and sensitive true; a mere preparation, such as a draft, declares false. Never false on a sensitive function, never true on a read one.",
           "type": "boolean"
         },
+        "free_read": {
+          "description": "The function is free at the third party and has no effect, neither there nor on our side: a host may run it without asking each time (an always-allowed read). Absent by default, never false. Only on a read function, without act or effect, cost, background or async, by call with GET and no body; a paginated one only on a connector that declares neither quota nor rate_limit (rule 28 of the fabrique).",
+          "const": true
+        },
         "effect": {
           "description": "What a sensitive function does once confirmed: send (something leaves towards a third party, a message, leads enrolled in a running campaign) or destroy (deletes, stops for good, replaces without keeping). Sensitive functions only, no default; a host that serves sensitive functions by effect refuses one without it.",
           "enum": ["send", "destroy"]

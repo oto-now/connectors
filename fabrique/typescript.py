@@ -177,6 +177,8 @@ def function_definition(connector: str, function: dict) -> str:
         ("class", js(function["class"])),
         ("act", js(act(function))),
     ]
+    if function.get("free_read") is True:
+        entries.append(("freeRead", "true"))
     if "scopes" in function:
         entries.append(("scopes", js(function["scopes"])))
     entries += [

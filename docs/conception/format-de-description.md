@@ -1,7 +1,7 @@
 # Format de description d'un connecteur
 
 - **Statut** : validé par le mainteneur le 29/09/2026
-- **Dernière révision** : 2026-11-22
+- **Dernière révision** : 2026-11-25
 
 ## Résumé
 
@@ -88,6 +88,7 @@ Les champs du compte (`auth`, `credential`, `accesses`, `settings`, `account_ide
 | `class` | oui | `read`, `write` ou `sensitive`. |
 | `act` | non (déduit de la classe) | La fonction engage ou détruit (envoi, corbeille, archive, déplacement) : booléen, `false` par défaut pour `read`, `true` pour `write` et `sensitive`. Une simple préparation, comme un brouillon, déclare `act: false`. Jamais `false` sur `sensitive`, jamais `true` sur `read` (la fabrique refuse). |
 | `effect` | non, `sensitive` seulement | Ce que fait une fonction sensible une fois confirmée : `send` (quelque chose part vers un tiers : un message, des pistes inscrites dans une campagne active) ou `destroy` (supprime, arrête pour de bon, remplace sans garder). Pas de défaut ; refusé sur `read` et `write` (le schéma et la règle 9). Un hôte qui sert les fonctions sensibles par effet, le lecteur d'oto 1, refuse au montage une fonction sensible qui ne le dit pas. |
+| `free_read` | non | `true` : lecture libre, gratuite chez le tiers et sans effet, ni chez lui ni chez nous ; un hôte peut l'exécuter sans demander l'accord à chaque appel. Absent par défaut, jamais `false` (le schéma) ; admis sur une seule forme, vérifiable dans la description (règle 28 de la fabrique) : « Lecture libre », ci-dessous. |
 | `scopes` | si le connecteur a des niveaux d'accès, interdit sinon | Les droits OAuth que la fonction exige, tous ([niveaux d'accès](niveaux-d-acces.md)). |
 | `description` | oui | En anglais, 1000 caractères au plus (borne du paquet d'oto 2) : ce que l'agent lit. |
 | `input` | oui | JSON Schema 2020-12 d'un objet strict (`type: object`, `additionalProperties: false`, `properties`), servi et validé tel quel. Une propriété peut porter `personal: true` (« Donnée personnelle », ci-dessous). |
@@ -107,6 +108,28 @@ Les champs du compte (`auth`, `credential`, `accesses`, `settings`, `account_ide
 
 
 **Lire et agir.** Chaque connecteur à effet se partage en deux côtés : `<connecteur>` (lire et simuler, brouillon compris) et `<connecteur>_act` (tout ce qui engage ou détruit : envoi, corbeille, archive, déplacement). Le partage se lit sur `act`, fonction par fonction : une seule description, un seul compte, et l'hôte sert les fonctions `act` sous le nom `<connecteur>_act.<fonction>`, les autres sous `<connecteur>.<fonction>`. `class` dit ce que fait une fonction et si elle se confirme ; `act`, de quel côté elle est servie : un brouillon est une écriture (`write`) qui reste du côté lecture (`act: false`). Une écriture qui crée un enregistrement, même réversible, garde `act: true` (une facture modifiable après finalisation, un devis sans brouillon), comme tout appel qui dépense des crédits du compte sur une personne ou une entreprise, ou qui envoie réellement (un test anti-spam). Une suppression est sensible.
+
+**Lecture libre** : `free_read: true` dit qu'une fonction est gratuite chez le tiers et sans effet, ni chez lui ni chez nous. Un hôte peut alors la servir par un outil que son client autorise une fois pour toutes ; toute autre fonction demande l'accord à chaque appel. C'est une liste blanche, fermée par défaut : une fonction ne la rejoint que marquée, et la marque n'est admise que là où la description permet de la vérifier. Règle 28 de la [fabrique](fabrique.md), jugée avant les autres règles de la fonction, dans cet ordre ; le message nomme le fichier, la fonction, la règle et le code. Variantes refusées :
+
+1. la fonction est écrite à la main (`handwritten`) : sa méthode et son corps ne se lisent pas (`free_read_handwritten`) ;
+2. sa classe n'est pas `read` (`free_read_not_read`) ; `effect`, que le schéma réserve aux fonctions sensibles, tombe ici ;
+3. elle déclare `act: true` (`free_read_acts`) ;
+4. elle déclare un coût, `cost` (`free_read_cost`) ;
+5. elle est une fonction longue, `background` (`free_read_background`) ;
+6. elle soumet un travail que le tiers tient, `async`, qui peut consommer un quota du tiers ([travaux longs](travaux-longs.md)) (`free_read_async`) ;
+7. sa méthode n'est pas `GET` (`free_read_method`) ;
+8. elle envoie un corps : une table, l'argument du corps entier, une constante du corps, des parties fichier ou un corps en liste (`free_read_body`) ;
+9. elle est paginée sur un connecteur qui déclare `quota` (décompté à chaque appel) ou `rate_limit` (que l'hôte tient par credential à chaque requête, chaque page comprise) (`free_read_paginated_quota`). Le format ne dit pas de quota par fonction ni par page : une fonction sans pagination ne se juge pas sur ces deux clés.
+
+La sortie TypeScript porte `freeRead: true` à côté de `class` et `act`, seulement quand la fonction le déclare ; la sortie Python, `free_read: True` dans `oto/connectors/declared.py`. Le profil [Custom API](custom-api.md), à clés fermées, ne l'admet pas.
+
+```yaml
+functions:
+  - name: get_estimate
+    class: read
+    free_read: true
+    call: { method: GET, path: "/estimates/{id}" }
+```
 
 **Donnée personnelle** : `personal: true` sur une propriété de l'entrée, à toute profondeur (élément d'une liste, branche d'un `anyOf`, clés libres d'un objet par `additionalProperties`), dit que sa valeur désigne une personne (un courriel, un nom, une adresse) : l'hôte ne la journalise jamais, ni dans les arguments, ni dans la cible, ni dans un message d'erreur du tiers qui la recopie. Le mot passe tel quel dans le schéma de la sortie TypeScript, que le paquet de l'hôte sert et valide ; il ne change ni l'appel ni la validation. Le client Python n'en fait rien. Jamais sur la racine, jamais dans `output.schema`, toujours `true` (la fabrique refuse, règle 15). Il dit une nature de l'argument, vraie chez tous les hôtes ; réserver une fonction au serveur de l'hôte reste le choix de l'hôte, jamais celui de la description.
 
@@ -185,6 +208,7 @@ Deux gardes de CI :
 - Le format se déclare YAML 1.2, mais le test et la fabrique lisent avec PyYAML, qui suit YAML 1.1.
 - `handwritten` exige un fichier TypeScript, qui n'existe pour aucun connecteur, et la fabrique, qui n'en génère aucun, fait échouer tout fichier qui en porte : une fonction écrite à la main reste donc hors du fichier.
 - Toute forme neuve s'exécute dans oto-core à partir du commit qui l'écrit ; un paquet antérieur la refuse à la déclaration ou l'ignore. L'épingle de ce dépôt et celle d'oto-core montent donc ensemble ; chaque document de bloc dit le commit qui compte. Pour ce document : `act` (`<connecteur>_act.<fonction>`, `actName` ; un appel sous le nom simple est refusé en nommant le nom servi) et le délai par fonction sont exécutés, relus au commit d26f513 ; un paquet antérieur au délai par fonction applique celui du connecteur.
+- `free_read` (2026-11-25) n'est porté par aucune description ; oto-core ne le lit pas encore (oto-now/oto-core#167). Un paquet antérieur ignore la clé et demande l'accord comme pour toute fonction.
 - Aucune garde du dépôt ne lit le contenu des fichiers à la recherche d'un secret (`tests/test_no_secret_read_guard.py` ne regarde que les lectures d'environnement de la lib).
 
 ## Questions ouvertes
@@ -218,3 +242,4 @@ Deux gardes de CI :
 - 2026-11-19 : `connector.description` et `connector.logo_domain`, facultatifs, projetés en `description` et `logoDomain`, avec les contrôles qu'oto-core applique à leur déclaration ; les connecteurs existants ne les portent pas encore — décidé par le mainteneur (source : [Custom API](custom-api.md), reprise de la description et du logo d'oto 1).
 - 2026-11-19 : `accesses`, plusieurs accès aux mêmes fonctions, à la place de `auth`, `credential` et `modes` ([compte](compte.md), « Plusieurs accès ») — décidé par le mainteneur (source : oto-now/connectors#244, lot 2).
 - 2026-11-22 : huitième mode d'authentification, `host_delegated` (le jeton vient de l'hôte qui exécute), et `confirm: { by: host }`, réservés au [profil hôte](profil-hote.md) ; règle 26 — décidé par Alexis (source : la conception des fonctions d'un hôte, dans oto-core).
+- 2026-11-25 : `free_read`, la lecture libre d'une fonction, facultative, refusée hors d'une lecture `GET` sans corps, sans coût, sans `act`, `background` ni `async`, et, paginée, sur un connecteur à `quota` ou `rate_limit` ; règle 28 ; aucune description ne la porte encore — choix du projet (source : oto-now/oto-core#167, l'outil `read` qu'un client autorise une fois pour toutes).

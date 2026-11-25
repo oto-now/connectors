@@ -167,6 +167,13 @@ pas dire :
    la table `errors` ni dans les `refusals` d'une fonction, ne s'appelle `not_enabled`, le refus « connexion requise »
    de la plateforme ; un refus du service tiers prend le préfixe `upstream_` (`upstream_not_enabled`). Jugée sur
    `connectors/<nom>/connector.yaml` seulement (`check`).
+28. la lecture libre (`free_read: true`, 2026-11-25) : une lecture gratuite chez le tiers et sans effet, ni chez lui ni
+   chez nous, qu'un hôte peut exécuter sans demander l'accord à chaque appel. Refusée à une fonction écrite à la main
+   (`free_read_handwritten`), d'une autre classe que `read` (`free_read_not_read`), qui déclare `act: true`
+   (`free_read_acts`), un coût (`free_read_cost`), `background` (`free_read_background`) ou `async`
+   (`free_read_async`), d'une autre méthode que `GET` (`free_read_method`), qui envoie un corps (`free_read_body`), ou
+   paginée sur un connecteur qui déclare `quota` ou `rate_limit` (`free_read_paginated_quota`). Jugée dans cet ordre,
+   avant les autres règles de la fonction (`fabrique/free_read.py`).
 
 Les règles 1 à 5, 9 à 11, 15, 18, 20, 22 et 23 vivent dans la lib (`oto/connectors/rules/`), une seule copie, que le profil Custom
 API applique aussi à la définition d'une organisation ; ce module les applique et les réexporte.
@@ -197,6 +204,7 @@ from oto.connectors.rules.checks import (AUTH_REFERENCES, DEFAULT_TIMEOUT_S, SCH
                                          strip_refusal)
 
 from oto.connectors.custom_api.profile import PREFIX as CUSTOM_API_PREFIX
+from .free_read import check_free_read
 from oto.connectors.engine.accesses import merged
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
@@ -902,6 +910,7 @@ def check_rules(data: dict, where: str) -> None:
         check_account_identity(view, at)
         check_settings(view["connector"], at)
     for function in data["functions"]:
+        check_free_read(data["connector"], function, where)
         check_arguments(function, where)
         for view, at in views:
             check_constants(view["connector"], function, at)
