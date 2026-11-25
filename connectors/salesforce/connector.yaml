@@ -19,7 +19,10 @@
 #
 # The instance. Every call goes to the org's own host, instance_url, which the token answer gives (the client keeps it
 # with the access token, oto 1 in the account's meta): from_token, cited by base_url. The API version is the client's,
-# v60.0, in base_url.
+# v60.0, in base_url. The client sends a secret only to a Salesforce host: login_url and instance_url are https, with
+# neither userinfo nor port, on a host under salesforce.com, salesforce.mil or sfcrmproducts.cn (SALESFORCE_DOMAINS),
+# else SalesforceHostRefused before any request. The format says no such constraint on a url setting nor on a
+# from_token field (a gap to decide).
 #
 # Who consented: the client reads no identity, and no function here is a read without a required argument. The
 # identity is read at Salesforce's common userinfo service, with the id scope, which the consent asks for on top of
@@ -56,7 +59,7 @@ connector:
   name: salesforce
   label: Salesforce
   namespace: salesforce
-  version: 1.0.0
+  version: 1.0.1
   api_version: v60.0
   base_url: "{instance_url}/services/data/v60.0"
   auth:

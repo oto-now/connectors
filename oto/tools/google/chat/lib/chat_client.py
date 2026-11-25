@@ -14,11 +14,15 @@ from googleapiclient.discovery import build
 
 from oto.tools.common.credentials import require
 
-# chat.spaces.readonly → list spaces + findDirectMessage
-# chat.messages        → create + read messages in accessible spaces
+# Least privilege: one scope per call this client makes, nothing that edits or
+# deletes (no `chat.messages`, which also allows update, delete and reactions).
+# chat.spaces.readonly   → spaces.list + spaces.findDirectMessage
+# chat.messages.readonly → spaces.messages.list
+# chat.messages.create   → spaces.messages.create
 SCOPES = [
     'https://www.googleapis.com/auth/chat.spaces.readonly',
-    'https://www.googleapis.com/auth/chat.messages',
+    'https://www.googleapis.com/auth/chat.messages.readonly',
+    'https://www.googleapis.com/auth/chat.messages.create',
 ]
 
 

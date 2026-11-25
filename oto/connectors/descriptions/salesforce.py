@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'salesforce',
                'label': 'Salesforce',
                'namespace': 'salesforce',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v60.0',
                'base_url': '{instance_url}/services/data/v60.0',
                'auth': {'kind': 'oauth2_user',

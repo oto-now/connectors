@@ -107,7 +107,8 @@ class OAuth2ClientCredentials(UpstreamAuth):
     """OAuth2 client-credentials: fetch an access_token + TTL cache."""
 
     def __init__(self, token_url: str, client_id: str, client_secret: str,
-                 scope: str | None = None, timeout: int = 30, leeway: int = 30):
+                 scope: str | None = None, timeout: int = 30, leeway: int = 30,
+                 session: requests.Session | None = None):
         if not token_url or not client_id or not client_secret:
             raise ValueError("OAuth2ClientCredentials: token_url/client_id/client_secret required")
         self._token_url = token_url
@@ -119,13 +120,17 @@ class OAuth2ClientCredentials(UpstreamAuth):
         self._lock = threading.Lock()
         self._token: str | None = None
         self._expiry = 0.0
+        # The token request's own transport: the consumer's session when given,
+        # else module-level `requests`. Never the API session, which carries the
+        # bearer this request is renewing.
+        self._http = session if session is not None else requests
 
     def _fetch(self) -> str:
         data = {"grant_type": "client_credentials",
                 "client_id": self._client_id, "client_secret": self._client_secret}
         if self._scope:
             data["scope"] = self._scope
-        r = requests.post(self._token_url, data=data, timeout=self._timeout)
+        r = self._http.post(self._token_url, data=data, timeout=self._timeout)
         r.raise_for_status()
         payload = r.json()
         token = payload.get("access_token")
@@ -153,13 +158,16 @@ class OAuth2ClientCredentials(UpstreamAuth):
 def build_auth(mode: str, fields: dict, *, base_url: str | None = None,
                guard: Callable[[str], None] | None = None, jar: str | None = None,
                on_jar: Callable[[str], None] | None = None,
-               timeout: int = 45) -> UpstreamAuth:
+               timeout: int = 45,
+               token_session: requests.Session | None = None) -> UpstreamAuth:
     """Build the `UpstreamAuth` for an `auth_mode` + the credential fields.
 
     The session mode also takes the base URL, the host's egress `guard` (called on
     each hop of the login, required), the stored cookie `jar` and the `on_jar`
     callback that receives it to store (see `session.py`). The visitor mode takes the
-    same, without login nor password: only its `session` field.
+    same, without login nor password: only its `session` field. The oauth2 mode takes
+    `token_session`, the transport of its token request (default: module-level
+    `requests`).
 
     Raises `ValueError` (actionable message) if the mode is unknown or a
     required field is missing."""
@@ -184,7 +192,8 @@ def build_auth(mode: str, fields: dict, *, base_url: str | None = None,
     if mode == "oauth2":
         need("token_url", "client_id", "client_secret")
         return OAuth2ClientCredentials(val("token_url"), val("client_id"),
-                                       val("client_secret"), scope=val("scope") or None)
+                                       val("client_secret"), scope=val("scope") or None,
+                                       session=token_session)
     if mode == "session":
         need("username", "password", "session")
         if not base_url:
@@ -254,26 +263,37 @@ class HttpConnectorClient:
     redirect to the login page triggers one full login and one replay; refused again,
     `SessionRejected`. `guard`, `jar` and `on_jar` serve that mode only.
 
+    `session`: the `requests.Session` the calls (and the session mode's login) go out
+    through, when the consumer supplies one — e.g. a session whose transport checks
+    each destination at connection time; the auth configures it like the session it
+    would otherwise create. `token_session`: the transport of the oauth2 token request,
+    kept apart from `session` (which carries the bearer being renewed). Absent, a fresh
+    session and module-level `requests`, as before.
+
     Like n8n/Make's HTTP node: write methods are carried through;
     responsibility for what they do lies with the target API (and, for a
     downstream bridge, with ITS own allowlist)."""
 
     def __init__(self, base_url: str, auth_mode: str, fields: dict, *, timeout: int = 45,
                  guard: Callable[[str], None] | None = None, jar: str | None = None,
-                 on_jar: Callable[[str], None] | None = None):
+                 on_jar: Callable[[str], None] | None = None,
+                 session: requests.Session | None = None,
+                 token_session: requests.Session | None = None):
         base_url = (base_url or "").strip().rstrip("/")
         if urlsplit(base_url).scheme not in ("http", "https"):
             raise ValueError("base_url must be http(s)")
         self._base_url = base_url
         self._read_only = (auth_mode or "").strip().lower() in READ_ONLY_MODES
         self._auth = build_auth(auth_mode, fields, base_url=base_url, guard=guard,
-                                jar=jar, on_jar=on_jar, timeout=timeout)
+                                jar=jar, on_jar=on_jar, timeout=timeout,
+                                token_session=token_session)
         self._timeout = timeout
+        self._given_session = session
         self._session: requests.Session | None = None
 
     def _ready(self) -> requests.Session:
         if self._session is None:
-            s = requests.Session()
+            s = self._given_session if self._given_session is not None else requests.Session()
             self._auth.configure(s)
             self._session = s
         return self._session

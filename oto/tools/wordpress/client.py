@@ -127,13 +127,19 @@ def normalize_site_url(site_url: str, *, allow_http: bool = False) -> str:
 
 class WordPressClient:
     def __init__(self, site_url: str, username: str, application_password: str,
-                 *, rest_mode: Optional[str] = None, allow_http: bool = False):
+                 *, rest_mode: Optional[str] = None, allow_http: bool = False,
+                 session: Optional[requests.Session] = None):
+        """`session`: the `requests.Session` every request (probe, public index,
+        authenticated calls) goes out through, when the consumer supplies one —
+        e.g. a session whose transport checks each destination at connection
+        time. Absent, module-level `requests`, as before."""
         self.site_url = normalize_site_url(site_url, allow_http=allow_http)
         self._auth = (require((username or "").strip(), "WORDPRESS_USERNAME"),
                       require((application_password or "").strip(),
                               "WORDPRESS_APPLICATION_PASSWORD"))
         # "pretty" (/wp-json/<route>) | "query" (/?rest_route=/<route>) — probed lazily.
         self._rest_mode = rest_mode
+        self._http = session if session is not None else requests
 
     # --- transport -------------------------------------------------------------
 
@@ -177,8 +183,8 @@ class WordPressClient:
         redirect: Optional[str] = None
         for mode in ("pretty", "query"):
             url, params = self._url("", mode)
-            resp = requests.get(url, params=params, timeout=_HTTP_TIMEOUT,
-                                allow_redirects=False,
+            resp = self._http.get(url, params=params, timeout=_HTTP_TIMEOUT,
+                                  allow_redirects=False,
                                 headers={"User-Agent": _USER_AGENT,
                                          "Accept": "application/json"})
             if resp.status_code in _REDIRECTS:
@@ -208,7 +214,7 @@ class WordPressClient:
         hdrs = {"User-Agent": _USER_AGENT, "Accept": "application/json",
                 **(headers or {})}
         for attempt in range(3):
-            resp = requests.request(
+            resp = self._http.request(
                 method, url, params=all_params, json=json, data=data,
                 headers=hdrs, auth=self._auth, timeout=_HTTP_TIMEOUT,
                 allow_redirects=False)
@@ -240,9 +246,9 @@ class WordPressClient:
         REST route, the public index included, so a placeholder login would
         turn this public read into a 401."""
         url, params = self._url("", self.rest_mode)
-        resp = requests.get(url, params=params, timeout=_HTTP_TIMEOUT,
-                            allow_redirects=False,
-                            headers={"User-Agent": _USER_AGENT, "Accept": "application/json"})
+        resp = self._http.get(url, params=params, timeout=_HTTP_TIMEOUT,
+                              allow_redirects=False,
+                              headers={"User-Agent": _USER_AGENT, "Accept": "application/json"})
         body = _parse(resp)
         if not isinstance(body, dict):
             raise UpstreamHTTPError(502, "index REST WordPress inattendu (objet attendu).",

@@ -45,15 +45,21 @@ class LightOnClient:
     DEFAULT_BASE_URL = "https://api.lighton.ai"
     TIMEOUT = 60
 
-    def __init__(self, api_key: str | None = None, base_url: str | None = None):
+    def __init__(self, api_key: str | None = None, base_url: str | None = None, *,
+                 session: requests.Session | None = None):
         """
         Args:
             api_key: LightOn API key (Bearer, created on console.lighton.ai).
             base_url: API base for a private/on-prem instance
                 (default = SaaS `https://api.lighton.ai`).
+            session: the `requests.Session` every request goes out through, when the
+                consumer supplies one (e.g. a session whose transport checks each
+                destination at connection time). Absent, module-level `requests`,
+                as before.
         """
         self.api_key = require(api_key, "LIGHTON_API_KEY")
         self.base_url = (base_url or self.DEFAULT_BASE_URL).rstrip("/")
+        self._http = session if session is not None else requests
 
     def _headers(self) -> Dict[str, str]:
         return {"Authorization": f"Bearer {self.api_key}"}
@@ -73,7 +79,7 @@ class LightOnClient:
         headers = self._headers()
         if json is not None:
             headers["Content-Type"] = "application/json"
-        resp = requests.request(
+        resp = self._http.request(
             method, url, headers=headers, json=json, params=params,
             files=files, data=data, timeout=timeout or self.TIMEOUT,
         )

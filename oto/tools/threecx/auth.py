@@ -58,9 +58,10 @@ def _json(resp) -> Optional[dict]:
     return payload if isinstance(payload, dict) else None
 
 
-def _client_token(base_url: str, client_id: str, client_secret: str) -> tuple[str, int]:
+def _client_token(base_url: str, client_id: str, client_secret: str,
+                  http=requests) -> tuple[str, int]:
     assert_public_https_url(base_url)
-    resp = requests.post(
+    resp = http.post(
         f"{base_url}/connect/token",
         data={  # body, never params= — see module docstring
             "grant_type": "client_credentials",
@@ -85,9 +86,10 @@ def _client_token(base_url: str, client_id: str, client_secret: str) -> tuple[st
     return payload["access_token"], int(payload.get("expires_in") or 3600)
 
 
-def _user_token(base_url: str, username: str, password: str) -> tuple[str, int]:
+def _user_token(base_url: str, username: str, password: str,
+                http=requests) -> tuple[str, int]:
     assert_public_https_url(base_url)
-    resp = requests.post(
+    resp = http.post(
         f"{base_url}/webclient/api/Login/GetAccessToken",
         json={"Username": username, "Password": password, "SecurityCode": ""},
         timeout=_HTTP_TIMEOUT,
@@ -112,15 +114,20 @@ def _user_token(base_url: str, username: str, password: str) -> tuple[str, int]:
 
 def get_access_token(base_url: str, *, key: str, client_id: Optional[str] = None,
                      client_secret: Optional[str] = None, username: Optional[str] = None,
-                     password: Optional[str] = None) -> str:
-    """A valid access token for this credential, requested only when needed."""
+                     password: Optional[str] = None,
+                     session: Optional[requests.Session] = None) -> str:
+    """A valid access token for this credential, requested only when needed.
+
+    `session`: the `requests.Session` the token request goes out through, when the
+    consumer supplies one. Absent, module-level `requests`, as before."""
+    http = session if session is not None else requests
     cached = _TOKEN_CACHE.get(key)
     if cached and cached[1] > time.time() + 60:
         return cached[0]
     if client_id:
-        token, ttl = _client_token(base_url, client_id, client_secret or "")
+        token, ttl = _client_token(base_url, client_id, client_secret or "", http)
     else:
-        token, ttl = _user_token(base_url, username or "", password or "")
+        token, ttl = _user_token(base_url, username or "", password or "", http)
     _TOKEN_CACHE[key] = (token, time.time() + ttl)
     return token
 

@@ -43,7 +43,8 @@ EXPECTED_MEMBERS = {
 }
 EXPECTED_INIT = ("(self, client_id: Optional[str] = None, client_secret: Optional[str] = None, "
                  "refresh_token: Optional[str] = None, login_url: Optional[str] = None, "
-                 "on_refresh: Optional[Callable[[dict], NoneType]] = None)")
+                 "on_refresh: Optional[Callable[[dict], NoneType]] = None, *, "
+                 "session: Optional[requests.sessions.Session] = None)")
 
 #: Méthodes publiques que la description ne porte pas (motifs : `LEFT_OUT` de `tests/test_salesforce_description.py`).
 OUTSIDE_DESCRIPTION = {
@@ -68,12 +69,12 @@ def test_membres_et_signatures_figes():
 
 
 def test_noms_importables():
-    assert pkg.__all__ == ["SalesforceAuthError", "SalesforceClient"]
+    assert pkg.__all__ == ["SalesforceAuthError", "SalesforceClient", "SalesforceHostRefused"]
     assert mod.SalesforceClient.API_VERSION == "v60.0"
     assert mod.SalesforceClient.MAX_COLLECTION_RECORDS == 200
     assert set(mod.SalesforceClient.DEFAULT_FIELDS) == {"Contact", "Account", "Lead", "Opportunity"}
     assert mod.SalesforceAuthError.status_code == 401
-    for name in ("_HTTP_TIMEOUT", "_TOKEN_CACHE", "_cred_key"):
+    for name in ("_HTTP_TIMEOUT", "_TOKEN_CACHE", "_cred_key", "_check_salesforce_url", "SALESFORCE_DOMAINS"):
         assert hasattr(mod, name), name
 
 

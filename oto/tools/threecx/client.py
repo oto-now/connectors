@@ -94,7 +94,8 @@ class ThreeCXClient:
 
     def __init__(self, base_url: str, *,
                  client_id: Optional[str] = None, client_secret: Optional[str] = None,
-                 username: Optional[str] = None, password: Optional[str] = None):
+                 username: Optional[str] = None, password: Optional[str] = None,
+                 session: Optional[requests.Session] = None):
         """
         Args:
             base_url: the PBX's https address.
@@ -104,6 +105,12 @@ class ThreeCXClient:
 
         A missing credential raises `MissingCredential`: the library never
         reads one from the environment.
+
+        `session`: the `requests.Session` the token requests AND the API calls go
+        out through, when the consumer supplies one (e.g. a session whose
+        transport checks each destination at connection time). Absent, a fresh
+        session for the API calls and module-level `requests` for the token, as
+        before.
         """
         self.base_url = _base_url(require(base_url, "THREECX_BASE_URL"))
         if client_id:
@@ -118,14 +125,16 @@ class ThreeCXClient:
             self._creds = {"username": self.username, "password": secret}
             identity = f"user:{self.username}"
         self._key = auth.cred_key(self.base_url, identity, secret)
-        self.session = requests.Session()
+        self._token_session = session
+        self.session = session if session is not None else requests.Session()
 
     # ------------------------------------------------------------------
     # transport
     # ------------------------------------------------------------------
 
     def _token(self) -> str:
-        return auth.get_access_token(self.base_url, key=self._key, **self._creds)
+        return auth.get_access_token(self.base_url, key=self._key,
+                                     session=self._token_session, **self._creds)
 
     def _request(self, path: str, *, params: Optional[Dict[str, Any]] = None,
                  accept: str = "application/json", method: str = "GET",
