@@ -1807,6 +1807,57 @@ export const deleteActivityRecordingTranscript = defineFunction({
   confirm: { summary: "Delete the recording transcript of activity {activity_id}." },
 })
 
+export const getCall = defineFunction({
+  name: "lemlist.get_call",
+  connector: "lemlist",
+  class: "read",
+  act: false,
+  description: "Read one call back by its id (the call's _id, act_..., the same id as its activity) or its externalId: direction, from, to, startedAt, endedAt, duration in seconds, callStatus (a key of list_call_statuses), note, phoneProvider (twilio for lemlist's own dialer, aircall, ringover, api), hasRecording, hasTranscript, the contact, lead, campaign, task and user ids, and two signed links that expire 24 hours later: recordingUrl (MP3) and transcriptUrl (JSON text and utterances). No route lists calls: find them in the activities (aircallDone, callTranscriptDone...).",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["call_id"],
+    "properties": {
+      "call_id": {"type": "string", "minLength": 1, "description": "The call's _id (act_...) or its externalId."}
+    }
+  },
+  examples: [
+    { title: "One call", input: {"call_id": "act_example1"} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/calls/{call_id}",
+    pathParams: ["call_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
+export const listCallStatuses = defineFunction({
+  name: "lemlist.list_call_statuses",
+  connector: "lemlist",
+  class: "read",
+  act: false,
+  description: "The team's call outcomes, custom ones included: key (what a call's callStatus holds), label, and whether the outcome counts as answered, positive or negative, and pauses the lead's campaigns.",
+  schema: {"type": "object", "additionalProperties": false, "properties": {}},
+  examples: [
+    { title: "The call outcomes", input: {} },
+  ],
+  refusals: [],
+  request: {
+    method: "GET",
+    path: "/call-statuses",
+    pathParams: [],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+})
+
 export const getCampaignStatsV2 = defineFunction({
   name: "lemlist.get_campaign_stats_v2",
   connector: "lemlist",
@@ -4645,7 +4696,7 @@ export const connector = defineConnector({
   name: "lemlist",
   label: "lemlist",
   namespace: "lemlist",
-  version: "1.6.1",
+  version: "1.7.0",
   apiVersion: "v1 and v2 routes",
   baseUrl: "https://api.lemlist.com/api",
   auth: {"kind": "basic", "password": "api_key"},
@@ -4657,6 +4708,7 @@ export const connector = defineConnector({
   errors: [
     { status: 400, code: "invalid_request", message: "lemlist rejected the request: its message says why (a campaign already running, a lead already launched, a malformed field).", retryable: false },
     { status: 401, code: "key_refused", message: "lemlist refused the API key: unknown or revoked.", retryable: false, marksAccount: "credential_rejected" },
+    { status: 402, code: "payment_required", message: "lemlist refused this call for payment: the team's plan does not include it (the calls API, for one).", retryable: false },
     { status: 403, code: "forbidden", message: "lemlist refused this call for this key: the plan or the user's rights do not include it.", retryable: false },
     { status: 404, code: "not_found", message: "Not found in lemlist: wrong id, or not in this team.", retryable: false },
     { status: 429, code: "rate_limited", message: "lemlist rate limit reached (20 requests per 2 seconds per key): wait, then retry.", retryable: true },
@@ -4706,6 +4758,8 @@ export const connector = defineConnector({
     enrichLead,
     getActivities,
     deleteActivityRecordingTranscript,
+    getCall,
+    listCallStatuses,
     getCampaignStatsV2,
     getBatchCampaignStats,
     getCampaignReports,

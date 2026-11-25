@@ -1365,3 +1365,90 @@ def test_the_pool_body_is_checked_before_any_call(monkeypatch, senders, match):
     with pytest.raises(ValueError, match=match):
         lm.LemlistClient(api_key="k").replace_campaign_senders("cam_1", senders)
     assert calls == []
+
+
+# --- Calls -------------------------------------------------------------------------
+
+
+def test_get_call_and_list_call_statuses_read_their_routes(monkeypatch):
+    calls = _calls_of(monkeypatch, {"success": True, "data": {"_id": "act_1"}})
+    c = lm.LemlistClient(api_key="k")
+    assert c.get_call("act_1") == {"success": True, "data": {"_id": "act_1"}}
+    c.list_call_statuses()
+    assert [(k["method"], k["url"].rsplit("/api/", 1)[1]) for k in calls] == [
+        ("GET", "calls/act_1"), ("GET", "call-statuses")]
+
+
+class _Signed:
+    """A signed-link answer, read in chunks as `stream=True` reads it."""
+
+    def __init__(self, status_code=200, payload=b'{"text": "Hello", "utterances": []}'):
+        self.status_code = status_code
+        self._payload = payload
+        self.content = payload
+        self.text = payload.decode("utf-8", "replace")
+        self.closed = False
+
+    def json(self):
+        import json
+        return json.loads(self._payload)
+
+    def iter_content(self, chunk_size=1):
+        for i in range(0, len(self._payload), chunk_size):
+            yield self._payload[i:i + chunk_size]
+
+    def close(self):
+        self.closed = True
+
+
+def _signed_get(monkeypatch, answer):
+    seen = []
+
+    def fake_get(url, **kwargs):
+        seen.append({"url": url, **kwargs})
+        return answer
+
+    monkeypatch.setattr(lm.requests, "get", fake_get)
+    monkeypatch.setattr(lm.requests, "request", lambda *a, **k: pytest.fail("not an API route"))
+    return seen
+
+
+def test_get_call_transcript_reads_the_signed_link_without_the_key(monkeypatch):
+    answer = _Signed()
+    seen = _signed_get(monkeypatch, answer)
+    url = "https://files.example.test/t/act_1.json?X-Signature=abc"
+    out = lm.LemlistClient(api_key="k").get_call_transcript(url)
+    assert out == {"text": "Hello", "utterances": []}
+    assert seen[0]["url"] == url
+    assert "headers" not in seen[0] and "auth" not in seen[0]
+    assert seen[0]["timeout"] == lm._HTTP_TIMEOUT
+    assert answer.closed
+
+
+def test_get_call_transcript_refuses_a_link_that_is_not_https(monkeypatch):
+    seen = _signed_get(monkeypatch, _Signed())
+    for url in ("http://files.example.test/t.json", "file:///etc/passwd", "", None):
+        with pytest.raises(ValueError, match="https"):
+            lm.LemlistClient(api_key="k").get_call_transcript(url)
+    assert seen == []
+
+
+def test_get_call_transcript_an_expired_link_raises_without_its_signature(monkeypatch):
+    _signed_get(monkeypatch, _Signed(403, b"<Error><Code>AccessDenied</Code></Error>"))
+    with pytest.raises(UpstreamHTTPError) as e:
+        lm.LemlistClient(api_key="k").get_call_transcript(
+            "https://files.example.test/t/act_1.json?X-Signature=abc")
+    assert e.value.status_code == 403
+    assert "X-Signature" not in str(e.value) and "abc" not in (e.value.url or "")
+
+
+def test_get_call_transcript_too_big_or_not_json_raises_value_error(monkeypatch):
+    c = lm.LemlistClient(api_key="k")
+    monkeypatch.setattr(lm.LemlistClient, "CALL_TRANSCRIPT_MAX_BYTES", 10)
+    _signed_get(monkeypatch, _Signed(payload=b'{"text": "' + b"x" * 50 + b'"}'))
+    with pytest.raises(ValueError, match="over 10 bytes"):
+        c.get_call_transcript("https://files.example.test/t.json")
+    monkeypatch.setattr(lm.LemlistClient, "CALL_TRANSCRIPT_MAX_BYTES", 5_000_000)
+    _signed_get(monkeypatch, _Signed(payload=b"<html>not json</html>"))
+    with pytest.raises(ValueError, match="not JSON"):
+        c.get_call_transcript("https://files.example.test/t.json")

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'lemlist',
                'label': 'lemlist',
                'namespace': 'lemlist',
-               'version': '1.6.1',
+               'version': '1.7.0',
                'api_version': 'v1 and v2 routes',
                'base_url': 'https://api.lemlist.com/api',
                'auth': {'kind': 'basic', 'password': 'api_key'},
@@ -23,6 +23,11 @@ DESCRIPTION = {'connector': {'name': 'lemlist',
                            'retryable': False,
                            'marks_account': 'credential_rejected',
                            'message': 'lemlist refused the API key: unknown or revoked.'},
+                          {'status': 402,
+                           'code': 'payment_required',
+                           'retryable': False,
+                           'message': "lemlist refused this call for payment: the team's plan does not "
+                                      'include it (the calls API, for one).'},
                           {'status': 403,
                            'code': 'forbidden',
                            'retryable': False,
@@ -1967,6 +1972,35 @@ DESCRIPTION = {'connector': {'name': 'lemlist',
                 'examples': [{'title': 'Delete a transcript', 'input': {'activity_id': 'act_example1'}}],
                 'confirm': {'summary': 'Delete the recording transcript of activity {activity_id}.'},
                 'call': {'method': 'DELETE', 'path': '/activities/{activity_id}/recording-transcript'},
+                'cost': {'per': 'request'}},
+               {'name': 'get_call',
+                'class': 'read',
+                'description': "Read one call back by its id (the call's _id, act_..., the same id as its "
+                               'activity) or its externalId: direction, from, to, startedAt, endedAt, '
+                               'duration in seconds, callStatus (a key of list_call_statuses), note, '
+                               "phoneProvider (twilio for lemlist's own dialer, aircall, ringover, api), "
+                               'hasRecording, hasTranscript, the contact, lead, campaign, task and user ids, '
+                               'and two signed links that expire 24 hours later: recordingUrl (MP3) and '
+                               'transcriptUrl (JSON text and utterances). No route lists calls: find them in '
+                               'the activities (aircallDone, callTranscriptDone...).',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['call_id'],
+                          'properties': {'call_id': {'type': 'string',
+                                                     'minLength': 1,
+                                                     'description': "The call's _id (act_...) or its "
+                                                                    'externalId.'}}},
+                'examples': [{'title': 'One call', 'input': {'call_id': 'act_example1'}}],
+                'call': {'method': 'GET', 'path': '/calls/{call_id}'},
+                'cost': {'per': 'request'}},
+               {'name': 'list_call_statuses',
+                'class': 'read',
+                'description': "The team's call outcomes, custom ones included: key (what a call's "
+                               'callStatus holds), label, and whether the outcome counts as answered, '
+                               "positive or negative, and pauses the lead's campaigns.",
+                'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
+                'examples': [{'title': 'The call outcomes', 'input': {}}],
+                'call': {'method': 'GET', 'path': '/call-statuses'},
                 'cost': {'per': 'request'}},
                {'name': 'get_campaign_stats_v2',
                 'class': 'read',

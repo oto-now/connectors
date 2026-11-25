@@ -1586,6 +1586,73 @@ class LemlistClient:
                 break
         return activity_views.shape_activities(all_activities, view)
 
+    # --- Calls ---
+    #
+    # A call (lemlist's own dialer, Aircall, Ringover, or one pushed through the
+    # API) is read by its id. No route lists calls: they are found through the
+    # activity log, types `aircallCreated`, `aircallEnded`, `aircallDone`,
+    # `aircallInterested`, `aircallNotInterested`, `callRecordingDone`,
+    # `callTranscriptDone`, whose `_id` is the call's.
+
+    #: Largest transcript file read, in bytes. The JSON of an hour-long call is
+    #: well under a megabyte.
+    CALL_TRANSCRIPT_MAX_BYTES = 5_000_000
+
+    def get_call(self, call_id: str) -> Dict[str, Any]:
+        """Read one call of the team back (`GET /calls/{id}`).
+
+        `call_id` is the call's `_id` (`act_…`, the same id as the call's
+        activity) or its `externalId`. lemlist answers `{success, data}`; `data`
+        holds `direction` (`inbound`/`outbound`), `from`, `to`, `startedAt`,
+        `endedAt`, `duration` (seconds), `callStatus` (a key of
+        `list_call_statuses`), `note`, `phoneProvider` (`twilio` for lemlist's
+        own dialer, `aircall`, `ringover`, `api`), `provider`, `hasRecording`,
+        `hasTranscript`, the ids of the contact, lead, campaign, task and user,
+        and two signed links valid 24 hours: `recordingUrl` (MP3) and
+        `transcriptUrl` (JSON, read by `get_call_transcript`). A 404 is an
+        unknown call; a 402, a plan without the calls API.
+        """
+        return self._request("GET", f"calls/{call_id}")
+
+    def list_call_statuses(self) -> Any:
+        """The team's call outcomes, custom ones included (`GET /call-statuses`).
+
+        Each has `key` (what a call's `callStatus` holds), `label`, and the
+        flags `callAnswered`, `callPositive`, `callNegative`, `pausesCampaigns`.
+        """
+        return self._request("GET", "call-statuses")
+
+    def get_call_transcript(self, transcript_url: str) -> Any:
+        """Download the transcript a call's `transcriptUrl` points to, JSON
+        `{text, utterances}`.
+
+        The link is signed by lemlist and valid 24 hours. It is not a route of
+        the API: it is fetched as given, WITHOUT the API key, which must not
+        leave for another host. https only; a file over
+        `CALL_TRANSCRIPT_MAX_BYTES`, or one that is not JSON, raises
+        `ValueError`. An expired link answers an HTTP error, raised as
+        `UpstreamHTTPError` with the link cut to its path (the signature never
+        reaches a message).
+        """
+        if not isinstance(transcript_url, str) or not transcript_url.lower().startswith("https://"):
+            raise ValueError("a call transcript is read from its https transcriptUrl only")
+        response = requests.get(transcript_url, timeout=_HTTP_TIMEOUT, stream=True)
+        try:
+            raise_for_upstream(response, service="lemlist")
+            chunks, size = [], 0
+            for chunk in response.iter_content(chunk_size=65536):
+                size += len(chunk)
+                if size > self.CALL_TRANSCRIPT_MAX_BYTES:
+                    raise ValueError(
+                        f"the call transcript is over {self.CALL_TRANSCRIPT_MAX_BYTES} bytes, not read")
+                chunks.append(chunk)
+        finally:
+            response.close()
+        try:
+            return json.loads(b"".join(chunks).decode("utf-8"))
+        except (UnicodeDecodeError, ValueError) as e:
+            raise ValueError("the call transcript is not JSON") from e
+
     #: Channels accepted by the v2 stats endpoints.
     STATS_CHANNELS = ("email", "linkedin", "others")
 

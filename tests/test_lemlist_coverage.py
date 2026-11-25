@@ -26,6 +26,10 @@ Retouche du 2026-11-18 : les quatre autres routes v1 des désinscriptions
 (`GET`/`POST`/`DELETE /unsubscribes/{email}`, `GET /unsubs/export`) sortent de
 la doc et ne sont plus servies — les méthodes du même nom envoient la requête
 v2 des variables de même sens. 139 lignes.
+
+Retouche du 2026-11-25 : les deux routes des appels entrent, `GET /calls/{id}`
+(un appel relu par son id ou son `externalId`) et `GET /call-statuses` (les
+issues d'appel de l'équipe). 141 lignes.
 """
 from __future__ import annotations
 
@@ -62,6 +66,8 @@ def _paths_built_by_the_client() -> set[tuple[str, str]]:
 DOCUMENTED: tuple[tuple[str, str], ...] = (
     ("GET", "activities"),  # activities_get-many-activities
     ("DELETE", "activities/{}/recording-transcript"),  # activities_delete-activity-recording-transcript
+    ("GET", "calls/{}"),  # calls_get-call (2026-11-25)
+    ("GET", "call-statuses"),  # calls_get-call-statuses (2026-11-25)
     ("GET", "campaigns"),  # campaigns_get-many-campaigns
     ("POST", "campaigns"),  # campaigns_create-campaign
     ("GET", "campaigns/reports"),  # campaigns_get-campaign-reports
@@ -203,9 +209,9 @@ DOCUMENTED: tuple[tuple[str, str], ...] = (
 
 
 def test_l_inventaire_documente_est_complet():
-    """Le relevé lui-même : 139 routes distinctes, aucune ligne en double."""
-    assert len(DOCUMENTED) == 139
-    assert len(set(DOCUMENTED)) == 139
+    """Le relevé lui-même : 141 routes distinctes, aucune ligne en double."""
+    assert len(DOCUMENTED) == 141
+    assert len(set(DOCUMENTED)) == 141
 
 
 def test_chaque_endpoint_documente_a_un_chemin_dans_le_client():

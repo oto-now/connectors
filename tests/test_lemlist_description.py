@@ -1,4 +1,4 @@
-"""La description `lemlist` 1.6.1 : celle du client existant (`oto.tools.lemlist`), sans rien y changer.
+"""La description `lemlist` 1.7.0 : celle du client existant (`oto.tools.lemlist`), sans rien y changer.
 
 Une fonction par méthode du client qui envoie une seule requête à `api.lemlist.com/api`, sous son nom, avec ses noms
 d'arguments et les clés que le client envoie à lemlist (chemin, query, corps, parties d'un multipart). Depuis la 1.1.0,
@@ -13,7 +13,9 @@ les deux recherches de la base partagée prennent au client une vue de la répon
 fichier ; depuis la 1.4.0, la lecture des activités aussi, et `list_all_campaigns` ne se dit plus tronquée quand
 la liste est complète (client seul) ; depuis la 1.6.0, l'ajout et le retrait d'une adresse désinscrite passent
 par les routes v2 des variables, les routes v1 n'étant plus servies, et la lecture d'une adresse sort du fichier
-(un 404 « Variable not found » y est une réponse, `unsubscribed: false`). Restent
+(un 404 « Variable not found » y est une réponse, `unsubscribed: false`) ; depuis la 1.7.0, un appel se relit
+(`get_call`) et les issues d'appel de l'équipe se listent (`list_call_statuses`), la transcription d'un appel,
+lien signé hors de l'API, restant au client. Restent
 hors du fichier, au client écrit à la main : les corps formés à partir d'un argument (un identifiant ajouté, un email
 retiré), le corps en tableau nu, les query à clés libres (les variables d'un lead), les compositions et aides locales,
 les routes choisies selon un argument, la relève d'enrichissement et la lecture d'une adresse désinscrite (un 404 y
@@ -84,6 +86,7 @@ LEFT_OUT = {
     "mark_lead_not_interested": "the route depends on whether campaign_id is given",
     "get_enrichment": "a 404 is an answer (enrichmentStatus not-found), not an error",
     "get_unsubscribe": "a 404 is an answer (Variable not found: unsubscribed false), not an error",
+    "get_call_transcript": "a signed link outside the API, fetched without the key",
     "export_leads": "a CSV export",
     "export_unsubscribes": "a CSV export",
     "export_unsubscribed_variables": "a CSV export",
@@ -154,7 +157,7 @@ CLASSES = {
         "search_people_database", "search_companies_database", "get_database_filters", "list_personas", "get_team",
         "get_team_credits", "get_team_senders", "get_user", "get_user_channels", "get_team_crm_users",
         "get_crm_filters", "list_fields", "get_lemwarm_settings", "list_deliverability_alerts",
-        "get_deliverability_alert", "list_webhooks", "get_campaign_senders",
+        "get_deliverability_alert", "list_webhooks", "get_campaign_senders", "get_call", "list_call_statuses",
     },
     "write": {
         "create_campaign", "pause_campaign", "duplicate_campaign", "create_schedule", "associate_schedule",
@@ -233,7 +236,7 @@ VALUES = {
     "scope": "global", "threshold": 5, "comparison_operator": "above", "period_days": 3, "period_mode": "rolling",
     "scope_entities": ["mbx_example1"], "channel_config": {"email": {"enabled": False}}, "recheck_delay_hours": 6,
     "target_url": "https://hooks.example.test/lemlist", "secret": "signing-text", "zap_id": "z1",
-    "hook_id": "hok_example1",
+    "hook_id": "hok_example1", "call_id": "act_example1",
     "senders": [{"userId": "usr_example1", "channels": [{"type": "email", "id": "usm_example1"},
                                                         {"type": "email", "id": "usm_example2", "alias": "a@example.test"}]}],
 }
@@ -429,9 +432,9 @@ def _values(name: str, function: dict) -> dict:
     return {argument: values[argument] for argument in function["input"]["properties"]}
 
 
-def test_the_description_is_version_1_6_1_and_passes_the_fabrique():
+def test_the_description_is_version_1_7_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.6.1"
+    assert description["connector"]["version"] == "1.7.0"
     check(description, LEMLIST)
 
 

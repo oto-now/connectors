@@ -5,6 +5,13 @@
 # The function names, the argument names and the keys sent to lemlist are the client's; the client is not changed
 # (tests/test_lemlist_description.py reads it to keep both equal).
 #
+# 1.7.0: the calls, get_call (GET /calls/{id}: one call read back by its _id, act_..., the same id as its activity,
+# or its externalId) and list_call_statuses (GET /call-statuses: the team's call outcomes, custom ones included). No
+# route lists calls: they are found through the activity log. A call carries two signed links valid 24 hours,
+# recordingUrl (MP3) and transcriptUrl (JSON); the client's get_call_transcript, outside this file, downloads the
+# second without the API key (a signed link, not a route of the API). The 402 a plan without the calls API answers
+# joins the error table. Nothing else changes.
+#
 # 1.6.1: the client's get_unsubscribe, outside this file, finds an address or a domain whatever its case: a value
 # with capitals that is not found is read again in lower case, the domain too. Nothing described changes.
 #
@@ -113,6 +120,7 @@
 # - a route chosen by an argument: mark_lead_interested and mark_lead_not_interested (one campaign, or all);
 # - get_enrichment: a 404 is an answer (enrichmentStatus not-found), not an error;
 # - get_unsubscribe: a 404 is an answer (Variable not found: not on the list, unsubscribed false), not an error;
+# - get_call_transcript: a signed link outside the API, fetched without the key;
 # - CSV exports: export_leads, export_unsubscribes, export_unsubscribed_variables, export_unsubscribed_contacts,
 #   export_contact_list (a rendered file in a later lot);
 # - connect_email_account: the SMTP and IMAP passwords of a mailbox would be arguments, which the host journals;
@@ -128,7 +136,7 @@ connector:
   name: lemlist
   label: lemlist
   namespace: lemlist
-  version: 1.6.1
+  version: 1.7.0
   api_version: v1 and v2 routes
   base_url: https://api.lemlist.com/api
   auth:
@@ -148,6 +156,8 @@ connector:
         message: "lemlist rejected the request: its message says why (a campaign already running, a lead already launched, a malformed field)." }
     - { status: 401, code: key_refused, retryable: false, marks_account: credential_rejected,
         message: "lemlist refused the API key: unknown or revoked." }
+    - { status: 402, code: payment_required, retryable: false,
+        message: "lemlist refused this call for payment: the team's plan does not include it (the calls API, for one)." }
     - { status: 403, code: forbidden, retryable: false,
         message: "lemlist refused this call for this key: the plan or the user's rights do not include it." }
     - { status: 404, code: not_found, retryable: false,
@@ -1348,6 +1358,44 @@ functions:
     confirm:
       summary: "Delete the recording transcript of activity {activity_id}."
     call: { method: DELETE, path: "/activities/{activity_id}/recording-transcript" }
+    cost: *request
+
+  # --- Calls -------------------------------------------------------------------
+
+  - name: get_call
+    class: read
+    description: >-
+      Read one call back by its id (the call's _id, act_..., the same id as
+      its activity) or its externalId: direction, from, to, startedAt,
+      endedAt, duration in seconds, callStatus (a key of list_call_statuses),
+      note, phoneProvider (twilio for lemlist's own dialer, aircall, ringover,
+      api), hasRecording, hasTranscript, the contact, lead, campaign, task and
+      user ids, and two signed links that expire 24 hours later: recordingUrl
+      (MP3) and transcriptUrl (JSON text and utterances). No route lists
+      calls: find them in the activities (aircallDone, callTranscriptDone...).
+    input:
+      type: object
+      additionalProperties: false
+      required: [call_id]
+      properties:
+        call_id: { type: string, minLength: 1, description: "The call's _id (act_...) or its externalId." }
+    examples:
+      - title: One call
+        input: { call_id: act_example1 }
+    call: { method: GET, path: "/calls/{call_id}" }
+    cost: *request
+
+  - name: list_call_statuses
+    class: read
+    description: >-
+      The team's call outcomes, custom ones included: key (what a call's
+      callStatus holds), label, and whether the outcome counts as answered,
+      positive or negative, and pauses the lead's campaigns.
+    input: { type: object, additionalProperties: false, properties: {} }
+    examples:
+      - title: The call outcomes
+        input: {}
+    call: { method: GET, path: /call-statuses }
     cost: *request
 
   - name: get_campaign_stats_v2
