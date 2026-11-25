@@ -1,5 +1,5 @@
 """Salesforce REST API client."""
 
-from .client import SalesforceAuthError, SalesforceClient
+from .client import SalesforceAuthError, SalesforceClient, SalesforceHostRefused
 
-__all__ = ["SalesforceAuthError", "SalesforceClient"]
+__all__ = ["SalesforceAuthError", "SalesforceClient", "SalesforceHostRefused"]

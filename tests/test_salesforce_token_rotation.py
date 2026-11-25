@@ -41,11 +41,11 @@ def _cache_propre():
 
 def _client(**kw) -> SalesforceClient:
     return SalesforceClient(client_id="ci", client_secret="cs",
-                            refresh_token="RT-1", login_url="https://x.test", **kw)
+                            refresh_token="RT-1", login_url="https://acme.my.salesforce.com", **kw)
 
 
 def _token(refresh: str | None, access: str = "AT") -> dict:
-    body = {"access_token": access, "instance_url": "https://i.test"}
+    body = {"access_token": access, "instance_url": "https://acme.my.salesforce.com"}
     if refresh:
         body["refresh_token"] = refresh
     return body
@@ -104,8 +104,8 @@ def test_un_second_client_reutilise_le_jeton_du_premier(monkeypatch):
     appels = []
     monkeypatch.setattr("oto.tools.salesforce.client.requests.post",
                         lambda *a, **k: (appels.append(1), _Resp(_token(None)))[1])
-    assert _client()._get_access_token() == ("AT", "https://i.test")
-    assert _client()._get_access_token() == ("AT", "https://i.test")
+    assert _client()._get_access_token() == ("AT", "https://acme.my.salesforce.com")
+    assert _client()._get_access_token() == ("AT", "https://acme.my.salesforce.com")
     assert len(appels) == 1, "un client neuf a re-rafraîchi alors qu'un jeton valide existait"
 
 
@@ -117,8 +117,8 @@ def test_un_jeton_renouvele_ne_ressert_pas_une_entree_perimee(monkeypatch):
                         lambda *a, **k: _Resp(_token("RT-2")))
     c = _client()
     c._get_access_token()
-    assert m._cred_key("https://x.test", "ci", "RT-1") in m._TOKEN_CACHE
-    assert m._cred_key("https://x.test", "ci", "RT-2") not in m._TOKEN_CACHE
+    assert m._cred_key("https://acme.my.salesforce.com", "ci", "RT-1") in m._TOKEN_CACHE
+    assert m._cred_key("https://acme.my.salesforce.com", "ci", "RT-2") not in m._TOKEN_CACHE
 
 
 def test_invalider_purge_aussi_le_cache_partage(monkeypatch):
@@ -136,5 +136,5 @@ def test_invalider_purge_aussi_le_cache_partage(monkeypatch):
 
 def test_aucun_secret_en_clair_dans_la_cle_de_cache():
     from oto.tools.salesforce import client as m
-    k = m._cred_key("https://x.test", "ci-secret", "RT-secret")
+    k = m._cred_key("https://acme.my.salesforce.com", "ci-secret", "RT-secret")
     assert "RT-secret" not in k and "ci-secret" not in k and len(k) == 64

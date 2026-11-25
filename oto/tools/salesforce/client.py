@@ -2,14 +2,16 @@
 
 import base64
 import hashlib
+import re
 import time
 from typing import Any, Callable, Optional
+from urllib.parse import urlsplit
 
 import requests
 
 from ..common.credentials import require
 from ..common import raise_for_upstream
-from ..http.client import refuse_redirect
+from ..http.client import refuse_redirect, safe_location
 
 _HTTP_TIMEOUT = (10, 60)  # (connect, read) — never wait indefinitely
 
@@ -23,6 +25,61 @@ class SalesforceAuthError(ValueError):
     """
 
     status_code = 401
+
+
+class SalesforceHostRefused(ValueError):
+    """An address the client would send a secret to (`login_url`: client id and
+    secret, refresh token; `instance_url`: the access token) is not a Salesforce
+    host. Raised BEFORE any request to it, never followed by a fallback."""
+
+    def __init__(self, what: str, url: str):
+        self.what = what
+        # Only scheme, host, port and path: a userinfo never reaches a message or a log.
+        self.url = safe_location(url)
+        super().__init__(
+            f"Salesforce {what} refused: {self.url or '?'} is not an https address "
+            f"of a Salesforce domain ({', '.join('*.' + s for s in SALESFORCE_DOMAINS)})")
+
+
+# Closed list of the domains a Salesforce org is served from — login, token and REST
+# API alike. A host matches when it ENDS with "." + one of them (never a bare
+# domain, never a substring). Not listed on purpose: force.com (Visualforce,
+# Lightning and file content, not the API), site.com and salesforce-sites.com
+# (public sites), cloudforce.com (not a current instance host).
+SALESFORCE_DOMAINS = (
+    # login.salesforce.com, test.salesforce.com, My Domain <name>.my.salesforce.com
+    # and its variants (<name>--<sandbox>.sandbox.my.salesforce.com, <name>.develop.,
+    # .scratch., …): help.salesforce.com, "My Domain URL Formats" and "Allow the
+    # Required Domains" (*.salesforce.com, login authentication).
+    "salesforce.com",
+    # Government Cloud Plus - Defense: "orgs in Government Cloud Plus - Defense
+    # leverage salesforce.mil FQDNs" (help.salesforce.com, "IP Addresses to Allow for
+    # Government Cloud Plus", and Salesforce's Government Cloud Plus - Defense datasheet).
+    "salesforce.mil",
+    # Salesforce on Alibaba Cloud: login.sfcrmproducts.cn and My Domain
+    # <name>.my.sfcrmproducts.cn (help.aliyun.com, Salesforce on Alibaba Cloud docs).
+    "sfcrmproducts.cn",
+)
+
+
+_HOSTNAME = re.compile(r"^[a-z0-9.-]+$")
+
+
+def _check_salesforce_url(url: str, what: str) -> str:
+    """`url` itself when it is https, without userinfo nor port, nor query or
+    fragment, on a host under `SALESFORCE_DOMAINS`; `SalesforceHostRefused`
+    otherwise. The one check of every address a secret goes to."""
+    try:
+        parts = urlsplit(url)
+        port = parts.port
+    except (TypeError, ValueError, AttributeError):
+        raise SalesforceHostRefused(what, url if isinstance(url, str) else "") from None
+    host = (parts.hostname or "").lower()
+    if (parts.scheme.lower() != "https" or "@" in parts.netloc or port is not None
+            or parts.query or parts.fragment or not _HOSTNAME.match(host)
+            or not any(host.endswith("." + d) for d in SALESFORCE_DOMAINS)):
+        raise SalesforceHostRefused(what, url)
+    return url
 
 
 # PROCESS-WIDE access-token cache, keyed by a hash of the credential — same pattern as
@@ -93,7 +150,8 @@ class SalesforceClient:
         self.client_id = require(client_id, "SALESFORCE_CLIENT_ID")
         self.client_secret = require(client_secret, "SALESFORCE_CLIENT_SECRET")
         self.refresh_token = require(refresh_token, "SALESFORCE_REFRESH_TOKEN")
-        self.login_url = (login_url or "https://login.salesforce.com").rstrip("/")
+        self.login_url = _check_salesforce_url(
+            (login_url or "https://login.salesforce.com").rstrip("/"), "login_url")
         self._access_token: Optional[str] = None
         self._instance_url: Optional[str] = None
         self._token_expires_at: float = 0.0
@@ -118,6 +176,8 @@ class SalesforceClient:
         k = _cred_key(self.login_url, self.client_id, self.refresh_token)
         cached = _TOKEN_CACHE.get(k)
         if cached and cached[2] > time.time() + 60:
+            # An entry written before the check, or by anything else: refused, not served.
+            _check_salesforce_url(cached[1], "instance_url")
             self._access_token, self._instance_url, self._token_expires_at = cached
             return self._access_token, self._instance_url
 
@@ -153,8 +213,11 @@ class SalesforceClient:
 
         resp.raise_for_status()
 
+        # The token answer names the host every call (and its bearer) goes to: checked
+        # BEFORE it is kept or cached.
+        instance_url = _check_salesforce_url(token_data["instance_url"], "instance_url")
         self._access_token = token_data["access_token"]
-        self._instance_url = token_data["instance_url"]
+        self._instance_url = instance_url
         self._token_expires_at = time.time() + 3600
         _TOKEN_CACHE[k] = (self._access_token, self._instance_url,
                            self._token_expires_at)
@@ -194,7 +257,8 @@ class SalesforceClient:
     def _url_for(self, instance_url: str, path: str) -> str:
         """`path` relative to `/services/data/{API_VERSION}/` (e.g. "sobjects/Account/",
         "query/") — or an absolute path starting with "/" (e.g. a `nextRecordsUrl`),
-        used as-is against `instance_url`."""
+        used as-is against `instance_url`, which must be a Salesforce host."""
+        _check_salesforce_url(instance_url, "instance_url")
         if path.startswith("/"):
             return f"{instance_url}{path}"
         return f"{instance_url}/services/data/{self.API_VERSION}/{path}"

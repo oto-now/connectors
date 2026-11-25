@@ -104,14 +104,14 @@ def test_salesforce_token_exchange_and_api_go_through_the_given_session(monkeypa
 
     def answer(m, u):
         if u.endswith("/services/oauth2/token"):
-            return _Resp({"access_token": "a", "instance_url": "https://acme.example.test"})
+            return _Resp({"access_token": "a", "instance_url": "https://acme.my.salesforce.com"})
         return _Resp({"records": [], "done": True, "totalSize": 0})
     s = _Recording(answer)
-    sf = SalesforceClient("id", "secret", "refresh", login_url="https://login.example.test",
+    sf = SalesforceClient("id", "secret", "refresh", login_url="https://login.salesforce.com",
                           session=s)
     sf._request("GET", "query/", params={"q": "SELECT Id FROM Account"})
-    assert s.seen[0] == ("POST", "https://login.example.test/services/oauth2/token")
-    assert s.seen[1][1].startswith("https://acme.example.test/services/data/")
+    assert s.seen[0] == ("POST", "https://login.salesforce.com/services/oauth2/token")
+    assert s.seen[1][1].startswith("https://acme.my.salesforce.com/services/data/")
 
 
 def test_threecx_token_and_api_go_through_the_given_session(monkeypatch):

@@ -69,7 +69,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `pennylane_firm` | Pennylane (firm) | 1.1.1 | clé | non | 8 | 6 | 1 | 1 | oui | 8 | non | 0 |
 | `pipecorn` | Pipecorn | 1.0.0 | clé | oui | 8 | 3 | 5 | 0 | oui, avec solde | 5 | non | 0 |
 | `qonto` | Qonto | 1.0.0 | clé | non | 20 | 20 | 0 | 0 | oui | 20 | non | 0 |
-| `salesforce` | Salesforce | 1.0.0 | connexion d'une personne (OAuth) | non | 6 | 5 | 0 | 1 | non | 6 | non | 0 |
+| `salesforce` | Salesforce | 1.0.1 | connexion d'une personne (OAuth) | non | 6 | 5 | 0 | 1 | non | 6 | non | 0 |
 | `sellsy` | Sellsy | 1.0.1 | application du client (OAuth entre machines) | non | 2 | 2 | 0 | 0 | non | 2 | non | 0 |
 | `seranking` | SE Ranking | 1.1.0 | clé | non | 24 | 11 | 13 | 0 | oui, avec solde | 11 | non | 0 |
 | `serper` | Serper | 1.1.0 | clé | oui | 12 | 12 | 0 | 0 | non | 12 | non | 0 |
