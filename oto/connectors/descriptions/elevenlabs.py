@@ -3,6 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'elevenlabs',
                'label': 'ElevenLabs',
                'logo_domain': 'elevenlabs.io',
+               'logo': 'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABZ0lEQVR42u3ZwY2DMBAF0D/OhBa4ckkDVEIBqShKGTlwTBn0QAW0AMazh8hIiX3KYmlX/C9xiDVY6AEm8oiZGQ4ch4OHAAQgAAEIQAACEIAABCAAAQhwxGjJyc0M67om46fTCSLyde2ekaNviGipOy8imKYJj8cDzr3eNBHBsizoug6XywUhhNd76BzGccTz+cT5fEa8JyEEXK9X1HW9zVniYneP997MzIZhMADJ0ff9Vhdr+77P1g7D8Dbn3im6BqgqVBUiAjODcw4hBFRVldRWVQVV3WriOar6vxdB730CkFt2Yu0nQOkliv8DCEAAAhCAAAQgAAEIQAACEIAABCAAAQhAAAKAjZGdIiLZbfFcgyPWfu4Kl2yLFQfw3sN7n4zP85wdy9Xmxv48QGyFNU2D+/2etMbatt1+x7Rti9vtlrTGmqZ5m5PNUbbH+QTwM0gAAhCAAAQgAAEIQAACEIAABCDA7/IDO1d6bWhuYtwAAAAASUVORK5CYII=',
                'namespace': 'elevenlabs',
                'version': '1.0.1',
                'api_version': 'v1 (voices on v2)',

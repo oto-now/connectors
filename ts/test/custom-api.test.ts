@@ -6,7 +6,7 @@
 // `toDefinition`, appliquée à chaque `connectors/*/connector.yaml`, donne exactement la définition que la fabrique a
 // générée dans `src/<nom>.ts`. Le validateur JSON Schema est Ajv, celui que l'hôte passerait.
 import { describe, expect, it } from "vitest"
-import { connectors } from "../src"
+import { connectors, type Connector } from "../src"
 import { CODES, NotGenerated, OpenAPIRefused, fromOpenApi, toDefinition, validate } from "../src/custom-api"
 import { changed, compile, read } from "./schema-compiler"
 
@@ -109,8 +109,10 @@ describe("projection guard", () => {
     expect(documents.map(([name]) => name).sort()).toEqual([...generated.keys()].sort())
   })
 
-  it.each(documents)("%s: toDefinition gives the module the fabrique generated", (name, document) => {
-    expect(toDefinition(document)).toStrictEqual(generated.get(name))
+  // `logo` vient du fichier `logo.png` à côté de la description, pas du document : la projection ne peut pas le donner.
+  it.each(documents)("%s: toDefinition gives the module the fabrique generated, but its logo", (name, document) => {
+    const { logo: _logo, ...withoutLogo } = generated.get(name) as Connector
+    expect(toDefinition(document)).toStrictEqual(withoutLogo)
   })
 
   it("should raise what the fabrique does not generate, never drop it", () => {

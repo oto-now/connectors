@@ -6,16 +6,19 @@ descriptions : sinon `test_committed_output_is_current` échoue et dit de lancer
 """
 from __future__ import annotations
 
+import base64
 import copy
 import pathlib
 import re
+import struct
 
 import pytest
 import yaml
 
 from fabrique import body_cases, nested_body_cases, python
+from fabrique import served as served_output
 from fabrique.build import generate, stale
-from fabrique.descriptions import CONNECTORS, DescriptionError, check, served
+from fabrique.descriptions import CONNECTORS, Description, DescriptionError, check, served
 from fabrique.typescript import NotGenerated, connector_module, function_source, js_block
 
 SELLSY = CONNECTORS / "sellsy" / "connector.yaml"
@@ -256,6 +259,54 @@ def test_description_and_logo_domain_are_checked_by_the_schema(key, value):
     description["connector"][key] = value
     with pytest.raises(DescriptionError):
         check(description, AIRCALL)
+
+
+def _png(width: int = 64, height: int = 64, size: int = 200) -> bytes:
+    """Un en-tête PNG (signature, puis `IHDR`) aux dimensions données, complété jusqu'à `size` octets."""
+    head = b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + struct.pack(">II", width, height) + b"\x08\x06\x00\x00\x00"
+    return head + b"\x00" * (size - len(head))
+
+
+def _aircall_with_logo(tmp_path: pathlib.Path, logo: bytes) -> pathlib.Path:
+    folder = tmp_path / "aircall"
+    folder.mkdir()
+    (folder / "logo.png").write_bytes(logo)
+    path = folder / "connector.yaml"
+    path.write_bytes(AIRCALL.read_bytes())
+    return path
+
+
+def test_logo_png_is_carried_in_base64_next_to_logo_domain(tmp_path):
+    """`connectors/<nom>/logo.png` passe en base64, sans préfixe : `logo` en TypeScript, `connector.logo` servi."""
+    logo = _png()
+    path = _aircall_with_logo(tmp_path, logo)
+    description = _load(path)
+    description["connector"]["logo_domain"] = "aircall.io"
+    loaded = check(description, path)
+    encoded = base64.b64encode(logo).decode("ascii")
+    assert loaded.logo == encoded
+    assert f'  logoDomain: "aircall.io",\n  logo: "{encoded}",\n' in connector_module(loaded).source
+    connector = served_output.served(loaded)["connector"]
+    assert connector["logo"] == encoded
+    assert list(connector)[list(connector).index("logo_domain") + 1] == "logo"
+
+
+def test_without_logo_png_neither_output_carries_a_logo():
+    without = Description(path=AIRCALL, data=_load(AIRCALL))
+    assert "\n  logo: " not in connector_module(without).source
+    assert "logo" not in served_output.served(without)["connector"]
+
+
+@pytest.mark.parametrize("logo, reason", [
+    (_png(size=16 * 1024 + 1), "at most 16384"),
+    (b"GIF89a" + b"\x00" * 100, "not a PNG"),
+    (_png(width=64, height=48), "expected a square 64x64"),
+    (_png(width=128, height=128), "expected a square 64x64"),
+])
+def test_logo_png_is_refused_when_not_a_64_pixel_square_png_of_16_kb(tmp_path, logo, reason):
+    path = _aircall_with_logo(tmp_path, logo)
+    with pytest.raises(DescriptionError, match=reason):
+        check(_load(path), path)
 
 
 def test_schema_violation_is_refused_before_the_rules():

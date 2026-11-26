@@ -550,6 +550,8 @@ export type Connector = ConnectorAccess & {
   readonly description?: string
   /** Domaine de l'outil, d'où un écran tire son logo (`example.com`). */
   readonly logoDomain?: string
+  /** Logo de l'outil, `connectors/<nom>/logo.png` : PNG carré 64 × 64, 16 Ko au plus, en base64 sans préfixe `data:`. */
+  readonly logo?: string
   /**
    * Racine des chemins, gabarit possible sur les réglages (`https://{domain}.example.net`, `{server}`) et sur l'identité
    * du compte, après l'hôte (`https://api.example.com/v2/{account_id}`). Absente quand `baseUrls` la remplace, ou quand

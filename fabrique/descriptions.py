@@ -205,6 +205,7 @@ from oto.connectors.rules.checks import (AUTH_REFERENCES, DEFAULT_TIMEOUT_S, SCH
 
 from oto.connectors.custom_api.profile import PREFIX as CUSTOM_API_PREFIX
 from .free_read import check_free_read
+from .logo import LogoError, logo_of
 from oto.connectors.engine.accesses import merged
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
@@ -243,6 +244,8 @@ def background_refusal(function: dict, functions: list[dict]) -> tuple[str, str]
 class Description:
     path: pathlib.Path
     data: dict
+    # Le `logo.png` du dossier, en base64 (`fabrique/logo.py`) ; `None` sans fichier.
+    logo: str | None = None
 
     @property
     def name(self) -> str:
@@ -837,7 +840,11 @@ def check(data: dict, path: pathlib.Path) -> Description:
     check_host_forms(data, where)
     check_reserved_code(data, where)
     check_rules(data, where)
-    return Description(path=path, data=data)
+    try:
+        logo = logo_of(path.parent)
+    except LogoError as refused:
+        raise DescriptionError(f"{where}: {refused}") from refused
+    return Description(path=path, data=data, logo=logo)
 
 
 def check_prefix(connector: dict, where: str) -> None:
