@@ -1,4 +1,4 @@
-"""La description `brevo` 1.1.0 : celle du client existant (`oto.tools.brevo`).
+"""La description `brevo` 2.0.0 : celle du client existant (`oto.tools.brevo`).
 
 Une fonction par requête : une méthode du client qui envoie une seule requête à une seule route est la fonction de son
 nom ; une méthode qui choisit sa route par un argument est une fonction par route, l'argument fixé par la fonction
@@ -14,8 +14,8 @@ nommés, gardés ici :
   (`NARROWER`), dont les attributs à choix multiple (une liste de textes) que les clés libres à valeur simple refusent ;
 - ce que le client garde hors de portée et que la description garde de même (`ARGUMENTS_LEFT_OUT`) : la date d'envoi
   d'une campagne, les pièces jointes en base64 ;
-- le `limit` des listes, dossiers et segments, que le client pose à 50 quand Brevo en rend 10 sans lui
-  (`BREVO_DEFAULT_DIFFERS`) : la description de l'argument dit 10 ;
+- le `limit` des listes, dossiers et segments, des emails transactionnels et de leurs événements, que le client pose
+  à 50 quand Brevo en rend 10, 500 ou 2500 sans lui (`BREVO_DEFAULT_DIFFERS`) : la description de l'argument le dit ;
 - ce que `get_account` retire de la réponse, le login du relais SMTP et la clé du suivi d'automatisation
   (`ACCOUNT_STRIPPED`), retiré de même par le client.
 Les gardes ci-dessous lisent le client lui-même : une route, un argument ou une clé qu'il ajoute sans la description
@@ -112,7 +112,11 @@ CLIENT_FILLS = {
 }
 # Écart nommé : le client pose 50, Brevo rend 10 sans `limit` (référence, relue le 2026-11-26). L'argument reste
 # facultatif ; sa description dit ce que Brevo rend sans lui.
-BREVO_DEFAULT_DIFFERS = {n: {"limit": 10} for n in ("list_segments", "list_lists", "list_folder_lists", "list_folders")}
+BREVO_DEFAULT_DIFFERS = {
+    **{n: {"limit": 10} for n in ("list_segments", "list_lists", "list_folder_lists", "list_folders")},
+    "list_transactional_emails": {"limit": 500},
+    "transactional_events": {"limit": 2500},
+}
 # Ce que la réponse de `get_account` perd avant l'agent : un identifiant de connexion ou une clé.
 ACCOUNT_STRIPPED = ["relay.data.userName", "marketingAutomation.key"]
 # Les suppressions : sensibles, `destroy`, et rien d'autre ne part en DELETE.
@@ -412,7 +416,7 @@ def _node(function: dict, path: tuple) -> dict:
 
 def test_the_description_is_version_1_0_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.1.0"
+    assert description["connector"]["version"] == "2.0.0"
     check(description, BREVO)
 
 
@@ -698,7 +702,9 @@ def test_the_limit_brevo_fills_otherwise_is_said_by_the_argument():
         for argument, value in defaults.items():
             assert "default" not in properties[argument], name
             assert argument not in functions[name]["input"].get("required", []), name
-            assert f"Brevo answers {value} when it is absent" in properties[argument]["description"], name
+            said = properties[argument]["description"]
+            assert any(f"Brevo answers {up}{value} when it is absent" in said for up in ("", "up to ")), name
+            assert "50 by default" not in said, name
         assert CLIENT_FILLS[name]["limit"] == _parameters(_method(name))["limit"].default == 50, name
 
 

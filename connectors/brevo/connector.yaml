@@ -31,7 +31,8 @@
 #   import): not declared as defaults, the host sends nothing for an absent argument and Brevo then applies the same.
 # - limit of the lists, folders and segments: the client sends 50, Brevo answers 10 when it is absent (reference,
 #   read on 2026-11-26). The schema does not require it; the description of the argument says 10, and that 50 reads
-#   the most in one call.
+#   the most in one call. Same for the transactional emails (Brevo: 500) and their events (Brevo: 2500, above the
+#   schema's 100): the description of limit says what Brevo answers without it.
 # - Values whose absence changes what Brevo does, required here: updateEnabled of upsert_contact (the client sends
 #   true; Brevo's default is false, a known email is then refused), isActive of create_template (the client sends
 #   true), excludeHtmlContent of list_campaigns and get_campaign (the client sends true: without it every campaign
@@ -101,7 +102,7 @@ connector:
     campagnes, emails transactionnels, emails envoyés, modèles, expéditeurs, crédits d'envoi, solde, forfait.
   logo_domain: brevo.com
   namespace: brevo
-  version: 1.1.0
+  version: 2.0.0
   api_version: v3
   base_url: https://api.brevo.com/v3
   auth: { kind: api_key, in: header, name: api-key, key: api_key }
@@ -808,7 +809,7 @@ functions:
         message_id: { type: string, minLength: 1 }
         start_date: *day_from
         end_date: *day_to
-        limit: { type: integer, minimum: 1, maximum: 500, description: "Page size, 50 by default." }
+        limit: { type: integer, minimum: 1, maximum: 500, description: "Page size, at most 500; Brevo answers 500 when it is absent." }
         offset: *offset
         sort: *sort
     examples:
@@ -849,7 +850,7 @@ functions:
       type: object
       additionalProperties: false
       properties:
-        limit: { type: integer, minimum: 1, maximum: 100, description: "Page size, 50 by default." }
+        limit: { type: integer, minimum: 1, maximum: 100, description: "Page size, at most 100; Brevo answers up to 2500 when it is absent: pass 100 to stay within one page of the schema." }
         offset: *offset
         start_date: *day_from
         end_date: *day_to

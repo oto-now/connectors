@@ -1002,7 +1002,12 @@ export const listTransactionalEmails = defineFunction({
       "message_id": {"type": "string", "minLength": 1},
       "start_date": {"type": "string", "minLength": 1, "description": "YYYY-MM-DD."},
       "end_date": {"type": "string", "minLength": 1, "description": "YYYY-MM-DD."},
-      "limit": {"type": "integer", "minimum": 1, "maximum": 500, "description": "Page size, 50 by default."},
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 500,
+        "description": "Page size, at most 500; Brevo answers 500 when it is absent."
+      },
       "offset": {"type": "integer", "minimum": 0, "description": "Index of the first record, 0 by default."},
       "sort": {"type": "string", "enum": ["asc", "desc"], "description": "Order of creation, desc by default."}
     }
@@ -1059,7 +1064,12 @@ export const transactionalEvents = defineFunction({
     "type": "object",
     "additionalProperties": false,
     "properties": {
-      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "description": "Page size, 50 by default."},
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "description": "Page size, at most 100; Brevo answers up to 2500 when it is absent: pass 100 to stay within one page of the schema."
+      },
       "offset": {"type": "integer", "minimum": 0, "description": "Index of the first record, 0 by default."},
       "start_date": {"type": "string", "minLength": 1, "description": "YYYY-MM-DD."},
       "end_date": {"type": "string", "minLength": 1, "description": "YYYY-MM-DD."},
@@ -2508,7 +2518,7 @@ export const connector = defineConnector({
   name: "brevo",
   label: "Brevo",
   namespace: "brevo",
-  version: "1.1.0",
+  version: "2.0.0",
   apiVersion: "v3",
   description: "Brevo (ex Sendinblue), email marketing and transactional email: contacts and their attributes, contact lists and folders, segments, newsletters and email campaigns with their statistics, transactional emails and their events, templates, senders, the remaining email and SMS credits of the account, and the Brevo CRM (deals, companies, tasks, notes). En français : emailing, newsletter, listes de diffusion, listes de contacts, abonnés, désabonnés, campagnes, emails transactionnels, emails envoyés, modèles, expéditeurs, crédits d'envoi, solde, forfait.",
   logoDomain: "brevo.com",
