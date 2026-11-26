@@ -207,11 +207,45 @@ def test_list_templates_single(client, calls):
     assert calls[0]["url"] == f"{BASE}/smtp/templates/5"
 
 
+def test_get_account_never_returns_the_relay_login_nor_the_automation_key(client, monkeypatch):
+    """Le login du relais SMTP et la clé du suivi d'automatisation ne sortent jamais du client ; le reste du compte,
+    relais compris, reste lisible."""
+    account = {
+        "email": "owner@acme.example", "companyName": "Acme",
+        "plan": [{"type": "free", "creditsType": "sendLimit", "credits": 300}],
+        "relay": {"enabled": True, "data": {"userName": "smtp-login@acme.example", "relay": "smtp.example.test",
+                                            "port": 587}},
+        "marketingAutomation": {"enabled": True, "key": "tracker-key-0"},
+    }
+    monkeypatch.setattr("requests.Session.request", lambda self, method, url, **kw: _Resp(account))
+    got = client.get_account()
+    assert "smtp-login" not in json.dumps(got) and "tracker-key-0" not in json.dumps(got)
+    assert got["relay"] == {"enabled": True, "data": {"relay": "smtp.example.test", "port": 587}}
+    assert got["marketingAutomation"] == {"enabled": True}
+    assert got["plan"] == account["plan"] and got["email"] == "owner@acme.example"
+
+
+def test_get_account_without_relay_nor_automation_is_returned_as_is(client, monkeypatch):
+    monkeypatch.setattr("requests.Session.request",
+                        lambda self, method, url, **kw: _Resp({"email": "o@acme.example", "relay": None}))
+    assert client.get_account() == {"email": "o@acme.example", "relay": None}
+
+
+def test_delete_list_and_delete_contact(client, calls):
+    client.delete_list(3)
+    client.delete_contact("42", identifier_type="contact_id")
+    client.delete_contact("marie@example.test")
+    assert [(c["method"], c["url"], c.get("params")) for c in calls] == [
+        ("DELETE", f"{BASE}/contacts/lists/3", None),
+        ("DELETE", f"{BASE}/contacts/42", {"identifierType": "contact_id"}),
+        ("DELETE", f"{BASE}/contacts/marie@example.test", None),
+    ]
+
+
 # --- Campagnes : les writes dangereux ne sont pas exposés ---------------------
 
 @pytest.mark.parametrize("forbidden", [
-    "send_campaign", "send_now", "delete_campaign", "delete_contact",
-    "delete_list", "delete_template", "delete_hardbounces", "set_campaign_status",
+    "send_campaign", "send_now", "delete_campaign", "delete_template", "delete_hardbounces", "set_campaign_status",
 ])
 def test_destructive_writes_are_absent(client, forbidden):
     assert not hasattr(client, forbidden)

@@ -42,6 +42,8 @@ EXPECTED_MEMBERS = {
     'crm_link': "(self, entity: 'str', object_id: 'str', link_contact_ids: 'Optional[List[int]]' = None, unlink_contact_ids: 'Optional[List[int]]' = None, link_ids: 'Optional[List[str]]' = None, unlink_ids: 'Optional[List[str]]' = None) -> 'Dict[str, Any]'",
     'crm_list': "(self, entity: 'str', limit: 'int' = 50, offset: 'int' = 0, filters: 'Optional[Dict[str, Any]]' = None, sort: 'Optional[str]' = None, sort_by: 'Optional[str]' = None, modified_since: 'Optional[str]' = None, created_since: 'Optional[str]' = None) -> 'Dict[str, Any]'",
     'crm_update': "(self, entity: 'str', object_id: 'str', payload: 'Dict[str, Any]') -> 'Dict[str, Any]'",
+    'delete_contact': "(self, identifier: 'str', identifier_type: 'Optional[str]' = None) -> 'Dict[str, Any]'",
+    'delete_list': "(self, list_id: 'int') -> 'Dict[str, Any]'",
     'export_contacts': "(self, contact_filter: 'Optional[Dict[str, Any]]' = None, export_attributes: 'Optional[List[str]]' = None, notify_url: 'Optional[str]' = None, disable_notification: 'bool' = True) -> 'Dict[str, Any]'",
     'get_account': "(self) -> 'Dict[str, Any]'",
     'get_campaign': "(self, campaign_id: 'int', statistics: 'Optional[str]' = None, exclude_html_content: 'bool' = True) -> 'Dict[str, Any]'",

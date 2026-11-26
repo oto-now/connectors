@@ -2,8 +2,17 @@
 """The `brevo` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'brevo',
                'label': 'Brevo',
+               'description': 'Brevo (ex Sendinblue), email marketing and transactional email: contacts and '
+                              'their attributes, contact lists and folders, segments, newsletters and email '
+                              'campaigns with their statistics, transactional emails and their events, '
+                              'templates, senders, the remaining email and SMS credits of the account, and '
+                              'the Brevo CRM (deals, companies, tasks, notes). En français : emailing, '
+                              'newsletter, listes de diffusion, listes de contacts, abonnés, désabonnés, '
+                              'campagnes, emails transactionnels, emails envoyés, modèles, expéditeurs, '
+                              "crédits d'envoi, solde, forfait.",
+               'logo_domain': 'brevo.com',
                'namespace': 'brevo',
-               'version': '1.0.0',
+               'version': '1.1.0',
                'api_version': 'v3',
                'base_url': 'https://api.brevo.com/v3',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'api-key', 'key': 'api_key'},
@@ -11,7 +20,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                'modes': ['byo_user', 'byo_org'],
                'query_arrays': 'repeat',
                'probe': {'function': 'get_account'},
-               'errors': [{'status': 400,
+               'errors': [{'status': [400, 402],
                            'body': {'path': 'code', 'equals': ['not_enough_credits']},
                            'code': 'credits_exhausted',
                            'retryable': False,
@@ -37,13 +46,6 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                            'marks_account': 'credential_rejected',
                            'message': 'Brevo refused the API key: invalid or revoked. A new v3 key is made '
                                       'in Brevo, SMTP & API, API keys.'},
-                          {'status': 402,
-                           'body': {'path': 'code', 'equals': ['not_enough_credits']},
-                           'code': 'credits_exhausted',
-                           'retryable': False,
-                           'marks_account': 'quota_exhausted',
-                           'message': 'Brevo credits are exhausted for this send or this plan. Top up or '
-                                      'upgrade the Brevo account.'},
                           {'status': 402,
                            'code': 'payment_required',
                            'retryable': False,
@@ -75,15 +77,19 @@ DESCRIPTION = {'connector': {'name': 'brevo',
  'functions': [{'name': 'get_account',
                 'class': 'read',
                 'description': 'Get the Brevo account: company, login email, plans and their remaining email '
-                               'and SMS credits (plan[].credits, per credit type), relay.',
+                               'and SMS credits (plan[].credits, per credit type: crédits, solde, forfait), '
+                               'whether transactional email is on (relay.enabled). The login of the SMTP '
+                               'relay and the marketing automation key are not given.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The account', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/account'},
+                'output': {'strip': ['relay.data.userName', 'marketingAutomation.key']},
                 'cost': {'per': 'request'}},
                {'name': 'list_senders',
                 'class': 'read',
-                'description': "List the account's verified senders (id, name, email, active). Sending an "
-                               'email or creating a template or campaign takes one of them as sender.',
+                'description': "List the account's verified senders (expéditeurs: id, name, email, active). "
+                               'Sending an email or creating a template or campaign takes one of them as '
+                               'sender.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'ip': {'type': 'string',
@@ -330,6 +336,41 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                   'emailBlacklisted': 'email_blacklisted',
                                   'smsBlacklisted': 'sms_blacklisted'}},
                 'cost': {'per': 'request'}},
+               {'name': 'delete_contact',
+                'class': 'sensitive',
+                'effect': 'destroy',
+                'description': 'Delete a contact for good: its attributes, its list memberships and its '
+                               'history go. identifier is its email by default; identifier_type says '
+                               'otherwise. Answers {} on success; a 404 when unknown. To stop sending to a '
+                               'contact while keeping it, update_contact with email_blacklisted.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['identifier'],
+                          'properties': {'identifier': {'type': 'string',
+                                                        'minLength': 1,
+                                                        'personal': True,
+                                                        'description': 'Email, contact id, phone (SMS '
+                                                                       'attribute) or EXT_ID, as '
+                                                                       'identifier_type says.'},
+                                         'identifier_type': {'type': 'string',
+                                                             'enum': ['email_id',
+                                                                      'contact_id',
+                                                                      'phone_id',
+                                                                      'ext_id',
+                                                                      'whatsapp_id',
+                                                                      'landline_number_id'],
+                                                             'description': 'What identifier is; an email by '
+                                                                            'default.'}}},
+                'examples': [{'title': 'Delete a contact by email',
+                              'input': {'identifier': 'marie@example.test'}},
+                             {'title': 'Delete a contact by id',
+                              'input': {'identifier': '42', 'identifier_type': 'contact_id'}}],
+                'confirm': {'summary': 'Delete Brevo contact {identifier} for good, with its attributes and '
+                                       'history.'},
+                'call': {'method': 'DELETE',
+                         'path': '/contacts/{identifier}',
+                         'query': {'identifierType': 'identifier_type'}},
+                'cost': {'per': 'request'}},
                {'name': 'contact_campaign_stats',
                 'class': 'read',
                 'description': "Get one contact's email campaign statistics: messages sent, opened, clicked "
@@ -536,7 +577,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                           'properties': {'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 50,
-                                                   'description': 'Page size, 50 by default, at most 50.'},
+                                                   'description': 'Page size, at most 50; Brevo answers 10 '
+                                                                  'when it is absent: pass 50 to read the '
+                                                                  'most in one call.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -551,15 +594,20 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'list_lists',
                 'class': 'read',
-                'description': "List the account's contact lists: id, name, folderId, uniqueSubscribers, "
-                               'totalBlacklisted: {lists, count}. The lists of one folder: '
-                               'list_folder_lists.',
+                'description': "List the account's contact lists (listes de diffusion, newsletter): {lists: "
+                               '[{id, name, folderId}], count}. count is the total number of lists: 10 per '
+                               'page unless limit says otherwise (50 at most); the next page is offset + '
+                               'limit, while below count. totalSubscribers and totalBlacklisted are no '
+                               'longer computed here by Brevo and come back 0: the subscribers (abonnés) of '
+                               'one list are in get_list. The lists of one folder: list_folder_lists.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 50,
-                                                   'description': 'Page size, 50 by default, at most 50.'},
+                                                   'description': 'Page size, at most 50; Brevo answers 10 '
+                                                                  'when it is absent: pass 50 to read the '
+                                                                  'most in one call.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -574,7 +622,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'list_folder_lists',
                 'class': 'read',
-                'description': 'List the contact lists of one folder: {lists, count}.',
+                'description': 'List the contact lists of one folder: {lists, count}, count the total; 10 '
+                               'per page unless limit says otherwise, next page at offset + limit. '
+                               'Subscriber totals come back 0 here: get_list gives them.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['folder_id'],
@@ -584,7 +634,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                          'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 50,
-                                                   'description': 'Page size, 50 by default, at most 50.'},
+                                                   'description': 'Page size, at most 50; Brevo answers 10 '
+                                                                  'when it is absent: pass 50 to read the '
+                                                                  'most in one call.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -599,8 +651,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'get_list',
                 'class': 'read',
-                'description': 'Get one list: name, folder, number of subscribers and of blacklisted '
-                               "contacts, creation date, its campaigns' statistics.",
+                'description': 'Get one list (liste de diffusion): name, folder, number of subscribers '
+                               "(abonnés) and of blacklisted contacts, creation date, its campaigns' "
+                               'statistics.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -682,6 +735,23 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'call': {'method': 'PUT',
                          'path': '/contacts/lists/{list_id}',
                          'body': {'name': 'name', 'folderId': 'folder_id'}},
+                'cost': {'per': 'request'}},
+               {'name': 'delete_list',
+                'class': 'sensitive',
+                'effect': 'destroy',
+                'description': 'Delete a contact list for good; its contacts stay in the account, only their '
+                               'membership of this list goes. Answers {} on success; a 404 when the id is '
+                               'unknown.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['list_id'],
+                          'properties': {'list_id': {'type': 'integer',
+                                                     'minimum': 1,
+                                                     'description': 'List id.'}}},
+                'examples': [{'title': 'Delete a list', 'input': {'list_id': 3}}],
+                'confirm': {'summary': 'Delete Brevo list {list_id} for good (its contacts stay in the '
+                                       'account).'},
+                'call': {'method': 'DELETE', 'path': '/contacts/lists/{list_id}'},
                 'cost': {'per': 'request'}},
                {'name': 'add_to_list',
                 'class': 'sensitive',
@@ -781,7 +851,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                           'properties': {'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 50,
-                                                   'description': 'Page size, 50 by default, at most 50.'},
+                                                   'description': 'Page size, at most 50; Brevo answers 10 '
+                                                                  'when it is absent: pass 50 to read the '
+                                                                  'most in one call.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -913,9 +985,11 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'list_transactional_emails',
                 'class': 'read',
                 'description': 'List sent transactional emails for a recipient, a template or a message id '
-                               '(at least one of the three): their uuid, subject, date. Dates are '
-                               'YYYY-MM-DD, a month at most. What became of an email (delivered, opened, '
-                               'bounced): transactional_events.',
+                               '(at least one of the three, Brevo requires it): their uuid, subject, date. '
+                               'Dates are YYYY-MM-DD, a month at most. The emails sent over a period, '
+                               'whatever the address (emails partis, envoyés sur une période): '
+                               'transactional_events with event requests. What became of an email '
+                               '(delivered, opened, bounced): transactional_events.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['email']},
@@ -973,10 +1047,12 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'transactional_events',
                 'class': 'read',
-                'description': 'List the deliverability events of transactional emails, the source of truth '
-                               'per email: delivered, opened, clicks, hardBounces, softBounces, spam, '
-                               'blocked, unsubscribed, deferred… Over days (90 at most) or between two dates '
-                               '(YYYY-MM-DD); 30 days by default. limit 50 by default, at most 100.',
+                'description': 'List the events of transactional emails, the source of truth per email '
+                               '(emails partis, envoyés sur une période): requests (one per email sent), '
+                               'delivered, opened, clicks, hardBounces, softBounces, spam, blocked, '
+                               'unsubscribed, deferred… Over days (90 at most) or between two dates '
+                               '(YYYY-MM-DD); 30 days by default. No address or template needed: event '
+                               'requests over a period lists every email sent. limit at most 100.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -1026,7 +1102,12 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                                   'enum': ['asc', 'desc'],
                                                   'description': 'Order of creation, desc by default.'}}},
                 'examples': [{'title': 'The hard bounces of the week',
-                              'input': {'event': 'hardBounces', 'days': 7}}],
+                              'input': {'event': 'hardBounces', 'days': 7}},
+                             {'title': 'Every email sent over a period',
+                              'input': {'event': 'requests',
+                                        'start_date': '2026-11-01',
+                                        'end_date': '2026-11-25',
+                                        'limit': 100}}],
                 'call': {'method': 'GET',
                          'path': '/smtp/statistics/events',
                          'query': {'limit': 'limit',
@@ -1307,11 +1388,12 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'list_campaigns',
                 'class': 'read',
-                'description': 'List email campaigns: id, name, subject, status, sender, recipients, dates, '
-                               'statistics if asked (globalStats, linksStats, statsByDomain). '
-                               'exclude_html_content true keeps the answer light (the HTML stays in Brevo). '
-                               'Filter by type (classic, trigger), status (draft, sent, queued, suspended, '
-                               'archive, inProcess…), sent dates. limit 50 by default, at most 100.',
+                'description': 'List email campaigns (campagnes, emailing, newsletters): id, name, subject, '
+                               'status, sender, recipients, dates, statistics if asked (globalStats, '
+                               'linksStats, statsByDomain). exclude_html_content true keeps the answer light '
+                               '(the HTML stays in Brevo). Filter by type (classic, trigger), status (draft, '
+                               'sent, queued, suspended, archive, inProcess…), sent dates. limit 50 by '
+                               'default, at most 100.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['exclude_html_content'],
@@ -1362,9 +1444,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'get_campaign',
                 'class': 'read',
-                'description': 'Get one email campaign, with its statistics (globalStats, linksStats, '
-                               'statsByDomain, statsByDevice, statsByBrowser). exclude_html_content true '
-                               'leaves its HTML out.',
+                'description': 'Get one email campaign (campagne, emailing), with its statistics '
+                               '(globalStats, linksStats, statsByDomain, statsByDevice, statsByBrowser). '
+                               'exclude_html_content true leaves its HTML out.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id', 'exclude_html_content'],
@@ -1389,12 +1471,12 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'create_campaign',
                 'class': 'write',
-                'act': False,
-                'description': 'Create an email campaign as a draft; answers {id}. Nothing is sent: the send '
-                               'is started in the Brevo app, after review; send_campaign_test sends a test '
-                               'first. sender is a verified sender (list_senders). The body is html_content, '
-                               "html_url or template_id (a template's content copied). recipients: {listIds, "
-                               'exclusionListIds, segmentIds, exclusionSegmentIds}.',
+                'description': 'Create an email campaign (campagne, emailing, newsletter) as a draft; '
+                               'answers {id}. Nothing is sent: the send is started in the Brevo app, after '
+                               'review; send_campaign_test sends a test first. sender is a verified sender '
+                               '(list_senders). The body is html_content, html_url or template_id (a '
+                               "template's content copied). recipients: {listIds, exclusionListIds, "
+                               'segmentIds, exclusionSegmentIds}.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'sender'],
