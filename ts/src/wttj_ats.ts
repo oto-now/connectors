@@ -394,6 +394,7 @@ export const connector = defineConnector({
   namespace: "wttj_ats",
   version: "1.0.0",
   apiVersion: "v1 external",
+  logoDomain: "welcometothejungle.com",
   baseUrl: "https://www.welcomekit.co/api/v1/external",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API token", "secret": true, "holder": "account"}],

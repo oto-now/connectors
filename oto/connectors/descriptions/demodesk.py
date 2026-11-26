@@ -2,6 +2,7 @@
 """The `demodesk` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'demodesk',
                'label': 'Demodesk',
+               'logo_domain': 'demodesk.ai',
                'namespace': 'demodesk',
                'version': '1.0.1',
                'api_version': 'v2',

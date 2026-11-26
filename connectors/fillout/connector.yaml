@@ -31,6 +31,7 @@
 connector:
   name: fillout
   label: Fillout
+  logo_domain: fillout.com
   namespace: fillout
   version: 1.0.0
   api_version: v1

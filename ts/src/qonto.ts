@@ -758,6 +758,7 @@ export const connector = defineConnector({
   namespace: "qonto",
   version: "1.0.0",
   apiVersion: "v2",
+  logoDomain: "qonto.com",
   baseUrl: "https://thirdparty.qonto.com/v2",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key (login:secret-key)", "secret": true, "holder": "account"}],

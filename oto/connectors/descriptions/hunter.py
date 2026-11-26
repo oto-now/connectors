@@ -2,6 +2,7 @@
 """The `hunter` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'hunter',
                'label': 'Hunter.io',
+               'logo_domain': 'hunter.io',
                'namespace': 'hunter',
                'version': '1.0.0',
                'api_version': 'v2',

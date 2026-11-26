@@ -2,6 +2,7 @@
 """The `instantly` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'instantly',
                'label': 'Instantly',
+               'logo_domain': 'instantly.ai',
                'namespace': 'instantly',
                'version': '1.0.1',
                'api_version': 'v2',

@@ -2,6 +2,7 @@
 """The `heyreach` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'heyreach',
                'label': 'HeyReach',
+               'logo_domain': 'heyreach.io',
                'namespace': 'heyreach',
                'version': '1.0.1',
                'api_version': 'public API (Postman collection, 2026-11)',

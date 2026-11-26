@@ -338,6 +338,7 @@ export const connector = defineConnector({
   namespace: "fillout",
   version: "1.0.0",
   apiVersion: "v1",
+  logoDomain: "fillout.com",
   baseUrls: {"setting": "region", "values": {"us": "https://api.fillout.com/v1/api", "eu": "https://eu-api.fillout.com/v1/api"}},
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "Organization API key", "secret": true, "holder": "account"}],

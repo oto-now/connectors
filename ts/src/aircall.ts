@@ -722,6 +722,7 @@ export const connector = defineConnector({
   namespace: "aircall",
   version: "1.1.0",
   apiVersion: "v1 (users on v2)",
+  logoDomain: "aircall.io",
   baseUrl: "https://api.aircall.io",
   auth: {"kind": "basic", "username": "api_id", "password": "api_token"},
   credential: [{"name": "api_id", "label": "API ID", "secret": false, "holder": "account"}, {"name": "api_token", "label": "API Token", "secret": true, "holder": "account"}],

@@ -2,6 +2,7 @@
 """The `typeform` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'typeform',
                'label': 'Typeform',
+               'logo_domain': 'typeform.com',
                'namespace': 'typeform',
                'version': '1.2.0',
                'api_version': 'Create API, Responses API and Webhooks API (unversioned)',

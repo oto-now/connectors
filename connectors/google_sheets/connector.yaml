@@ -25,6 +25,7 @@
 connector:
   name: google_sheets
   label: Google Sheets
+  logo_domain: sheets.google.com
   namespace: google_sheets
   version: 1.0.1
   api_version: v4

@@ -2,6 +2,7 @@
 """The `google_calendar` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'google_calendar',
                'label': 'Google Calendar',
+               'logo_domain': 'calendar.google.com',
                'namespace': 'google_calendar',
                'version': '1.0.0',
                'api_version': 'v3',

@@ -2,6 +2,7 @@
 """The `gmail` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'gmail',
                'label': 'Gmail',
+               'logo_domain': 'mail.google.com',
                'namespace': 'gmail',
                'version': '1.1.1',
                'api_version': 'v1',

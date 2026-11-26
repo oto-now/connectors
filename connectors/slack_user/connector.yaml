@@ -55,6 +55,7 @@
 connector:
   name: slack_user
   label: Slack (personal token)
+  logo_domain: slack.com
   namespace: slack_user
   version: 1.1.0
   api_version: Web API

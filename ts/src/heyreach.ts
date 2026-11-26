@@ -1340,6 +1340,7 @@ export const connector = defineConnector({
   namespace: "heyreach",
   version: "1.0.1",
   apiVersion: "public API (Postman collection, 2026-11)",
+  logoDomain: "heyreach.io",
   baseUrl: "https://api.heyreach.io/api/public",
   auth: {"kind": "api_key", "in": "header", "name": "X-API-KEY", "key": "api_key"},
   credential: [{"name": "api_key", "label": "HeyReach API key", "secret": true, "holder": "account"}],

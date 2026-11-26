@@ -350,6 +350,7 @@ export const connector = defineConnector({
   namespace: "pipecorn",
   version: "1.0.0",
   apiVersion: "v2",
+  logoDomain: "pipecorn.com",
   baseUrl: "https://app.pipecorn.com/api/v2",
   auth: {"kind": "api_key", "in": "header", "name": "X-API-KEY", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

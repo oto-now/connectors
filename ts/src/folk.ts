@@ -3029,6 +3029,7 @@ export const connector = defineConnector({
   namespace: "folk",
   version: "1.0.1",
   apiVersion: "v1 (OpenAPI 2025-06-09)",
+  logoDomain: "folk.app",
   baseUrl: "https://api.folk.app/v1",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

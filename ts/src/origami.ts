@@ -771,6 +771,7 @@ export const connector = defineConnector({
   namespace: "origami",
   version: "1.0.0",
   apiVersion: "v2",
+  logoDomain: "origami.chat",
   baseUrl: "https://origami.chat/api/v2",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

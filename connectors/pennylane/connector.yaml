@@ -39,6 +39,7 @@
 connector:
   name: pennylane
   label: Pennylane
+  logo_domain: pennylane.com
   namespace: pennylane
   version: 2.2.0
   api_version: v2

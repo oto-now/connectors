@@ -165,6 +165,7 @@ export const connector = defineConnector({
   namespace: "malibou",
   version: "1.0.0",
   apiVersion: "1.11.0",
+  logoDomain: "malibou.com",
   baseUrl: "https://app.malibou.com/api/public/v1/organizations/{organization_id}",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

@@ -1767,6 +1767,7 @@ export const connector = defineConnector({
   namespace: "klaviyo",
   version: "1.0.0",
   apiVersion: "2026-07-15",
+  logoDomain: "klaviyo.com",
   baseUrl: "https://a.klaviyo.com/api",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "prefix": "Klaviyo-API-Key ", "key": "api_key"},
   credential: [{"name": "api_key", "label": "Private API key", "secret": true, "holder": "account"}],

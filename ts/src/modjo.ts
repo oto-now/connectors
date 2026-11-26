@@ -1101,6 +1101,7 @@ export const connector = defineConnector({
   namespace: "modjo",
   version: "2.0.0",
   apiVersion: "v2",
+  logoDomain: "modjo.ai",
   baseUrl: "https://api.modjo.ai/v2",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "Workspace API key", "secret": true, "holder": "account"}],

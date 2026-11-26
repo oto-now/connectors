@@ -440,6 +440,7 @@ export const connector = defineConnector({
   namespace: "demodesk",
   version: "1.0.1",
   apiVersion: "v2",
+  logoDomain: "demodesk.ai",
   baseUrl: "https://demodesk.com/api/v2",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "Demodesk API key", "secret": true, "holder": "account"}],

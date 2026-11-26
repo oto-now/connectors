@@ -154,6 +154,7 @@ export const connector = defineConnector({
   namespace: "sellsy",
   version: "1.0.1",
   apiVersion: "v2",
+  logoDomain: "sellsy.com",
   baseUrl: "https://api.sellsy.com/v2",
   auth: {
     "kind": "oauth2_client_credentials",

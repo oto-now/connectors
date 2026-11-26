@@ -37,6 +37,7 @@
 connector:
   name: mistral
   label: Mistral AI
+  logo_domain: mistral.ai
   namespace: mistral
   version: 1.0.1
   api_version: v1

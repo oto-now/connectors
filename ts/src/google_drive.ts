@@ -516,6 +516,7 @@ export const connector = defineConnector({
   namespace: "google_drive",
   version: "1.0.0",
   apiVersion: "v3",
+  logoDomain: "drive.google.com",
   baseUrl: "https://www.googleapis.com/drive/v3",
   auth: {
     "kind": "oauth2_user",

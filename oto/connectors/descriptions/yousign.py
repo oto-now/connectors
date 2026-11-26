@@ -2,6 +2,7 @@
 """The `yousign` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'yousign',
                'label': 'Yousign',
+               'logo_domain': 'youtrust.com',
                'namespace': 'yousign',
                'version': '1.1.1',
                'api_version': 'v3',

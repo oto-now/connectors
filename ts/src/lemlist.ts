@@ -4647,6 +4647,7 @@ export const connector = defineConnector({
   namespace: "lemlist",
   version: "1.6.1",
   apiVersion: "v1 and v2 routes",
+  logoDomain: "lemlist.com",
   baseUrl: "https://api.lemlist.com/api",
   auth: {"kind": "basic", "password": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

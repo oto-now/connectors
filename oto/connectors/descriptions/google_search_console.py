@@ -2,6 +2,7 @@
 """The `google_search_console` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'google_search_console',
                'label': 'Google Search Console',
+               'logo_domain': 'search.google.com',
                'namespace': 'google_search_console',
                'version': '2.0.0',
                'api_version': 'v1',

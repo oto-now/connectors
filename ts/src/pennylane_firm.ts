@@ -406,6 +406,7 @@ export const connector = defineConnector({
   namespace: "pennylane_firm",
   version: "1.1.1",
   apiVersion: "v1",
+  logoDomain: "pennylane.com",
   baseUrl: "https://app.pennylane.com/api/external/firm/v1",
   auth: {"kind": "bearer", "token": "token"},
   credential: [{"name": "token", "label": "Firm API token", "secret": true, "holder": "account"}],

@@ -2,6 +2,7 @@
 """The `klaviyo` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'klaviyo',
                'label': 'Klaviyo',
+               'logo_domain': 'klaviyo.com',
                'namespace': 'klaviyo',
                'version': '1.0.0',
                'api_version': '2026-07-15',

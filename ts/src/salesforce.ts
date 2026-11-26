@@ -226,6 +226,7 @@ export const connector = defineConnector({
   namespace: "salesforce",
   version: "1.0.1",
   apiVersion: "v60.0",
+  logoDomain: "www.salesforce.com",
   baseUrl: "{instance_url}/services/data/v60.0",
   auth: {
     "kind": "oauth2_user",

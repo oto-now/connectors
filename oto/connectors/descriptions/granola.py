@@ -2,6 +2,7 @@
 """The `granola` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'granola',
                'label': 'Granola',
+               'logo_domain': 'granola.ai',
                'namespace': 'granola',
                'version': '1.0.0',
                'api_version': 'v1',

@@ -27,6 +27,7 @@
 connector:
   name: mailpool
   label: Mailpool
+  logo_domain: mailpool.ai
   namespace: mailpool
   version: 2.0.0
   api_version: v1

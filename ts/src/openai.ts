@@ -165,6 +165,7 @@ export const connector = defineConnector({
   namespace: "openai",
   version: "1.0.0",
   apiVersion: "v1",
+  logoDomain: "openai.com",
   baseUrl: "https://api.openai.com/v1",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "OpenAI API key", "secret": true, "holder": "account"}],

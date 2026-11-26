@@ -17,6 +17,7 @@
 connector:
   name: google_calendar
   label: Google Calendar
+  logo_domain: calendar.google.com
   namespace: google_calendar
   version: 1.0.0
   api_version: v3

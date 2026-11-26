@@ -63,6 +63,7 @@
 connector:
   name: linear
   label: Linear
+  logo_domain: linear.app
   namespace: linear
   version: 1.0.0
   api_version: GraphQL (unversioned)

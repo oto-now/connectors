@@ -3,6 +3,7 @@
 connector:
   name: sellsy
   label: Sellsy
+  logo_domain: sellsy.com
   namespace: sellsy
   version: 1.0.1
   api_version: v2

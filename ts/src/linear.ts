@@ -1102,6 +1102,7 @@ export const connector = defineConnector({
   namespace: "linear",
   version: "1.0.0",
   apiVersion: "GraphQL (unversioned)",
+  logoDomain: "linear.app",
   baseUrl: "https://api.linear.app",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

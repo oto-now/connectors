@@ -3606,6 +3606,7 @@ export const connector = defineConnector({
   namespace: "dataforseo",
   version: "1.0.4",
   apiVersion: "v3",
+  logoDomain: "dataforseo.com",
   baseUrl: "https://api.dataforseo.com/v3",
   auth: {"kind": "basic", "username": "login", "password": "password"},
   credential: [{"name": "login", "label": "API login", "secret": false, "holder": "account"}, {"name": "password", "label": "API password", "secret": true, "holder": "account"}],

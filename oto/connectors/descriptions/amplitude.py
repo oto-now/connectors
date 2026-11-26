@@ -2,6 +2,7 @@
 """The `amplitude` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'amplitude',
                'label': 'Amplitude',
+               'logo_domain': 'amplitude.com',
                'namespace': 'amplitude',
                'version': '1.2.0',
                'api_version': 'Dashboard REST and Taxonomy api/2; charts and cohort list api/3; cohort '

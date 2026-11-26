@@ -2,6 +2,7 @@
 """The `pennylane_firm` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                'label': 'Pennylane (firm)',
+               'logo_domain': 'pennylane.com',
                'namespace': 'pennylane_firm',
                'version': '1.1.1',
                'api_version': 'v1',

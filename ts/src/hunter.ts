@@ -142,6 +142,7 @@ export const connector = defineConnector({
   namespace: "hunter",
   version: "1.0.0",
   apiVersion: "v2",
+  logoDomain: "hunter.io",
   baseUrl: "https://api.hunter.io/v2",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

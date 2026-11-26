@@ -2,6 +2,7 @@
 """The `threecx` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'threecx',
                'label': '3CX',
+               'logo_domain': '3cx.com',
                'namespace': 'threecx',
                'version': '1.1.0',
                'api_version': 'XAPI v1 (3CX V20)',

@@ -251,6 +251,7 @@ export const connector = defineConnector({
   namespace: "google_sheets",
   version: "1.0.1",
   apiVersion: "v4",
+  logoDomain: "sheets.google.com",
   baseUrl: "https://sheets.googleapis.com/v4",
   auth: {
     "kind": "oauth2_user",

@@ -428,6 +428,7 @@ export const connector = defineConnector({
   namespace: "jefacture",
   version: "1.0.0",
   apiVersion: "2026-10",
+  logoDomain: "jefacture.com",
   baseUrl: "https://api.btx.fr.banqup.com",
   auth: {
     "kind": "oauth2_user",

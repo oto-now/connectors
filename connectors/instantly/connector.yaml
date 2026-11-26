@@ -78,6 +78,7 @@
 connector:
   name: instantly
   label: Instantly
+  logo_domain: instantly.ai
   namespace: instantly
   version: 1.0.1
   api_version: v2

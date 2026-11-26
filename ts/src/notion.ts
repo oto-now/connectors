@@ -1094,6 +1094,7 @@ export const connector = defineConnector({
   namespace: "notion",
   version: "1.1.0",
   apiVersion: "2025-09-03",
+  logoDomain: "notion.com",
   baseUrl: "https://api.notion.com/v1",
   auth: {"kind": "bearer", "token": "token"},
   credential: [{"name": "token", "label": "Integration token", "secret": true, "holder": "account"}],

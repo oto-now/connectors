@@ -422,6 +422,7 @@ export const connector = defineConnector({
   namespace: "meta_ads",
   version: "1.1.0",
   apiVersion: "v25.0",
+  logoDomain: "meta.com",
   baseUrl: "https://graph.facebook.com/v25.0",
   auth: {"kind": "bearer", "token": "access_token"},
   credential: [{"name": "access_token", "label": "Access token", "secret": true, "holder": "account"}],

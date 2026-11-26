@@ -2,6 +2,7 @@
 """The `higgsfield` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'higgsfield',
                'label': 'Higgsfield',
+               'logo_domain': 'higgsfield.ai',
                'namespace': 'higgsfield',
                'version': '1.1.2',
                'api_version': '2.0.0',

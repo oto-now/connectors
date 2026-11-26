@@ -2,6 +2,7 @@
 """The `hubspot` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'hubspot',
                'label': 'HubSpot',
+               'logo_domain': 'hubspot.com',
                'namespace': 'hubspot',
                'version': '1.0.2',
                'api_version': 'v3',

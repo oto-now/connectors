@@ -2,6 +2,7 @@
 """The `affinity` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'affinity',
                'label': 'Affinity',
+               'logo_domain': 'affinity.co',
                'namespace': 'affinity',
                'version': '1.0.0',
                'api_version': 'v1 and v2 (2026-09-17)',

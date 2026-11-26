@@ -1865,6 +1865,7 @@ export const connector = defineConnector({
   namespace: "attio",
   version: "1.3.0",
   apiVersion: "v2",
+  logoDomain: "attio.com",
   baseUrl: "https://api.attio.com/v2",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "Access token", "secret": true, "holder": "account"}],

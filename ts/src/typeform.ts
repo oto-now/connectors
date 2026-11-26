@@ -693,6 +693,7 @@ export const connector = defineConnector({
   namespace: "typeform",
   version: "1.2.0",
   apiVersion: "Create API, Responses API and Webhooks API (unversioned)",
+  logoDomain: "typeform.com",
   baseUrls: {"setting": "region", "values": {"us": "https://api.typeform.com", "eu": "https://api.eu.typeform.com", "eu2": "https://api.typeform.eu"}},
   auth: {"kind": "bearer", "token": "access_token"},
   credential: [{"name": "access_token", "label": "Personal access token", "secret": true, "holder": "account"}],

@@ -404,6 +404,7 @@ export const connector = defineConnector({
   namespace: "google_calendar",
   version: "1.0.0",
   apiVersion: "v3",
+  logoDomain: "calendar.google.com",
   baseUrl: "https://www.googleapis.com/calendar/v3",
   auth: {
     "kind": "oauth2_user",

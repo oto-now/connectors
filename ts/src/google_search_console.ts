@@ -312,6 +312,7 @@ export const connector = defineConnector({
   namespace: "google_search_console",
   version: "2.0.0",
   apiVersion: "v1",
+  logoDomain: "search.google.com",
   baseUrl: "https://searchconsole.googleapis.com",
   accesses: [
     {

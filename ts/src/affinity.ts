@@ -1052,6 +1052,7 @@ export const connector = defineConnector({
   namespace: "affinity",
   version: "1.0.0",
   apiVersion: "v1 and v2 (2026-09-17)",
+  logoDomain: "affinity.co",
   baseUrl: "https://api.affinity.co",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

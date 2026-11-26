@@ -2,6 +2,7 @@
 """The `microsoft_app` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'microsoft_app',
                'label': 'Microsoft 365 mail (application access)',
+               'logo_domain': 'www.microsoft.com',
                'namespace': 'microsoft_app',
                'version': '1.0.0',
                'api_version': 'v1.0',

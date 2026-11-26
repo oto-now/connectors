@@ -2,6 +2,7 @@
 """The `microsoft` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'microsoft',
                'label': 'Microsoft 365 (SharePoint, OneDrive)',
+               'logo_domain': 'www.microsoft.com',
                'namespace': 'microsoft',
                'version': '3.2.1',
                'api_version': 'v1.0',

@@ -2,6 +2,7 @@
 """The `linkedin_unipile` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                'label': 'LinkedIn (Unipile)',
+               'logo_domain': 'www.linkedin.com',
                'namespace': 'linkedin_unipile',
                'version': '1.4.0',
                'api_version': 'v2',

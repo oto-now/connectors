@@ -38,6 +38,7 @@
 connector:
   name: fullenrich
   label: FullEnrich
+  logo_domain: fullenrich.com
   namespace: fullenrich
   version: 1.0.0
   api_version: v2

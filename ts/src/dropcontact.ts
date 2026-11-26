@@ -146,6 +146,7 @@ export const connector = defineConnector({
   namespace: "dropcontact",
   version: "1.0.0",
   apiVersion: "v1",
+  logoDomain: "dropcontact.com",
   baseUrl: "https://api.dropcontact.com/v1",
   auth: {"kind": "api_key", "in": "header", "name": "X-Access-Token", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

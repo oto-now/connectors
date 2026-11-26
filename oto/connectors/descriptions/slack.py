@@ -2,6 +2,7 @@
 """The `slack` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'slack',
                'label': 'Slack',
+               'logo_domain': 'slack.com',
                'namespace': 'slack',
                'version': '1.1.0',
                'api_version': 'Web API',

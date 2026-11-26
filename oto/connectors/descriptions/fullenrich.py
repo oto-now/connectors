@@ -2,6 +2,7 @@
 """The `fullenrich` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'fullenrich',
                'label': 'FullEnrich',
+               'logo_domain': 'fullenrich.com',
                'namespace': 'fullenrich',
                'version': '1.0.0',
                'api_version': 'v2',

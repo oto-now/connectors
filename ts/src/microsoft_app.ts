@@ -482,6 +482,7 @@ export const connector = defineConnector({
   namespace: "microsoft_app",
   version: "1.0.0",
   apiVersion: "v1.0",
+  logoDomain: "www.microsoft.com",
   baseUrl: "https://graph.microsoft.com/v1.0/users/{mailbox}",
   auth: {
     "kind": "oauth2_client_credentials",

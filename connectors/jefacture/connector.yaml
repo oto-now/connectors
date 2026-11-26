@@ -20,6 +20,7 @@
 connector:
   name: jefacture
   label: jefacture.com
+  logo_domain: jefacture.com
   namespace: jefacture
   version: 1.0.0
   api_version: "2026-10"

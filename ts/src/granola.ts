@@ -374,6 +374,7 @@ export const connector = defineConnector({
   namespace: "granola",
   version: "1.0.0",
   apiVersion: "v1",
+  logoDomain: "granola.ai",
   baseUrl: "https://public-api.granola.ai",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

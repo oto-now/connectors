@@ -295,6 +295,7 @@ export const connector = defineConnector({
   namespace: "sivan",
   version: "1.1.0",
   apiVersion: "external-1.0",
+  logoDomain: "sivan.io",
   baseUrl: "https://api2.sivan.io",
   auth: {"kind": "api_key", "in": "header", "name": "X-Api-Key", "key": "api_key"},
   credential: [{"name": "api_key", "label": "Company-group API key", "secret": true, "holder": "account"}],

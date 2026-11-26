@@ -185,6 +185,7 @@ export const connector = defineConnector({
   namespace: "mux",
   version: "1.0.0",
   apiVersion: "video v1",
+  logoDomain: "mux.com",
   baseUrl: "https://api.mux.com",
   auth: {"kind": "basic", "username": "token_id", "password": "token_secret"},
   credential: [{"name": "token_id", "label": "Access Token ID", "secret": false, "holder": "account"}, {"name": "token_secret", "label": "Secret Key", "secret": true, "holder": "account"}],

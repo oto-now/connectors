@@ -2,6 +2,7 @@
 """The `serper` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'serper',
                'label': 'Serper',
+               'logo_domain': 'serper.dev',
                'namespace': 'serper',
                'version': '1.1.0',
                'api_version': 'v1',

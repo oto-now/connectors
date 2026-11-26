@@ -2,6 +2,7 @@
 """The `attio` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'attio',
                'label': 'Attio',
+               'logo_domain': 'attio.com',
                'namespace': 'attio',
                'version': '1.3.0',
                'api_version': 'v2',

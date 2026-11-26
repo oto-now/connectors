@@ -681,6 +681,7 @@ export const connector = defineConnector({
   namespace: "serper",
   version: "1.1.0",
   apiVersion: "v1",
+  logoDomain: "serper.dev",
   baseUrl: "https://google.serper.dev",
   auth: {"kind": "api_key", "in": "header", "name": "X-API-KEY", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

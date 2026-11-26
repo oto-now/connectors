@@ -34,6 +34,7 @@
 connector:
   name: klaviyo
   label: Klaviyo
+  logo_domain: klaviyo.com
   namespace: klaviyo
   version: 1.0.0
   api_version: "2026-07-15"

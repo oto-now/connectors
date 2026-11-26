@@ -961,6 +961,7 @@ export const connector = defineConnector({
   namespace: "seranking",
   version: "1.1.0",
   apiVersion: "v1",
+  logoDomain: "seranking.com",
   baseUrl: "https://api.seranking.com/v1",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "prefix": "Token ", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

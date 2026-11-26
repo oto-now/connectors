@@ -2,6 +2,7 @@
 """The `google_sheets` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'google_sheets',
                'label': 'Google Sheets',
+               'logo_domain': 'sheets.google.com',
                'namespace': 'google_sheets',
                'version': '1.0.1',
                'api_version': 'v4',

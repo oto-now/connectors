@@ -118,6 +118,7 @@ export const connector = defineConnector({
   namespace: "elevenlabs",
   version: "1.0.1",
   apiVersion: "v1 (voices on v2)",
+  logoDomain: "elevenlabs.io",
   baseUrl: "https://api.elevenlabs.io",
   auth: {"kind": "api_key", "in": "header", "name": "xi-api-key", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

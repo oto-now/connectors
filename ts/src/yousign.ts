@@ -1378,6 +1378,7 @@ export const connector = defineConnector({
   namespace: "yousign",
   version: "1.1.1",
   apiVersion: "v3",
+  logoDomain: "youtrust.com",
   baseUrls: {"setting": "environment", "values": {"production": "https://api.yousign.app/v3", "sandbox": "https://api-sandbox.yousign.app/v3"}},
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

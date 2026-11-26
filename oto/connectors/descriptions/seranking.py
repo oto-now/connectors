@@ -2,6 +2,7 @@
 """The `seranking` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'seranking',
                'label': 'SE Ranking',
+               'logo_domain': 'seranking.com',
                'namespace': 'seranking',
                'version': '1.1.0',
                'api_version': 'v1',

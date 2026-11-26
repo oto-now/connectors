@@ -2,6 +2,7 @@
 """The `google_drive` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'google_drive',
                'label': 'Google Drive',
+               'logo_domain': 'drive.google.com',
                'namespace': 'google_drive',
                'version': '1.0.0',
                'api_version': 'v3',

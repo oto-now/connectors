@@ -523,6 +523,7 @@ export const connector = defineConnector({
   namespace: "amplitude",
   version: "1.2.0",
   apiVersion: "Dashboard REST and Taxonomy api/2; charts and cohort list api/3; cohort download api/5",
+  logoDomain: "amplitude.com",
   baseUrls: {"setting": "region", "values": {"us": "https://amplitude.com", "eu": "https://analytics.eu.amplitude.com"}},
   auth: {"kind": "basic", "username": "api_key", "password": "secret_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}, {"name": "secret_key", "label": "Secret key", "secret": true, "holder": "account"}],

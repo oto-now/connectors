@@ -8845,6 +8845,7 @@ export const connector = defineConnector({
   namespace: "nextmotion",
   version: "1.2.0",
   apiVersion: "v4",
+  logoDomain: "nextmotion.net",
   baseUrl: "https://api.nextmotion.net/open_api",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

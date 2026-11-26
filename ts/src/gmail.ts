@@ -530,6 +530,7 @@ export const connector = defineConnector({
   namespace: "gmail",
   version: "1.1.1",
   apiVersion: "v1",
+  logoDomain: "mail.google.com",
   baseUrl: "https://gmail.googleapis.com/gmail/v1",
   auth: {
     "kind": "oauth2_user",

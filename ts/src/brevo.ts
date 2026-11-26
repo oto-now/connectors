@@ -2419,6 +2419,7 @@ export const connector = defineConnector({
   namespace: "brevo",
   version: "1.0.0",
   apiVersion: "v3",
+  logoDomain: "brevo.com",
   baseUrl: "https://api.brevo.com/v3",
   auth: {"kind": "api_key", "in": "header", "name": "api-key", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key (v3)", "secret": true, "holder": "account"}],

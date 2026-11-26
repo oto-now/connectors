@@ -2,6 +2,7 @@
 """The `meta_ads` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'meta_ads',
                'label': 'Meta Ads',
+               'logo_domain': 'meta.com',
                'namespace': 'meta_ads',
                'version': '1.1.0',
                'api_version': 'v25.0',

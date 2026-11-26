@@ -85,6 +85,7 @@ export const connector = defineConnector({
   namespace: "threecx",
   version: "1.1.0",
   apiVersion: "XAPI v1 (3CX V20)",
+  logoDomain: "3cx.com",
   baseUrl: "{base_url}/xapi/v1",
   auth: {
     "kind": "oauth2_client_credentials",

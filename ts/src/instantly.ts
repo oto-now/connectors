@@ -1585,6 +1585,7 @@ export const connector = defineConnector({
   namespace: "instantly",
   version: "1.0.1",
   apiVersion: "v2",
+  logoDomain: "instantly.ai",
   baseUrl: "https://api.instantly.ai/api/v2",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

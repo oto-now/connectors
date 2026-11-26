@@ -407,6 +407,7 @@ export const connector = defineConnector({
   namespace: "slack_user",
   version: "1.1.0",
   apiVersion: "Web API",
+  logoDomain: "slack.com",
   baseUrl: "https://slack.com/api",
   auth: {"kind": "bearer", "token": "user_token"},
   credential: [{"name": "user_token", "label": "User token (xoxp-)", "secret": true, "holder": "account"}],

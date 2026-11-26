@@ -2091,6 +2091,7 @@ export const connector = defineConnector({
   namespace: "amplemarket",
   version: "1.0.0",
   apiVersion: "v1",
+  logoDomain: "amplemarket.com",
   baseUrl: "https://api.amplemarket.com",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

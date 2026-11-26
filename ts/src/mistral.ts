@@ -57,6 +57,7 @@ export const connector = defineConnector({
   namespace: "mistral",
   version: "1.0.1",
   apiVersion: "v1",
+  logoDomain: "mistral.ai",
   baseUrl: "https://api.mistral.ai/v1",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "Mistral API key", "secret": true, "holder": "host"}],

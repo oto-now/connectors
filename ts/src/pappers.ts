@@ -257,6 +257,7 @@ export const connector = defineConnector({
   namespace: "pappers",
   version: "1.0.0",
   apiVersion: "v2",
+  logoDomain: "pappers.fr",
   baseUrl: "https://api.pappers.fr/v2",
   auth: {"kind": "api_key", "in": "header", "name": "api-key", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

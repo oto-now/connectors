@@ -2,6 +2,7 @@
 """The `notion` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'notion',
                'label': 'Notion',
+               'logo_domain': 'notion.com',
                'namespace': 'notion',
                'version': '1.1.0',
                'api_version': '2025-09-03',

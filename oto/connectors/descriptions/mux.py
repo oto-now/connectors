@@ -2,6 +2,7 @@
 """The `mux` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'mux',
                'label': 'Mux',
+               'logo_domain': 'mux.com',
                'namespace': 'mux',
                'version': '1.0.0',
                'api_version': 'video v1',

@@ -121,6 +121,7 @@ export const connector = defineConnector({
   namespace: "fullenrich",
   version: "1.0.0",
   apiVersion: "v2",
+  logoDomain: "fullenrich.com",
   baseUrl: "https://app.fullenrich.com/api/v2",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

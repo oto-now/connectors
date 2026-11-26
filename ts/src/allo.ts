@@ -3198,6 +3198,7 @@ export const connector = defineConnector({
   namespace: "allo",
   version: "1.2.0",
   apiVersion: "v2 (SMS on v1)",
+  logoDomain: "withallo.com",
   baseUrl: "https://api.withallo.com",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "prefix": "Api-Key ", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

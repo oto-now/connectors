@@ -2,6 +2,7 @@
 """The `modjo` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'modjo',
                'label': 'Modjo',
+               'logo_domain': 'modjo.ai',
                'namespace': 'modjo',
                'version': '2.0.0',
                'api_version': 'v2',

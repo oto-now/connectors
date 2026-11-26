@@ -2,6 +2,7 @@
 """The `dataforseo` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'dataforseo',
                'label': 'DataForSEO',
+               'logo_domain': 'dataforseo.com',
                'namespace': 'dataforseo',
                'version': '1.0.4',
                'api_version': 'v3',

@@ -2,6 +2,7 @@
 """The `mailpool` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'mailpool',
                'label': 'Mailpool',
+               'logo_domain': 'mailpool.ai',
                'namespace': 'mailpool',
                'version': '2.0.0',
                'api_version': 'v1',

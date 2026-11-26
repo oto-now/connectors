@@ -1136,6 +1136,7 @@ export const connector = defineConnector({
   namespace: "crisp",
   version: "1.1.0",
   apiVersion: "REST API V1",
+  logoDomain: "crisp.chat",
   baseUrl: "https://api.crisp.chat/v1/website/{website_id}",
   auth: {"kind": "basic", "username": "token_identifier", "password": "token_key"},
   credential: [{"name": "token_identifier", "label": "Website token identifier", "secret": false, "holder": "account"}, {"name": "token_key", "label": "Website token key", "secret": true, "holder": "account"}],

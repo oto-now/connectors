@@ -2,6 +2,7 @@
 """The `malibou` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'malibou',
                'label': 'Malibou',
+               'logo_domain': 'malibou.com',
                'namespace': 'malibou',
                'version': '1.0.0',
                'api_version': '1.11.0',

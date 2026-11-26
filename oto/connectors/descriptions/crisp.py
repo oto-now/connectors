@@ -2,6 +2,7 @@
 """The `crisp` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'crisp',
                'label': 'Crisp',
+               'logo_domain': 'crisp.chat',
                'namespace': 'crisp',
                'version': '1.1.0',
                'api_version': 'REST API V1',

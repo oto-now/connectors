@@ -2,6 +2,7 @@
 """The `sivan` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'sivan',
                'label': 'Sivan',
+               'logo_domain': 'sivan.io',
                'namespace': 'sivan',
                'version': '1.1.0',
                'api_version': 'external-1.0',

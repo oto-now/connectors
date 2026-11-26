@@ -5462,6 +5462,7 @@ export const connector = defineConnector({
   namespace: "pennylane",
   version: "2.2.0",
   apiVersion: "v2",
+  logoDomain: "pennylane.com",
   baseUrl: "https://app.pennylane.com/api/external/v2",
   auth: {"kind": "bearer", "token": "api_key"},
   credential: [{"name": "api_key", "label": "API key", "secret": true, "holder": "account"}],

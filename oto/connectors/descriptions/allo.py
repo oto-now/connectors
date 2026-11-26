@@ -2,6 +2,7 @@
 """The `allo` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'allo',
                'label': 'Allo',
+               'logo_domain': 'withallo.com',
                'namespace': 'allo',
                'version': '1.2.0',
                'api_version': 'v2 (SMS on v1)',

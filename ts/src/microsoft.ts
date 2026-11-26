@@ -516,6 +516,7 @@ export const connector = defineConnector({
   namespace: "microsoft",
   version: "3.2.1",
   apiVersion: "v1.0",
+  logoDomain: "www.microsoft.com",
   baseUrl: "https://graph.microsoft.com/v1.0",
   auth: {
     "kind": "oauth2_user",

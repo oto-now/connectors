@@ -2,6 +2,7 @@
 """The `lemlist` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'lemlist',
                'label': 'lemlist',
+               'logo_domain': 'lemlist.com',
                'namespace': 'lemlist',
                'version': '1.6.1',
                'api_version': 'v1 and v2 routes',

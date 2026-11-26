@@ -43,6 +43,7 @@
 connector:
   name: dropcontact
   label: Dropcontact
+  logo_domain: dropcontact.com
   namespace: dropcontact
   version: 1.0.0
   api_version: v1

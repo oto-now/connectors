@@ -2,6 +2,7 @@
 """The `nextmotion` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'nextmotion',
                'label': 'Nextmotion',
+               'logo_domain': 'nextmotion.net',
                'namespace': 'nextmotion',
                'version': '1.2.0',
                'api_version': 'v4',
