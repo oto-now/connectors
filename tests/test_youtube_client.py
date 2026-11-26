@@ -298,3 +298,68 @@ def test_upload_video_refuse_avant_tout_appel(kw, msg):
     with pytest.raises(ValueError, match=msg):
         c.upload_video(**kw)
     assert s.calls == []
+
+
+# --- the upload driven by the caller (start / send chunk / status) ------------------
+
+def test_upload_pilote_par_l_appelant_un_morceau_a_la_fois():
+    total = CHUNK * 2 + 10
+    c, s = _client(
+        _UpResp(200, {}, {"Location": SESSION}),
+        _UpResp(308, {}, {"Range": f"bytes=0-{CHUNK - 1}"}),
+        _UpResp(201, {"id": "new2"}),
+    )
+    url = c.start_video_upload(total, "video/mp4", title="Big")
+    assert url == SESSION
+    assert s.calls[0]["headers"]["X-Upload-Content-Length"] == str(total)
+    # Google gardé moins que reçu : le prochain octet est le SIEN, pas notre compte
+    out = c.send_video_chunk(url, b"v" * (2 * CHUNK), 0, total, "video/mp4")
+    assert out == {"done": False, "next_offset": CHUNK}
+    out = c.send_video_chunk(url, b"v" * (CHUNK + 10), CHUNK, total, "video/mp4")
+    assert out == {"done": True, "video": {"id": "new2"}}
+    assert s.calls[2]["headers"]["Content-Range"] == f"bytes {CHUNK}-{total - 1}/{total}"
+
+
+def test_statut_apres_redemarrage():
+    c, s = _client(_UpResp(308, {}, {"Range": f"bytes=0-{3 * CHUNK - 1}"}),
+                   _UpResp(308, {}, {}),
+                   _UpResp(200, {"id": "v9"}))
+    assert c.video_upload_status(SESSION, 10 * CHUNK) == {"done": False,
+                                                         "next_offset": 3 * CHUNK}
+    assert s.calls[0]["headers"]["Content-Range"] == f"bytes */{10 * CHUNK}"
+    assert s.calls[0]["data"] == b""
+    assert c.video_upload_status(SESSION, 10 * CHUNK)["next_offset"] == 0
+    assert c.video_upload_status(SESSION, 10 * CHUNK) == {"done": True,
+                                                         "video": {"id": "v9"}}
+
+
+def test_morceau_5xx_puis_sonde_au_meme_endroit_renvoie_le_morceau():
+    c, s = _client(_UpResp(503, {"error": {"code": 503, "message": "busy"}}),
+                   _UpResp(308, {}, {}),                       # sonde : rien gardé
+                   _UpResp(308, {}, {"Range": f"bytes=0-{CHUNK - 1}"}))
+    out = c.send_video_chunk(SESSION, b"v" * CHUNK, 0, 4 * CHUNK, "video/mp4")
+    assert out == {"done": False, "next_offset": CHUNK}
+    assert [k["headers"]["Content-Range"] for k in s.calls] == [
+        f"bytes 0-{CHUNK - 1}/{4 * CHUNK}", f"bytes */{4 * CHUNK}",
+        f"bytes 0-{CHUNK - 1}/{4 * CHUNK}"]
+
+
+@pytest.mark.parametrize("args,msg", [
+    ((b"", 0, 10), "never empty"),
+    ((b"v" * 11, 0, 10), "past the end"),
+    ((b"v" * 1000, 0, 5000), "256 KB"),
+])
+def test_morceau_refuse_avant_tout_appel(args, msg):
+    c, s = _client()
+    with pytest.raises(ValueError, match=msg):
+        c.send_video_chunk(SESSION, *args, "video/mp4")
+    assert s.calls == []
+
+
+def test_ouverture_refuse_un_fichier_vide_ou_trop_gros():
+    c, s = _client()
+    with pytest.raises(ValueError, match="empty"):
+        c.start_video_upload(0, "video/mp4", title="T")
+    with pytest.raises(ValueError, match="256 GB"):
+        c.start_video_upload(yt.VIDEO_MAX_BYTES + 1, "video/mp4", title="T")
+    assert s.calls == []

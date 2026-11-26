@@ -348,10 +348,45 @@ class YouTubeClient:
         """Upload a new video to the channel (resumable protocol) → the created video
         resource (`snippet,status`). Private by default; `publish_at` schedules a private
         video. `made_for_kids` is always sent (YouTube asks every upload for its audience).
-        Uploads bucket: 100 a day per Cloud project."""
+        Uploads bucket: 100 a day per Cloud project.
+
+        The whole file in memory: for a big one, drive `start_video_upload` +
+        `send_video_chunk` yourself, reading one chunk at a time."""
         if not video:
             raise ValueError("the video file is empty")
-        if len(video) > VIDEO_MAX_BYTES:
+        if chunk_size <= 0 or chunk_size % (256 * 1024):
+            raise ValueError("chunk_size must be a positive multiple of 256 KB")
+        total = len(video)
+        session_url = self.start_video_upload(
+            total, mime_type, title=title, description=description, tags=tags,
+            category_id=category_id, default_language=default_language,
+            privacy_status=privacy_status, publish_at=publish_at,
+            made_for_kids=made_for_kids, contains_synthetic_media=contains_synthetic_media,
+            license=license, embeddable=embeddable, notify_subscribers=notify_subscribers)
+        offset = 0
+        while True:
+            end = min(offset + chunk_size, total)
+            out = self.send_video_chunk(session_url, video[offset:end], offset, total,
+                                        mime_type)
+            if out["done"]:
+                return out["video"]
+            offset = out["next_offset"]
+
+    def start_video_upload(self, total: int, mime_type: str, *, title: str,
+                           description: Optional[str] = None, tags: Optional[list] = None,
+                           category_id: str = "22", default_language: Optional[str] = None,
+                           privacy_status: str = "private", publish_at: Optional[str] = None,
+                           made_for_kids: bool = False,
+                           contains_synthetic_media: Optional[bool] = None,
+                           license: Optional[str] = None, embeddable: Optional[bool] = None,
+                           notify_subscribers: bool = True) -> str:
+        """Open a resumable upload session for a video of `total` bytes → the session
+        URL. Same metadata as `upload_video`. The URL is the upload's only handle: keep
+        it to resume after a restart (`video_upload_status`); Google keeps it ~a week.
+        Then send the bytes with `send_video_chunk`, from any process."""
+        if total <= 0:
+            raise ValueError("the video file is empty")
+        if total > VIDEO_MAX_BYTES:
             raise ValueError("a YouTube video is at most 256 GB")
         if not (mime_type or "").startswith("video/") and mime_type != "application/octet-stream":
             raise ValueError(f"a video upload is video/* or application/octet-stream, "
@@ -366,8 +401,6 @@ class YouTubeClient:
             raise ValueError(f"license must be one of {', '.join(LICENSES)}")
         if tags is not None and not isinstance(tags, list):
             raise ValueError("tags must be a list of strings")
-        if chunk_size <= 0 or chunk_size % (256 * 1024):
-            raise ValueError("chunk_size must be a positive multiple of 256 KB")
 
         snippet = {"title": title, "categoryId": str(category_id)}
         for k, v in (("description", description), ("tags", tags),
@@ -382,13 +415,12 @@ class YouTubeClient:
             if v is not None:
                 status[k] = v
 
-        auth = {"Authorization": f"Bearer {self._token}"}
-        total = len(video)
         init = self._session.request(
             "POST", f"{_UPLOAD}/videos",
             params={"uploadType": "resumable", "part": "snippet,status",
                     "notifySubscribers": "true" if notify_subscribers else "false"},
-            headers={**auth, "X-Upload-Content-Length": str(total),
+            headers={"Authorization": f"Bearer {self._token}",
+                     "X-Upload-Content-Length": str(total),
                      "X-Upload-Content-Type": mime_type},
             json={"snippet": snippet, "status": status}, timeout=self._timeout)
         self._raise(init, "POST", f"{_UPLOAD}/videos")
@@ -396,23 +428,38 @@ class YouTubeClient:
         if not session_url:
             raise YouTubeError(init.status_code, "no resumable session URI returned",
                                method="POST", url=f"{_UPLOAD}/videos")
+        return session_url
 
-        offset, failures = 0, 0
+    def send_video_chunk(self, session_url: str, data: bytes, offset: int, total: int,
+                         mime_type: str) -> dict:
+        """Send `data` = bytes `[offset, offset + len(data))` of the video → `{done:
+        True, video}` once Google has it all, else `{done: False, next_offset}`: the next
+        byte Google wants, which may be BEFORE `offset + len(data)` (it kept less) —
+        always resume from `next_offset`, never from your own count. A chunk is a
+        multiple of 256 KB, except the last. A dropped connection or a 5xx is retried
+        (`_UPLOAD_RETRIES`), asking Google where it stopped."""
+        if not data:
+            raise ValueError("an upload chunk is never empty")
+        end = offset + len(data) - 1
+        if end >= total:
+            raise ValueError("the chunk goes past the end of the video")
+        if end + 1 < total and len(data) % (256 * 1024):
+            raise ValueError("a chunk is a multiple of 256 KB, except the last one")
+        auth = {"Authorization": f"Bearer {self._token}"}
+        failures = 0
         while True:
-            end = min(offset + chunk_size, total) - 1
             try:
                 resp = self._session.request(
-                    "PUT", session_url, data=video[offset:end + 1], allow_redirects=False,
+                    "PUT", session_url, data=data, allow_redirects=False,
                     headers={**auth, "Content-Type": mime_type,
                              "Content-Range": f"bytes {offset}-{end}/{total}"},
                     timeout=self._timeout)
             except (requests.ConnectionError, requests.Timeout):
                 resp = None
             if resp is not None and resp.status_code in (200, 201):
-                return resp.json()
+                return {"done": True, "video": resp.json()}
             if resp is not None and resp.status_code == 308:
-                offset, failures = self._received(resp), 0
-                continue
+                return {"done": False, "next_offset": self._received(resp)}
             if resp is not None and resp.status_code < 500:
                 self._raise(resp, "PUT", session_url)
             failures += 1
@@ -421,15 +468,23 @@ class YouTubeClient:
                     raise requests.ConnectionError("YouTube upload: connection lost "
                                                    f"{failures} times in a row")
                 self._raise(resp, "PUT", session_url)
-            # where did Google stop? an empty PUT with `bytes */total` says it
-            probe = self._session.request("PUT", session_url, data=b"", allow_redirects=False,
-                                      headers={**auth, "Content-Range": f"bytes */{total}"},
-                                      timeout=self._timeout)
-            if probe.status_code in (200, 201):
-                return probe.json()
-            if probe.status_code != 308:
-                self._raise(probe, "PUT", session_url)
-            offset = self._received(probe)
+            out = self.video_upload_status(session_url, total)
+            if out["done"] or out["next_offset"] != offset:
+                return out
+
+    def video_upload_status(self, session_url: str, total: int) -> dict:
+        """Where a resumable upload stands (an empty PUT `bytes */total`) → `{done: True,
+        video}` or `{done: False, next_offset}`. What a process resuming an upload
+        after a restart asks first."""
+        probe = self._session.request(
+            "PUT", session_url, data=b"", allow_redirects=False,
+            headers={"Authorization": f"Bearer {self._token}",
+                     "Content-Range": f"bytes */{total}"}, timeout=self._timeout)
+        if probe.status_code in (200, 201):
+            return {"done": True, "video": probe.json()}
+        if probe.status_code != 308:
+            self._raise(probe, "PUT", session_url)
+        return {"done": False, "next_offset": self._received(probe)}
 
     @staticmethod
     def _received(resp: requests.Response) -> int:
