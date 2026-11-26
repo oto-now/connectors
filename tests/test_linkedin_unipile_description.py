@@ -1,4 +1,5 @@
-"""La description `linkedin_unipile` 1.3.0 : la recherche, le fil d'actualité et les produits premium du client.
+"""La description `linkedin_unipile` 1.4.0 : la recherche, le fil d'actualité, les produits premium du client et les
+publications d'un membre ou d'une entreprise.
 
 Le client `oto.tools.unipile` n'est pas tiré de la description (il prend l'identité du compte en paramètre) ; ces
 gardes lisent le client lui-même pour les trois fichiers que 1.2.0 rattache (`_api/search.py`, `_api/premium.py`,
@@ -14,7 +15,8 @@ identifiants de facettes déjà résolus par `resolve_facet`, dans la forme de s
 Écarts nommés, gardés ici : `resolve_facet` sans `limit` laisse Unipile choisir, là où le client envoie 100
 (`CLIENT_DEFAULTS`) ; `skill_endorsement_id` est un texte de chiffres, comme Unipile le prend, là où la méthode prend un
 entier qu'elle écrit en texte ; les `limit` sont bornés à 100, comme le dit la référence v2 ; une facette est un
-identifiant en chiffres, là où `search` résout aussi un nom.
+identifiant en chiffres, là où `search` résout aussi un nom ; `list_member_posts` prend l'identifiant d'un membre
+(`ACoA…`) ou d'une entreprise (des chiffres), là où la méthode résout aussi un slug par `get_profile`.
 Rien ne revient à l'agent d'une adresse ouverte sans connexion : les photos d'un membre, d'une entreprise, d'une école,
 d'une organisation ou d'une conversation, et le pixel de suivi d'une offre, sont retirés par la description et par le
 client (`oto.tools.unipile.open_addresses`), mêmes chemins.
@@ -50,22 +52,24 @@ NOT_DESCRIBED = {
 STRUCTURED = {f: pair for pair, f in SEARCH_FUNCTIONS.items()}
 BY_URL = {f: api for api, f in SEARCH_BY_URL_FUNCTIONS.items()}
 SEARCH = {"search": set(STRUCTURED) | set(BY_URL)}
+# Les fonctions décrites depuis 1.4.0 hors des trois fichiers rattachés : une méthode de `_api/content.py`, sous son nom.
+CONTENT = {"list_member_posts"}
 METHODS = {"resolve_facet", "list_contracts", "select_contract", "inmail_balance", "endorse_profile",
            "list_job_postings", "get_job_posting", "list_job_applicants", "get_job_applicant", "list_hiring_projects"}
 CLASSES = {
     "read": {"resolve_facet", "list_contracts", "inmail_balance", "list_job_postings", "get_job_posting",
-             "list_job_applicants", "get_job_applicant", "list_hiring_projects"} | SEARCH["search"],
+             "list_job_applicants", "get_job_applicant", "list_hiring_projects"} | SEARCH["search"] | CONTENT,
     # Un réglage de la session premium du compte, envoyé à personne : du côté lecture, comme chez oto 1.
     "write": {"select_contract"},
     # Le membre voit la recommandation aussitôt, comme une invitation.
     "sensitive": {"endorse_profile"},
 }
-PAGINATED = {"list_job_postings", "list_job_applicants", "list_hiring_projects"}
+PAGINATED = {"list_job_postings", "list_job_applicants", "list_hiring_projects", "list_member_posts"}
 PERSONAL = {
     "resolve_facet": {"keywords"}, "endorse_profile": {"profile_id"}, "get_job_applicant": {"applicant_id"},
     "search_people": {"keywords", "advanced_keywords"}, "search_sales_navigator_people": {"keywords"},
     "search_recruiter_people": {"keywords"}, "search_by_url": {"url"}, "search_sales_navigator_by_url": {"url"},
-    "search_recruiter_by_url": {"url"},
+    "search_recruiter_by_url": {"url"}, "list_member_posts": {"identifier"},
 }
 # Les fonctions décrites avant 1.2.0, et l'appel du client qui fait leur requête.
 EARLIER = {
@@ -84,7 +88,7 @@ CLIENT_DEFAULTS = {"resolve_facet": {"limit": 100}}
 VALUES = {
     "facet_type": "SKILL", "keywords": "Microsoft Excel", "limit": 25, "contract_id": "123456789",
     "profile_id": "ACoAAB1x2y3", "skill_endorsement_id": "7", "cursor": "eyJsaW1pdCI6MjV9", "job_id": "4012345678",
-    "applicant_id": "98765",
+    "applicant_id": "98765", "identifier": "ACoAAB1x2y3",
 }
 # Chaque argument d'une recherche, pour chaque fonction : tous ensemble, puis le curseur seul.
 SEARCH_EVERY = {
@@ -223,9 +227,9 @@ def _shaped(answer, paths: list[str], items: str | None = None):
     return answer
 
 
-def test_the_description_is_version_1_3_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_4_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.3.2"
+    assert description["connector"]["version"] == "1.4.0"
     check(description, LINKEDIN)
 
 
@@ -241,7 +245,7 @@ def test_each_method_of_the_three_files_is_described_or_named_as_not_described()
     assert "parse_feed" in header and callable(feed.parse_feed)
     flat = header.replace("\n# ", " ")
     assert "decided by Alexis on 2026-10-24" in flat and "eight search functions all describe search" in flat
-    assert set().union(*CLASSES.values()) == (covered - set(NOT_DESCRIBED) - set(SEARCH)) | SEARCH["search"]
+    assert set().union(*CLASSES.values()) == (covered - set(NOT_DESCRIBED) - set(SEARCH)) | SEARCH["search"] | CONTENT
     assert METHODS == covered - set(NOT_DESCRIBED) - set(SEARCH)
 
 
@@ -258,7 +262,7 @@ def test_the_search_functions_are_the_pairs_unipile_serves():
 
 def test_each_function_takes_the_arguments_its_client_method_names():
     functions = _functions()
-    for name in METHODS:
+    for name in METHODS | CONTENT:
         function = functions[name]
         assert set(function["input"]["properties"]) == _named_parameters(name), name
         required = {p for p, v in inspect.signature(getattr(UnipileClient, name)).parameters.items()
@@ -272,7 +276,7 @@ def test_each_function_takes_the_arguments_its_client_method_names():
 
 def test_each_argument_goes_where_the_client_sends_it():
     functions = _functions()
-    for name in METHODS:
+    for name in METHODS | CONTENT:
         function = functions[name]
         every = {a: VALUES[a] for a in function["input"]["properties"]}
         jsonschema.validate(every, function["input"])
@@ -328,7 +332,7 @@ def test_a_search_takes_resolved_ids_and_says_so_first():
 
 def test_each_example_sends_what_the_client_sends_for_it():
     functions = _functions()
-    for name in METHODS | SEARCH["search"]:
+    for name in METHODS | CONTENT | SEARCH["search"]:
         function = functions[name]
         for example in function["examples"]:
             jsonschema.validate(example["input"], function["input"])
@@ -367,7 +371,7 @@ def test_classes_side_and_confirmation():
 
 def test_the_lists_page_by_cursor_as_the_client_does():
     functions = _functions()
-    for name in METHODS:
+    for name in METHODS | CONTENT:
         function = functions[name]
         if name not in PAGINATED:
             assert "pagination" not in function, name
@@ -434,3 +438,19 @@ def test_the_typescript_output():
     for name in set().union(*CLASSES.values()):
         assert f'name: "linkedin_unipile.{name}",' in module.source, name
     assert not module.skipped
+
+
+def test_the_posts_of_a_member_or_a_company_take_their_ids_never_a_slug_nor_an_address():
+    """Un membre par son identifiant `ACoA…`, une entreprise par ses chiffres, un seul appel ; jamais un slug, une
+    adresse ni un chemin, que la route refuse ou qui en sortiraient."""
+    function = _functions()["list_member_posts"]
+    validator = jsonschema.Draft202012Validator(function["input"])
+    for identifier in ("ACoAAB1x2y3", "1441"):
+        assert validator.is_valid({"identifier": identifier}), identifier
+        sent, _ = _sent_by_the_client("list_member_posts", {"identifier": identifier})
+        assert sent["url"].endswith(f"/users/{identifier}/posts"), identifier
+    for identifier in ("jane-doe-4b2a1c", "unipile", "https://www.linkedin.com/in/jane-doe", "ACoA../me", "me",
+                       "1441/posts", "ACoA", ""):
+        assert not validator.is_valid({"identifier": identifier}), identifier
+    assert function["class"] == "read" and "act" not in function and "cost" not in function
+    assert "get_profile" in function["description"] and "get_company" in function["description"]

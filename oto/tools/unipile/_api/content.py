@@ -23,9 +23,11 @@ class _ContentMixin:
         """Resolve a member identifier to the **provider_id (URN, `ACoAA…`)**
         expected by the v2 posts/comments/reactions endpoints: the public slug
         returns 400 "Invalid User ID" there (v2 delta seen live 2026-07-06). Already
-        opaque URN → as is; slug → resolved via the profile (1 call)."""
+        opaque URN → as is; numeric id of a company page → as is (the v2 reference
+        lists a page's posts under its numeric id); slug → resolved via the
+        profile (1 call)."""
         ident = str(identifier).strip()
-        if ident.startswith(("ACoA", "urn:")):
+        if ident.startswith(("ACoA", "urn:")) or ident.isdigit():
             return ident
         prof = self.get_profile(ident)
         return str((prof or {}).get("provider_id") or (prof or {}).get("id") or ident)
@@ -37,10 +39,10 @@ class _ContentMixin:
             params["cursor"] = cursor
         if limit:
             params["limit"] = limit
-        return self._norm(self._request(
+        return without_open_addresses("list_member_posts", self._norm(self._request(
             "GET", self._acct(f"/users/{quote(self._member_id(identifier), safe='')}/posts"),
             params=params,
-        ))
+        )), listed=True)
 
     def get_post(self, post_id: str) -> dict:
         return without_open_addresses("get_post", self._request(

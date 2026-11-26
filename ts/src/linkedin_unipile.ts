@@ -223,6 +223,55 @@ export const getPost = defineFunction({
   output: { strip: ["author.public_picture_url", "reposted_by.public_picture_url", "event.public_picture_url", "specifics.article.picture_url", "specifics.job_posting.company.picture_url", "quoted_post.author.public_picture_url", "quoted_post.event.public_picture_url", "quoted_post.specifics.article.picture_url", "quoted_post.specifics.job_posting.company.picture_url"] },
 })
 
+export const listMemberPosts = defineFunction({
+  name: "linkedin_unipile.list_member_posts",
+  connector: "linkedin_unipile",
+  class: "read",
+  act: false,
+  description: "List the LinkedIn posts that a member or a company page published or shared, most recent first, one page at a time: each post with its id (for get_post), text, date, author and reaction and comment counters. For a member, identifier is the provider_id (ACoAA…) that get_profile returns, not the slug of the profile URL. For a company, it is the numeric id that get_company returns (its id field), not the slug. Pass back next_cursor to read the next page; an answer without next_cursor ends the list. A member or a page without posts returns an empty page.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["identifier"],
+    "properties": {
+      "identifier": {
+        "type": "string",
+        "pattern": "^(ACoA[A-Za-z0-9_-]{1,60}|[0-9]{1,20})$",
+        "personal": true,
+        "description": "Provider id of a member (ACoAA…, from get_profile), or numeric id of a company (from get_company)."
+      },
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "description": "Posts per page."},
+      "cursor": {"type": "string", "minLength": 1, "description": "next_cursor of the previous page."},
+      "all_pages": {"type": "boolean", "description": "Read the following pages too, up to max_pages (at most 10)."},
+      "max_pages": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 10,
+        "description": "Pages read when all_pages is true."
+      }
+    }
+  },
+  examples: [
+    { title: "Latest posts of a member", input: {"identifier": "ACoAAB1x2y3", "limit": 20} },
+    { title: "Latest posts of a company", input: {"identifier": "1441", "limit": 20} },
+    { title: "Next page", input: {"identifier": "1441", "cursor": "eyJsaW1pdCI6MjAsInN0YXJ0IjoyMH0"} },
+  ],
+  refusals: [
+    { code: "poster_not_found", when: 404, message: "No LinkedIn member or company with this identifier: pass the provider id from get_profile or the numeric id from get_company." },
+  ],
+  request: {
+    method: "GET",
+    path: "/users/{identifier}/posts",
+    pathParams: ["identifier"],
+    query: {"limit": "limit", "cursor": "cursor"},
+    body: {},
+    headers: {},
+  },
+  pagination: { kind: "cursor", requestParam: "cursor", next: "next_cursor", maxPages: 10 },
+  output: { items: "data", strip: ["author.public_picture_url", "reposted_by.public_picture_url", "event.public_picture_url", "specifics.article.picture_url", "specifics.job_posting.company.picture_url", "quoted_post.author.public_picture_url", "quoted_post.event.public_picture_url", "quoted_post.specifics.article.picture_url", "quoted_post.specifics.job_posting.company.picture_url"] },
+})
+
 export const listChats = defineFunction({
   name: "linkedin_unipile.list_chats",
   connector: "linkedin_unipile",
@@ -1148,7 +1197,7 @@ export const connector = defineConnector({
   name: "linkedin_unipile",
   label: "LinkedIn (Unipile)",
   namespace: "linkedin_unipile",
-  version: "1.3.2",
+  version: "1.4.0",
   apiVersion: "v2",
   baseUrl: "https://api.unipile.com/v2/{account_id}",
   auth: {"kind": "api_key", "in": "header", "name": "X-API-KEY", "key": "api_key"},
@@ -1174,6 +1223,7 @@ export const connector = defineConnector({
     listRelations,
     listInvitations,
     getPost,
+    listMemberPosts,
     listChats,
     listChatMessages,
     sendInvitation,

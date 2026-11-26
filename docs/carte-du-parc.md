@@ -51,7 +51,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `klaviyo` | Klaviyo | 1.0.0 | clé | non | 25 | 19 | 2 | 4 | oui | 25 | non | 0 |
 | `lemlist` | lemlist | 1.6.1 | clé | non | 127 | 57 | 34 | 36 | oui | 127 | non | 0 |
 | `linear` | Linear | 1.0.0 | clé | non | 27 | 12 | 9 | 6 | oui | 0 | non | 0 |
-| `linkedin_unipile` | LinkedIn (Unipile) | 1.3.2 | clé de l'hôte | oui | 28 | 24 | 1 | 3 | oui | 0 | non | 0 |
+| `linkedin_unipile` | LinkedIn (Unipile) | 1.4.0 | clé de l'hôte | oui | 29 | 25 | 1 | 3 | oui | 0 | non | 0 |
 | `mailpool` | Mailpool | 2.0.0 | clé | non | 22 | 16 | 6 | 0 | non | 22 | non | 0 |
 | `malibou` | Malibou | 1.0.0 | clé | non | 4 | 4 | 0 | 0 | oui | 4 | non | 0 |
 | `meta_ads` | Meta Ads | 1.1.0 | clé | non | 8 | 8 | 0 | 0 | non | 0 | non | 0 |
@@ -81,7 +81,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `typeform` | Typeform | 1.2.0 | clé | non | 12 | 6 | 1 | 5 | non | 12 | non | 0 |
 | `wttj_ats` | Welcome to the Jungle ATS | 1.0.0 | clé | non | 10 | 7 | 3 | 0 | non | 0 | non | 0 |
 | `yousign` | Yousign | 1.1.1 | clé | non | 13 | 5 | 7 | 1 | oui | 0 | non | 0 |
-| **total : 64** |  |  |  |  | 1560 | 1001 | 345 | 214 |  | 1068 |  | 0 |
+| **total : 64** |  |  |  |  | 1561 | 1002 | 345 | 214 |  | 1068 |  | 0 |
 
 ## Par type
 
@@ -90,6 +90,6 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | connexion d'une personne (OAuth) | 9 | 176 |
 | application du client (OAuth entre machines) | 3 | 10 |
 | compte de service (assertion signée) | 1 | 6 |
-| clé de l'hôte | 2 | 29 |
+| clé de l'hôte | 2 | 30 |
 | sans clé | 0 | 0 |
 | clé | 51 | 1448 |

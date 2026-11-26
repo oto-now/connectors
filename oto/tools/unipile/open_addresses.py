@@ -58,6 +58,18 @@ _RECRUITER_CANDIDATE = (
     "projects.contributors.public_picture_url",
     "recommendations.user.public_picture_url",
 )
+# A post, alone or listed among the posts of a member or a company page.
+_POST = (
+    "author.public_picture_url",
+    "reposted_by.public_picture_url",
+    "event.public_picture_url",
+    "specifics.article.picture_url",
+    "specifics.job_posting.company.picture_url",
+    "quoted_post.author.public_picture_url",
+    "quoted_post.event.public_picture_url",
+    "quoted_post.specifics.article.picture_url",
+    "quoted_post.specifics.job_posting.company.picture_url",
+)
 _APPLICANT = (
     "profile.public_picture_url",
     "profile.work_experience.company.picture_url",
@@ -75,17 +87,8 @@ OPEN_ADDRESS_FIELDS: dict[str, tuple[str, ...]] = {
     "list_relations": ("user.public_picture_url",),
     "list_invitations": ("user.public_picture_url",),
     "send_invitation": ("user.public_picture_url",),
-    "get_post": (
-        "author.public_picture_url",
-        "reposted_by.public_picture_url",
-        "event.public_picture_url",
-        "specifics.article.picture_url",
-        "specifics.job_posting.company.picture_url",
-        "quoted_post.author.public_picture_url",
-        "quoted_post.event.public_picture_url",
-        "quoted_post.specifics.article.picture_url",
-        "quoted_post.specifics.job_posting.company.picture_url",
-    ),
+    "get_post": _POST,
+    "list_member_posts": _POST,
     "list_chats": (
         "image_url",
         "public_picture_url",

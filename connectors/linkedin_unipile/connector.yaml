@@ -5,6 +5,8 @@
 # an account is the Unipile identifier of one connected LinkedIn member
 # (account_identity), cited by base_url only and never supplied by the agent.
 # Paths, parameters and bodies follow the Python client (oto.tools.unipile, v2).
+# list_member_posts follows the v2 reference too (List all User's Posts, read on
+# 2026-11-26): the posts of a company page take its numeric id as user_id.
 #
 # Not described here (kept in the Python client):
 # - the identity guard of get_profile and get_company: under concurrency the
@@ -19,6 +21,10 @@
 #   company search (several calls);
 # - the cursor of list_invitations, minted by the client: the endpoint pages by
 #   offset and never returns a next cursor;
+# - the slug of list_member_posts: the posts route takes the provider id of a
+#   member (a slug answers 400) or the numeric id of a company; the client
+#   resolves a slug through get_profile first (two calls), the description
+#   takes the ids alone;
 # - starting a new thread (send_message with attendee_id): its route depends
 #   on whether the provider sorts messaging by inbox, with a fallback on 501;
 #   list_chats takes the inbox route, the one the client declares for LinkedIn;
@@ -64,7 +70,7 @@ connector:
   name: linkedin_unipile
   label: LinkedIn (Unipile)
   namespace: linkedin_unipile
-  version: 1.3.2
+  version: 1.4.0
   api_version: v2
   base_url: https://api.unipile.com/v2/{account_id}
   auth: { kind: api_key, in: header, name: X-API-KEY, key: api_key }
@@ -322,6 +328,65 @@ functions:
           specifics:
             article: { title: Other article, picture_url: "https://media.example.test/a-1.png" }
             job_posting: { title: Analyst, company: { name: Other Co, picture_url: "https://media.example.test/c-1.png" } }
+
+  - name: list_member_posts
+    class: read
+    description: >-
+      List the LinkedIn posts that a member or a company page published or
+      shared, most recent first, one page at a time: each post with its id
+      (for get_post), text, date, author and reaction and comment counters.
+      For a member, identifier is the provider_id (ACoAA…) that get_profile
+      returns, not the slug of the profile URL. For a company, it is the
+      numeric id that get_company returns (its id field), not the slug. Pass
+      back next_cursor to read the next page; an answer without next_cursor
+      ends the list. A member or a page without posts returns an empty page.
+    input:
+      type: object
+      additionalProperties: false
+      required: [identifier]
+      properties:
+        identifier:
+          type: string
+          pattern: "^(ACoA[A-Za-z0-9_-]{1,60}|[0-9]{1,20})$"
+          personal: true
+          description: "Provider id of a member (ACoAA…, from get_profile), or numeric id of a company (from get_company)."
+        limit: { type: integer, minimum: 1, maximum: 100, description: "Posts per page." }
+        cursor: { type: string, minLength: 1, description: "next_cursor of the previous page." }
+    examples:
+      - { title: Latest posts of a member, input: { identifier: ACoAAB1x2y3, limit: 20 } }
+      - { title: Latest posts of a company, input: { identifier: "1441", limit: 20 } }
+      - { title: Next page, input: { identifier: "1441", cursor: eyJsaW1pdCI6MjAsInN0YXJ0IjoyMH0 } }
+    refusals:
+      - { code: poster_not_found, when: 404, message: "No LinkedIn member or company with this identifier: pass the provider id from get_profile or the numeric id from get_company." }
+    call:
+      method: GET
+      path: "/users/{identifier}/posts"
+      query: { limit: limit, cursor: cursor }
+    pagination: { kind: cursor, request_param: cursor, next: next_cursor, max_pages: 10 }
+    # Author, event, article and company pictures open without a login: they never reach the agent.
+    output:
+      items: data
+      strip: [author.public_picture_url, reposted_by.public_picture_url, event.public_picture_url,
+              specifics.article.picture_url, specifics.job_posting.company.picture_url,
+              quoted_post.author.public_picture_url, quoted_post.event.public_picture_url,
+              quoted_post.specifics.article.picture_url, quoted_post.specifics.job_posting.company.picture_url]
+      sample:
+        data:
+          - id: post-0
+            text: Sample
+            share_url: "https://www.example.test/posts/post-0"
+            author: { first_name: Jane, profile_url: "https://www.example.test/in/u-0", public_picture_url: "https://media.example.test/u-0.jpg" }
+            reposted_by: { first_name: Lee, public_picture_url: "https://media.example.test/u-1.jpg" }
+            event: { title: Sample event, public_picture_url: "https://media.example.test/e-0.png" }
+            specifics:
+              article: { title: Sample article, picture_url: "https://media.example.test/a-0.png" }
+              job_posting: { title: Engineer, company: { name: Sample Co, picture_url: "https://media.example.test/c-0.png" } }
+            quoted_post:
+              author: { first_name: Kim, public_picture_url: "https://media.example.test/u-2.jpg" }
+              event: { title: Other event, public_picture_url: "https://media.example.test/e-1.png" }
+              specifics:
+                article: { title: Other article, picture_url: "https://media.example.test/a-1.png" }
+                job_posting: { title: Analyst, company: { name: Other Co, picture_url: "https://media.example.test/c-1.png" } }
 
   - name: list_chats
     class: read
