@@ -1,4 +1,4 @@
-"""La description `brevo` 1.0.0 : celle du client existant (`oto.tools.brevo`), sans rien y changer.
+"""La description `brevo` 2.0.0 : celle du client existant (`oto.tools.brevo`).
 
 Une fonction par requête : une méthode du client qui envoie une seule requête à une seule route est la fonction de son
 nom ; une méthode qui choisit sa route par un argument est une fonction par route, l'argument fixé par la fonction
@@ -13,7 +13,11 @@ nommés, gardés ici :
 - `limit` que le client abaisse (`CLIENT_CAPS`), et ce que la référence borne ou ferme et que le client laisse passer
   (`NARROWER`), dont les attributs à choix multiple (une liste de textes) que les clés libres à valeur simple refusent ;
 - ce que le client garde hors de portée et que la description garde de même (`ARGUMENTS_LEFT_OUT`) : la date d'envoi
-  d'une campagne, les pièces jointes en base64.
+  d'une campagne, les pièces jointes en base64 ;
+- le `limit` des listes, dossiers et segments, des emails transactionnels et de leurs événements, que le client pose
+  à 50 quand Brevo en rend 10, 500 ou 2500 sans lui (`BREVO_DEFAULT_DIFFERS`) : la description de l'argument le dit ;
+- ce que `get_account` retire de la réponse, le login du relais SMTP et la clé du suivi d'automatisation
+  (`ACCOUNT_STRIPPED`), retiré de même par le client.
 Les gardes ci-dessous lisent le client lui-même : une route, un argument ou une clé qu'il ajoute sans la description
 fait échouer le test ; une écriture servie du côté lecture aussi.
 """
@@ -106,6 +110,17 @@ CLIENT_FILLS = {
     "crm_list_companies": {"limit": 50, "page": 1},
     "import_contacts": {"update_existing_contacts": True, "empty_contacts_attributes": False},
 }
+# Écart nommé : le client pose 50, Brevo rend 10 sans `limit` (référence, relue le 2026-11-26). L'argument reste
+# facultatif ; sa description dit ce que Brevo rend sans lui.
+BREVO_DEFAULT_DIFFERS = {
+    **{n: {"limit": 10} for n in ("list_segments", "list_lists", "list_folder_lists", "list_folders")},
+    "list_transactional_emails": {"limit": 500},
+    "transactional_events": {"limit": 2500},
+}
+# Ce que la réponse de `get_account` perd avant l'agent : un identifiant de connexion ou une clé.
+ACCOUNT_STRIPPED = ["relay.data.userName", "marketingAutomation.key"]
+# Les suppressions : sensibles, `destroy`, et rien d'autre ne part en DELETE.
+DELETES = {"delete_list", "delete_contact"}
 # Ce que le client pose toujours et dont l'absence change ce que fait Brevo : exigé.
 REQUIRED_WHERE_THE_CLIENT_FILLS = {
     "upsert_contact": {"update_enabled": True},
@@ -171,14 +186,18 @@ CLASSES = {
         "upsert_contact", "update_contact", "add_to_list", "remove_from_list",
         # Des milliers de contacts écrits d'un coup ; un fichier de contacts dont le lien part à une adresse.
         "import_contacts", "export_contacts",
+        # Détruit pour de bon.
+        "delete_list", "delete_contact",
     },
 }
-# Une écriture qui ne fait que préparer : servie du côté lecture.
-NOT_ACT = {"create_campaign"}
+# Une écriture qui ne fait que préparer : servie du côté lecture. Aucune : un brouillon de campagne est un
+# enregistrement du compte, servi du côté act.
+NOT_ACT: set = set()
 # La donnée personnelle : où elle est marquée.
 PERSONAL = {
     "list_contacts": [("filter",)],
     "get_contact": [("identifier",)],
+    "delete_contact": [("identifier",)],
     "update_contact": [("identifier",), ("attributes", "additionalProperties")],
     "contact_campaign_stats": [("identifier",)],
     "upsert_contact": [("email",), ("attributes", "additionalProperties")],
@@ -397,7 +416,7 @@ def _node(function: dict, path: tuple) -> dict:
 
 def test_the_description_is_version_1_0_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.0"
+    assert description["connector"]["version"] == "2.0.0"
     check(description, BREVO)
 
 
@@ -544,7 +563,9 @@ def test_reads_and_writes_are_classified_and_every_write_is_served_on_the_act_si
     for name, function in functions.items():
         method = function["call"]["method"]
         assert (method in WRITING_METHODS) == (function["class"] != "read"), name
-        assert method != "DELETE", "no delete: the client and oto 1 leave them to the Brevo app"
+        assert (method == "DELETE") == (name in DELETES), name
+        if name in DELETES:
+            assert function["class"] == "sensitive" and function["effect"] == "destroy", name
         assert ("confirm" in function) == (function["class"] == "sensitive"), name
         acts = function.get("act", function["class"] != "read")
         assert acts == (function["class"] != "read" and name not in NOT_ACT), name
@@ -552,8 +573,8 @@ def test_reads_and_writes_are_classified_and_every_write_is_served_on_the_act_si
 
 
 def test_what_the_client_keeps_out_stays_out():
-    """Ni envoi de campagne, ni planification, ni suppression, ni purge : rien de ce que le client et oto 1 laissent à
-    l'application Brevo."""
+    """Ni envoi de campagne, ni planification, ni suppression d'une campagne ou d'un modèle, ni purge : rien de ce que le
+    client et oto 1 laissent à l'application Brevo."""
     for name, function in _functions().items():
         call = function["call"]
         assert not re.search(r"sendNow|status|hardbounces", call["path"], re.I), name
@@ -570,7 +591,7 @@ def test_no_pagination_is_declared_and_each_call_costs_one_request():
     l'appelant pagine lui-même, par les arguments du client."""
     for name, function in _functions().items():
         assert "pagination" not in function, name
-        assert "output" not in function, name
+        assert ("output" in function) == (name == "get_account"), name
         assert function["cost"] == REQUEST, name
         paged = {"limit", "offset"} & set(_parameters(_method(name))) - set(ARGUMENTS_LEFT_OUT.get(name, {}))
         taken = {ARGUMENTS_ADDED.get(name, {}).get(a, a) for a in function["input"]["properties"]}
@@ -618,10 +639,13 @@ def test_the_401_and_spent_credits_mark_the_account_and_a_blocked_ip_does_not():
     marking = [(e["status"], e["code"], e["marks_account"], e.get("body")) for e in errors if "marks_account" in e]
     credits = {"path": "code", "equals": ["not_enough_credits"]}
     assert marking == [
-        (400, "credits_exhausted", "quota_exhausted", credits),
+        ([400, 402], "credits_exhausted", "quota_exhausted", credits),
         (401, "key_refused", "credential_rejected", None),
-        (402, "credits_exhausted", "quota_exhausted", credits),
     ]
+    first = {}
+    for entry in errors:
+        first.setdefault(entry["code"], entry)
+    assert first["credits_exhausted"] is errors[0], "before invalid_request (400) and payment_required (402)"
     ip = next(e for e in errors if e["code"] == "ip_not_authorized")
     assert ip["status"] == 401 and "marks_account" not in ip
     assert ip["body"] == {"path": "message", "contains": ["unrecognised ip address"]}
@@ -641,3 +665,66 @@ def test_the_typescript_output_and_the_python_table():
     table = python.declared([checked])["brevo"]
     assert set(table) == set(_functions())
     assert DECLARED.get("brevo") == table, "oto/connectors/declared.py is out of date: run `python -m fabrique`"
+
+
+def test_a_refusal_is_listed_once():
+    """Un lecteur qui liste les refus d'une fonction (code et message) le fait depuis la table : chaque code y est une
+    seule entrée, ses statuts en liste."""
+    codes = [e["code"] for e in _description()["connector"]["errors"]]
+    assert len(codes) == len(set(codes)), codes
+
+
+def test_get_account_strips_the_relay_login_and_the_automation_key():
+    """Le login du relais SMTP et la clé du suivi d'automatisation n'atteignent jamais l'agent : retirés par la
+    description (`output.strip`, appliqué par l'hôte) et par le client, au même endroit."""
+    from oto.connectors.serve import shaped
+    from oto.tools.brevo import client as brevo_client
+
+    function = _functions()["get_account"]
+    assert function["output"]["strip"] == ACCOUNT_STRIPPED
+    assert [".".join(p) for p in brevo_client.ACCOUNT_STRIPPED] == ACCOUNT_STRIPPED
+    answer = copy.deepcopy(function["output"]["sample"])
+    served = shaped(answer, function["output"])
+    text = json.dumps(served)
+    assert "smtp-login@acme.example" not in text and "tracker-key-0" not in text
+    assert served["relay"]["data"] == {"relay": "smtp.example.test", "port": 587}
+    assert served["marketingAutomation"] == {"enabled": True}
+    assert served["plan"] == answer["plan"]
+    assert brevo_client._strip_account(copy.deepcopy(answer)) == served
+    typescript = connector_module(check(_description(), BREVO)).source
+    assert '"relay.data.userName"' in typescript and '"marketingAutomation.key"' in typescript
+
+
+def test_the_limit_brevo_fills_otherwise_is_said_by_the_argument():
+    functions = _functions()
+    for name, defaults in BREVO_DEFAULT_DIFFERS.items():
+        properties = functions[name]["input"]["properties"]
+        for argument, value in defaults.items():
+            assert "default" not in properties[argument], name
+            assert argument not in functions[name]["input"].get("required", []), name
+            said = properties[argument]["description"]
+            assert any(f"Brevo answers {up}{value} when it is absent" in said for up in ("", "up to ")), name
+            assert "50 by default" not in said, name
+        assert CLIENT_FILLS[name]["limit"] == _parameters(_method(name))["limit"].default == 50, name
+
+
+def test_a_delete_is_confirmed_and_sends_what_the_client_sends():
+    functions = _functions()
+    assert {n for n, f in functions.items() if f["call"]["method"] == "DELETE"} == DELETES
+    assert _sent_by_the_client("delete_list", {"list_id": 3})["url"].endswith("/contacts/lists/3")
+    sent = _sent_by_the_client("delete_contact", {"identifier": "42", "identifier_type": "contact_id"})
+    assert sent["method"] == "DELETE" and sent["url"].endswith("/contacts/42")
+    assert sent["params"] == {"identifierType": "contact_id"}
+    for name in DELETES:
+        assert "for good" in functions[name]["confirm"]["summary"], name
+
+
+def test_the_emails_of_a_period_are_read_from_the_events_without_a_filter():
+    """`/smtp/emails` exige une adresse, un modèle ou un identifiant de message ; la période sans filtre se lit dans
+    les événements (`requests`, un par email parti), qui n'exigent rien."""
+    functions = _functions()
+    assert not _valid(functions["list_transactional_emails"], {"start_date": "2026-11-01", "end_date": "2026-11-25"})
+    period = {"event": "requests", "start_date": "2026-11-01", "end_date": "2026-11-25"}
+    assert _valid(functions["transactional_events"], period)
+    assert "transactional_events with event requests" in " ".join(
+        functions["list_transactional_emails"]["description"].split())

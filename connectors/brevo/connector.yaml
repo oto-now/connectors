@@ -14,20 +14,25 @@
 # _note) and crm_link (crm_link_deal, crm_link_company).
 #
 # Read and act. Reads stay on the read side. Every call that creates or changes something is served on the act side
-# (class write), but create_campaign, which only writes a draft (act: false). Ask for a confirmation (class
-# sensitive): everything that sends an email (send_email, send_campaign_test), everything that changes the membership
+# (class write), create_campaign included: a draft campaign is a record of the account, read by every user of the
+# Brevo app. Ask for a confirmation (class sensitive): everything that sends an email (send_email, send_campaign_test), everything that changes the membership
 # of a list or the consent of a contact (upsert_contact and update_contact take listIds, unlinkListIds and the
 # blacklist flags; add_to_list, remove_from_list, whose all empties the list): a list may start the Brevo
 # automations tied to it, as Klaviyo's; the bulk import (thousands of contacts written, existing ones updated); the
-# export, whose notifyUrl receives the link of a file holding the selected contacts.
+# export, whose notifyUrl receives the link of a file holding the selected contacts; the two deletes, delete_list
+# (its contacts stay) and delete_contact (the contact, its attributes and its history, for good): effect destroy.
 #
-# What the client and oto 1 keep out stays out: sending a campaign (sendNow, status sent), every delete, purging hard
-# bounces. scheduled_at of create_campaign and scheduledAt/sendAtBestTime of update_campaign are left out: they
+# What the client and oto 1 keep out stays out: sending a campaign (sendNow, status sent), deleting a campaign or a
+# template, purging hard bounces. scheduled_at of create_campaign and scheduledAt/sendAtBestTime of update_campaign are left out: they
 # schedule the mass send that the client and oto 1 leave to the Brevo app (oto 1 never passes them).
 #
 # Values the client sets when the call omits them:
-# - Brevo's own defaults (limit and offset of the lists, updateExistingContacts and emptyContactsAttributes of an
+# - Brevo's own defaults (limit and offset of the contacts, updateExistingContacts and emptyContactsAttributes of an
 #   import): not declared as defaults, the host sends nothing for an absent argument and Brevo then applies the same.
+# - limit of the lists, folders and segments: the client sends 50, Brevo answers 10 when it is absent (reference,
+#   read on 2026-11-26). The schema does not require it; the description of the argument says 10, and that 50 reads
+#   the most in one call. Same for the transactional emails (Brevo: 500) and their events (Brevo: 2500, above the
+#   schema's 100): the description of limit says what Brevo answers without it.
 # - Values whose absence changes what Brevo does, required here: updateEnabled of upsert_contact (the client sends
 #   true; Brevo's default is false, a known email is then refused), isActive of create_template (the client sends
 #   true), excludeHtmlContent of list_campaigns and get_campaign (the client sends true: without it every campaign
@@ -49,8 +54,9 @@
 # client sends but the reference does not document for tasks and notes (modifiedSince, createdSince; sortBy of notes)
 # are left out.
 #
-# Pagination: limit and offset (page for companies); the answers give count, never the next offset: no pagination is
-# declared, the agent passes offset. Lists in the query repeat their key (listIds=1&listIds=2), as the client sends
+# Pagination: limit and offset (page for companies); the answers give count, the total, never the next offset: the
+# format declares no offset pagination, so none is declared, and the description of a list says how to read the next
+# page (offset + limit, while below count). Lists in the query repeat their key (listIds=1&listIds=2), as the client sends
 # them; the reference says senders of list_blocked is comma separated: to read on a real call.
 #
 # Rate: Brevo limits per route and per plan (10 per second on the contacts, 300 per hour on the other /smtp reads,
@@ -58,6 +64,8 @@
 # 2026-10-23); one connector rate cannot say it, none is declared. The client does not pace.
 #
 # Errors (body {code, message}): the client names none (raise_for_upstream, every status above 400 the same error).
+# Spent credits come under a 400 or a 402 with the same code: one entry for both statuses, so a reader that lists the
+# refusals of a function names it once.
 # A 401 says "Invalid or missing API key" (the host always sends it): it marks the account credential_rejected, but
 # when its message names an unrecognised IP address (Brevo's authorised IPs, on by default since 2024: the key is
 # valid, the calling address is not allowed; reported by users, not in the reference: to read on a real call). The
@@ -65,7 +73,16 @@
 # are refused before running: retryable. A 5xx is not: a send or a write may have gone through.
 #
 # Probe: get_account, as oto 1. No balance: the account gives its credits per plan and credit type (plan[].credits),
-# no single value. The marketingAutomation.key of the account is the public tracker id of a website, not a secret.
+# no single value. The account answers the login of its SMTP relay (relay.data.userName) and the tracker key of its
+# marketing automation (marketingAutomation.key): an agent has no use for them, a login or a key never reaches it;
+# both are stripped (output.strip), and the client strips the same.
+#
+# Transactional emails over a period, whatever the address: /smtp/emails requires an email, a template or a message
+# id (reference, read on 2026-11-26); the period without filter is read from the events, transactional_events with
+# event requests (one row per email sent) or delivered.
+#
+# Totals of a list: Brevo stopped computing totalSubscribers and totalBlacklisted in the answer of /contacts/lists
+# (reference, read on 2026-11-26: 0 by default); get_list gives the subscribers of one list.
 #
 # Not described here, left to the hand-written client:
 # - attachment of send_email: the bytes of a file go base64 inside the JSON body (or a URL Brevo downloads); the
@@ -77,9 +94,15 @@
 connector:
   name: brevo
   label: Brevo
+  description: >-
+    Brevo (ex Sendinblue), email marketing and transactional email: contacts and their attributes, contact lists and
+    folders, segments, newsletters and email campaigns with their statistics, transactional emails and their events,
+    templates, senders, the remaining email and SMS credits of the account, and the Brevo CRM (deals, companies, tasks,
+    notes). En français : emailing, newsletter, listes de diffusion, listes de contacts, abonnés, désabonnés,
+    campagnes, emails transactionnels, emails envoyés, modèles, expéditeurs, crédits d'envoi, solde, forfait.
   logo_domain: brevo.com
   namespace: brevo
-  version: 1.0.0
+  version: 2.0.0
   api_version: v3
   base_url: https://api.brevo.com/v3
   auth: { kind: api_key, in: header, name: api-key, key: api_key }
@@ -90,8 +113,8 @@ connector:
   query_arrays: repeat
   probe: { function: get_account }
   errors:
-    - { status: 400, body: { path: code, equals: [not_enough_credits] }, code: credits_exhausted, retryable: false,
-        marks_account: quota_exhausted,
+    - { status: [400, 402], body: { path: code, equals: [not_enough_credits] }, code: credits_exhausted,
+        retryable: false, marks_account: quota_exhausted,
         message: "Brevo credits are exhausted for this send or this plan. Top up or upgrade the Brevo account." }
     - { status: 400, code: invalid_request, retryable: false,
         message: "Brevo rejected the request: its code and message say why (invalid_parameter, missing_parameter, duplicate_parameter, campaign_sent, an unknown attribute…)." }
@@ -100,9 +123,6 @@ connector:
         message: "Brevo refused the calling IP address: the key is valid, but the account allows only its authorised IPs (Brevo, Security, Authorised IPs)." }
     - { status: 401, code: key_refused, retryable: false, marks_account: credential_rejected,
         message: "Brevo refused the API key: invalid or revoked. A new v3 key is made in Brevo, SMTP & API, API keys." }
-    - { status: 402, body: { path: code, equals: [not_enough_credits] }, code: credits_exhausted, retryable: false,
-        marks_account: quota_exhausted,
-        message: "Brevo credits are exhausted for this send or this plan. Top up or upgrade the Brevo account." }
     - { status: 402, code: payment_required, retryable: false,
         message: "Brevo refused for billing: the account needs an activation or a plan that includes this." }
     - { status: 403, code: forbidden, retryable: false,
@@ -123,18 +143,29 @@ functions:
     class: read
     description: >-
       Get the Brevo account: company, login email, plans and their remaining
-      email and SMS credits (plan[].credits, per credit type), relay.
+      email and SMS credits (plan[].credits, per credit type: crédits, solde,
+      forfait), whether transactional email is on (relay.enabled). The login
+      of the SMTP relay and the marketing automation key are not given.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: The account, input: {} }
     call: { method: GET, path: /account }
+    output:
+      strip: [relay.data.userName, marketingAutomation.key]
+      sample:
+        email: owner@acme.example
+        companyName: Acme
+        plan: [{ type: free, creditsType: sendLimit, credits: 300 }]
+        relay: { enabled: true, data: { userName: smtp-login@acme.example, relay: smtp.example.test, port: 587 } }
+        marketingAutomation: { enabled: true, key: tracker-key-0 }
     cost: &request { per: request }
 
   - name: list_senders
     class: read
     description: >-
-      List the account's verified senders (id, name, email, active). Sending an
-      email or creating a template or campaign takes one of them as sender.
+      List the account's verified senders (expéditeurs: id, name, email,
+      active). Sending an email or creating a template or campaign takes one
+      of them as sender.
     input:
       type: object
       additionalProperties: false
@@ -287,6 +318,32 @@ functions:
               emailBlacklisted: email_blacklisted, smsBlacklisted: sms_blacklisted }
     cost: *request
 
+  - name: delete_contact
+    class: sensitive
+    effect: destroy
+    description: >-
+      Delete a contact for good: its attributes, its list memberships and its
+      history go. identifier is its email by default; identifier_type says
+      otherwise. Answers {} on success; a 404 when unknown. To stop sending to
+      a contact while keeping it, update_contact with email_blacklisted.
+    input:
+      type: object
+      additionalProperties: false
+      required: [identifier]
+      properties:
+        identifier: *identifier
+        identifier_type: *identifier_type
+    examples:
+      - { title: Delete a contact by email, input: { identifier: marie@example.test } }
+      - { title: Delete a contact by id, input: { identifier: "42", identifier_type: contact_id } }
+    confirm:
+      summary: "Delete Brevo contact {identifier} for good, with its attributes and history."
+    call:
+      method: DELETE
+      path: "/contacts/{identifier}"
+      query: { identifierType: identifier_type }
+    cost: *request
+
   - name: contact_campaign_stats
     class: read
     description: >-
@@ -430,7 +487,7 @@ functions:
       type: object
       additionalProperties: false
       properties:
-        limit: &limit_50 { type: integer, minimum: 1, maximum: 50, description: "Page size, 50 by default, at most 50." }
+        limit: &limit_50 { type: integer, minimum: 1, maximum: 50, description: "Page size, at most 50; Brevo answers 10 when it is absent: pass 50 to read the most in one call." }
         offset: *offset
         sort: *sort
     examples:
@@ -446,9 +503,13 @@ functions:
   - name: list_lists
     class: read
     description: >-
-      List the account's contact lists: id, name, folderId, uniqueSubscribers,
-      totalBlacklisted: {lists, count}. The lists of one folder:
-      list_folder_lists.
+      List the account's contact lists (listes de diffusion, newsletter):
+      {lists: [{id, name, folderId}], count}. count is the total number of
+      lists: 10 per page unless limit says otherwise (50 at most); the next
+      page is offset + limit, while below count. totalSubscribers and
+      totalBlacklisted are no longer computed here by Brevo and come back 0:
+      the subscribers (abonnés) of one list are in get_list. The lists of one
+      folder: list_folder_lists.
     input:
       type: object
       additionalProperties: false
@@ -467,7 +528,9 @@ functions:
   - name: list_folder_lists
     class: read
     description: >-
-      List the contact lists of one folder: {lists, count}.
+      List the contact lists of one folder: {lists, count}, count the total;
+      10 per page unless limit says otherwise, next page at offset + limit.
+      Subscriber totals come back 0 here: get_list gives them.
     input:
       type: object
       additionalProperties: false
@@ -488,8 +551,9 @@ functions:
   - name: get_list
     class: read
     description: >-
-      Get one list: name, folder, number of subscribers and of blacklisted
-      contacts, creation date, its campaigns' statistics.
+      Get one list (liste de diffusion): name, folder, number of subscribers
+      (abonnés) and of blacklisted contacts, creation date, its campaigns'
+      statistics.
     input:
       type: object
       additionalProperties: false
@@ -563,6 +627,26 @@ functions:
       method: PUT
       path: "/contacts/lists/{list_id}"
       body: { name: name, folderId: folder_id }
+    cost: *request
+
+  - name: delete_list
+    class: sensitive
+    effect: destroy
+    description: >-
+      Delete a contact list for good; its contacts stay in the account, only
+      their membership of this list goes. Answers {} on success; a 404 when
+      the id is unknown.
+    input:
+      type: object
+      additionalProperties: false
+      required: [list_id]
+      properties:
+        list_id: *list_id
+    examples:
+      - { title: Delete a list, input: { list_id: 3 } }
+    confirm:
+      summary: "Delete Brevo list {list_id} for good (its contacts stay in the account)."
+    call: { method: DELETE, path: "/contacts/lists/{list_id}" }
     cost: *request
 
   - name: add_to_list
@@ -707,9 +791,11 @@ functions:
     class: read
     description: >-
       List sent transactional emails for a recipient, a template or a message
-      id (at least one of the three): their uuid, subject, date. Dates are
-      YYYY-MM-DD, a month at most. What became of an email (delivered, opened,
-      bounced): transactional_events.
+      id (at least one of the three, Brevo requires it): their uuid, subject,
+      date. Dates are YYYY-MM-DD, a month at most. The emails sent over a
+      period, whatever the address (emails partis, envoyés sur une période):
+      transactional_events with event requests. What became of an email
+      (delivered, opened, bounced): transactional_events.
     input:
       type: object
       additionalProperties: false
@@ -723,7 +809,7 @@ functions:
         message_id: { type: string, minLength: 1 }
         start_date: *day_from
         end_date: *day_to
-        limit: { type: integer, minimum: 1, maximum: 500, description: "Page size, 50 by default." }
+        limit: { type: integer, minimum: 1, maximum: 500, description: "Page size, at most 500; Brevo answers 500 when it is absent." }
         offset: *offset
         sort: *sort
     examples:
@@ -754,16 +840,17 @@ functions:
   - name: transactional_events
     class: read
     description: >-
-      List the deliverability events of transactional emails, the source of
-      truth per email: delivered, opened, clicks, hardBounces, softBounces,
-      spam, blocked, unsubscribed, deferred… Over days (90 at most) or between
-      two dates (YYYY-MM-DD); 30 days by default. limit 50 by default, at most
-      100.
+      List the events of transactional emails, the source of truth per email
+      (emails partis, envoyés sur une période): requests (one per email sent),
+      delivered, opened, clicks, hardBounces, softBounces, spam, blocked,
+      unsubscribed, deferred… Over days (90 at most) or between two dates
+      (YYYY-MM-DD); 30 days by default. No address or template needed: event
+      requests over a period lists every email sent. limit at most 100.
     input:
       type: object
       additionalProperties: false
       properties:
-        limit: { type: integer, minimum: 1, maximum: 100, description: "Page size, 50 by default." }
+        limit: { type: integer, minimum: 1, maximum: 100, description: "Page size, at most 100; Brevo answers up to 2500 when it is absent: pass 100 to stay within one page of the schema." }
         offset: *offset
         start_date: *day_from
         end_date: *day_to
@@ -779,6 +866,7 @@ functions:
         sort: *sort
     examples:
       - { title: The hard bounces of the week, input: { event: hardBounces, days: 7 } }
+      - { title: Every email sent over a period, input: { event: requests, start_date: "2026-11-01", end_date: "2026-11-25", limit: 100 } }
     call:
       method: GET
       path: /smtp/statistics/events
@@ -980,7 +1068,8 @@ functions:
   - name: list_campaigns
     class: read
     description: >-
-      List email campaigns: id, name, subject, status, sender, recipients,
+      List email campaigns (campagnes, emailing, newsletters): id, name,
+      subject, status, sender, recipients,
       dates, statistics if asked (globalStats, linksStats, statsByDomain).
       exclude_html_content true keeps the answer light (the HTML stays in
       Brevo). Filter by type (classic, trigger), status (draft, sent, queued,
@@ -1012,7 +1101,7 @@ functions:
   - name: get_campaign
     class: read
     description: >-
-      Get one email campaign, with its statistics (globalStats, linksStats,
+      Get one email campaign (campagne, emailing), with its statistics (globalStats, linksStats,
       statsByDomain, statsByDevice, statsByBrowser). exclude_html_content true
       leaves its HTML out.
     input:
@@ -1033,9 +1122,9 @@ functions:
 
   - name: create_campaign
     class: write
-    act: false
     description: >-
-      Create an email campaign as a draft; answers {id}. Nothing is sent: the
+      Create an email campaign (campagne, emailing, newsletter) as a draft;
+      answers {id}. Nothing is sent: the
       send is started in the Brevo app, after review; send_campaign_test
       sends a test first. sender is a verified sender (list_senders). The body
       is html_content, html_url or template_id (a template's content copied).

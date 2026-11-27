@@ -13,8 +13,12 @@ authoring, and the browser session is not used here.
 
 **Deliberately absent writes** (an unlucky LLM call would be costly):
 sending a campaign (`sendNow`, switching the status to `sent`), deleting a
-contact/list/campaign/template, purging hard bounces. Design and measurement
-are exposed; launching a mass send and deletions stay in the UI.
+campaign/template, purging hard bounces. Design and measurement are exposed;
+launching a mass send stays in the UI. Deleting a list or a contact is here
+(`delete_list`, `delete_contact`): a caller confirms it first.
+
+`get_account` never returns the login of the SMTP relay nor the marketing
+automation key: both are removed from the answer (`ACCOUNT_STRIPPED`).
 
 Docs: https://developers.brevo.com/reference
 
@@ -31,13 +35,33 @@ from .crm import CrmMixin
 from .email import TransactionalEmailMixin
 
 
+#: What `get_account` removes from Brevo's answer, each by its path of keys: a login or a key never leaves the client.
+ACCOUNT_STRIPPED = (("relay", "data", "userName"), ("marketingAutomation", "key"))
+
+
+def _strip_account(account: Any) -> Any:
+    """Remove the paths of `ACCOUNT_STRIPPED` from the account; an absent parent has nothing to remove."""
+    if not isinstance(account, dict):
+        return account
+    for path in ACCOUNT_STRIPPED:
+        node: Any = account
+        for key in path[:-1]:
+            node = node.get(key) if isinstance(node, dict) else None
+        if isinstance(node, dict):
+            node.pop(path[-1], None)
+    return account
+
+
 class BrevoClient(ContactsMixin, TransactionalEmailMixin, CampaignsMixin,
                   CrmMixin, _BrevoBase):
     """Brevo v3 client — contacts, transactional, campaigns, CRM."""
 
     def get_account(self) -> Dict[str, Any]:
-        """Brevo account: company, plan(s), remaining email/SMS credits."""
-        return self._request("GET", "/account")
+        """Brevo account: company, plan(s), remaining email/SMS credits.
+
+        Without the SMTP relay login nor the marketing automation key (`ACCOUNT_STRIPPED`).
+        """
+        return _strip_account(self._request("GET", "/account"))
 
     def list_senders(self, ip: Optional[str] = None,
                      domain: Optional[str] = None) -> Dict[str, Any]:
