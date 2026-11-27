@@ -6,7 +6,7 @@ export const listAppointments = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's calendar appointments. Each appointment embeds a full nested patient object (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's calendar appointments. Each appointment embeds a full nested patient object (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les rendez-vous, agenda de la clinique, rendez-vous du jour.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -58,7 +58,7 @@ export const getAppointment = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a calendar appointment. The appointment embeds a full nested patient object (personal data).",
+  description: "Retrieve a calendar appointment. The appointment embeds a full nested patient object (personal data). In French: détail d'un rendez-vous, lire un rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -92,7 +92,7 @@ export const listAppointmentBilledCounts = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "The sessions an appointment counted against a quote or an invoice, reduced to counters: each row keeps only id, treatment_type, treatment_pricing, quantity, treatment_time, quote and invoice. The practitioner's notes, the treated zone, the free text, the consultation, the consent form and the staff the API also sends are dropped by the client and cannot be asked for. Used to count the sessions consumed from a sold package. Paginated by limit and offset.",
+  description: "The sessions an appointment counted against a quote or an invoice, reduced to counters: each row keeps only id, treatment_type, treatment_pricing, quantity, treatment_time, quote and invoice. The practitioner's notes, the treated zone, the free text, the consultation, the consent form and the staff the API also sends are dropped by the client and cannot be asked for. Used to count the sessions consumed from a sold package. Paginated by limit and offset. In French: séances facturées d'un rendez-vous, séances décomptées d'un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -134,7 +134,7 @@ export const rescheduleAppointment = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Move an appointment to a free slot. Both visit_type_opening_hour_id (the slot id) and time_slot come from search_time_slots.",
+  description: "Move an appointment to a free slot. Both visit_type_opening_hour_id (the slot id) and time_slot come from search_time_slots. In French: déplacer un rendez-vous, reporter un rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -179,7 +179,7 @@ export const updateAppointment = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Change an appointment: calendar_event (with start_time and end_time) is required. The API notifies the patient by email and SMS by default: set send_appointment_modified_email and send_appointment_modified_sms to false unless the patient must be told. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Change an appointment: calendar_event (with start_time and end_time) is required. The API notifies the patient by email and SMS by default: set send_appointment_modified_email and send_appointment_modified_sms to false unless the patient must be told. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un rendez-vous, changer l'heure d'un rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -355,7 +355,7 @@ export const deleteAppointment = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a calendar appointment. Answers 204 when done; permanent.",
+  description: "Delete a calendar appointment. Answers 204 when done; permanent. In French: supprimer un rendez-vous, annuler un rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -390,7 +390,7 @@ export const searchTimeSlots = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "A read despite the POST verb. Free online-booking slots of the clinic, unpaginated: {data: [{id, type, time_slot, utc_offset}]}. Without dates the search spans the current month. The slot id and time_slot feed reschedule_appointment and create_appointment_request.",
+  description: "A read despite the POST verb. Free online-booking slots of the clinic, unpaginated: {data: [{id, type, time_slot, utc_offset}]}. Without dates the search spans the current month. The slot id and time_slot feed reschedule_appointment and create_appointment_request. In French: créneaux disponibles, trouver un créneau libre, disponibilités de prise de rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -454,7 +454,7 @@ export const listAppointmentRequests = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's appointment requests. Each request carries the requester's name, email and phone (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's appointment requests. Each request carries the requester's name, email and phone (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}. In French: demandes de rendez-vous, lister les demandes de rendez-vous en ligne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -501,7 +501,7 @@ export const getAppointmentRequest = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve appointment request details. The request carries the requester's name, email and phone (personal data).",
+  description: "Retrieve appointment request details. The request carries the requester's name, email and phone (personal data). In French: détail d'une demande de rendez-vous, lire une demande de rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -535,7 +535,7 @@ export const createAppointmentRequest = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Request an appointment. An online booking request on a free slot (`visit_type_opening_hour`, `time_slot` from `search_time_slots`) for a person (`first_name`, `last_name`, `email`, `phone_number`, `birth_date`). The clinic is the slot's: the path carries none. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Request an appointment. An online booking request on a free slot (`visit_type_opening_hour`, `time_slot` from `search_time_slots`) for a person (`first_name`, `last_name`, `email`, `phone_number`, `birth_date`). The clinic is the slot's: the path carries none. Only the arguments given are sent; a top-level field cannot be set to null. In French: demander un rendez-vous, réserver un créneau en ligne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -590,7 +590,7 @@ export const listCalendarJourneys = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's calendar journeys. A patient's path through the clinic on an appointment (required / completed steps). Each journey embeds its patient (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's calendar journeys. A patient's path through the clinic on an appointment (required / completed steps). Each journey embeds its patient (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}. In French: parcours patient, étapes du parcours en clinique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -689,7 +689,7 @@ export const listCalendarAbsences = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's calendar absences. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's calendar absences. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: absences de l'agenda, lister les absences.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -745,7 +745,7 @@ export const getCalendarAbsence = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a calendar absence.",
+  description: "Retrieve a calendar absence. In French: détail d'une absence, lire une absence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -779,7 +779,7 @@ export const listCalendarOpeningHours = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's calendar opening hours. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's calendar opening hours. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: horaires d'ouverture, plages d'ouverture de l'agenda.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -825,7 +825,7 @@ export const getCalendarOpeningHour = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a calendar opening hour.",
+  description: "Retrieve a calendar opening hour. In French: détail d'une plage d'ouverture, lire un horaire d'ouverture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -859,7 +859,7 @@ export const listAppointmentRooms = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's appointment rooms. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's appointment rooms. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: salles de soins, lister les salles.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -900,7 +900,7 @@ export const getAppointmentRoom = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve an appointment room.",
+  description: "Retrieve an appointment room. In French: détail d'une salle, lire une salle de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -934,7 +934,7 @@ export const listAppointmentDevices = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's appointment devices. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's appointment devices. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: appareils de soins, lister les appareils.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -975,7 +975,7 @@ export const getAppointmentDevice = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve an appointment device.",
+  description: "Retrieve an appointment device. In French: détail d'un appareil, lire un appareil de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1009,7 +1009,7 @@ export const createCalendarAbsence = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a calendar absence. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a calendar absence. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer une absence, poser une absence, bloquer l'agenda.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1152,7 +1152,7 @@ export const updateCalendarAbsence = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a calendar absence. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a calendar absence. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier une absence, changer une absence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1295,7 +1295,7 @@ export const deleteCalendarAbsence = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a calendar absence. Answers 204 when done; permanent.",
+  description: "Delete a calendar absence. Answers 204 when done; permanent. In French: supprimer une absence, annuler une absence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1330,7 +1330,7 @@ export const createCalendarOpeningHour = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a calendar opening hour. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a calendar opening hour. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer une plage d'ouverture, ajouter un horaire d'ouverture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1508,7 +1508,7 @@ export const updateCalendarOpeningHour = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a calendar opening hour. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a calendar opening hour. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier une plage d'ouverture, changer les horaires d'ouverture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1683,7 +1683,7 @@ export const deleteCalendarOpeningHour = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a calendar opening hour. Answers 204 when done; permanent.",
+  description: "Delete a calendar opening hour. Answers 204 when done; permanent. In French: supprimer une plage d'ouverture, retirer un horaire d'ouverture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1718,7 +1718,7 @@ export const createAppointmentRoom = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create an appointment room. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create an appointment room. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer une salle, ajouter une salle de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1789,7 +1789,7 @@ export const updateAppointmentRoom = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update an appointment room. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update an appointment room. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier une salle, renommer une salle.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1860,7 +1860,7 @@ export const deleteAppointmentRoom = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete an appointment room. Answers 204 when done; permanent.",
+  description: "Delete an appointment room. Answers 204 when done; permanent. In French: supprimer une salle, retirer une salle de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1895,7 +1895,7 @@ export const createAppointmentDevice = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create an appointment device. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create an appointment device. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un appareil, ajouter un appareil de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1948,7 +1948,7 @@ export const updateAppointmentDevice = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update an appointment device. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update an appointment device. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un appareil, renommer un appareil.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2001,7 +2001,7 @@ export const deleteAppointmentDevice = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete an appointment device. Answers 204 when done; permanent.",
+  description: "Delete an appointment device. Answers 204 when done; permanent. In French: supprimer un appareil, retirer un appareil de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2036,7 +2036,7 @@ export const listVisitTypes = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's visit types. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's visit types. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: types de consultation, motifs de rendez-vous, lister les types de visite.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2083,7 +2083,7 @@ export const getVisitType = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a visit type.",
+  description: "Retrieve a visit type. In French: détail d'un type de consultation, lire un motif de rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2117,7 +2117,7 @@ export const listVisitTypeCategories = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's visit type categories. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's visit type categories. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: catégories de consultation, catégories de motifs de rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2158,7 +2158,7 @@ export const getVisitTypeCategory = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a visit type category.",
+  description: "Retrieve a visit type category. In French: détail d'une catégorie de consultation, lire une catégorie de motif.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2192,7 +2192,7 @@ export const listSubVisitTypes = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's sub visit types. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's sub visit types. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: variantes de consultation, sous-types de visite.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2239,7 +2239,7 @@ export const getSubVisitType = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a sub visit type.",
+  description: "Retrieve a sub visit type. In French: détail d'une variante de consultation, lire un sous-type de visite.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2273,7 +2273,7 @@ export const listTreatmentTypes = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's treatment types. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's treatment types. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: types de soins, catalogue des traitements, lister les actes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2315,7 +2315,7 @@ export const getTreatmentType = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a treatment type.",
+  description: "Retrieve a treatment type. In French: détail d'un soin, lire un type de traitement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2349,7 +2349,7 @@ export const listTreatmentPricings = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's treatment pricings. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's treatment pricings. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: tarifs des soins, grille tarifaire, prix des traitements.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2396,7 +2396,7 @@ export const getTreatmentPricing = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a treatment pricing.",
+  description: "Retrieve a treatment pricing. In French: détail d'un tarif, prix d'un soin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2430,7 +2430,7 @@ export const listTreatmentPricingDistributions = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List a treatment pricing's per-provider accounting distributions. The per-user accounting distribution of a pricing. Unpaginated.",
+  description: "List a treatment pricing's per-provider accounting distributions. The per-user accounting distribution of a pricing. Unpaginated. In French: répartition comptable d'un tarif, rétrocession par praticien d'un tarif.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2464,7 +2464,7 @@ export const listTreatmentPackages = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's treatment packages. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's treatment packages. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: forfaits de soins, lister les forfaits, cures de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2506,7 +2506,7 @@ export const getTreatmentPackage = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a treatment package.",
+  description: "Retrieve a treatment package. In French: détail d'un forfait, lire un forfait de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2540,7 +2540,7 @@ export const listTreatmentPackageItems = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List treatment package items. The treatments a package holds. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List treatment package items. The treatments a package holds. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: contenu d'un forfait, soins d'un forfait.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2581,7 +2581,7 @@ export const listTreatmentPackageDistributions = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List a treatment package's per-provider accounting distributions. Unpaginated.",
+  description: "List a treatment package's per-provider accounting distributions. Unpaginated. In French: répartition comptable d'un forfait, rétrocession par praticien d'un forfait.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2615,7 +2615,7 @@ export const listAccountingDistributions = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's accounting distributions. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's accounting distributions. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: répartitions comptables, lister les rétrocessions.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2656,7 +2656,7 @@ export const getAccountingDistribution = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve an accounting distribution.",
+  description: "Retrieve an accounting distribution. In French: détail d'une répartition comptable, lire une rétrocession.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2690,7 +2690,7 @@ export const listGlobalProducts = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Search global product catalog. The product catalogue (name, brand). No detail endpoint. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "Search global product catalog. The product catalogue (name, brand). No detail endpoint. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: catalogue des produits, chercher un produit du catalogue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2732,7 +2732,7 @@ export const createVisitType = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a visit type in the clinic. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a visit type in the clinic. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un type de consultation, ajouter un motif de rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2919,7 +2919,7 @@ export const updateVisitType = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "sub_visit_types is the FULL list of variants: a variant left out is deleted. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "sub_visit_types is the FULL list of variants: a variant left out is deleted. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un type de consultation, changer un motif de rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3116,7 +3116,7 @@ export const deleteVisitType = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a visit type. Answers 204 when done; permanent.",
+  description: "Delete a visit type. Answers 204 when done; permanent. In French: supprimer un type de consultation, retirer un motif de rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3151,7 +3151,7 @@ export const createVisitTypeCategory = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a visit type category. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a visit type category. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer une catégorie de consultation, ajouter une catégorie de motif.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3222,7 +3222,7 @@ export const updateVisitTypeCategory = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a visit type category. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a visit type category. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier une catégorie de consultation, renommer une catégorie de motif.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3293,7 +3293,7 @@ export const deleteVisitTypeCategory = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a visit type category. Answers 204 when done; permanent.",
+  description: "Delete a visit type category. Answers 204 when done; permanent. In French: supprimer une catégorie de consultation, retirer une catégorie de motif.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3328,7 +3328,7 @@ export const createTreatmentType = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a treatment type in the clinic. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a treatment type in the clinic. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un soin, ajouter un type de traitement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3558,7 +3558,7 @@ export const updateTreatmentType = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "pricings is the FULL list: a pricing left out is deleted. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "pricings is the FULL list: a pricing left out is deleted. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un soin, changer les tarifs d'un soin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3782,7 +3782,7 @@ export const deleteTreatmentType = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a treatment type. Answers 204 when done; permanent.",
+  description: "Delete a treatment type. Answers 204 when done; permanent. In French: supprimer un soin, retirer un type de traitement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3817,7 +3817,7 @@ export const getPostTreatmentConfig = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a post-treatment config.",
+  description: "Retrieve a post-treatment config. In French: consignes post-soin, réglages après traitement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3851,7 +3851,7 @@ export const updatePostTreatmentConfig = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a post-treatment config. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a post-treatment config. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier les consignes post-soin, changer les réglages après traitement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3989,7 +3989,7 @@ export const createTreatmentPackage = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a treatment package. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a treatment package. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un forfait, nouveau forfait de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4052,7 +4052,7 @@ export const updateTreatmentPackage = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a treatment package. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a treatment package. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un forfait, changer un forfait de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4115,7 +4115,7 @@ export const deleteTreatmentPackage = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a treatment package. Answers 204 when done; permanent.",
+  description: "Delete a treatment package. Answers 204 when done; permanent. In French: supprimer un forfait, retirer un forfait de soins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4150,7 +4150,7 @@ export const createTreatmentPackageItem = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Add item to treatment package. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Add item to treatment package. Only the arguments given are sent; a top-level field cannot be set to null. In French: ajouter un soin à un forfait, compléter un forfait.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4197,7 +4197,7 @@ export const updateTreatmentPackageItem = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update treatment package item. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update treatment package item. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un soin d'un forfait, changer la quantité d'un forfait.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4244,7 +4244,7 @@ export const deleteTreatmentPackageItem = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Remove item from treatment package. Answers 204 when done; permanent.",
+  description: "Remove item from treatment package. Answers 204 when done; permanent. In French: retirer un soin d'un forfait, enlever un élément d'un forfait.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4279,7 +4279,7 @@ export const createAccountingDistribution = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create an accounting distribution. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create an accounting distribution. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer une répartition comptable, ajouter une rétrocession.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4341,7 +4341,7 @@ export const updateAccountingDistribution = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update an accounting distribution. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update an accounting distribution. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier une répartition comptable, changer une rétrocession.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4403,7 +4403,7 @@ export const deleteAccountingDistribution = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete an accounting distribution. Answers 204 when done; permanent.",
+  description: "Delete an accounting distribution. Answers 204 when done; permanent. In French: supprimer une répartition comptable, retirer une rétrocession.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4438,7 +4438,7 @@ export const getMe = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Useful to check which user an API key acts as.",
+  description: "Useful to check which user an API key acts as. In French: mon compte nextmotion, utilisateur de la clé nextmotion.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who the key acts as", input: {} },
@@ -4459,7 +4459,7 @@ export const listClinics = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Start here: almost every other function needs a clinic_id from this list. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "Start here: almost every other function needs a clinic_id from this list. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les cliniques, mes cliniques nextmotion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4492,7 +4492,7 @@ export const listClinicFeatures = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic features / subscription options. The clinic's Nextmotion subscription options (code, prices, counts, sale/cancel/end times). Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic features / subscription options. The clinic's Nextmotion subscription options (code, prices, counts, sale/cancel/end times). Paginated by limit and offset; the answer is {count, next, previous, data}. In French: options d'abonnement de la clinique, abonnement nextmotion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4533,7 +4533,7 @@ export const listDoctors = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's doctors. The clinic's practitioners. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's doctors. The clinic's practitioners. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les praticiens, médecins de la clinique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4574,7 +4574,7 @@ export const getDoctor = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a doctor.",
+  description: "Retrieve a doctor. In French: fiche d'un praticien, détail d'un médecin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4608,7 +4608,7 @@ export const createDoctor = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a doctor. Adds a collaborator (`email` and `kind` required; names required when the email is not a known user). Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a doctor. Adds a collaborator (`email` and `kind` required; names required when the email is not a known user). Only the arguments given are sent; a top-level field cannot be set to null. In French: ajouter un praticien, créer un médecin, ajouter un collaborateur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4719,7 +4719,7 @@ export const updateDoctor = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a doctor. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a doctor. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un praticien, mettre à jour un médecin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4828,7 +4828,7 @@ export const deleteDoctor = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a doctor. Answers 204 when done; permanent.",
+  description: "Delete a doctor. Answers 204 when done; permanent. In French: supprimer un praticien, retirer un médecin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4863,7 +4863,7 @@ export const listLeads = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's leads. Prospects (contact details, source, status, desired treatment, follow-up counters). Each lead carries a person's name, email, phone and free-text notes (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's leads. Prospects (contact details, source, status, desired treatment, follow-up counters). Each lead carries a person's name, email, phone and free-text notes (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les prospects, leads de la clinique, demandes de contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4904,7 +4904,7 @@ export const getLead = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a lead. The lead carries a person's name, email, phone and free-text notes (personal data).",
+  description: "Retrieve a lead. The lead carries a person's name, email, phone and free-text notes (personal data). In French: fiche d'un prospect, détail d'un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4938,7 +4938,7 @@ export const createLead = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a lead. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a lead. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un prospect, ajouter un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5007,7 +5007,7 @@ export const updateLead = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a lead. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a lead. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un prospect, changer le statut d'un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5076,7 +5076,7 @@ export const deleteLead = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a lead. Answers 204 when done; permanent.",
+  description: "Delete a lead. Answers 204 when done; permanent. In French: supprimer un prospect, supprimer un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5111,7 +5111,7 @@ export const convertLeadToPatient = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Turn a lead into a patient; answers the patient, an existing one when its details match.",
+  description: "Turn a lead into a patient; answers the patient, an existing one when its details match. In French: convertir un prospect en patient, transformer un lead en patient.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5146,7 +5146,7 @@ export const createCall = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Log a call. Logs a call (JSON; a recording file, multipart only, is not sent by this client). Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Log a call. Logs a call (JSON; a recording file, multipart only, is not sent by this client). Only the arguments given are sent; a top-level field cannot be set to null. In French: enregistrer un appel, noter un appel téléphonique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5231,7 +5231,7 @@ export const createCommunicationRecord = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "SENDS a real email, SMS or WhatsApp message built from one of the clinic's communication templates, about one object (a quote, an invoice or an administrative document). Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "SENDS a real email, SMS or WhatsApp message built from one of the clinic's communication templates, about one object (a quote, an invoice or an administrative document). Only the arguments given are sent; a top-level field cannot be set to null. In French: envoyer un devis par email, envoyer un sms au patient, envoyer une facture par email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5290,7 +5290,7 @@ export const listObjectLabels = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Labels used across the clinic: lead sources, statuses, channels, zones, quote tags, call labels. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "Labels used across the clinic: lead sources, statuses, channels, zones, quote tags, call labels. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: étiquettes de la clinique, sources de prospects, statuts des leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5352,7 +5352,7 @@ export const listCommunicationTemplates = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic communication templates. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic communication templates. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: modèles de messages, modèles d'email et de sms.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5399,7 +5399,7 @@ export const getCommunicationTemplate = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a communication template.",
+  description: "Retrieve a communication template. In French: détail d'un modèle de message, lire un modèle d'email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5433,7 +5433,7 @@ export const updateCommunicationTemplate = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a communication template. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a communication template. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un modèle de message, changer un modèle de sms.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5485,7 +5485,7 @@ export const listCommunicationTemplatePlaceholders = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List communication template autocomplete metadata. The placeholders a template of that `type` (e.g. `quote`, `appointment_reminder`) can use.",
+  description: "List communication template autocomplete metadata. The placeholders a template of that `type` (e.g. `quote`, `appointment_reminder`) can use. In French: variables des modèles de message, champs de fusion des messages.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5547,7 +5547,7 @@ export const listDocumentTemplates = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's document templates. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's document templates. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: modèles de documents, lister les modèles de courrier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5599,7 +5599,7 @@ export const getDocumentTemplate = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a document template.",
+  description: "Retrieve a document template. In French: détail d'un modèle de document, lire un modèle de document.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5633,7 +5633,7 @@ export const createDocumentTemplate = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a document template. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a document template. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un modèle de document, nouveau modèle de document.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5734,7 +5734,7 @@ export const updateDocumentTemplate = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a document template. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a document template. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un modèle de document, changer un modèle de document.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5823,7 +5823,7 @@ export const deleteDocumentTemplate = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a document template. Answers 204 when done; permanent.",
+  description: "Delete a document template. Answers 204 when done; permanent. In French: supprimer un modèle de document, retirer un modèle de document.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5858,7 +5858,7 @@ export const duplicateDocumentTemplate = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Duplicate a document template. Answers the copy.",
+  description: "Duplicate a document template. Answers the copy. In French: dupliquer un modèle de document, copier un modèle de document.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5892,7 +5892,7 @@ export const listDocumentTemplatePlaceholders = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List autofills / autocomplete options. Placeholders per document type (same codes as `list_document_templates`).",
+  description: "List autofills / autocomplete options. Placeholders per document type (same codes as `list_document_templates`). In French: variables des modèles de document, champs de fusion des documents.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5923,7 +5923,7 @@ export const listSurveyForms = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's survey forms. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's survey forms. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: formulaires de la clinique, questionnaires patients, formulaires de consentement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5970,7 +5970,7 @@ export const getSurveyForm = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a survey form.",
+  description: "Retrieve a survey form. In French: détail d'un formulaire, lire un questionnaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6004,7 +6004,7 @@ export const createSurveyForm = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a survey form. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a survey form. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un formulaire, créer un questionnaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6072,7 +6072,7 @@ export const updateSurveyForm = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a survey form. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a survey form. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un formulaire, changer un questionnaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6139,7 +6139,7 @@ export const deleteSurveyForm = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a survey form. Answers 204 when done; permanent.",
+  description: "Delete a survey form. Answers 204 when done; permanent. In French: supprimer un formulaire, supprimer un questionnaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6174,7 +6174,7 @@ export const listSurveyFormPlaceholders = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List autocomplete options. Placeholders of a survey-form type (`bolt_note` | `treatment_consent`, required).",
+  description: "List autocomplete options. Placeholders of a survey-form type (`bolt_note` | `treatment_consent`, required). In French: variables des formulaires, champs de fusion des questionnaires.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6206,7 +6206,7 @@ export const listWebhooks = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's webhooks. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's webhooks. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les webhooks, webhooks de la clinique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6247,7 +6247,7 @@ export const getWebhook = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a webhook.",
+  description: "Retrieve a webhook. In French: détail d'un webhook, lire un webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6281,7 +6281,7 @@ export const createWebhook = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Register a webhook: Nextmotion will push the chosen events of this clinic, which may carry personal data, to the given URL. headers usually carry the receiver's secret. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Register a webhook: Nextmotion will push the chosen events of this clinic, which may carry personal data, to the given URL. headers usually carry the receiver's secret. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un webhook, s'abonner aux événements de la clinique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6394,7 +6394,7 @@ export const updateWebhook = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Change where and how a webhook pushes this clinic's events (url required). Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Change where and how a webhook pushes this clinic's events (url required). Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un webhook, changer l'adresse d'un webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6466,7 +6466,7 @@ export const deleteWebhook = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a webhook. Answers 204 when done; permanent.",
+  description: "Delete a webhook. Answers 204 when done; permanent. In French: supprimer un webhook, arrêter un webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6501,7 +6501,7 @@ export const listPatients = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's patients. Patient records are personal data, including the practitioner's comments and a photograph. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's patients. Patient records are personal data, including the practitioner's comments and a photograph. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les patients, chercher un patient, fichier patients.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6563,7 +6563,7 @@ export const getPatient = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a patient. The record is personal data, including the practitioner's comments and a photograph.",
+  description: "Retrieve a patient. The record is personal data, including the practitioner's comments and a photograph. In French: fiche d'un patient, dossier d'un patient.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6597,7 +6597,7 @@ export const createPatient = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a patient record (identity only). Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a patient record (identity only). Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un patient, ajouter un patient.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6660,7 +6660,7 @@ export const updatePatient = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a patient's identity (same fields as create_patient). Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a patient's identity (same fields as create_patient). Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un patient, mettre à jour l'identité d'un patient.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6723,7 +6723,7 @@ export const listQuotes = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's quotes. Each quote embeds a nested patient object (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's quotes. Each quote embeds a nested patient object (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les devis, devis de la clinique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6770,7 +6770,7 @@ export const getQuote = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a quote. The quote embeds a nested patient object (personal data).",
+  description: "Retrieve a quote. The quote embeds a nested patient object (personal data). In French: détail d'un devis, lire un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6804,7 +6804,7 @@ export const listInvoices = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "The API accepts no filter on this list (no date, no patient), and its order is not documented. Each invoice embeds a nested patient object (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "The API accepts no filter on this list (no date, no patient), and its order is not documented. Each invoice embeds a nested patient object (personal data). Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les factures, factures de la clinique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6845,7 +6845,7 @@ export const getInvoice = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve an invoice. The invoice embeds a nested patient object (personal data).",
+  description: "Retrieve an invoice. The invoice embeds a nested patient object (personal data). In French: détail d'une facture, lire une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -6879,7 +6879,7 @@ export const updateQuote = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a quote. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a quote. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un devis, corriger un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7004,7 +7004,7 @@ export const deleteQuote = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a quote. Answers 204 when done; permanent.",
+  description: "Delete a quote. Answers 204 when done; permanent. In French: supprimer un devis, effacer un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7039,7 +7039,7 @@ export const validateQuote = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Validate a draft quote, optionally updating it in the same request. Irreversible. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Validate a draft quote, optionally updating it in the same request. Irreversible. Only the arguments given are sent; a top-level field cannot be set to null. In French: valider un devis, finaliser un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7170,7 +7170,7 @@ export const updateInvoice = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update an invoice. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update an invoice. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier une facture, corriger une facture brouillon.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7289,7 +7289,7 @@ export const validateInvoice = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Validate a draft invoice: it gets its number and can no longer be edited. issued_time and invoiced_time are optional. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Validate a draft invoice: it gets its number and can no longer be edited. issued_time and invoiced_time are optional. Only the arguments given are sent; a top-level field cannot be set to null. In French: valider une facture, émettre une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7334,7 +7334,7 @@ export const payInvoice = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Record a payment on an invoice: amounts per means, custom mediums, voucher, deferred date; do_validate also validates it. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Record a payment on an invoice: amounts per means, custom mediums, voucher, deferred date; do_validate also validates it. Only the arguments given are sent; a top-level field cannot be set to null. In French: enregistrer un paiement, encaisser une facture, régler une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7561,7 +7561,7 @@ export const createCreditNote = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Issue a credit note (accounting record) for a patient; items are required. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Issue a credit note (accounting record) for a patient; items are required. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un avoir, émettre un avoir.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7899,7 +7899,7 @@ export const listPayments = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's payments, optionally of a period (paid_from, paid_to: payment days, inclusive). Each payment carries payment_time (date-time), its amount per means of payment (cash, card, check, transfer, stripe, voucher, other, custom_medium_list) and embeds its invoice. The embedded invoice carries a nested patient object (personal data) and its lines (invoiced_treatments, each with the id of its treatment); the practitioner of the act is not in the answer. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's payments, optionally of a period (paid_from, paid_to: payment days, inclusive). Each payment carries payment_time (date-time), its amount per means of payment (cash, card, check, transfer, stripe, voucher, other, custom_medium_list) and embeds its invoice. The embedded invoice carries a nested patient object (personal data) and its lines (invoiced_treatments, each with the id of its treatment); the practitioner of the act is not in the answer. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: lister les paiements, encaissements du mois, règlements des patients.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7957,7 +7957,7 @@ export const getPayment = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a payment. The payment embeds a nested patient object (personal data).",
+  description: "Retrieve a payment. The payment embeds a nested patient object (personal data). In French: détail d'un paiement, lire un règlement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -7991,7 +7991,7 @@ export const updatePayment = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a payment. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a payment. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un paiement, corriger un règlement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8211,7 +8211,7 @@ export const listPaymentMediums = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's custom payment mediums. Custom payment means. Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's custom payment mediums. Custom payment means. Paginated by limit and offset; the answer is {count, next, previous, data}. In French: moyens de paiement personnalisés, modes de règlement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8252,7 +8252,7 @@ export const getPaymentMedium = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a custom payment medium.",
+  description: "Retrieve a custom payment medium. In French: détail d'un moyen de paiement, lire un mode de règlement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8286,7 +8286,7 @@ export const createPaymentMedium = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Create a custom payment medium. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Create a custom payment medium. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un moyen de paiement, ajouter un mode de règlement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8325,7 +8325,7 @@ export const updatePaymentMedium = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a custom payment medium. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a custom payment medium. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un moyen de paiement, renommer un mode de règlement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8364,7 +8364,7 @@ export const deletePaymentMedium = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a custom payment medium. Answers 204 when done; permanent.",
+  description: "Delete a custom payment medium. Answers 204 when done; permanent. In French: supprimer un moyen de paiement, retirer un mode de règlement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8399,7 +8399,7 @@ export const getAppointmentIncomeStatistics = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Appointment income of the clinic over time, as one chart (one value per period). Without dates the API spans 6 periods up to today. Unpaginated.",
+  description: "Appointment income of the clinic over time, as one chart (one value per period). Without dates the API spans 6 periods up to today. Unpaginated. In French: chiffre d'affaires des rendez-vous, revenus des rendez-vous par mois.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8450,7 +8450,7 @@ export const listTreatmentTypeStatistics = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Draft-quoted, quoted and invoiced treatment counts over time, one chart per treatment type. Without dates the API spans 6 periods up to today. Unpaginated.",
+  description: "Draft-quoted, quoted and invoiced treatment counts over time, one chart per treatment type. Without dates the API spans 6 periods up to today. Unpaginated. In French: statistiques des soins, nombre de soins facturés, soins les plus vendus.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8501,7 +8501,7 @@ export const listTreatmentTypeIncomeStatistics = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Income from invoiced treatments over time, one chart per treatment type. Without dates the API spans 6 periods up to today. Unpaginated.",
+  description: "Income from invoiced treatments over time, one chart per treatment type. Without dates the API spans 6 periods up to today. Unpaginated. In French: chiffre d'affaires par soin, revenus par type de traitement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8552,7 +8552,7 @@ export const getPatientStats = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "A patient's financial totals: quoted, invoiced, paid, credit notes, reimbursements, first and last visit, review requests, media counts. No identity in the response.",
+  description: "A patient's financial totals: quoted, invoiced, paid, credit notes, reimbursements, first and last visit, review requests, media counts. No identity in the response. In French: total facturé d'un patient, chiffre d'affaires d'un patient, statistiques d'un patient.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8586,7 +8586,7 @@ export const listProducts = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "List clinic's products in stock. The clinic's stock, one row per lot. A product row embeds its catalogue entry (`global_product`: name, brand). Paginated by limit and offset; the answer is {count, next, previous, data}.",
+  description: "List clinic's products in stock. The clinic's stock, one row per lot. A product row embeds its catalogue entry (`global_product`: name, brand). Paginated by limit and offset; the answer is {count, next, previous, data}. In French: stock de produits, lister les produits en stock, lots en stock.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8651,7 +8651,7 @@ export const getProduct = defineFunction({
   connector: "nextmotion",
   class: "read",
   act: false,
-  description: "Retrieve a product.",
+  description: "Retrieve a product. In French: détail d'un produit en stock, lire un lot.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8685,7 +8685,7 @@ export const createProduct = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Add a product to stock. A lot (`global_product` required). Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Add a product to stock. A lot (`global_product` required). Only the arguments given are sent; a top-level field cannot be set to null. In French: ajouter un produit au stock, entrer un lot en stock.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8754,7 +8754,7 @@ export const updateProduct = defineFunction({
   connector: "nextmotion",
   class: "write",
   act: true,
-  description: "Update a product. Only the arguments given are sent; a top-level field cannot be set to null.",
+  description: "Update a product. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un produit en stock, mettre à jour un lot.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8809,7 +8809,7 @@ export const deleteProduct = defineFunction({
   connector: "nextmotion",
   class: "sensitive",
   act: true,
-  description: "Delete a stock lot; answers 200 with the deleted product.",
+  description: "Delete a stock lot; answers 200 with the deleted product. In French: supprimer un produit du stock, retirer un lot.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -8843,7 +8843,7 @@ export const connector = defineConnector({
   name: "nextmotion",
   label: "Nextmotion",
   namespace: "nextmotion",
-  version: "1.2.0",
+  version: "1.2.1",
   apiVersion: "v4",
   baseUrl: "https://api.nextmotion.net/open_api",
   auth: {"kind": "bearer", "token": "api_key"},

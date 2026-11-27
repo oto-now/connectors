@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'amplitude',
                'label': 'Amplitude',
                'namespace': 'amplitude',
-               'version': '1.2.0',
+               'version': '1.2.1',
                'api_version': 'Dashboard REST and Taxonomy api/2; charts and cohort list api/3; cohort '
                               'download api/5',
                'base_urls': {'setting': 'region',
@@ -49,7 +49,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                 'class': 'read',
                 'description': 'List the event types declared in this Amplitude project, with category, '
                                'description and visibility. Read it before writing a query: a misspelt event '
-                               'name returns zeros, not an error.',
+                               "name returns zeros, not an error. In French: types d'événements, événements "
+                               'suivis amplitude, liste des événements déclarés.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'All declared event types', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/2/taxonomy/event'},
@@ -57,7 +58,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                {'name': 'list_event_properties',
                 'class': 'read',
                 'description': 'List the event properties of this Amplitude project, or only those of one '
-                               'event type.',
+                               "event type. In French: propriétés d'un événement, propriétés des événements "
+                               'amplitude.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'event_type': {'type': 'string',
@@ -73,7 +75,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                {'name': 'list_user_properties',
                 'class': 'read',
                 'description': 'List the user properties of this Amplitude project. Custom ones come back '
-                               'prefixed gp: — use that exact name in segments and group-bys.',
+                               'prefixed gp: — use that exact name in segments and group-bys. In French: '
+                               'propriétés utilisateur, attributs des utilisateurs amplitude.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'All user properties', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/2/taxonomy/user-property'},
@@ -81,7 +84,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                {'name': 'list_group_properties',
                 'class': 'read',
                 'description': 'List the group (account) properties of this Amplitude project, prefixed '
-                               'grp:. Empty when the project has no Accounts add-on.',
+                               'grp:. Empty when the project has no Accounts add-on. In French: propriétés '
+                               'de groupe, propriétés des comptes amplitude.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'All group properties', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/2/taxonomy/group-property'},
@@ -89,7 +93,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                {'name': 'list_events',
                 'class': 'read',
                 'description': 'List the event types with their weekly totals and uniques: what actually '
-                               'fires, not only what is declared.',
+                               'fires, not only what is declared. In French: volume des événements, '
+                               'événements les plus déclenchés, totaux hebdomadaires des événements.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Event volumes this week', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/2/events/list'},
@@ -99,7 +104,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                 'description': "Compute one event's metric over time (event segmentation). Each query spends "
                                "the project's hourly cost budget (days x conditions x query type): keep "
                                'windows short or use a weekly or monthly interval. Prefer a saved chart '
-                               '(get_chart) when the team already has one.',
+                               "(get_chart) when the team already has one. In French: évolution d'un "
+                               "événement, nombre d'occurrences d'un événement, segmentation d'événement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['event', 'start', 'end'],
@@ -181,7 +187,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                 'description': "Compute the conversion through ordered steps (funnel). Spends the project's "
                                'hourly cost budget. Prefer a saved chart (get_chart) when the team already '
                                'has the funnel: conversion window, step order and exclusions rarely survive '
-                               'being re-specified.',
+                               'being re-specified. In French: taux de conversion, entonnoir de conversion, '
+                               'analyse de funnel.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['events', 'start', 'end'],
@@ -246,7 +253,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                 'class': 'read',
                 'description': 'Of the users who did start_event, how many came back to do return_event (use '
                                '{"event_type": "_active"} for any event). Spends the project\'s hourly cost '
-                               'budget.',
+                               'budget. In French: taux de rétention, rétention des utilisateurs, '
+                               'utilisateurs qui reviennent.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['start_event', 'return_event', 'start', 'end'],
@@ -304,7 +312,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                {'name': 'get_active_users',
                 'class': 'read',
                 'description': "Count active (default) or new users over time. Spends the project's hourly "
-                               'cost budget.',
+                               'cost budget. In French: utilisateurs actifs, nouveaux utilisateurs, nombre '
+                               "d'utilisateurs par jour.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['start', 'end'],
@@ -345,7 +354,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                {'name': 'get_sessions',
                 'class': 'read',
                 'description': 'Session metrics over a window: length (distribution of session lengths), '
-                               'average (average session length) or peruser (sessions per user).',
+                               'average (average session length) or peruser (sessions per user). In French: '
+                               'durée des sessions, sessions par utilisateur, durée moyenne de session.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['kind', 'start', 'end'],
@@ -365,7 +375,9 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                 'class': 'read',
                 'description': 'Run a saved Amplitude chart and return its results as JSON, computed by '
                                "Amplitude with the chart's own definition: the number the team reads in "
-                               'Amplitude. The chart id is the last segment of the chart URL.',
+                               'Amplitude. The chart id is the last segment of the chart URL. In French: '
+                               "résultat d'un graphique amplitude, lancer un graphique enregistré, chiffres "
+                               "d'un dashboard amplitude.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['chart_id'],
@@ -380,7 +392,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                 'class': 'read',
                 'description': 'Find a user by user id, device id or Amplitude id. Returns the matches with '
                                "their amplitude_id, needed to read the user's activity. Shares a budget of "
-                               '360 calls per hour with get_user_activity.',
+                               '360 calls per hour with get_user_activity. In French: chercher un '
+                               'utilisateur, trouver un utilisateur par identifiant.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user'],
@@ -393,7 +406,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                {'name': 'get_user_activity',
                 'class': 'read',
                 'description': "Read one user's summary and event stream. Takes the amplitude_id returned by "
-                               'search_users, not the user id.',
+                               "search_users, not the user id. In French: activité d'un utilisateur, "
+                               "parcours d'un utilisateur, événements d'un utilisateur.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['amplitude_id'],
@@ -418,7 +432,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                                    'direction': 'direction'}}},
                {'name': 'list_cohorts',
                 'class': 'read',
-                'description': "List the project's behavioral cohorts: id, name, size, last computed.",
+                'description': "List the project's behavioral cohorts: id, name, size, last computed. In "
+                               "French: lister les cohortes, cohortes amplitude, segments d'utilisateurs.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'All cohorts', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/3/cohorts'},
@@ -427,7 +442,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                 'class': 'read',
                 'description': 'Start a download job for one cohort and return its request_id. Each request '
                                "counts against the project's 500 cohort downloads per month. Poll "
-                               'get_cohort_download_status with the request_id until JOB COMPLETED.',
+                               'get_cohort_download_status with the request_id until JOB COMPLETED. In '
+                               'French: télécharger une cohorte, exporter une cohorte.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['cohort_id'],
@@ -449,7 +465,8 @@ DESCRIPTION = {'connector': {'name': 'amplitude',
                {'name': 'get_cohort_download_status',
                 'class': 'read',
                 'description': 'Read the status of a cohort download job: async_status is JOB INPROGRESS '
-                               'while running, JOB COMPLETED when the file is ready.',
+                               'while running, JOB COMPLETED when the file is ready. In French: statut de '
+                               "l'export de cohorte, téléchargement de cohorte prêt.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],

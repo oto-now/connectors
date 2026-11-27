@@ -2,8 +2,12 @@
 """The `brevo` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'brevo',
                'label': 'Brevo',
+               'description': 'Brevo, emailing and marketing automation: newsletters and email campaigns, '
+                              'contact lists and their subscribers, segments, transactional emails and their '
+                              "deliverability events, templates, senders, the account's sending credits, and "
+                              'a light CRM (deals, companies, tasks, notes).',
                'namespace': 'brevo',
-               'version': '1.0.0',
+               'version': '2.1.0',
                'api_version': 'v3',
                'base_url': 'https://api.brevo.com/v3',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'api-key', 'key': 'api_key'},
@@ -11,7 +15,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                'modes': ['byo_user', 'byo_org'],
                'query_arrays': 'repeat',
                'probe': {'function': 'get_account'},
-               'errors': [{'status': 400,
+               'errors': [{'status': [400, 402],
                            'body': {'path': 'code', 'equals': ['not_enough_credits']},
                            'code': 'credits_exhausted',
                            'retryable': False,
@@ -38,13 +42,6 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                            'message': 'Brevo refused the API key: invalid or revoked. A new v3 key is made '
                                       'in Brevo, SMTP & API, API keys.'},
                           {'status': 402,
-                           'body': {'path': 'code', 'equals': ['not_enough_credits']},
-                           'code': 'credits_exhausted',
-                           'retryable': False,
-                           'marks_account': 'quota_exhausted',
-                           'message': 'Brevo credits are exhausted for this send or this plan. Top up or '
-                                      'upgrade the Brevo account.'},
-                          {'status': 402,
                            'code': 'payment_required',
                            'retryable': False,
                            'message': 'Brevo refused for billing: the account needs an activation or a plan '
@@ -58,6 +55,11 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                            'code': 'not_found',
                            'retryable': False,
                            'message': 'Not found in Brevo: wrong id or address, or not in this account.'},
+                          {'status': 405,
+                           'code': 'deletion_not_allowed',
+                           'retryable': False,
+                           'message': "Brevo does not allow deleting this contact: it is the account's own "
+                                      'registered email.'},
                           {'status': 425,
                            'code': 'account_in_process',
                            'retryable': True,
@@ -75,15 +77,19 @@ DESCRIPTION = {'connector': {'name': 'brevo',
  'functions': [{'name': 'get_account',
                 'class': 'read',
                 'description': 'Get the Brevo account: company, login email, plans and their remaining email '
-                               'and SMS credits (plan[].credits, per credit type), relay.',
+                               'and SMS credits (plan[].credits, per credit type), the SMTP relay host and '
+                               'port. The relay login and the tracker key are left out. In French: crédits '
+                               "d'envoi, solde de crédits, forfait brevo, crédits emails restants.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The account', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/account'},
+                'output': {'strip': ['relay.data.userName', 'marketingAutomation.key']},
                 'cost': {'per': 'request'}},
                {'name': 'list_senders',
                 'class': 'read',
                 'description': "List the account's verified senders (id, name, email, active). Sending an "
-                               'email or creating a template or campaign takes one of them as sender.',
+                               'email or creating a template or campaign takes one of them as sender. In '
+                               "French: expéditeurs brevo, adresses d'expédition, expéditeurs vérifiés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'ip': {'type': 'string',
@@ -102,7 +108,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                '(50 by default, at most 1000) and offset. Restrict to lists (list_ids) or to '
                                'a segment (segment_id), never both; to some ids (20 at most); to a change or '
                                'creation date; or to attribute values with filter, equals only: '
-                               'equals(FIRSTNAME,"Alex").',
+                               'equals(FIRSTNAME,"Alex"). In French: contacts brevo, liste des contacts, '
+                               'derniers contacts ajoutés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -166,7 +173,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'Get one contact: attributes, lists, blacklist flags and its campaign '
                                'statistics (opens, clicks, bounces, unsubscriptions). identifier is its '
                                'email by default; identifier_type says otherwise. start_date and end_date '
-                               '(YYYY-MM-DD, both or none) bound the statistics.',
+                               "(YYYY-MM-DD, both or none) bound the statistics. In French: fiche d'un "
+                               "contact, attributs d'un contact, contact par email.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['identifier'],
@@ -208,7 +216,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                'each, a date as a text; an unknown one is refused. list_ids subscribes it to '
                                'lists, which may start the automations tied to them. email_blacklisted / '
                                'sms_blacklisted true stop every email / SMS to it. email is needed unless '
-                               'ext_id or the SMS attribute is given.',
+                               'ext_id or the SMS attribute is given. In French: ajouter un contact, créer '
+                               'un contact, inscrire un contact, nouvel abonné.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['update_enabled'],
@@ -266,7 +275,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                "account's attributes in UPPERCASE, a text, a number or a boolean each (EMAIL "
                                'changes its address). list_ids subscribes it to lists, which may start their '
                                'automations; unlink_list_ids unsubscribes it from lists. email_blacklisted / '
-                               'sms_blacklisted true stop every email / SMS to it, false allows them again.',
+                               'sms_blacklisted true stop every email / SMS to it, false allows them again. '
+                               'In French: modifier un contact, désabonner un contact, mettre à jour un '
+                               'contact, blacklister un contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['identifier'],
@@ -330,11 +341,50 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                   'emailBlacklisted': 'email_blacklisted',
                                   'smsBlacklisted': 'sms_blacklisted'}},
                 'cost': {'per': 'request'}},
+               {'name': 'delete_contact',
+                'class': 'sensitive',
+                'effect': 'destroy',
+                'description': 'Delete a contact for good, with its attributes, list memberships and '
+                               'statistics; answers {} on success. identifier is its email by default; '
+                               'identifier_type says otherwise (Brevo reads an email or an id without it, a '
+                               "phone or an EXT_ID only with it). The account's own registered email cannot "
+                               'be deleted. To stop the emails but keep the contact: update_contact with '
+                               'email_blacklisted. In French: supprimer un contact, effacer un abonné, '
+                               'supprimer un abonné.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['identifier'],
+                          'properties': {'identifier': {'type': 'string',
+                                                        'minLength': 1,
+                                                        'personal': True,
+                                                        'description': 'Email, contact id, phone (SMS '
+                                                                       'attribute) or EXT_ID, as '
+                                                                       'identifier_type says.'},
+                                         'identifier_type': {'type': 'string',
+                                                             'enum': ['email_id',
+                                                                      'contact_id',
+                                                                      'phone_id',
+                                                                      'ext_id',
+                                                                      'whatsapp_id',
+                                                                      'landline_number_id'],
+                                                             'description': 'What identifier is; an email by '
+                                                                            'default.'}}},
+                'examples': [{'title': 'Delete a contact by email',
+                              'input': {'identifier': 'marie@example.test'}},
+                             {'title': 'Delete a contact by id',
+                              'input': {'identifier': '42', 'identifier_type': 'contact_id'}}],
+                'confirm': {'summary': 'Delete Brevo contact {identifier} for good, with its attributes and '
+                                       'list memberships: irreversible.'},
+                'call': {'method': 'DELETE',
+                         'path': '/contacts/{identifier}',
+                         'query': {'identifierType': 'identifier_type'}},
+                'cost': {'per': 'request'}},
                {'name': 'contact_campaign_stats',
                 'class': 'read',
                 'description': "Get one contact's email campaign statistics: messages sent, opened, clicked "
                                '(links), bounces, unsubscriptions, each with its campaign. start_date and '
-                               'end_date (YYYY-MM-DD, both or none) bound them.',
+                               "end_date (YYYY-MM-DD, both or none) bound them. In French: statistiques d'un "
+                               "contact, ouvertures d'un contact, clics d'un contact.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['identifier'],
@@ -362,7 +412,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                'text, ; between columns). Into list_ids, or into a list created on the way '
                                '(new_list: listName, folderId). Existing contacts are updated unless '
                                'update_existing_contacts is false; empty_contacts_attributes true erases '
-                               'their attributes left empty.',
+                               'their attributes left empty. In French: importer des contacts, import de '
+                               'contacts, import csv de contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['disable_notification'],
@@ -455,7 +506,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                'contact_filter selects them: actionForContacts (allContacts, subscribed, '
                                'unsubscribed, unsubscribedPerList) with listId, segmentId, modifiedSince or '
                                'createdSince; or actionForEmailCampaigns with emailCampaignId; or '
-                               'actionForSmsCampaigns. To read contacts, list them.',
+                               'actionForSmsCampaigns. To read contacts, list them. In French: exporter des '
+                               'contacts, export de contacts, fichier de contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_filter', 'disable_notification'],
@@ -522,7 +574,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'List the contact attributes declared on the account: name, category (normal, '
                                'transactional, category, calculated, global), type (text, date, float, '
                                'boolean…), and the choices of a category attribute. Read it before writing '
-                               'attributes: an unknown one is refused.',
+                               'attributes: an unknown one is refused. In French: attributs des contacts, '
+                               'champs des contacts.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every attribute', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/contacts/attributes'},
@@ -530,13 +583,16 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'list_segments',
                 'class': 'read',
                 'description': 'List the segments, the dynamic lists a filter defines (read-only): '
-                               "{segments, count}. A segment's id restricts list_contacts.",
+                               '{segments, count}, count being the total: past limit, read the next page '
+                               "with offset. A segment's id restricts list_contacts. In French: segments de "
+                               'contacts, listes dynamiques.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
+                          'required': ['limit'],
                           'properties': {'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 50,
-                                                   'description': 'Page size, 50 by default, at most 50.'},
+                                                   'description': 'Page size, at most 50.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -544,22 +600,26 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                          'sort': {'type': 'string',
                                                   'enum': ['asc', 'desc'],
                                                   'description': 'Order of creation, desc by default.'}}},
-                'examples': [{'title': 'Every segment', 'input': {}}],
+                'examples': [{'title': 'Every segment', 'input': {'limit': 50}}],
                 'call': {'method': 'GET',
                          'path': '/contacts/segments',
                          'query': {'limit': 'limit', 'offset': 'offset', 'sort': 'sort'}},
                 'cost': {'per': 'request'}},
                {'name': 'list_lists',
                 'class': 'read',
-                'description': "List the account's contact lists: id, name, folderId, uniqueSubscribers, "
-                               'totalBlacklisted: {lists, count}. The lists of one folder: '
-                               'list_folder_lists.',
+                'description': "List the account's contact lists: {lists, count}, each list with id, name, "
+                               'folderId, uniqueSubscribers; count is the total of lists: past limit, read '
+                               'the next page with offset. The exact number of subscribers and of '
+                               'blacklisted contacts of a list: get_list (Brevo no longer gives them here). '
+                               'The lists of one folder: list_folder_lists. In French: listes de contacts, '
+                               "abonnés d'une liste, liste de diffusion, listes newsletter.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
+                          'required': ['limit'],
                           'properties': {'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 50,
-                                                   'description': 'Page size, 50 by default, at most 50.'},
+                                                   'description': 'Page size, at most 50.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -567,24 +627,29 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                          'sort': {'type': 'string',
                                                   'enum': ['asc', 'desc'],
                                                   'description': 'Order of creation, desc by default.'}}},
-                'examples': [{'title': 'Every list', 'input': {}}],
+                'examples': [{'title': 'Every list', 'input': {'limit': 50}},
+                             {'title': 'The next page', 'input': {'limit': 50, 'offset': 50}}],
                 'call': {'method': 'GET',
                          'path': '/contacts/lists',
                          'query': {'limit': 'limit', 'offset': 'offset', 'sort': 'sort'}},
+                'output': {'strip': ['lists.totalSubscribers', 'lists.totalBlacklisted']},
                 'cost': {'per': 'request'}},
                {'name': 'list_folder_lists',
                 'class': 'read',
-                'description': 'List the contact lists of one folder: {lists, count}.',
+                'description': 'List the contact lists of one folder: {lists, count}, count being the total: '
+                               'past limit, read the next page with offset. The number of subscribers of a '
+                               "list: get_list. In French: listes d'un dossier, listes de diffusion d'un "
+                               'dossier.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
-                          'required': ['folder_id'],
+                          'required': ['folder_id', 'limit'],
                           'properties': {'folder_id': {'type': 'integer',
                                                        'minimum': 1,
                                                        'description': 'Folder id (list_folders).'},
                                          'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 50,
-                                                   'description': 'Page size, 50 by default, at most 50.'},
+                                                   'description': 'Page size, at most 50.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -592,15 +657,18 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                          'sort': {'type': 'string',
                                                   'enum': ['asc', 'desc'],
                                                   'description': 'Order of creation, desc by default.'}}},
-                'examples': [{'title': 'The lists of a folder', 'input': {'folder_id': 1}}],
+                'examples': [{'title': 'The lists of a folder', 'input': {'folder_id': 1, 'limit': 50}}],
                 'call': {'method': 'GET',
                          'path': '/contacts/folders/{folder_id}/lists',
                          'query': {'limit': 'limit', 'offset': 'offset', 'sort': 'sort'}},
+                'output': {'strip': ['lists.totalSubscribers', 'lists.totalBlacklisted']},
                 'cost': {'per': 'request'}},
                {'name': 'get_list',
                 'class': 'read',
                 'description': 'Get one list: name, folder, number of subscribers and of blacklisted '
-                               "contacts, creation date, its campaigns' statistics.",
+                               "contacts, creation date, its campaigns' statistics. In French: nombre "
+                               "d'abonnés, abonnés d'une liste, détail d'une liste de diffusion, abonnés "
+                               'newsletter.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -613,7 +681,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'list_contacts_of_list',
                 'class': 'read',
                 'description': 'List the contacts of one list: {contacts, count}. Page with limit (50 by '
-                               'default, at most 500) and offset.',
+                               "default, at most 500) and offset. In French: contacts d'une liste, membres "
+                               "d'une liste de diffusion, inscrits d'une liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -647,7 +716,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'create_list',
                 'class': 'write',
                 'description': 'Create a contact list in a folder (list_folders gives the ids). Answers '
-                               '{id}.',
+                               '{id}. In French: créer une liste, nouvelle liste de diffusion, nouvelle '
+                               'liste de contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'folder_id'],
@@ -665,7 +735,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'update_list',
                 'class': 'write',
                 'description': 'Rename a list, or move it to another folder; answers {} on success. Brevo '
-                               'changes one of the two per call.',
+                               'changes one of the two per call. In French: renommer une liste, déplacer une '
+                               'liste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -683,12 +754,31 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                          'path': '/contacts/lists/{list_id}',
                          'body': {'name': 'name', 'folderId': 'folder_id'}},
                 'cost': {'per': 'request'}},
+               {'name': 'delete_list',
+                'class': 'sensitive',
+                'effect': 'destroy',
+                'description': 'Delete a contact list for good; answers {} on success. Its contacts stay in '
+                               'the account (delete_contact deletes one). To take contacts out but keep the '
+                               'list: remove_from_list. In French: supprimer une liste de contacts, effacer '
+                               'une liste de diffusion, supprimer une liste.',
+                'input': {'type': 'object',
+                          'additionalProperties': False,
+                          'required': ['list_id'],
+                          'properties': {'list_id': {'type': 'integer',
+                                                     'minimum': 1,
+                                                     'description': 'List id.'}}},
+                'examples': [{'title': 'Delete a list', 'input': {'list_id': 3}}],
+                'confirm': {'summary': 'Delete Brevo list {list_id} for good (its contacts stay in the '
+                                       'account): irreversible.'},
+                'call': {'method': 'DELETE', 'path': '/contacts/lists/{list_id}'},
+                'cost': {'per': 'request'}},
                {'name': 'add_to_list',
                 'class': 'sensitive',
                 'description': 'Add existing contacts to a list, by emails, ids or ext_ids (one kind, 150 at '
                                'most); adding may start the automations tied to the list. Answers {contacts: '
                                '{success, failure}}: read failure, an unknown contact fails without failing '
-                               'the call. Past 150, or to create contacts, import them.',
+                               'the call. Past 150, or to create contacts, import them. In French: ajouter à '
+                               'une liste, inscrire à une liste, abonner à la newsletter.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -729,7 +819,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'Remove contacts from a list, by emails, ids or ext_ids (one kind, 150 at '
                                'most), or every contact of the list with all_contacts true; the contacts '
                                'themselves stay. Answers {contacts: {success, failure}}, or a processId when '
-                               'the list is emptied.',
+                               "the list is emptied. In French: retirer d'une liste, désinscrire d'une "
+                               'liste, vider une liste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -774,14 +865,16 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'list_folders',
                 'class': 'read',
-                'description': 'List the folders of contact lists: {folders, count}. A folder id is needed '
-                               'to create a list.',
+                'description': 'List the folders of contact lists: {folders, count}, count being the total: '
+                               'past limit, read the next page with offset. A folder id is needed to create '
+                               'a list. In French: dossiers de listes, dossiers de contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
+                          'required': ['limit'],
                           'properties': {'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 50,
-                                                   'description': 'Page size, 50 by default, at most 50.'},
+                                                   'description': 'Page size, at most 50.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -789,7 +882,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                          'sort': {'type': 'string',
                                                   'enum': ['asc', 'desc'],
                                                   'description': 'Order of creation, desc by default.'}}},
-                'examples': [{'title': 'Every folder', 'input': {}}],
+                'examples': [{'title': 'Every folder', 'input': {'limit': 50}}],
                 'call': {'method': 'GET',
                          'path': '/contacts/folders',
                          'query': {'limit': 'limit', 'offset': 'offset', 'sort': 'sort'}},
@@ -801,7 +894,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                'direct: subject, html_content (or text_content) and sender, a verified '
                                'sender of the account (list_senders). to holds up to 99 recipients. '
                                'scheduled_at (UTC date-time, up to 72 h ahead) sends later. A send to a list '
-                               'is a campaign, not this.',
+                               'is a campaign, not this. In French: envoyer un email, envoyer un mail, email '
+                               'transactionnel, mail transactionnel.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['to'],
@@ -913,11 +1007,14 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'list_transactional_emails',
                 'class': 'read',
                 'description': 'List sent transactional emails for a recipient, a template or a message id '
-                               '(at least one of the three): their uuid, subject, date. Dates are '
-                               'YYYY-MM-DD, a month at most. What became of an email (delivered, opened, '
-                               'bounced): transactional_events.',
+                               '(at least one of the three, Brevo requires it): their uuid, subject, date. '
+                               'Dates are YYYY-MM-DD, a month at most. What became of an email (delivered, '
+                               'opened, bounced), or every email sent over a period whatever its recipient '
+                               'or template: transactional_events. In French: emails envoyés à un contact, '
+                               "historique des emails d'un destinataire, emails d'un modèle.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
+                          'required': ['limit'],
                           'anyOf': [{'required': ['email']},
                                     {'required': ['template_id']},
                                     {'required': ['message_id']}],
@@ -936,7 +1033,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                          'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 500,
-                                                   'description': 'Page size, 50 by default.'},
+                                                   'description': 'Page size, at most 500.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -945,7 +1042,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                                   'enum': ['asc', 'desc'],
                                                   'description': 'Order of creation, desc by default.'}}},
                 'examples': [{'title': 'The emails sent to a recipient',
-                              'input': {'email': 'marie@example.test'}}],
+                              'input': {'email': 'marie@example.test', 'limit': 50}}],
                 'call': {'method': 'GET',
                          'path': '/smtp/emails',
                          'query': {'email': 'email',
@@ -960,7 +1057,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'get_transactional_email_content',
                 'class': 'read',
                 'description': 'Get the personalized content of one sent transactional email (its HTML, '
-                               'subject, events), by the uuid that list_transactional_emails gives.',
+                               'subject, events), by the uuid that list_transactional_emails gives. In '
+                               "French: contenu d'un email envoyé, contenu d'un mail envoyé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['uuid'],
@@ -976,13 +1074,18 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'List the deliverability events of transactional emails, the source of truth '
                                'per email: delivered, opened, clicks, hardBounces, softBounces, spam, '
                                'blocked, unsubscribed, deferred… Over days (90 at most) or between two dates '
-                               '(YYYY-MM-DD); 30 days by default. limit 50 by default, at most 100.',
+                               '(YYYY-MM-DD); 30 days by default. Every email sent over the period, with no '
+                               'recipient or template filter: event requests. limit at most 100; past it, '
+                               'read the next page with offset. In French: emails partis, envoyés sur une '
+                               'période, emails envoyés sur une période, emails délivrés, rebonds des '
+                               'emails.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
+                          'required': ['limit'],
                           'properties': {'limit': {'type': 'integer',
                                                    'minimum': 1,
                                                    'maximum': 100,
-                                                   'description': 'Page size, 50 by default.'},
+                                                   'description': 'Page size, at most 100.'},
                                          'offset': {'type': 'integer',
                                                     'minimum': 0,
                                                     'description': 'Index of the first record, 0 by '
@@ -1026,7 +1129,12 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                                   'enum': ['asc', 'desc'],
                                                   'description': 'Order of creation, desc by default.'}}},
                 'examples': [{'title': 'The hard bounces of the week',
-                              'input': {'event': 'hardBounces', 'days': 7}}],
+                              'input': {'event': 'hardBounces', 'days': 7, 'limit': 100}},
+                             {'title': 'Every email sent in October',
+                              'input': {'event': 'requests',
+                                        'start_date': '2026-10-01',
+                                        'end_date': '2026-10-31',
+                                        'limit': 100}}],
                 'call': {'method': 'GET',
                          'path': '/smtp/statistics/events',
                          'query': {'limit': 'limit',
@@ -1046,7 +1154,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'Get the transactional counters summed over a period: requests, delivered, '
                                'opens, clicks, bounces, spam reports, unsubscriptions. Over days (90 at '
                                'most, 90 by default) or between two dates (YYYY-MM-DD); for one tag. One row '
-                               'per day: transactional_report_by_day.',
+                               'per day: transactional_report_by_day. In French: bilan des emails '
+                               'transactionnels, statistiques des emails transactionnels.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'start_date': {'type': 'string',
@@ -1073,7 +1182,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'read',
                 'description': 'Get the transactional counters one row per day: requests, delivered, opens, '
                                'clicks, bounces, spam reports. Over days (30 at most) or between two dates '
-                               '(YYYY-MM-DD); limit 10 rows by default, at most 30.',
+                               '(YYYY-MM-DD); limit 10 rows by default, at most 30. In French: envois par '
+                               'jour, statistiques quotidiennes des emails.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -1110,7 +1220,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'read',
                 'description': 'List the contacts blocked for transactional email (hard bounce, spam '
                                'complaint, unsubscription, admin block): a blocked contact silently receives '
-                               'nothing. limit 50 by default, at most 100.',
+                               'nothing. limit 50 by default, at most 100. In French: contacts bloqués, '
+                               'adresses bloquées, désinscrits des emails transactionnels.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'start_date': {'type': 'string',
@@ -1149,7 +1260,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'list_blocked_domains',
                 'class': 'read',
-                'description': 'List the domains blocked for transactional email on the account (no paging).',
+                'description': 'List the domains blocked for transactional email on the account (no paging). '
+                               "In French: domaines bloqués, domaines bloqués pour l'envoi.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The blocked domains', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/smtp/blockedDomains'},
@@ -1158,7 +1270,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'read',
                 'description': 'List the transactional email templates: id, name, subject, sender, active, '
                                'with their HTML. active_only true keeps the active ones, false the inactive '
-                               'ones. One template: get_template.',
+                               "ones. One template: get_template. In French: modèles d'email, templates "
+                               "d'email, gabarits d'email.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'active_only': {'type': 'boolean',
@@ -1186,7 +1299,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'get_template',
                 'class': 'read',
                 'description': 'Get one transactional template with its HTML: name, subject, sender, '
-                               'replyTo, tag, active.',
+                               "replyTo, tag, active. In French: détail d'un modèle d'email, contenu d'un "
+                               'template.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_id'],
@@ -1201,7 +1315,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'Create a transactional template; answers {id}. sender is a verified sender '
                                'of the account (list_senders). The body is html_content (more than 10 '
                                'characters) or html_url; variables {{params.NAME}} and '
-                               '{{contact.FIRSTNAME}}. is_active true makes it usable at once.',
+                               '{{contact.FIRSTNAME}}. is_active true makes it usable at once. In French: '
+                               "créer un modèle d'email, nouveau template d'email.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_name', 'subject', 'sender', 'is_active'],
@@ -1261,7 +1376,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'update_template',
                 'class': 'write',
                 'description': 'Update a transactional template, the fields given only; answers {} on '
-                               'success. An active template changes the emails sent from it next.',
+                               'success. An active template changes the emails sent from it next. In French: '
+                               "modifier un modèle d'email, modifier un template.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_id'],
@@ -1311,7 +1427,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                'statistics if asked (globalStats, linksStats, statsByDomain). '
                                'exclude_html_content true keeps the answer light (the HTML stays in Brevo). '
                                'Filter by type (classic, trigger), status (draft, sent, queued, suspended, '
-                               'archive, inProcess…), sent dates. limit 50 by default, at most 100.',
+                               'archive, inProcess…), sent dates. limit 50 by default, at most 100. In '
+                               "French: campagnes email, campagnes d'emailing, campagnes envoyées, "
+                               'newsletters envoyées.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['exclude_html_content'],
@@ -1364,7 +1482,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'read',
                 'description': 'Get one email campaign, with its statistics (globalStats, linksStats, '
                                'statsByDomain, statsByDevice, statsByBrowser). exclude_html_content true '
-                               'leaves its HTML out.',
+                               "leaves its HTML out. In French: détail d'une campagne, résultats d'une "
+                               "campagne, statistiques d'une campagne emailing.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id', 'exclude_html_content'],
@@ -1394,7 +1513,9 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                'is started in the Brevo app, after review; send_campaign_test sends a test '
                                'first. sender is a verified sender (list_senders). The body is html_content, '
                                "html_url or template_id (a template's content copied). recipients: {listIds, "
-                               'exclusionListIds, segmentIds, exclusionSegmentIds}.',
+                               'exclusionListIds, segmentIds, exclusionSegmentIds}. In French: créer une '
+                               'campagne, brouillon de campagne, préparer une newsletter, nouvelle campagne '
+                               'emailing.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'sender'],
@@ -1476,7 +1597,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                                "Brevo's names (name, subject, previewText, htmlContent, htmlUrl, sender, "
                                'recipients, replyTo, tag, toField, params, header, footer, mirrorActive, '
                                'inlineImageActivation, utmCampaign); answers {} on success. Its send is not '
-                               'scheduled here.',
+                               "scheduled here. In French: modifier une campagne, changer l'objet d'une "
+                               'campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id', 'fields'],
@@ -1559,7 +1681,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'sensitive',
                 'description': 'Send a test of an email campaign, for real, to the given addresses only (not '
                                'to its recipients). Each address must be a contact of the account, otherwise '
-                               'Brevo refuses. Answers {} on success.',
+                               'Brevo refuses. Answers {} on success. In French: test de campagne, envoyer '
+                               "un bat, email de test d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id', 'email_to'],
@@ -1583,7 +1706,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'campaign_ab_test_result',
                 'class': 'read',
                 'description': 'Get the result of an A/B test campaign: the winning version, its criterion, '
-                               'open and click rates, the clicks of each version.',
+                               'open and click rates, the clicks of each version. In French: test a/b, '
+                               "résultat du test ab, version gagnante d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -1595,7 +1719,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'campaign_shared_url',
                 'class': 'read',
-                'description': 'Get the share link of a campaign (a page other Brevo users can open).',
+                'description': 'Get the share link of a campaign (a page other Brevo users can open). In '
+                               "French: lien de partage d'une campagne, partager une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -1610,7 +1735,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'List CRM deals: {items}, each with its attributes (deal_name, amount, '
                                'deal_stage, pipeline, deal_owner, close_date…) and linked contacts and '
                                'companies. Filter by name, owner (an account email), stage or pipeline id '
-                               '(pipelines), a linked company or contact. limit 50 by default.',
+                               '(pipelines), a linked company or contact. limit 50 by default. In French: '
+                               'affaires du crm, opportunités brevo, deals du crm, pipeline commercial.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -1672,7 +1798,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'crm_get_deal',
                 'class': 'read',
-                'description': 'Get one CRM deal by id, its attributes and linked contacts and companies.',
+                'description': 'Get one CRM deal by id, its attributes and linked contacts and companies. In '
+                               "French: détail d'une affaire, fiche d'une opportunité.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -1687,7 +1814,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'Create a CRM deal; answers {id}. attributes: deal_stage and pipeline (ids '
                                'from pipelines), amount, close_date, deal_owner (an account email or id), '
                                'and the custom attributes (crm_attributes deals), a text, a number or a '
-                               'boolean each.',
+                               'boolean each. In French: créer une affaire, nouvelle opportunité.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['payload'],
@@ -1728,7 +1855,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'write',
                 'description': 'Update a CRM deal, the keys given only; answers {} on success. '
                                'linkedContactsIds and linkedCompaniesIds replace the linked lists (an id '
-                               'left out is unlinked): to add or remove one, crm_link_deal.',
+                               'left out is unlinked): to add or remove one, crm_link_deal. In French: '
+                               "modifier une affaire, changer l'étape d'une affaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id', 'payload'],
@@ -1770,7 +1898,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'crm_link_deal',
                 'class': 'write',
                 'description': 'Link or unlink contacts (ids) and companies (link_ids, unlink_ids) to a CRM '
-                               'deal, the others left as they are.',
+                               'deal, the others left as they are. In French: lier un contact à une affaire, '
+                               'rattacher une entreprise à une affaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -1806,7 +1935,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'read',
                 'description': 'List CRM companies: {items}, each with its attributes (name, domain, owner…) '
                                'and linked contacts and deals. Pages by number: page (1 by default) and '
-                               'limit (50 by default). Filter by name or owner (an account email).',
+                               'limit (50 by default). Filter by name or owner (an account email). In '
+                               'French: entreprises du crm, sociétés brevo, comptes clients du crm.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -1850,7 +1980,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'crm_get_company',
                 'class': 'read',
-                'description': 'Get one CRM company by id, its attributes and linked contacts and deals.',
+                'description': 'Get one CRM company by id, its attributes and linked contacts and deals. In '
+                               "French: fiche d'une entreprise, détail d'une société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -1865,7 +1996,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'description': 'Create a CRM company; answers {id}. attributes: domain, industry, owner (an '
                                'account id), phone_number (countryCode then says its country), and the '
                                'custom attributes (crm_attributes companies), a text, a number or a boolean '
-                               'each.',
+                               'each. In French: créer une entreprise, nouvelle société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['payload'],
@@ -1907,7 +2038,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'write',
                 'description': 'Update a CRM company, the keys given only. linkedContactsIds and '
                                'linkedDealsIds replace the linked lists (an id left out is unlinked): to add '
-                               'or remove one, crm_link_company.',
+                               'or remove one, crm_link_company. In French: modifier une entreprise, '
+                               'modifier une société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id', 'payload'],
@@ -1951,7 +2083,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'crm_link_company',
                 'class': 'write',
                 'description': 'Link or unlink contacts (ids) and deals (link_ids, unlink_ids) to a CRM '
-                               'company, the others left as they are.',
+                               'company, the others left as they are. In French: lier un contact à une '
+                               'entreprise, rattacher une affaire à une société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -1986,7 +2119,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'read',
                 'description': 'List CRM tasks: {items}. Filter by type (a task type id, task_types), status '
                                '(done, undone), date (overdue, today, tomorrow, week), assignee (an account '
-                               'email or id), a linked contact, deal or company. limit 50 by default.',
+                               'email or id), a linked contact, deal or company. limit 50 by default. In '
+                               'French: tâches du crm, tâches en retard, relances à faire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -2039,7 +2173,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'crm_get_task',
                 'class': 'read',
-                'description': 'Get one CRM task by id.',
+                'description': "Get one CRM task by id. In French: détail d'une tâche, lire une tâche.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -2053,7 +2187,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'write',
                 'description': 'Create a CRM task; answers {id}. name, taskTypeId (task_types) and date (ISO '
                                '8601) are required; assignToId takes an account email or id; duration is in '
-                               'milliseconds; reminder {value, unit, types}.',
+                               'milliseconds; reminder {value, unit, types}. In French: créer une tâche, '
+                               'planifier une relance, nouvelle tâche crm.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['payload'],
@@ -2120,7 +2255,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'crm_update_task',
                 'class': 'write',
-                'description': 'Update a CRM task, the keys given only: done true marks it done.',
+                'description': 'Update a CRM task, the keys given only: done true marks it done. In French: '
+                               'terminer une tâche, modifier une tâche.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id', 'payload'],
@@ -2189,7 +2325,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'class': 'read',
                 'description': 'List CRM notes, or those of some contacts, deals or companies (entity and '
                                'entity_ids, comma separated), between two dates (timestamps in '
-                               'milliseconds). limit 50 by default.',
+                               "milliseconds). limit 50 by default. In French: notes du crm, notes d'une "
+                               "affaire, notes d'un contact.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -2228,7 +2365,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                 'cost': {'per': 'request'}},
                {'name': 'crm_get_note',
                 'class': 'read',
-                'description': 'Get one CRM note by id.',
+                'description': "Get one CRM note by id. In French: détail d'une note, lire une note.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -2241,7 +2378,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'crm_create_note',
                 'class': 'write',
                 'description': 'Create a CRM note on contacts, deals or companies; answers {id}. text takes '
-                               'simple HTML (p, b, i, u, br, a).',
+                               'simple HTML (p, b, i, u, br, a). In French: ajouter une note, nouvelle note '
+                               'crm.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['payload'],
@@ -2271,7 +2409,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'crm_update_note',
                 'class': 'write',
                 'description': 'Update a CRM note; text is required by Brevo, the links given replace the '
-                               "note's.",
+                               "note's. In French: modifier une note, corriger une note.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id', 'payload'],
@@ -2304,7 +2442,7 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'pipelines',
                 'class': 'read',
                 'description': "List the deal pipelines and their stages: a deal's pipeline and deal_stage "
-                               'are these ids.',
+                               'are these ids. In French: étapes du pipeline, pipelines de vente.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every pipeline', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/crm/pipeline/details/all'},
@@ -2312,7 +2450,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'task_types',
                 'class': 'read',
                 'description': "List the task types of the account (call, email, meeting…): a task's "
-                               'taskTypeId is one of these ids.',
+                               'taskTypeId is one of these ids. In French: types de tâches, catégories de '
+                               'tâches.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every task type', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/crm/tasktypes'},
@@ -2320,7 +2459,8 @@ DESCRIPTION = {'connector': {'name': 'brevo',
                {'name': 'crm_attributes',
                 'class': 'read',
                 'description': 'List the attributes of CRM deals or companies: internal name, label, type, '
-                               'choices. Read it before writing attributes.',
+                               'choices. Read it before writing attributes. In French: attributs des '
+                               'affaires, champs des entreprises du crm.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity'],

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'higgsfield',
                'label': 'Higgsfield',
                'namespace': 'higgsfield',
-               'version': '1.1.2',
+               'version': '1.1.3',
                'api_version': '2.0.0',
                'base_url': 'https://api.higgsfield.ai',
                'auth': {'kind': 'api_key',
@@ -66,7 +66,8 @@ DESCRIPTION = {'connector': {'name': 'higgsfield',
                                'higgsfield-ai/soul/v2/standard), title, description, output_type (image or '
                                'video) and operation_type (text2image, image2video, video2video…). The '
                                'parameters of each model are on its page of the API reference; none are '
-                               'listed here.',
+                               'listed here. In French: modèles de génération disponibles, lister les '
+                               "modèles vidéo, modèles de génération d'image.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every model', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/models'},
@@ -77,7 +78,8 @@ DESCRIPTION = {'connector': {'name': 'higgsfield',
                                'nsfw or canceled. Once completed, the outputs as public addresses (images, '
                                'video, audio, audios, each with url) and expires_at, when the files are '
                                'deleted (seven days after the end by default). Failed, nsfw and canceled '
-                               'jobs are not charged.',
+                               "jobs are not charged. In French: résultat d'une génération, statut d'une "
+                               "génération vidéo, récupérer l'image générée.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],
@@ -92,7 +94,8 @@ DESCRIPTION = {'connector': {'name': 'higgsfield',
                 'class': 'write',
                 'description': 'Cancel a generation that is still queued; it is refunded. A job that has '
                                'started (in_progress) can no longer be canceled and answers 400. The answer '
-                               'has no body.',
+                               'has no body. In French: annuler une génération, annuler une génération en '
+                               'attente.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],
@@ -107,7 +110,8 @@ DESCRIPTION = {'connector': {'name': 'higgsfield',
                 'class': 'sensitive',
                 'description': "Delete a finished generation's input and output files, prompt and parameters "
                                'now, before their retention ends; billing records stay. A job still queued '
-                               'or in progress answers 409. Repeating the call answers the same.',
+                               'or in progress answers 409. Repeating the call answers the same. In French: '
+                               "supprimer une génération, effacer les fichiers d'une génération.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],
@@ -127,7 +131,8 @@ DESCRIPTION = {'connector': {'name': 'higgsfield',
                                'model takes): PUT the bytes to upload_url within the hour, with every header '
                                "of upload_headers and never the API key, then pass public_url in the model's "
                                'parameters (image_url, video_url…). Content types: jpeg, png, webp, gif, '
-                               'wav, mp4.',
+                               'wav, mp4. In French: envoyer une image source, téléverser un fichier pour '
+                               'une génération.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['content_type'],

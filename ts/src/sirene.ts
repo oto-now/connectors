@@ -6,7 +6,7 @@ export const getSiret = defineFunction({
   connector: "sirene",
   class: "read",
   act: false,
-  description: "Fetch one French establishment from the official Sirene register by its SIRET (14 digits). Returns {header, etablissement: {siret, siren, nic, etablissementSiege, dateCreationEtablissement, trancheEffectifsEtablissement, statutDiffusionEtablissement, adresseEtablissement {numeroVoie..., libelleVoie..., codePostal..., libelleCommune...}, uniteLegale {denominationUniteLegale, categorieJuridiqueUniteLegale, activitePrincipaleUniteLegale, ...}, periodesEtablissement [{dateFin, etatAdministratifEtablissement (A active, F closed), activitePrincipaleEtablissement, enseigne1..., ...}]}}; the current period has dateFin null. Free; 30 calls per minute per key. A unit under partial diffusion (statut P) comes back with fields masked: its data must not be redistributed whole nor used for prospecting.",
+  description: "Fetch one French establishment from the official Sirene register by its SIRET (14 digits). Returns {header, etablissement: {siret, siren, nic, etablissementSiege, dateCreationEtablissement, trancheEffectifsEtablissement, statutDiffusionEtablissement, adresseEtablissement {numeroVoie..., libelleVoie..., codePostal..., libelleCommune...}, uniteLegale {denominationUniteLegale, categorieJuridiqueUniteLegale, activitePrincipaleUniteLegale, ...}, periodesEtablissement [{dateFin, etatAdministratifEtablissement (A active, F closed), activitePrincipaleEtablissement, enseigne1..., ...}]}}; the current period has dateFin null. Free; 30 calls per minute per key. A unit under partial diffusion (statut P) comes back with fields masked: its data must not be redistributed whole nor used for prospecting. In French: fiche d'un établissement, chercher un siret, adresse d'un établissement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -32,7 +32,7 @@ export const getBySiren = defineFunction({
   connector: "sirene",
   class: "read",
   act: false,
-  description: "Fetch one French legal unit (company) from the official Sirene register by its SIREN (9 digits). Returns {header, uniteLegale: {siren, dateCreationUniteLegale, trancheEffectifsUniteLegale, categorieEntreprise, statutDiffusionUniteLegale, prenom1UniteLegale, periodesUniteLegale [{dateFin, etatAdministratifUniteLegale (A active, C ceased), denominationUniteLegale, nomUniteLegale, categorieJuridiqueUniteLegale, activitePrincipaleUniteLegale, nicSiegeUniteLegale, ...}]}}; the current period has dateFin null. The headquarters SIRET is the SIREN followed by nicSiegeUniteLegale of the current period: fetch it by SIRET for its address. Free; 30 calls per minute per key. A unit under partial diffusion (statut P) comes back with fields masked: its data must not be redistributed whole nor used for prospecting.",
+  description: "Fetch one French legal unit (company) from the official Sirene register by its SIREN (9 digits). Returns {header, uniteLegale: {siren, dateCreationUniteLegale, trancheEffectifsUniteLegale, categorieEntreprise, statutDiffusionUniteLegale, prenom1UniteLegale, periodesUniteLegale [{dateFin, etatAdministratifUniteLegale (A active, C ceased), denominationUniteLegale, nomUniteLegale, categorieJuridiqueUniteLegale, activitePrincipaleUniteLegale, nicSiegeUniteLegale, ...}]}}; the current period has dateFin null. The headquarters SIRET is the SIREN followed by nicSiegeUniteLegale of the current period: fetch it by SIRET for its address. Free; 30 calls per minute per key. A unit under partial diffusion (statut P) comes back with fields masked: its data must not be redistributed whole nor used for prospecting. In French: fiche d'une entreprise par son siren, chercher un siren, forme juridique d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -58,7 +58,7 @@ export const getServiceStatus = defineFunction({
   connector: "sirene",
   class: "read",
   act: false,
-  description: "Read the state of the INSEE Sirene API and the dates of the last updates of its data (GET /informations): whether the service is up, and how fresh the register it answers from is. Free. Not needed before a lookup.",
+  description: "Read the state of the INSEE Sirene API and the dates of the last updates of its data (GET /informations): whether the service is up, and how fresh the register it answers from is. Free. Not needed before a lookup. In French: état de l'api sirene, fraîcheur du répertoire sirene.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "State of the service", input: {} },
@@ -78,7 +78,7 @@ export const connector = defineConnector({
   name: "sirene",
   label: "INSEE Sirene",
   namespace: "sirene",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "3.11",
   description: "The French national company register (Sirene) from INSEE's official API: an establishment by its SIRET, a legal unit by its SIREN, with legal form, activity code (NAF), headcount band, state and address.",
   logoDomain: "insee.fr",

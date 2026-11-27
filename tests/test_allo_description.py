@@ -43,9 +43,9 @@ def _addresses(value) -> list[str]:
     return [value] if isinstance(value, str) and "://" in value else []
 
 
-def test_the_description_is_version_1_2_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_2_1_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.2.0"
+    assert description["connector"]["version"] == "1.2.1"
     check(description, ALLO)
 
 

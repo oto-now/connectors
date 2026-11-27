@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'pappers',
                'label': 'Pappers',
                'namespace': 'pappers',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v2',
                'base_url': 'https://api.pappers.fr/v2',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'api-key', 'key': 'api_key'},
@@ -48,7 +48,9 @@ DESCRIPTION = {'connector': {'name': 'pappers',
                                'chiffre_affaires, resultat}]}. The siren of a result is what get_company '
                                'takes. Every criterion is optional; dates are DD-MM-YYYY. Page-based '
                                'browsing stops at the first 400 results: to go further, pass curseur "*" '
-                               'then each curseurSuivant returned. A 404 means no company matches.',
+                               'then each curseurSuivant returned. A 404 means no company matches. In '
+                               'French: chercher une entreprise française, trouver une société, recherche de '
+                               'sociétés par critères.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'q': {'type': 'string',
@@ -182,7 +184,8 @@ DESCRIPTION = {'connector': {'name': 'pappers',
                                'depots_actes, comptes and finances. diffusable false means the company '
                                'restricts its Insee data: names and address may be null. A 206 answer is '
                                'partial: one source did not answer in time. Some extra_fields cost extra '
-                               'credits, listed in their description.',
+                               "credits, listed in their description. In French: fiche d'une entreprise, "
+                               'infos société par siren, extrait kbis.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'siren': {'type': 'string',
@@ -278,7 +281,8 @@ DESCRIPTION = {'connector': {'name': 'pappers',
                                'entreprises: [{siren, nom_entreprise, ...}]}]}. Find everyone who runs a '
                                'company (siren), or every company one person runs (q, or nom_dirigeant with '
                                'prenom_dirigeant, narrowed by birth date). Dates are DD-MM-YYYY. A 404 means '
-                               'nobody matches.',
+                               "nobody matches. In French: chercher un dirigeant, mandats d'un dirigeant, "
+                               'représentants légaux.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'q': {'type': 'string',
@@ -367,7 +371,7 @@ DESCRIPTION = {'connector': {'name': 'pappers',
                 'description': 'Get the credit usage of this Pappers key: jetons_abonnement (monthly credits '
                                'of the plan), jetons_abonnement_utilises (used this month), '
                                'jetons_pay_as_you_go_restants (prepaid credits left). Read it before a large '
-                               'search.',
+                               'search. In French: crédits pappers restants, consommation de jetons pappers.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Credits left', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/suivi-jetons'}}],

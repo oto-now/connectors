@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'dataforseo',
                'label': 'DataForSEO',
                'namespace': 'dataforseo',
-               'version': '1.0.4',
+               'version': '1.0.5',
                'api_version': 'v3',
                'base_url': 'https://api.dataforseo.com/v3',
                'auth': {'kind': 'basic', 'username': 'login', 'password': 'password'},
@@ -247,7 +247,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
  'functions': [{'name': 'user_data',
                 'class': 'read',
                 'description': 'The DataForSEO account: login, timezone, balance (money.balance, in USD), '
-                               'total deposited (money.total) and subscription expiry dates. Free.',
+                               'total deposited (money.total) and subscription expiry dates. Free. In '
+                               'French: solde dataforseo, crédit dataforseo restant.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The account and its balance', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/appendix/user_data'},
@@ -263,7 +264,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'Every location (location_code, location_name, country) with its languages '
                                '(language_code, language_name) that the Labs functions accept. The whole '
-                               'list, long: read the code once and reuse it. Free.',
+                               'list, long: read the code once and reuse it. Free. In French: pays et '
+                               'langues disponibles, codes de localisation dataforseo.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The locations and languages of Labs', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/dataforseo_labs/locations_and_languages'},
@@ -273,7 +275,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'Search volume, CPC, competition, search intent, keyword difficulty and the '
                                'monthly trend of up to 700 keywords, in one location and language (Google, '
-                               'DataForSEO Labs). Billed 0.012 USD plus 0.00012 a keyword.',
+                               'DataForSEO Labs). Billed 0.012 USD plus 0.00012 a keyword. In French: volume '
+                               "de recherche d'un mot-clé, difficulté d'un mot-clé, cpc d'un mot-clé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keywords'],
@@ -337,7 +340,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                                'CPC and difficulty (Google, DataForSEO Labs). Billed per keyword returned: '
                                'limit bounds the cost. filters and order_by use the DataForSEO syntax: '
                                '[["keyword_info.search_volume", ">", 100]], '
-                               '["keyword_info.search_volume,desc"].',
+                               '["keyword_info.search_volume,desc"]. In French: idées de mots-clés, trouver '
+                               'des mots-clés proches.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keywords', 'limit'],
@@ -420,7 +424,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'Long-tail queries that contain the seed keyword, with their volume, CPC and '
                                'difficulty (Google, DataForSEO Labs). Billed per keyword returned: limit '
-                               'bounds the cost.',
+                               'bounds the cost. In French: suggestions de mots-clés, mots-clés longue '
+                               'traîne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword', 'limit'],
@@ -500,7 +505,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'Google\'s "searches related to" a keyword, expanded depth levels (0 to 4), '
                                'with their volume, CPC and difficulty (DataForSEO Labs). Billed per keyword '
-                               'returned: limit bounds the cost.',
+                               'returned: limit bounds the cost. In French: recherches associées, mots-clés '
+                               'associés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword', 'limit'],
@@ -590,7 +596,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'bulk_keyword_difficulty',
                 'class': 'read',
                 'description': 'Ranking difficulty, 0 to 100, of up to 1000 keywords in one location and '
-                               'language (Google, DataForSEO Labs). Billed per keyword.',
+                               'language (Google, DataForSEO Labs). Billed per keyword. In French: '
+                               'difficulté des mots-clés, difficulté de positionnement.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keywords'],
@@ -643,7 +650,7 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'Search intent of up to 1000 keywords (informational, navigational, '
                                'commercial, transactional) with its probability (DataForSEO Labs). Billed '
-                               'per keyword.',
+                               "per keyword. In French: intention de recherche, intention d'un mot-clé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keywords'],
@@ -679,7 +686,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'Google Ads (Keyword Planner) search volume, CPC, competition and monthly '
                                'searches of up to 1000 keywords. No location: worldwide. Dates as '
-                               'yyyy-mm-dd. Billed 0.09 USD a call.',
+                               'yyyy-mm-dd. Billed 0.09 USD a call. In French: volume google ads, '
+                               'planificateur de mots-clés, volume de recherche mensuel.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keywords'],
@@ -735,7 +743,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'Google Trends interest over time, 0 to 100, of up to 5 keywords compared. No '
                                'location: worldwide. time_range or date_from and date_to bound the period; '
-                               'type picks the Google property.',
+                               'type picks the Google property. In French: tendances google, google trends '
+                               "d'un mot-clé, évolution de l'intérêt.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keywords'],
@@ -807,7 +816,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': "A domain's organic and paid footprint: ranking keywords per position bucket, "
                                'estimated traffic (etv) and its value (Google, DataForSEO Labs). No '
-                               'location: every location, one row each.',
+                               "location: every location, one row each. In French: visibilité d'un domaine, "
+                               "trafic seo d'un site, positionnement d'un domaine.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -855,7 +865,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'The keywords a domain or a page ranks for, with position, URL, volume and '
                                'traffic (Google, DataForSEO Labs). Billed per keyword returned: limit bounds '
-                               'the cost.',
+                               "the cost. In French: mots-clés positionnés d'un site, sur quels mots-clés se "
+                               'positionne un site.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -942,7 +953,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'The domains that rank for the same keywords as a domain, with the overlap '
                                'and their metrics (Google, DataForSEO Labs). Billed per domain returned: '
-                               'limit bounds the cost.',
+                               "limit bounds the cost. In French: concurrents seo d'un site, sites "
+                               'concurrents sur google.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1018,7 +1030,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': "Keywords both domains rank for (intersections true, DataForSEO's default), "
                                'or that target1 ranks for and target2 does not (false) (Google, DataForSEO '
-                               'Labs). Billed per keyword returned: limit bounds the cost.',
+                               'Labs). Billed per keyword returned: limit bounds the cost. In French: '
+                               'mots-clés communs à deux sites, mots-clés du concurrent absents de mon site.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target1', 'target2', 'limit'],
@@ -1113,7 +1126,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'relevant_pages',
                 'class': 'read',
                 'description': "A domain's pages with their ranking keywords and estimated traffic (Google, "
-                               'DataForSEO Labs). Billed per page returned: limit bounds the cost.',
+                               'DataForSEO Labs). Billed per page returned: limit bounds the cost. In '
+                               "French: meilleures pages d'un site, pages qui génèrent du trafic.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1185,7 +1199,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': "Keywords relevant to a site's content, whether it ranks for them or not, "
                                'with their volume and difficulty (Google, DataForSEO Labs). Billed per '
-                               'keyword returned: limit bounds the cost.',
+                               'keyword returned: limit bounds the cost. In French: mots-clés pertinents '
+                               "pour un site, opportunités de mots-clés d'un site.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1266,7 +1281,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'bulk_traffic_estimation',
                 'class': 'read',
                 'description': 'Estimated monthly organic and paid traffic of up to 1000 domains, subdomains '
-                               'or pages in one call (Google, DataForSEO Labs). Billed per target.',
+                               'or pages in one call (Google, DataForSEO Labs). Billed per target. In '
+                               'French: estimation de trafic, trafic de plusieurs sites.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['targets'],
@@ -1320,7 +1336,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': "A domain's ranking keyword counts and estimated traffic, month by month "
                                '(Google, DataForSEO Labs). Dates as yyyy-mm-dd. Billed 0.12 USD plus 0.0012 '
-                               'a month.',
+                               "a month. In French: historique du trafic seo, évolution des positions d'un "
+                               'site.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -1380,7 +1397,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'The domains that rank for a set of up to 200 keywords, with their average '
                                'position and visibility (Google, DataForSEO Labs). Billed per domain '
-                               'returned: limit bounds the cost.',
+                               'returned: limit bounds the cost. In French: concurrents sur des mots-clés, '
+                               'sites qui se positionnent sur mes mots-clés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keywords', 'limit'],
@@ -1457,7 +1475,7 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': "A domain's subdomains with their ranking keywords and estimated traffic "
                                '(Google, DataForSEO Labs). Billed per subdomain returned: limit bounds the '
-                               'cost.',
+                               "cost. In French: sous-domaines d'un site, trafic des sous-domaines.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1525,7 +1543,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'backlinks_summary',
                 'class': 'read',
                 'description': "A link profile's totals: backlinks, referring domains, IPs and subnets, "
-                               'rank, spam score, top TLDs and link types.',
+                               'rank, spam score, top TLDs and link types. In French: profil de liens, '
+                               "nombre de backlinks, domaines référents d'un site.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -1557,7 +1576,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'The backlinks of a target: source URL, anchor, dofollow, rank, first and '
                                "last seen. mode: as_is (DataForSEO's default), one_per_domain or "
-                               'one_per_anchor. Billed per backlink returned: limit bounds the cost.',
+                               'one_per_anchor. Billed per backlink returned: limit bounds the cost. In '
+                               "French: liste des backlinks, liens entrants d'un site.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1609,7 +1629,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'referring_domains',
                 'class': 'read',
                 'description': 'The domains linking to a target, with their backlink count and rank. Billed '
-                               'per domain returned: limit bounds the cost.',
+                               'per domain returned: limit bounds the cost. In French: domaines référents, '
+                               'sites qui font un lien.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1665,7 +1686,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'anchors',
                 'class': 'read',
                 'description': 'The anchor texts pointing to a target, with backlink and referring-domain '
-                               'counts. Billed per anchor returned: limit bounds the cost.',
+                               'counts. Billed per anchor returned: limit bounds the cost. In French: ancres '
+                               "des backlinks, textes d'ancre.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1720,7 +1742,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                          'settle': {'path': 'cost', 'scale': 1000000}}},
                {'name': 'bulk_ranks',
                 'class': 'read',
-                'description': 'The backlink rank of up to 1000 domains, subdomains or pages in one call.',
+                'description': 'The backlink rank of up to 1000 domains, subdomains or pages in one call. In '
+                               'French: autorité de plusieurs domaines, rang backlinks en masse.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['targets'],
@@ -1749,7 +1772,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'backlinks_competitors',
                 'class': 'read',
                 'description': 'The domains sharing the most backlinks with a target. Billed per domain '
-                               'returned: limit bounds the cost.',
+                               'returned: limit bounds the cost. In French: concurrents en backlinks, sites '
+                               'aux backlinks communs.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1800,7 +1824,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                                "exclude_targets (up to 10): competitors as targets and one's own site "
                                'excluded give link prospects. targets is keyed by rank, from "1": {"1": '
                                '"example.org", "2": "example.net"}. Billed per domain returned: limit bounds '
-                               'the cost.',
+                               'the cost. In French: opportunités de netlinking, liens des concurrents '
+                               'absents chez moi.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['targets', 'limit'],
@@ -1871,7 +1896,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'backlinks_history',
                 'class': 'read',
                 'description': "A domain's link profile month by month, from 2019-01-01: backlinks, "
-                               'referring domains, rank, new and lost. Dates as yyyy-mm-dd.',
+                               'referring domains, rank, new and lost. Dates as yyyy-mm-dd. In French: '
+                               'historique des backlinks, évolution du profil de liens.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -1900,7 +1926,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'backlinks_new_lost',
                 'class': 'read',
                 'description': 'New and lost backlinks and referring domains of a target, per day, week, '
-                               'month or year (group_range). Dates as yyyy-mm-dd.',
+                               'month or year (group_range). Dates as yyyy-mm-dd. In French: backlinks '
+                               'gagnés et perdus, nouveaux backlinks, liens perdus.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -1939,7 +1966,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'backlinks_domain_pages',
                 'class': 'read',
                 'description': "A domain's pages with their own backlink and referring-domain counts: its "
-                               'most linked pages. Billed per page returned: limit bounds the cost.',
+                               'most linked pages. Billed per page returned: limit bounds the cost. In '
+                               'French: pages les plus liées, backlinks par page.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'limit'],
@@ -1991,7 +2019,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'description': 'The AI answers (question, answer, sources) that mention the targets: a '
                                'domain or a keyword each. platform: google (AI Overviews) or chat_gpt '
                                '(United States, English only); none, both. Billed 0.1 USD plus 0.001 an '
-                               'answer returned: limit bounds the cost.',
+                               'answer returned: limit bounds the cost. In French: mentions dans les '
+                               "réponses ia, présence dans chatgpt, marque citée par l'ia.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['targets', 'limit'],
@@ -2123,7 +2152,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'llm_mentions_metrics',
                 'class': 'read',
                 'description': 'Mention count, AI search volume and impressions of the targets, by platform '
-                               'and by source. Billed 0.1 USD plus 0.001 a row.',
+                               'and by source. Billed 0.1 USD plus 0.001 a row. In French: visibilité dans '
+                               'les ia, nombre de mentions ia.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['targets'],
@@ -2230,7 +2260,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'llm_mentions_top_domains',
                 'class': 'read',
                 'description': 'The domains AI answers cite most for the targets. Billed 0.1 USD plus 0.001 '
-                               'a domain returned: limit bounds the cost.',
+                               'a domain returned: limit bounds the cost. In French: domaines cités par '
+                               "l'ia, sources citées par chatgpt.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['targets', 'limit'],
@@ -2343,7 +2374,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'llm_mentions_top_pages',
                 'class': 'read',
                 'description': 'The pages AI answers cite most for the targets. Billed 0.1 USD plus 0.001 a '
-                               'page returned: limit bounds the cost.',
+                               "page returned: limit bounds the cost. In French: pages citées par l'ia, "
+                               'pages sources des réponses ia.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['targets', 'limit'],
@@ -2456,7 +2488,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'llm_mentions_history',
                 'class': 'read',
                 'description': "The targets' mention metrics month by month, from 2025-08-01. Dates as "
-                               'yyyy-mm-dd. Billed 0.1 USD plus 0.001 a month.',
+                               'yyyy-mm-dd. Billed 0.1 USD plus 0.001 a month. In French: historique des '
+                               'mentions ia, évolution de la visibilité ia.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['targets'],
@@ -2569,7 +2602,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'Ask an AI model a question and get its answer, with the sources it cites. '
                                'engine: chat_gpt, claude, gemini or perplexity; model_name from llm_models. '
-                               "Billed 0.0006 USD plus the model's tokens.",
+                               "Billed 0.0006 USD plus the model's tokens. In French: poser une question à "
+                               "chatgpt, réponse d'un modèle d'ia, sources citées par une ia.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['engine', 'user_prompt', 'model_name'],
@@ -2619,7 +2653,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                          'settle': {'path': 'cost', 'scale': 1000000}}},
                {'name': 'llm_models',
                 'class': 'read',
-                'description': 'The model names llm_response accepts for an engine. Free.',
+                'description': 'The model names llm_response accepts for an engine. Free. In French: modèles '
+                               "d'ia disponibles, liste des modèles llm.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['engine'],
@@ -2633,7 +2668,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'google_ai_mode',
                 'class': 'read',
                 'description': "Google's AI Mode answer to a query, with the sources it cites, in one "
-                               'location and language.',
+                               'location and language. In French: réponse du mode ia de google, google ai '
+                               'mode.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword'],
@@ -2688,7 +2724,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'ai_keyword_search_volume',
                 'class': 'read',
                 'description': 'How often up to 1000 keywords are asked to AI assistants, with a monthly '
-                               'trend. Billed 0.01 USD plus 0.0001 a keyword.',
+                               'trend. Billed 0.01 USD plus 0.0001 a keyword. In French: volume de recherche '
+                               'ia, mots-clés demandés aux assistants ia.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keywords'],
@@ -2740,7 +2777,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'content_search',
                 'class': 'read',
                 'description': 'Web pages that mention a keyword or a brand: URL, domain, snippet, date and '
-                               'sentiment. page_type narrows the sources. At most 100 per call.',
+                               'sentiment. page_type narrows the sources. At most 100 per call. In French: '
+                               "pages qui mentionnent une marque, citations d'une marque sur le web.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword', 'limit'],
@@ -2797,7 +2835,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'content_summary',
                 'class': 'read',
                 'description': "Totals of a keyword's citations on the web: count, sentiment and "
-                               'connotations, top domains, countries and page types.',
+                               'connotations, top domains, countries and page types. In French: synthèse des '
+                               "mentions d'une marque, sentiment des citations.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword'],
@@ -2829,7 +2868,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'onpage_instant',
                 'class': 'read',
                 'description': 'Audit one page now: meta tags, headings, content, links, load time and the '
-                               'failed checks. Billed 0.00015 USD.',
+                               "failed checks. Billed 0.00015 USD. In French: audit seo d'une page, analyser "
+                               'une page.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url'],
@@ -2851,7 +2891,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'onpage_content',
                 'class': 'read',
                 'description': "A page's content, structured: title, headings, text blocks and tables. "
-                               'Billed 0.00015 USD.',
+                               "Billed 0.00015 USD. In French: contenu d'une page, titres et textes d'une "
+                               'page.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url'],
@@ -2874,7 +2915,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'lighthouse',
                 'class': 'read',
                 'description': 'A Lighthouse run of a page: performance, accessibility, best practices and '
-                               'SEO scores, with the audits. Billed 0.005 USD.',
+                               'SEO scores, with the audits. Billed 0.005 USD. In French: score lighthouse, '
+                               "performance d'une page, vitesse de chargement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url'],
@@ -2925,7 +2967,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'act': False,
                 'description': 'Start crawling a site, up to max_crawl_pages pages. Returns the task id '
                                '(tasks.0.id), read with onpage_summary until crawl_progress is finished, '
-                               'then with the onpage reports. Billed 0.00015 USD a page at posting.',
+                               'then with the onpage reports. Billed 0.00015 USD a page at posting. In '
+                               'French: lancer un audit de site, crawler un site, audit seo complet.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'max_crawl_pages'],
@@ -2953,7 +2996,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'onpage_summary',
                 'class': 'read',
                 'description': "A crawl's progress (crawl_progress: in_progress or finished) and its "
-                               'site-wide findings. Free.',
+                               'site-wide findings. Free. In French: avancement du crawl, résultats de '
+                               "l'audit du site.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -2968,7 +3012,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                            'strip': ['tasks.path', 'tasks.data', 'tasks.time']}},
                {'name': 'onpage_pages',
                 'class': 'read',
-                'description': 'The crawled pages with their checks. Free.',
+                'description': 'The crawled pages with their checks. Free. In French: pages crawlées, pages '
+                               "de l'audit.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -3010,7 +3055,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                            'strip': ['tasks.path', 'tasks.data', 'tasks.time']}},
                {'name': 'onpage_non_indexable',
                 'class': 'read',
-                'description': 'The crawled pages search engines cannot index, and why. Free.',
+                'description': 'The crawled pages search engines cannot index, and why. Free. In French: '
+                               "pages non indexables, pages bloquées à l'indexation.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -3046,7 +3092,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'onpage_duplicate_tags',
                 'class': 'read',
                 'description': 'The crawled pages sharing a title (duplicate_title) or a description '
-                               '(duplicate_description). Free.',
+                               '(duplicate_description). Free. In French: titres en double, meta '
+                               'descriptions dupliquées.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id', 'type'],
@@ -3077,7 +3124,7 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'onpage_links',
                 'class': 'read',
                 'description': 'The links found on the crawled pages; filters ["is_broken", "=", true] keeps '
-                               'the broken ones. Free.',
+                               'the broken ones. Free. In French: liens cassés, liens du site crawlé.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -3113,7 +3160,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                            'strip': ['tasks.path', 'tasks.data', 'tasks.time']}},
                {'name': 'onpage_redirect_chains',
                 'class': 'read',
-                'description': 'The redirect chains found by the crawl, loops flagged. Free.',
+                'description': 'The redirect chains found by the crawl, loops flagged. Free. In French: '
+                               'chaînes de redirection, boucles de redirection.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -3141,7 +3189,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'What a site is built with (CMS, analytics, e-commerce, payment…), by group '
                                'and category, with its country, language and the contact details found on '
-                               'it. Billed 0.012 USD.',
+                               "it. Billed 0.012 USD. In French: technologies d'un site, cms d'un site, "
+                               'outils utilisés par un site.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -3165,7 +3214,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'description': 'The domains using technologies (Shopify, HubSpot) or matching keywords in '
                                'their title and meta, filterable: ["country_iso_code", "=", "FR"], '
                                '["domain_rank", ">", 300]. Billed 0.012 USD plus 0.0012 a domain returned: '
-                               'limit bounds the cost.',
+                               'limit bounds the cost. In French: sites qui utilisent une technologie, sites '
+                               'sous shopify.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['limit'],
@@ -3222,7 +3272,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'technologies_summary',
                 'class': 'read',
                 'description': 'How many domains use technologies, or match keywords, by country, language '
-                               'and co-used technology.',
+                               "and co-used technology. In French: part de marché d'une technologie, nombre "
+                               'de sites par technologie.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['technologies']}, {'required': ['keywords']}],
@@ -3265,7 +3316,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                                '"latitude,longitude,radius". When Google serves a URL as a google.com/goto '
                                'redirect (domain google.com), breadcrumb and website_name name the site, '
                                'goto_url_resolve resolves it, and serp_organic_post queues the search with '
-                               'every URL resolved.',
+                               "every URL resolved. In French: résultats google d'un mot-clé, positions sur "
+                               'google, page de résultats google.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword'],
@@ -3378,7 +3430,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                                'results with serp_organic_get once ready (under a minute, at times longer). '
                                'depth bounds the results, ten a page, each page billed 0.0006 USD. '
                                'location_coordinate places the search at a point: '
-                               '"latitude,longitude,radius".',
+                               '"latitude,longitude,radius". In French: lancer une collecte des résultats '
+                               'google, tâche serp en file.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword'],
@@ -3455,7 +3508,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'The Google organic results a serp_organic_post task collected, as '
                                'serp_organic returns them. While the task runs, refused as task_not_ready: '
-                               'read again later. Free.',
+                               'read again later. Free. In French: lire les résultats de la tâche serp, '
+                               'résultats google collectés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -3502,7 +3556,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                {'name': 'goto_url_resolve',
                 'class': 'read',
                 'description': 'The site URL behind Google redirects (https://google.com/goto?url=...) that '
-                               'serp_organic could not resolve: each goto URL with its url. Free.',
+                               'serp_organic could not resolve: each goto URL with its url. Free. In French: '
+                               'résoudre une redirection google, url réelle derrière google goto.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['goto_urls'],
@@ -3530,7 +3585,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                                'location_coordinate places the search at a point with a zoom: '
                                '"latitude,longitude,zoom", such as "45.764,4.835,15z"; a grid of points '
                                'around a business gives its local visibility. depth bounds the results, a '
-                               'hundred a page, each page billed 0.002 USD.',
+                               'hundred a page, each page billed 0.002 USD. In French: résultats google '
+                               'maps, classement local sur maps.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword'],
@@ -3630,7 +3686,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'description': 'A Google Business Profile: name, category, address, phone, URL, rating and '
                                'its distribution, hours, attributes, place_id and cid. keyword names the '
                                'business, or gives its id: "cid:1234567890" or "place_id:ChIJ...". Billed '
-                               '0.0054 USD.',
+                               "0.0054 USD. In French: fiche google business, fiche google d'un "
+                               "établissement, note google d'un commerce.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['keyword'],
@@ -3710,7 +3767,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'description': 'Ask DataForSEO for the Google reviews of a business, given by name '
                                '(keyword), cid or place_id. Returns the task id (tasks.0.id): read the '
                                'reviews with google_reviews_get, once ready (a few seconds to minutes). '
-                               'depth bounds the reviews, billed 0.00075 USD a ten.',
+                               'depth bounds the reviews, billed 0.00075 USD a ten. In French: collecter les '
+                               "avis google, demander les avis d'un établissement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['keyword']},
@@ -3797,7 +3855,8 @@ DESCRIPTION = {'connector': {'name': 'dataforseo',
                 'class': 'read',
                 'description': 'The Google reviews a google_reviews_post task collected: rating, text, date, '
                                "author, owner's answer. While the task runs, refused as task_not_ready: read "
-                               'again later. Free.',
+                               "again later. Free. In French: lire les avis google, avis clients d'un "
+                               'établissement.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],

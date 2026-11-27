@@ -13,8 +13,10 @@ authoring, and the browser session is not used here.
 
 **Deliberately absent writes** (an unlucky LLM call would be costly):
 sending a campaign (`sendNow`, switching the status to `sent`), deleting a
-contact/list/campaign/template, purging hard bounces. Design and measurement
-are exposed; launching a mass send and deletions stay in the UI.
+campaign/template, purging hard bounces. Design and measurement are exposed;
+launching a mass send and those deletions stay in the UI. Deleting a contact
+or a list is exposed (`delete_contact`, `delete_list`), so that a test or a
+user can clean up behind itself; the description asks for a confirmation.
 
 Docs: https://developers.brevo.com/reference
 

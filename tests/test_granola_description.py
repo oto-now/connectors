@@ -162,9 +162,9 @@ def _shaped(answer, paths: list[str]):
     return answer
 
 
-def test_the_description_is_version_1_0_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_0_1_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.0"
+    assert description["connector"]["version"] == "1.0.1"
     check(description, GRANOLA)
 
 

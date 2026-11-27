@@ -6,7 +6,7 @@ export const getMe = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The API key itself: its scopes, the endpoints it may call, the team (id, name) and the rate limits. Needs no scope: read it first to know what the key can do.",
+  description: "The API key itself: its scopes, the endpoints it may call, the team (id, name) and the rate limits. Needs no scope: read it first to know what the key can do. In French: clé api allo, droits de la clé api, limites d'appels de l'api allo.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "What can this key do", input: {} },
@@ -27,7 +27,7 @@ export const listUsers = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The team's members (id, name, email, role, status).",
+  description: "The team's members (id, name, email, role, status). In French: lister les membres de l'équipe allo, utilisateurs allo, collaborateurs de l'équipe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -55,7 +55,7 @@ export const getUser = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One member of the team (id, name, email, role, status).",
+  description: "One member of the team (id, name, email, role, status). In French: fiche d'un membre de l'équipe, détails d'un utilisateur allo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -81,7 +81,7 @@ export const listNumbers = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The team's phone numbers and sender ids: number (E.164), name, country, type, capabilities and the members on each line.",
+  description: "The team's phone numbers and sender ids: number (E.164), name, country, type, capabilities and the members on each line. In French: numéros de téléphone de l'équipe, lister les lignes allo, numéros d'appel disponibles.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The team's lines", input: {} },
@@ -102,7 +102,7 @@ export const listConversations = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The conversations of one Allo line, one per contact number, most recent activity first, each with its last call or text (last_item). last_activity_since (ISO 8601) reads only what changed. extend=transcript adds the call transcripts (large). The audio of a call is never a link: get it as a file with get_call_recording.",
+  description: "The conversations of one Allo line, one per contact number, most recent activity first, each with its last call or text (last_item). last_activity_since (ISO 8601) reads only what changed. extend=transcript adds the call transcripts (large). The audio of a call is never a link: get it as a file with get_call_recording. In French: conversations d'une ligne, lister les conversations téléphoniques, derniers échanges avec les contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -140,7 +140,7 @@ export const searchConversationItems = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "Calls and texts across every conversation, filtered by line, contact, member, direction, type, result, tags, unread or unresponded, and date ({from, to}, both dates); search is a keyword over transcripts, summaries and message content. Each item: id (cll-* call, msg-* text), date, duration, result, member, contact, summary, tags. The audio of a call is never a link: get it as a file with get_call_recording.",
+  description: "Calls and texts across every conversation, filtered by line, contact, member, direction, type, result, tags, unread or unresponded, and date ({from, to}, both dates); search is a keyword over transcripts, summaries and message content. Each item: id (cll-* call, msg-* text), date, duration, result, member, contact, summary, tags. The audio of a call is never a link: get it as a file with get_call_recording. In French: chercher un appel, rechercher des sms, historique des appels, appels manqués.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -191,7 +191,7 @@ export const getConversationItem = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One call (cll-*) or text (msg-*): date, duration, result, member, contact, AI summary, tags, extracted data, content of a text. extend=transcript adds the transcript. The audio of a call is never a link: get it as a file with get_call_recording.",
+  description: "One call (cll-*) or text (msg-*): date, duration, result, member, contact, AI summary, tags, extracted data, content of a text. extend=transcript adds the transcript. The audio of a call is never a link: get it as a file with get_call_recording. In French: détail d'un appel, résumé d'un appel, détail d'un sms.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -221,7 +221,7 @@ export const getConversationItems = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "Several calls or texts by id in one request, full details. The audio of a call is never a link: get it as a file with get_call_recording.",
+  description: "Several calls or texts by id in one request, full details. The audio of a call is never a link: get it as a file with get_call_recording. In French: détails de plusieurs appels, récupérer plusieurs appels par id.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -248,7 +248,7 @@ export const getCallRecording = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "Get the audio recording of one Allo call (cll-*) as a file of yours, kept 24 hours: the answer gives its file id, to pass as is to a function that takes a file (a transcription). Never a link. A text (msg-*) or an unrecorded call has none; only a user who may play the call in Allo gets it, and never on a HIPAA-enabled team.",
+  description: "Get the audio recording of one Allo call (cll-*) as a file of yours, kept 24 hours: the answer gives its file id, to pass as is to a function that takes a file (a transcription). Never a link. A text (msg-*) or an unrecorded call has none; only a user who may play the call in Allo gets it, and never on a HIPAA-enabled team. In French: enregistrement d'un appel, télécharger l'audio d'un appel, écouter un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -281,7 +281,7 @@ export const updateCallSummary = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Replace the markdown of a call's AI summary (calls only). template_key picks the summary when the call has several.",
+  description: "Replace the markdown of a call's AI summary (calls only). template_key picks the summary when the call has several. In French: modifier le résumé d'un appel, corriger le compte rendu d'un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -311,7 +311,7 @@ export const updateConversation = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Mark a conversation read or unread, archive or unarchive it.",
+  description: "Mark a conversation read or unread, archive or unarchive it. In French: marquer une conversation comme lue, archiver une conversation, désarchiver une conversation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -341,7 +341,7 @@ export const listTags = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The team's tags (key, name, color).",
+  description: "The team's tags (key, name, color). In French: lister les étiquettes d'appel, tags de l'équipe allo.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The tags", input: {} },
@@ -362,7 +362,7 @@ export const createTag = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A new team tag; its key is the slug of its name.",
+  description: "A new team tag; its key is the slug of its name. In French: créer une étiquette d'appel, nouveau tag d'appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -388,7 +388,7 @@ export const deleteTag = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete a team tag by its key; it disappears from the tag list. A tag synced from a CRM integration cannot be deleted.",
+  description: "Delete a team tag by its key; it disappears from the tag list. A tag synced from a CRM integration cannot be deleted. In French: supprimer une étiquette d'appel, supprimer un tag allo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -415,7 +415,7 @@ export const addItemTags = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Tag a call with one or more tag keys.",
+  description: "Tag a call with one or more tag keys. In French: étiqueter un appel, ajouter un tag à un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -444,7 +444,7 @@ export const removeItemTag = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Remove one tag from a call.",
+  description: "Remove one tag from a call. In French: retirer un tag d'un appel, enlever une étiquette d'un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -473,7 +473,7 @@ export const listConversationNotes = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The internal team notes on a conversation, never shown to the contact.",
+  description: "The internal team notes on a conversation, never shown to the contact. In French: notes internes d'une conversation, lister les notes d'une conversation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -508,7 +508,7 @@ export const createConversationNote = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Add an internal team note to a conversation; the contact never sees it.",
+  description: "Add an internal team note to a conversation; the contact never sees it. In French: ajouter une note interne à une conversation, noter un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -539,7 +539,7 @@ export const getConversationNote = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One internal note on a conversation, by id.",
+  description: "One internal note on a conversation, by id. In French: lire une note de conversation, détail d'une note interne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -565,7 +565,7 @@ export const updateConversationNote = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Replace the content of a note on a conversation; only its author may. Mention a teammate inline with @[Name](usr-...).",
+  description: "Replace the content of a note on a conversation; only its author may. Mention a teammate inline with @[Name](usr-...). In French: modifier une note de conversation, corriger une note interne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -594,7 +594,7 @@ export const deleteConversationNote = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete a note on a conversation; only its author may.",
+  description: "Delete a note on a conversation; only its author may. In French: supprimer une note de conversation, effacer une note interne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -621,7 +621,7 @@ export const listPersonNotes = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The notes on a person's CRM profile.",
+  description: "The notes on a person's CRM profile. In French: notes d'un contact, lister les notes d'une fiche contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -655,7 +655,7 @@ export const createPersonNote = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Add a note to a person's CRM profile.",
+  description: "Add a note to a person's CRM profile. In French: ajouter une note à un contact, noter sur la fiche contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -684,7 +684,7 @@ export const updatePersonNote = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Replace the content of a note on a person's CRM profile; only its author may.",
+  description: "Replace the content of a note on a person's CRM profile; only its author may. In French: modifier une note de contact, corriger une note de fiche contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -714,7 +714,7 @@ export const deletePersonNote = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete a note on a person's CRM profile; only its author may.",
+  description: "Delete a note on a person's CRM profile; only its author may. In French: supprimer une note de contact, effacer une note de fiche contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -744,7 +744,7 @@ export const findThread = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The discussion thread of one call, text or conversation note, if it has one (an item has one thread at most): the team's comments on it.",
+  description: "The discussion thread of one call, text or conversation note, if it has one (an item has one thread at most): the team's comments on it. In French: fil de discussion d'un appel, trouver le fil de commentaires.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -777,7 +777,7 @@ export const getThread = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "A thread with all its comments, its item and whether it is resolved.",
+  description: "A thread with all its comments, its item and whether it is resolved. In French: lire un fil de discussion, commentaires d'un fil.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -803,7 +803,7 @@ export const createThread = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Start the discussion thread of a call, text or conversation note with a first comment; an item has one thread at most. Mention a teammate inline with @[Name](usr-...).",
+  description: "Start the discussion thread of a call, text or conversation note with a first comment; an item has one thread at most. Mention a teammate inline with @[Name](usr-...). In French: ouvrir un fil de discussion, commenter un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -837,7 +837,7 @@ export const addThreadComment = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Add a comment to a thread.",
+  description: "Add a comment to a thread. In French: ajouter un commentaire au fil, répondre dans un fil de discussion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -866,7 +866,7 @@ export const updateThreadComment = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Replace the content of a comment; only its author may.",
+  description: "Replace the content of a comment; only its author may. In French: modifier un commentaire, corriger un commentaire du fil.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -895,7 +895,7 @@ export const resolveThread = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Mark a thread resolved.",
+  description: "Mark a thread resolved. In French: résoudre un fil de discussion, clore une discussion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -921,7 +921,7 @@ export const unresolveThread = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Reopen a resolved thread.",
+  description: "Reopen a resolved thread. In French: rouvrir un fil de discussion, rouvrir une discussion résolue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -947,7 +947,7 @@ export const searchPeople = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "People of the contacts CRM, filtered (name, last_name, job_title, website, company, phone_number, email, deal_status) or by a free search.",
+  description: "People of the contacts CRM, filtered (name, last_name, job_title, website, company, phone_number, email, deal_status) or by a free search. In French: chercher un contact, rechercher une personne dans le crm, contact par numéro de téléphone.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -998,7 +998,7 @@ export const getPerson = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One person of the CRM, with company, numbers, emails and custom attributes.",
+  description: "One person of the CRM, with company, numbers, emails and custom attributes. In French: fiche d'un contact, détails d'une personne du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1024,7 +1024,7 @@ export const createPerson = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A person in the CRM, with at least one phone number. custom_attributes takes the keys list_person_attributes returns.",
+  description: "A person in the CRM, with at least one phone number. custom_attributes takes the keys list_person_attributes returns. In French: créer un contact, ajouter une personne au crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1061,7 +1061,7 @@ export const updatePerson = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Update a person of the CRM; only the fields given change.",
+  description: "Update a person of the CRM; only the fields given change. In French: modifier un contact, mettre à jour une fiche contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1098,7 +1098,7 @@ export const searchCompanies = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "Companies of the CRM, filtered by name, website or industry.",
+  description: "Companies of the CRM, filtered by name, website or industry. In French: chercher une entreprise, rechercher une société dans le crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1139,7 +1139,7 @@ export const getCompany = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One company of the CRM, with its people count and custom attributes.",
+  description: "One company of the CRM, with its people count and custom attributes. In French: fiche d'une entreprise, détails d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1165,7 +1165,7 @@ export const createCompany = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A company in the CRM.",
+  description: "A company in the CRM. In French: créer une entreprise, ajouter une société au crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1196,7 +1196,7 @@ export const updateCompany = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Update a company of the CRM; only the fields given change.",
+  description: "Update a company of the CRM; only the fields given change. In French: modifier une entreprise, mettre à jour une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1228,7 +1228,7 @@ export const searchDeals = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "Deals of the CRM, filtered by stage or by a free search.",
+  description: "Deals of the CRM, filtered by stage or by a free search. In French: chercher une affaire, lister les opportunités, affaires par étape.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1266,7 +1266,7 @@ export const getDeal = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One deal (name, status, amount, currency, company, closing date).",
+  description: "One deal (name, status, amount, currency, company, closing date). In French: détail d'une affaire, fiche d'une opportunité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1292,7 +1292,7 @@ export const listPersonAttributes = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The custom fields of people, created or synced from a CRM integration.",
+  description: "The custom fields of people, created or synced from a CRM integration. In French: champs personnalisés des contacts, attributs des personnes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1324,7 +1324,7 @@ export const listCompanyAttributes = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The custom attributes of companies.",
+  description: "The custom attributes of companies. In French: champs personnalisés des entreprises, attributs des sociétés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1356,7 +1356,7 @@ export const createPersonAttribute = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A custom field of people; its key is derived from the label (lowercase, no accents, _ between words, 64 characters). A DROPDOWN field needs options, any other type takes none. Idempotent: the same label and type again return the existing field with already_existed=true, and the label of a deleted field restores it with its stored values.",
+  description: "A custom field of people; its key is derived from the label (lowercase, no accents, _ between words, 64 characters). A DROPDOWN field needs options, any other type takes none. Idempotent: the same label and type again return the existing field with already_existed=true, and the label of a deleted field restores it with its stored values. In French: créer un champ personnalisé de contact, nouvel attribut de personne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1400,7 +1400,7 @@ export const updatePersonAttribute = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Change a custom field of people: only the fields given change; its key and type never do. options replaces the whole list (DROPDOWN only). A field synced from a CRM integration cannot be edited.",
+  description: "Change a custom field of people: only the fields given change; its key and type never do. options replaces the whole list (DROPDOWN only). A field synced from a CRM integration cannot be edited. In French: modifier un champ personnalisé de contact, changer les options d'un attribut de personne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1442,7 +1442,7 @@ export const deletePersonAttribute = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Remove a custom field of people: it leaves the list and the people, and writing it is refused. Its stored values are kept: creating a field with the same label and type restores it with them. Built-in fields and fields synced from a CRM integration cannot be deleted.",
+  description: "Remove a custom field of people: it leaves the list and the people, and writing it is refused. Its stored values are kept: creating a field with the same label and type restores it with them. Built-in fields and fields synced from a CRM integration cannot be deleted. In French: supprimer un champ personnalisé de contact, retirer un attribut de personne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1469,7 +1469,7 @@ export const createCompanyAttribute = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A custom attribute of companies; its key is derived from the label. A DROPDOWN attribute needs options, any other type takes none. prompt tells Allo's AI how to fill it from calls, should_prompt_override whether it may overwrite a value already set. Idempotent: the same key and type again return the existing attribute with already_existed=true.",
+  description: "A custom attribute of companies; its key is derived from the label. A DROPDOWN attribute needs options, any other type takes none. prompt tells Allo's AI how to fill it from calls, should_prompt_override whether it may overwrite a value already set. Idempotent: the same key and type again return the existing attribute with already_existed=true. In French: créer un champ personnalisé d'entreprise, nouvel attribut de société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1514,7 +1514,7 @@ export const updateCompanyAttribute = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Change a custom attribute of companies: only the fields given change; its key and type never do. options replaces the whole list (DROPDOWN only). An attribute synced from a CRM integration only takes prompt, should_prompt_override and is_visible.",
+  description: "Change a custom attribute of companies: only the fields given change; its key and type never do. options replaces the whole list (DROPDOWN only). An attribute synced from a CRM integration only takes prompt, should_prompt_override and is_visible. In French: modifier un champ personnalisé d'entreprise, changer les options d'un attribut de société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1558,7 +1558,7 @@ export const deleteCompanyAttribute = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete a custom attribute of companies and clear its value on every company. Irreversible: unlike a field of people, nothing restores the values. An attribute synced from a CRM integration cannot be deleted.",
+  description: "Delete a custom attribute of companies and clear its value on every company. Irreversible: unlike a field of people, nothing restores the values. An attribute synced from a CRM integration cannot be deleted. In French: supprimer un champ personnalisé d'entreprise, retirer un attribut de société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1585,7 +1585,7 @@ export const getDialingQueue = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The numbers of a Power Dialer queue by position, with the queue's name and settings: the key owner's queue, or a teammate's by user_id or email.",
+  description: "The numbers of a Power Dialer queue by position, with the queue's name and settings: the key owner's queue, or a teammate's by user_id or email. In French: file d'appels en cours, numéros à appeler du power dialer, ma file d'appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1624,7 +1624,7 @@ export const resetDialingQueue = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A fresh, empty Power Dialer queue for the key owner or a teammate; the previous queue is no longer the current one.",
+  description: "A fresh, empty Power Dialer queue for the key owner or a teammate; the previous queue is no longer the current one. In French: vider la file d'appels, nouvelle file d'appels vide, réinitialiser le power dialer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1658,7 +1658,7 @@ export const updateDialingQueue = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "The settings of the current queue, made if none: name, voicemail handling (SKIP or NO_SKIP), do not disturb while dialing.",
+  description: "The settings of the current queue, made if none: name, voicemail handling (SKIP or NO_SKIP), do not disturb while dialing. In French: réglages de la file d'appels, paramétrer le power dialer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1694,7 +1694,7 @@ export const addQueueNumbers = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Append numbers to the current Power Dialer queue, made if none exists; each entry a number (E.164) and optionally the contact's details. The answer lists the entries added and skipped.",
+  description: "Append numbers to the current Power Dialer queue, made if none exists; each entry a number (E.164) and optionally the contact's details. The answer lists the entries added and skipped. In French: ajouter des numéros à la file d'appels, charger des numéros dans le power dialer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1747,7 +1747,7 @@ export const removeQueueNumbers = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Remove entries from the current queue: by number (every occurrence), by position (0-based), both (one occurrence), or unassigned=true (every entry not yet called).",
+  description: "Remove entries from the current queue: by number (every occurrence), by position (0-based), both (one occurrence), or unassigned=true (every entry not yet called). In French: retirer des numéros de la file d'appels, enlever un numéro du power dialer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1783,7 +1783,7 @@ export const deleteCurrentDialingQueue = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete the current Power Dialer queue of the key owner, or of a teammate by user_id or email, with its numbers.",
+  description: "Delete the current Power Dialer queue of the key owner, or of a teammate by user_id or email, with its numbers. In French: supprimer ma file d'appels, supprimer la file d'appels courante.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1817,7 +1817,7 @@ export const listDialingQueues = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The team's Power Dialer queues (pdl-*) the key may see, with their name, creator, assignee and settings.",
+  description: "The team's Power Dialer queues (pdl-*) the key may see, with their name, creator, assignee and settings. In French: lister les files d'appels, files du power dialer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1849,7 +1849,7 @@ export const createDialingQueue = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A new, empty Power Dialer queue, assigned to the key owner or to a teammate (user_id or email); the key owner is its creator.",
+  description: "A new, empty Power Dialer queue, assigned to the key owner or to a teammate (user_id or email); the key owner is its creator. In French: créer une file d'appels, nouvelle file du power dialer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1883,7 +1883,7 @@ export const getDialingQueueById = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The numbers of one Power Dialer queue by position, with its name and settings.",
+  description: "The numbers of one Power Dialer queue by position, with its name and settings. In French: détail d'une file d'appels, numéros d'une file d'appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1917,7 +1917,7 @@ export const updateDialingQueueById = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "The settings of one Power Dialer queue: name, voicemail handling (SKIP or NO_SKIP), do not disturb while dialing. Only the fields given change.",
+  description: "The settings of one Power Dialer queue: name, voicemail handling (SKIP or NO_SKIP), do not disturb while dialing. Only the fields given change. In French: modifier une file d'appels, renommer une file d'appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1948,7 +1948,7 @@ export const deleteDialingQueue = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete one Power Dialer queue and its numbers.",
+  description: "Delete one Power Dialer queue and its numbers. In French: supprimer une file d'appels, effacer une file du power dialer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1975,7 +1975,7 @@ export const addNumbersToQueue = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Append numbers to one Power Dialer queue; each entry a number (E.164) and optionally the contact's details. The answer lists the entries added and skipped.",
+  description: "Append numbers to one Power Dialer queue; each entry a number (E.164) and optionally the contact's details. The answer lists the entries added and skipped. In French: ajouter des numéros à une file d'appels, remplir une file du power dialer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2022,7 +2022,7 @@ export const removeNumbersFromQueue = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Remove entries from one Power Dialer queue: by number (every occurrence), by position (0-based), both (one occurrence), or unassigned=true (every entry not yet called).",
+  description: "Remove entries from one Power Dialer queue: by number (every occurrence), by position (0-based), both (one occurrence), or unassigned=true (every entry not yet called). In French: retirer des numéros d'une file d'appels, enlever un numéro d'une file.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2053,7 +2053,7 @@ export const assignDialingQueue = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Hand a Power Dialer queue, numbers and creator kept, to another member of the team, by user_id or email (user_id wins). Only the key of an admin or a manager who created the queue or runs it may.",
+  description: "Hand a Power Dialer queue, numbers and creator kept, to another member of the team, by user_id or email (user_id wins). Only the key of an admin or a manager who created the queue or runs it may. In French: attribuer une file d'appels, confier une file d'appels à un collègue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2089,7 +2089,7 @@ export const getDialerSession = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One Power Dialer session, by id.",
+  description: "One Power Dialer session, by id. In French: session de power dialer, détail d'une session d'appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2115,7 +2115,7 @@ export const getTeamMetrics = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "Team KPIs over a date range (total calls, talk time, calls over a minute, answer rate), against compare_date, with a per-member breakdown; inbound and outbound.",
+  description: "Team KPIs over a date range (total calls, talk time, calls over a minute, answer rate), against compare_date, with a per-member breakdown; inbound and outbound. In French: statistiques d'appels de l'équipe, taux de décroché, temps de conversation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2156,7 +2156,7 @@ export const getOutboundMetrics = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The outbound funnel over a date range (dials, connected, conversations, conversions: a conversion is a call carrying one of tags), its time series by granularity, heatmap, leaderboard and time spent. extend=items with a stage lists the calls behind that stage, paged.",
+  description: "The outbound funnel over a date range (dials, connected, conversations, conversions: a conversion is a call carrying one of tags), its time series by granularity, heatmap, leaderboard and time spent. extend=items with a stage lists the calls behind that stage, paged. In French: statistiques d'appels sortants, entonnoir de prospection téléphonique, taux de conversion des appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2207,7 +2207,7 @@ export const sendSms = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Send a text message now: from one of the team's numbers (from_number, recipient in the same country), or from a Sender ID verified by Allo (sender_id, France). Give exactly one of the two. Billed per segment: 160 characters (153 once split), or 70 (67) as soon as one character is outside the standard SMS alphabet (ç, ê, â, a curly quote, an emoji).",
+  description: "Send a text message now: from one of the team's numbers (from_number, recipient in the same country), or from a Sender ID verified by Allo (sender_id, France). Give exactly one of the two. Billed per segment: 160 characters (153 once split), or 70 (67) as soon as one character is outside the standard SMS alphabet (ç, ê, â, a curly quote, an emoji). In French: envoyer un sms, envoyer un texto.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2242,7 +2242,7 @@ export const listSummaryTemplates = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The team's call summary templates (tst-*), each with its sections.",
+  description: "The team's call summary templates (tst-*), each with its sections. In French: modèles de résumé d'appel, lister les modèles de compte rendu.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The summary templates", input: {} },
@@ -2263,7 +2263,7 @@ export const getSummaryTemplate = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One call summary template, with its context, icon and sections.",
+  description: "One call summary template, with its context, icon and sections. In French: détail d'un modèle de résumé d'appel, sections d'un modèle de compte rendu.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2289,7 +2289,7 @@ export const createSummaryTemplate = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A call summary template for the team: its name, the context that helps the AI summarize (4000 characters at most), an icon, and up to 10 ordered sections, each a title and instructions.",
+  description: "A call summary template for the team: its name, the context that helps the AI summarize (4000 characters at most), an icon, and up to 10 ordered sections, each a title and instructions. In French: créer un modèle de résumé d'appel, nouveau modèle de compte rendu.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2332,7 +2332,7 @@ export const updateSummaryTemplate = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Replace a call summary template whole: name, context, icon and sections; what is left out is cleared, so read it first and send it all back.",
+  description: "Replace a call summary template whole: name, context, icon and sections; what is left out is cleared, so read it first and send it all back. In French: modifier un modèle de résumé d'appel, changer un modèle de compte rendu.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2376,7 +2376,7 @@ export const deleteSummaryTemplate = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Deactivate a call summary template; it is no longer offered for summaries.",
+  description: "Deactivate a call summary template; it is no longer offered for summaries. In French: supprimer un modèle de résumé d'appel, désactiver un modèle de compte rendu.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2403,7 +2403,7 @@ export const setDefaultSummaryTemplate = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "The summary template a line's call summaries use by default. Without summary_template_id, the line's default is cleared.",
+  description: "The summary template a line's call summaries use by default. Without summary_template_id, the line's default is cleared. In French: modèle de résumé par défaut, choisir le modèle de résumé d'une ligne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2432,7 +2432,7 @@ export const listWebhooks = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The webhook endpoints of the account (url, topics, label, enabled). The signing secret of an endpoint is never given: it is read in Allo.",
+  description: "The webhook endpoints of the account (url, topics, label, enabled). The signing secret of an endpoint is never given: it is read in Allo. In French: lister les webhooks allo, webhooks du compte allo.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The webhooks", input: {} },
@@ -2454,7 +2454,7 @@ export const getWebhook = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One webhook endpoint (url, topics, label, enabled). Its signing secret, which verifies the deliveries, is never given: it is read in Allo.",
+  description: "One webhook endpoint (url, topics, label, enabled). Its signing secret, which verifies the deliveries, is never given: it is read in Allo. In French: détail d'un webhook allo, adresse d'un webhook allo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2481,7 +2481,7 @@ export const createWebhook = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "A webhook endpoint: Allo posts the events of topics to url (https). The signing secret that verifies the deliveries is never given: it is read in Allo.",
+  description: "A webhook endpoint: Allo posts the events of topics to url (https). The signing secret that verifies the deliveries is never given: it is read in Allo. In French: créer un webhook allo, recevoir les événements d'appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2532,7 +2532,7 @@ export const updateWebhook = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Change a webhook endpoint: only the fields given change; topics replaces the whole set; enabled=false stops the deliveries. Its signing secret is never given: it is read in Allo.",
+  description: "Change a webhook endpoint: only the fields given change; topics replaces the whole set; enabled=false stops the deliveries. Its signing secret is never given: it is read in Allo. In French: modifier un webhook allo, désactiver un webhook allo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2586,7 +2586,7 @@ export const deleteWebhook = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete a webhook endpoint and its delivery history, for good.",
+  description: "Delete a webhook endpoint and its delivery history, for good. In French: supprimer un webhook allo, effacer un webhook allo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2613,7 +2613,7 @@ export const listWebhookEventTypes = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The event topics a webhook may subscribe to, with what each sends.",
+  description: "The event topics a webhook may subscribe to, with what each sends. In French: événements de webhook allo, types d'événements allo.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The event topics", input: {} },
@@ -2634,7 +2634,7 @@ export const getCallFlow = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The call flow of a line (the tree that routes its inbound calls): the published one by default, or status=draft for the working draft (the published one when there is no draft), with its lock_version.",
+  description: "The call flow of a line (the tree that routes its inbound calls): the published one by default, or status=draft for the working draft (the published one when there is no draft), with its lock_version. In French: scénario d'appel d'une ligne, routage des appels entrants, standard téléphonique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2663,7 +2663,7 @@ export const getCallFlowDraft = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The working draft of a line's call flow only, with its lock_version to pass when saving or publishing; never the published flow.",
+  description: "The working draft of a line's call flow only, with its lock_version to pass when saving or publishing; never the published flow. In French: brouillon du scénario d'appel, brouillon du routage des appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2691,7 +2691,7 @@ export const saveCallFlowDraft = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Create or replace the working draft of a line's call flow; nothing is live until publish_call_flow. definition is the flow tree (camelCase keys), schema_version the server's current one. lock_version (from the last read) and base_published_version detect a concurrent edit or publish (409). engine_subset FULL_FLOW runs the whole tree: send it for a flow built through the API.",
+  description: "Create or replace the working draft of a line's call flow; nothing is live until publish_call_flow. definition is the flow tree (camelCase keys), schema_version the server's current one. lock_version (from the last read) and base_published_version detect a concurrent edit or publish (409). engine_subset FULL_FLOW runs the whole tree: send it for a flow built through the API. In French: modifier le scénario d'appel, enregistrer le brouillon du routage des appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2726,7 +2726,7 @@ export const publishCallFlow = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Publish the working draft of a line's call flow: it routes the line's live inbound calls at once. Validation is stricter than on save, and a failure publishes nothing; the draft is consumed.",
+  description: "Publish the working draft of a line's call flow: it routes the line's live inbound calls at once. Validation is stricter than on save, and a failure publishes nothing; the draft is consumed. In French: publier le scénario d'appel, mettre en ligne le routage des appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2758,7 +2758,7 @@ export const getReceptionist = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The whole configuration of a line's AI receptionist: business details, voice and language, prompt, capabilities, business hours, transfer rules, calendars and knowledge sources, status. Read it before any write: collections are replaced whole.",
+  description: "The whole configuration of a line's AI receptionist: business details, voice and language, prompt, capabilities, business hours, transfer rules, calendars and knowledge sources, status. Read it before any write: collections are replaced whole. In French: configuration du standardiste ia, réglages de la réceptionniste virtuelle.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2784,7 +2784,7 @@ export const updateReceptionist = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Change a line's AI receptionist, prompt and status aside: a single value given changes, one left out stays; capabilities, business_hours, transfer_rules and scheduling.calendars given replace the configured set whole (a capability left out is turned off), so read get_receptionist first. Does not put the receptionist on the line.",
+  description: "Change a line's AI receptionist, prompt and status aside: a single value given changes, one left out stays; capabilities, business_hours, transfer_rules and scheduling.calendars given replace the configured set whole (a capability left out is turned off), so read get_receptionist first. Does not put the receptionist on the line. In French: modifier le standardiste ia, changer la voix de la réceptionniste virtuelle.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2915,7 +2915,7 @@ export const setReceptionistStatus = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Put a line's AI receptionist on the line (ACTIVE) or take it off (FORWARDING: calls go to the business phone). Changes how the live line routes real calls at once.",
+  description: "Put a line's AI receptionist on the line (ACTIVE) or take it off (FORWARDING: calls go to the business phone). Changes how the live line routes real calls at once. In French: activer le standardiste ia, désactiver la réceptionniste virtuelle, renvoyer les appels vers le téléphone.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2945,7 +2945,7 @@ export const setReceptionistPrompt = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Replace the whole prompt of a line's AI receptionist: send every section, the unchanged ones too (read get_receptionist first). objective, personality and behaviors are required, each section once; a content holds 3000 characters at most; required_fields takes fields instead. Facts about the business belong in its knowledge, not here.",
+  description: "Replace the whole prompt of a line's AI receptionist: send every section, the unchanged ones too (read get_receptionist first). objective, personality and behaviors are required, each section once; a content holds 3000 characters at most; required_fields takes fields instead. Facts about the business belong in its knowledge, not here. In French: modifier le prompt du standardiste ia, consignes de la réceptionniste virtuelle.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3009,7 +3009,7 @@ export const addReceptionistWebsite = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Add a public website to the knowledge of a line's AI receptionist. Allo crawls it in the background and answers at once; the receptionist uses it once indexed, and a failed crawl is not reported. A site another line already has is linked, not crawled again.",
+  description: "Add a public website to the knowledge of a line's AI receptionist. Allo crawls it in the background and answers at once; the receptionist uses it once indexed, and a failed crawl is not reported. A site another line already has is linked, not crawled again. In French: ajouter un site web à la base de connaissances, apprendre un site au standardiste ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3038,7 +3038,7 @@ export const updateReceptionistWebsite = defineFunction({
   connector: "allo",
   class: "write",
   act: true,
-  description: "Turn a website on (ACTIVE) or off (DISABLED) for this line, its crawled content kept; ACTIVE on a website of the team's library adds it to the line.",
+  description: "Turn a website on (ACTIVE) or off (DISABLED) for this line, its crawled content kept; ACTIVE on a website of the team's library adds it to the line. In French: activer un site web du standardiste ia, désactiver un site de la base de connaissances.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3068,7 +3068,7 @@ export const deleteReceptionistWebsite = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete a website from the team's knowledge library, for every line of the team; to stop one line using it, turn it off instead.",
+  description: "Delete a website from the team's knowledge library, for every line of the team; to stop one line using it, turn it off instead. In French: supprimer un site de la base de connaissances, retirer un site du standardiste ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3098,7 +3098,7 @@ export const deleteReceptionistFile = defineFunction({
   connector: "allo",
   class: "sensitive",
   act: true,
-  description: "Delete an uploaded document from the team's knowledge library, for every line of the team. Documents are uploaded in the Allo app only.",
+  description: "Delete an uploaded document from the team's knowledge library, for every line of the team. Documents are uploaded in the Allo app only. In French: supprimer un document de la base de connaissances, retirer un fichier du standardiste ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3128,7 +3128,7 @@ export const listCalendars = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The calendars connected to the workspace that the key's user can see (all of them for an admin), booked on by a receptionist or not. Connecting one is done in the Allo app.",
+  description: "The calendars connected to the workspace that the key's user can see (all of them for an admin), booked on by a receptionist or not. Connecting one is done in the Allo app. In French: calendriers connectés, agendas pour la prise de rendez-vous.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The calendars", input: {} },
@@ -3149,7 +3149,7 @@ export const getCalendar = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "One connected calendar with the event types its provider offers now, read live.",
+  description: "One connected calendar with the event types its provider offers now, read live. In French: détail d'un calendrier connecté, types de rendez-vous d'un agenda.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3175,7 +3175,7 @@ export const listVoices = defineFunction({
   connector: "allo",
   class: "read",
   act: false,
-  description: "The voices an AI receptionist may speak with, by language; each id is a voice_id.",
+  description: "The voices an AI receptionist may speak with, by language; each id is a voice_id. In French: voix du standardiste ia, lister les voix de la réceptionniste virtuelle.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The voices", input: {} },
@@ -3196,7 +3196,7 @@ export const connector = defineConnector({
   name: "allo",
   label: "Allo",
   namespace: "allo",
-  version: "1.2.0",
+  version: "1.2.1",
   apiVersion: "v2 (SMS on v1)",
   baseUrl: "https://api.withallo.com",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "prefix": "Api-Key ", "key": "api_key"},

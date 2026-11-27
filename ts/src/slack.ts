@@ -6,7 +6,7 @@ export const listChannels = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "List the channels of the workspace visible to the Slack app: id, name, is_private, is_member, topic, purpose, member count. One page only (Slack's default size). types filters the kinds, comma-separated: public_channel (Slack's default), private_channel (those the app is in), mpim, im (the app's own conversations, not a person's).",
+  description: "List the channels of the workspace visible to the Slack app: id, name, is_private, is_member, topic, purpose, member count. One page only (Slack's default size). types filters the kinds, comma-separated: public_channel (Slack's default), private_channel (those the app is in), mpim, im (the app's own conversations, not a person's). In French: lister les canaux slack, chaînes slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -40,7 +40,7 @@ export const channelInfo = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "Get one channel's metadata: name, is_private, is_member (is the app in it), is_archived, is_im, is_ext_shared (people of another company read it), topic. Answers on a public channel the app is not in; on a private channel the app is not in, Slack answers channel_not_found, as for a wrong id.",
+  description: "Get one channel's metadata: name, is_private, is_member (is the app in it), is_archived, is_im, is_ext_shared (people of another company read it), topic. Answers on a public channel the app is not in; on a private channel the app is not in, Slack answers channel_not_found, as for a wrong id. In French: détail d'un canal slack, sujet d'un canal slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -67,7 +67,7 @@ export const joinChannel = defineFunction({
   connector: "slack",
   class: "write",
   act: true,
-  description: "Make the Slack app join a public channel, so that it can read and post there (otherwise Slack answers not_in_channel). A private channel cannot be joined through any API: a member must invite the app with /invite. Check with channel_info first (is_private, is_member, is_archived).",
+  description: "Make the Slack app join a public channel, so that it can read and post there (otherwise Slack answers not_in_channel). A private channel cannot be joined through any API: a member must invite the app with /invite. Check with channel_info first (is_private, is_member, is_archived). In French: rejoindre un canal slack, ajouter l'app à un canal.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -94,7 +94,7 @@ export const history = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "Read a channel's messages, newest first: TOP-LEVEL messages only. A thread parent carries reply_count and latest_reply but never a reply's text: read the replies with replies. oldest and latest are exclusive bounds (a message ts), inclusive includes the messages sitting on them. A DM is read only when the app is part of it. When more remain, pass the cursor given back.",
+  description: "Read a channel's messages, newest first: TOP-LEVEL messages only. A thread parent carries reply_count and latest_reply but never a reply's text: read the replies with replies. oldest and latest are exclusive bounds (a message ts), inclusive includes the messages sitting on them. A DM is read only when the app is part of it. When more remain, pass the cursor given back. In French: messages d'un canal slack, lire un canal slack, derniers messages slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -155,7 +155,7 @@ export const replies = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "Read the replies of a thread. thread_ts is the ts of the PARENT message (a reply's thread_ts). The parent comes first, as messages[0], on every page; limit counts the replies only. Called with the ts of a reply, Slack returns that one message alone (its thread_ts differs from its ts): call again with its thread_ts. oldest and latest are exclusive bounds. When has_more, pass response_metadata.next_cursor as cursor; pages go from newest to oldest.",
+  description: "Read the replies of a thread. thread_ts is the ts of the PARENT message (a reply's thread_ts). The parent comes first, as messages[0], on every page; limit counts the replies only. Called with the ts of a reply, Slack returns that one message alone (its thread_ts differs from its ts): call again with its thread_ts. oldest and latest are exclusive bounds. When has_more, pass response_metadata.next_cursor as cursor; pages go from newest to oldest. In French: réponses d'un fil slack, lire un fil de discussion slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -206,7 +206,7 @@ export const postMessage = defineFunction({
   connector: "slack",
   class: "sensitive",
   act: true,
-  description: "Post a message to a channel or DM, under the Slack app's name, or reply in a thread (thread_ts, the parent's ts). text is Slack mrkdwn, 4,000 characters at most: split a longer text yourself, the later parts as replies under the first. Slack reads a number between two colons (20:51:, 12:30:00) as an emoji code and swallows it: such a text is refused, write the time without seconds and with no colon right after it. blocks (Block Kit) go as given, text then being their fallback. unfurl_links and unfurl_media false post it without link previews. The answer gives ts, the anchor of a reply.",
+  description: "Post a message to a channel or DM, under the Slack app's name, or reply in a thread (thread_ts, the parent's ts). text is Slack mrkdwn, 4,000 characters at most: split a longer text yourself, the later parts as replies under the first. Slack reads a number between two colons (20:51:, 12:30:00) as an emoji code and swallows it: such a text is refused, write the time without seconds and with no colon right after it. blocks (Block Kit) go as given, text then being their fallback. unfurl_links and unfurl_media false post it without link previews. The answer gives ts, the anchor of a reply. In French: envoyer un message slack, poster dans un canal, répondre dans un fil slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -267,7 +267,7 @@ export const updateMessage = defineFunction({
   connector: "slack",
   class: "sensitive",
   act: true,
-  description: "Replace the text or blocks of a message the Slack app posted (channel and its ts). The text goes as given: a number between two colons (20:51:) is read by Slack as an emoji code.",
+  description: "Replace the text or blocks of a message the Slack app posted (channel and its ts). The text goes as given: a number between two colons (20:51:) is read by Slack as an emoji code. In French: modifier un message slack, corriger un message slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -307,7 +307,7 @@ export const deleteMessage = defineFunction({
   connector: "slack",
   class: "sensitive",
   act: true,
-  description: "Delete a message the Slack app posted (channel and its ts). It cannot be restored.",
+  description: "Delete a message the Slack app posted (channel and its ts). It cannot be restored. In French: supprimer un message slack, effacer un message slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -338,7 +338,7 @@ export const postEphemeral = defineFunction({
   connector: "slack",
   class: "sensitive",
   act: true,
-  description: "Show a message to one member of a channel only, under the Slack app's name (an ephemeral message: not kept in the channel's history). user is the member's id (U…). The text goes as given.",
+  description: "Show a message to one member of a channel only, under the Slack app's name (an ephemeral message: not kept in the channel's history). user is the member's id (U…). The text goes as given. In French: message éphémère slack, message visible par un seul membre.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -378,7 +378,7 @@ export const addReaction = defineFunction({
   connector: "slack",
   class: "write",
   act: true,
-  description: "Add an emoji reaction to a message (channel and its ts), under the Slack app's name. name is the emoji's name without colons (white_check_mark).",
+  description: "Add an emoji reaction to a message (channel and its ts), under the Slack app's name. name is the emoji's name without colons (white_check_mark). In French: ajouter une réaction slack, réagir avec un emoji.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -409,7 +409,7 @@ export const getUserInfo = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "Get one Slack user by id (U…): name, real name, title, time zone, is_bot, deleted, and the email when the app has users:read.email.",
+  description: "Get one Slack user by id (U…): name, real name, title, time zone, is_bot, deleted, and the email when the app has users:read.email. In French: profil d'un utilisateur slack, détail d'un membre slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -436,7 +436,7 @@ export const findUserByEmail = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "Find a Slack user by email (needs users:read.email). Slack matches the address the person signed up to Slack with, which may differ from their work address: users_not_found then means that, not that they are absent.",
+  description: "Find a Slack user by email (needs users:read.email). Slack matches the address the person signed up to Slack with, which may differ from their work address: users_not_found then means that, not that they are absent. In French: trouver un utilisateur slack par email, membre slack par adresse email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -463,7 +463,7 @@ export const openDm = defineFunction({
   connector: "slack",
   class: "write",
   act: false,
-  description: "Open the Slack app's direct conversation with a user, or get it if it exists: the answer's channel.id is the DM id to pass to post_message. Nothing is sent and the person is not told.",
+  description: "Open the Slack app's direct conversation with a user, or get it if it exists: the answer's channel.id is the DM id to pass to post_message. Nothing is sent and the person is not told. In French: ouvrir un message privé slack, conversation directe avec un membre.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -490,7 +490,7 @@ export const fileInfo = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "Get the metadata of a file shared in Slack, by its id (F…, from a message's files[].id): name, title, mimetype, size, the channels it was shared in. Its content is not returned.",
+  description: "Get the metadata of a file shared in Slack, by its id (F…, from a message's files[].id): name, title, mimetype, size, the channels it was shared in. Its content is not returned. In French: détail d'un fichier slack, fichier partagé dans slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -517,7 +517,7 @@ export const listUsergroups = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "List the user groups of the workspace (the @team handles): id, name, handle, description, default channels (prefs.channels). A disabled group has date_delete other than 0 and only comes with include_disabled. User groups need a paid plan (plan_required otherwise).",
+  description: "List the user groups of the workspace (the @team handles): id, name, handle, description, default channels (prefs.channels). A disabled group has date_delete other than 0 and only comes with include_disabled. User groups need a paid plan (plan_required otherwise). In French: groupes d'utilisateurs slack, lister les groupes slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -548,7 +548,7 @@ export const usergroupUsers = defineFunction({
   connector: "slack",
   class: "read",
   act: false,
-  description: "List the member ids (U…) of one user group (S…).",
+  description: "List the member ids (U…) of one user group (S…). In French: membres d'un groupe slack, personnes d'un groupe d'utilisateurs.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -578,7 +578,7 @@ export const connector = defineConnector({
   name: "slack",
   label: "Slack",
   namespace: "slack",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "Web API",
   baseUrl: "https://slack.com/api",
   auth: {"kind": "bearer", "token": "bot_token"},

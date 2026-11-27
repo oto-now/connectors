@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'qonto',
                'label': 'Qonto',
                'namespace': 'qonto',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v2',
                'base_url': 'https://thirdparty.qonto.com/v2',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'Authorization', 'key': 'api_key'},
@@ -55,7 +55,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                                'authorized_balance, balance_cents, updated_at}]}}. Balances are in the '
                                'account currency, in units (balance) and in cents (balance_cents); '
                                'authorized_balance deducts pending debits. A bank account id is what '
-                               'list_transactions takes.',
+                               'list_transactions takes. In French: solde des comptes, solde bancaire, '
+                               'comptes qonto, iban du compte.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'include_external_accounts': {'type': 'boolean',
@@ -72,7 +73,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'class': 'read',
                 'description': 'The members of the organization: {memberships: [{id, first_name, last_name, '
                                'email, role, status, team_id}], meta}. role is owner, admin, manager, '
-                               'employee, reporting or accountant.',
+                               "employee, reporting or accountant. In French: membres de l'équipe qonto, "
+                               'utilisateurs du compte qonto.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -90,7 +92,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                {'name': 'list_labels',
                 'class': 'read',
                 'description': 'The labels that tag transactions: {labels: [{id, name, parent_id}], meta}. A '
-                               "label id is what a transaction's label_ids holds.",
+                               "label id is what a transaction's label_ids holds. In French: libellés des "
+                               'transactions, étiquettes qonto.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -118,7 +121,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                                'total_pages, total_count, per_page}}. includes embeds vat_details (VAT per '
                                'rate), labels and attachments. Date bounds are ISO 8601; a pending '
                                'transaction has no settled_at, so a settled_at window leaves it out. '
-                               'meta.next_page is null on the last page.',
+                               'meta.next_page is null on the last page. In French: lister les transactions, '
+                               'relevé des opérations, dépenses du mois, mouvements bancaires.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'bank_account_id': {'type': 'string',
@@ -225,7 +229,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                {'name': 'get_transaction',
                 'class': 'read',
                 'description': 'One transaction by its id (the UUID, not the transaction_id slug): '
-                               '{transaction: {...}}, the same fields as list_transactions.',
+                               '{transaction: {...}}, the same fields as list_transactions. In French: '
+                               "détail d'une transaction, détail d'une opération bancaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['transaction_id'],
@@ -251,7 +256,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'class': 'read',
                 'description': 'The receipts attached to one transaction: {attachments: [{id, file_name, '
                                'file_size, file_content_type, url, created_at}], meta}. url is signed and '
-                               'expires 30 minutes after the call.',
+                               "expires 30 minutes after the call. In French: justificatifs d'une "
+                               "transaction, reçus d'une opération.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['transaction_id'],
@@ -275,7 +281,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'class': 'read',
                 'description': 'One attachment (a receipt or an invoice file): {attachment: {id, file_name, '
                                'file_size, file_content_type, url, probative_attachment}}. url is signed and '
-                               'expires 30 minutes after the call.',
+                               'expires 30 minutes after the call. In French: télécharger un justificatif, '
+                               "fichier d'un reçu.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['attachment_id'],
@@ -291,7 +298,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'class': 'read',
                 'description': 'Monthly bank statements, newest period first: {statements: [{id, '
                                'bank_account_id, period (MM-YYYY), file {file_name, file_url, ...}}], meta}. '
-                               'bank_account_ids and ibans are exclusive; periods are MM-YYYY.',
+                               'bank_account_ids and ibans are exclusive; periods are MM-YYYY. In French: '
+                               'relevés bancaires, relevés de compte mensuels.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'bank_account_ids': {'type': 'array',
@@ -333,7 +341,7 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                {'name': 'get_statement',
                 'class': 'read',
                 'description': 'One statement: {statement: {id, bank_account_id, period, file}}; the file '
-                               'url is signed.',
+                               'url is signed. In French: télécharger un relevé, relevé de compte du mois.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['statement_id'],
@@ -353,7 +361,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                                'total_amount_excluding_taxes, total_tax_amount, payable_amount, '
                                'attachment_id, file_name, attachment_category, matched_transactions_ids, '
                                'is_credit_note}], meta}. Amounts are decimal strings. query searches the '
-                               'supplier name, amount, file name and invoice number.',
+                               'supplier name, amount, file name and invoice number. In French: factures '
+                               'fournisseurs, factures reçues, factures à payer.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'string',
@@ -409,7 +418,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                {'name': 'get_supplier_invoice',
                 'class': 'read',
                 'description': 'One supplier invoice: {supplier_invoice: {...}}, the fields of '
-                               'list_supplier_invoices and more.',
+                               "list_supplier_invoices and more. In French: détail d'une facture "
+                               'fournisseur, facture reçue.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['supplier_invoice_id'],
@@ -424,7 +434,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'class': 'read',
                 'description': 'Outgoing SEPA transfers, last updated first: {transfers: [{id, '
                                'beneficiary_id, amount, currency, reference, note, status, scheduled_date, '
-                               'processed_at, transaction_id}], meta}.',
+                               'processed_at, transaction_id}], meta}. In French: virements émis, virements '
+                               'sepa, paiements sortants.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'array',
@@ -485,7 +496,7 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'class': 'read',
                 'description': 'Saved SEPA payees: {beneficiaries: [{id, name, iban, bic, email, status, '
                                'trusted, activity_tag, created_at, updated_at}], meta}. 25 per page by '
-                               'default.',
+                               'default. In French: bénéficiaires de virement, liste des bénéficiaires.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'array',
@@ -523,7 +534,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'description': 'Spend requests from members (a transfer, several transfers, a flash or a '
                                'virtual card) and their approval: {requests: [{id, request_type, status, '
                                'initiator_id, approver_id, amount, currency, note, created_at, processed_at, '
-                               '...}], meta}.',
+                               '...}], meta}. In French: demandes de dépense, demandes de virement à '
+                               'valider, demandes de carte.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'array',
@@ -577,7 +589,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                                'status (draft, unpaid, paid, canceled), client, issue_date, due_date, '
                                'total_amount {value, currency}, vat_amount, paid_at, invoice_url, ...}], '
                                'meta}. Invoices imported into Qonto are left out unless exclude_imported is '
-                               'false. per_page goes up to 500.',
+                               'false. per_page goes up to 500. In French: factures clients, factures '
+                               'émises, factures impayées.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'string',
@@ -636,7 +649,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'cost': {'per': 'request'}},
                {'name': 'get_client_invoice',
                 'class': 'read',
-                'description': 'One client invoice with its items: {client_invoice: {...}}.',
+                'description': 'One client invoice with its items: {client_invoice: {...}}. In French: '
+                               "détail d'une facture client, lignes d'une facture.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['client_invoice_id'],
@@ -651,7 +665,7 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'class': 'read',
                 'description': 'Credit notes issued against client invoices, newest first: {credit_notes: '
                                '[{id, number, invoice_id, issue_date, total_amount, vat_amount, client, '
-                               '...}], meta}.',
+                               '...}], meta}. In French: avoirs émis, liste des avoirs.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'created_at_from': {'type': 'string',
@@ -685,7 +699,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'class': 'read',
                 'description': 'Quotes issued from Qonto, newest first: {quotes: [{id, number, status '
                                '(pending_approval, approved, canceled), client, issue_date, expiry_date, '
-                               'total_amount, ...}], meta}. per_page goes up to 500.',
+                               'total_amount, ...}], meta}. per_page goes up to 500. In French: lister les '
+                               'devis, devis émis, devis en attente.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'string',
@@ -725,7 +740,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                                'individual, freelancer), name, first_name, last_name, email, vat_number, '
                                'tax_identification_number, billing_address, currency, locale, ...}], meta}. '
                                'name matches partially, case and accents ignored (2 characters at least); '
-                               'email, vat_number and tax_identification_number match exactly.',
+                               'email, vat_number and tax_identification_number match exactly. In French: '
+                               'lister les clients, clients facturés, fichier clients qonto.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -779,7 +795,8 @@ DESCRIPTION = {'connector': {'name': 'qonto',
                 'cost': {'per': 'request'}},
                {'name': 'get_client',
                 'class': 'read',
-                'description': 'One client: {client: {...}}, the fields of list_clients.',
+                'description': 'One client: {client: {...}}, the fields of list_clients. In French: fiche '
+                               "d'un client, coordonnées d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['client_id'],

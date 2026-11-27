@@ -113,6 +113,18 @@ class ContactsMixin(_BrevoBase):
         return self._request(
             "PUT", f"/contacts/{identifier}", json=body, params=params or None)
 
+    def delete_contact(self, identifier: str,
+                       identifier_type: Optional[str] = None) -> Dict[str, Any]:
+        """Delete a contact for good. Returns an empty body (204) on success.
+
+        Args:
+            identifier: email, numeric id, phone or EXT_ID depending on `identifier_type`.
+            identifier_type: same values as `get_contact`; Brevo reads an email or an id
+                without it, every other kind needs it.
+        """
+        params = self._clean({"identifierType": identifier_type})
+        return self._request("DELETE", f"/contacts/{identifier}", params=params or None)
+
     def contact_campaign_stats(
         self, identifier: str,
         start_date: Optional[str] = None, end_date: Optional[str] = None,
@@ -222,6 +234,10 @@ class ContactsMixin(_BrevoBase):
         """Rename a list or move it to another folder."""
         body = self._clean({"name": name, "folderId": folder_id})
         return self._request("PUT", f"/contacts/lists/{int(list_id)}", json=body)
+
+    def delete_list(self, list_id: int) -> Dict[str, Any]:
+        """Delete a list for good (its contacts stay in the account). Returns an empty body (204)."""
+        return self._request("DELETE", f"/contacts/lists/{int(list_id)}")
 
     def _list_membership(self, list_id: int, action: str, emails, ids, ext_ids, all_):
         given = [x for x in (emails, ids, ext_ids) if x]

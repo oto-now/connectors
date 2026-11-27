@@ -6,7 +6,7 @@ export const getAccount = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get the Brevo account: company, login email, plans and their remaining email and SMS credits (plan[].credits, per credit type), relay.",
+  description: "Get the Brevo account: company, login email, plans and their remaining email and SMS credits (plan[].credits, per credit type), the SMTP relay host and port. The relay login and the tracker key are left out. In French: crédits d'envoi, solde de crédits, forfait brevo, crédits emails restants.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The account", input: {} },
@@ -20,6 +20,7 @@ export const getAccount = defineFunction({
     body: {},
     headers: {},
   },
+  output: { strip: ["relay.data.userName", "marketingAutomation.key"] },
   cost: { per: "request" },
 })
 
@@ -28,7 +29,7 @@ export const listSenders = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the account's verified senders (id, name, email, active). Sending an email or creating a template or campaign takes one of them as sender.",
+  description: "List the account's verified senders (id, name, email, active). Sending an email or creating a template or campaign takes one of them as sender. In French: expéditeurs brevo, adresses d'expédition, expéditeurs vérifiés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -58,7 +59,7 @@ export const listContacts = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List contacts, newest first by default: {contacts, count}. Page with limit (50 by default, at most 1000) and offset. Restrict to lists (list_ids) or to a segment (segment_id), never both; to some ids (20 at most); to a change or creation date; or to attribute values with filter, equals only: equals(FIRSTNAME,\"Alex\").",
+  description: "List contacts, newest first by default: {contacts, count}. Page with limit (50 by default, at most 1000) and offset. Restrict to lists (list_ids) or to a segment (segment_id), never both; to some ids (20 at most); to a change or creation date; or to attribute values with filter, equals only: equals(FIRSTNAME,\"Alex\"). In French: contacts brevo, liste des contacts, derniers contacts ajoutés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -115,7 +116,7 @@ export const getContact = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one contact: attributes, lists, blacklist flags and its campaign statistics (opens, clicks, bounces, unsubscriptions). identifier is its email by default; identifier_type says otherwise. start_date and end_date (YYYY-MM-DD, both or none) bound the statistics.",
+  description: "Get one contact: attributes, lists, blacklist flags and its campaign statistics (opens, clicks, bounces, unsubscriptions). identifier is its email by default; identifier_type says otherwise. start_date and end_date (YYYY-MM-DD, both or none) bound the statistics. In French: fiche d'un contact, attributs d'un contact, contact par email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -157,7 +158,7 @@ export const upsertContact = defineFunction({
   connector: "brevo",
   class: "sensitive",
   act: true,
-  description: "Create a contact, or update it when it exists and update_enabled is true. Answers {id} on creation, {} on an update. attributes are the account's attributes in UPPERCASE (list_attributes), a text, a number or a boolean each, a date as a text; an unknown one is refused. list_ids subscribes it to lists, which may start the automations tied to them. email_blacklisted / sms_blacklisted true stop every email / SMS to it. email is needed unless ext_id or the SMS attribute is given.",
+  description: "Create a contact, or update it when it exists and update_enabled is true. Answers {id} on creation, {} on an update. attributes are the account's attributes in UPPERCASE (list_attributes), a text, a number or a boolean each, a date as a text; an unknown one is refused. list_ids subscribes it to lists, which may start the automations tied to them. email_blacklisted / sms_blacklisted true stop every email / SMS to it. email is needed unless ext_id or the SMS attribute is given. In French: ajouter un contact, créer un contact, inscrire un contact, nouvel abonné.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -200,7 +201,7 @@ export const updateContact = defineFunction({
   connector: "brevo",
   class: "sensitive",
   act: true,
-  description: "Update an existing contact; answers {} on success. attributes are the account's attributes in UPPERCASE, a text, a number or a boolean each (EMAIL changes its address). list_ids subscribes it to lists, which may start their automations; unlink_list_ids unsubscribes it from lists. email_blacklisted / sms_blacklisted true stop every email / SMS to it, false allows them again.",
+  description: "Update an existing contact; answers {} on success. attributes are the account's attributes in UPPERCASE, a text, a number or a boolean each (EMAIL changes its address). list_ids subscribes it to lists, which may start their automations; unlink_list_ids unsubscribes it from lists. email_blacklisted / sms_blacklisted true stop every email / SMS to it, false allows them again. In French: modifier un contact, désabonner un contact, mettre à jour un contact, blacklister un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -253,12 +254,53 @@ export const updateContact = defineFunction({
   confirm: { summary: "Update Brevo contact {identifier}: lists added {list_ids}, removed {unlink_list_ids}, email blacklist {email_blacklisted}." },
 })
 
+export const deleteContact = defineFunction({
+  name: "brevo.delete_contact",
+  connector: "brevo",
+  class: "sensitive",
+  act: true,
+  description: "Delete a contact for good, with its attributes, list memberships and statistics; answers {} on success. identifier is its email by default; identifier_type says otherwise (Brevo reads an email or an id without it, a phone or an EXT_ID only with it). The account's own registered email cannot be deleted. To stop the emails but keep the contact: update_contact with email_blacklisted. In French: supprimer un contact, effacer un abonné, supprimer un abonné.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["identifier"],
+    "properties": {
+      "identifier": {
+        "type": "string",
+        "minLength": 1,
+        "personal": true,
+        "description": "Email, contact id, phone (SMS attribute) or EXT_ID, as identifier_type says."
+      },
+      "identifier_type": {
+        "type": "string",
+        "enum": ["email_id", "contact_id", "phone_id", "ext_id", "whatsapp_id", "landline_number_id"],
+        "description": "What identifier is; an email by default."
+      }
+    }
+  },
+  examples: [
+    { title: "Delete a contact by email", input: {"identifier": "marie@example.test"} },
+    { title: "Delete a contact by id", input: {"identifier": "42", "identifier_type": "contact_id"} },
+  ],
+  refusals: [],
+  request: {
+    method: "DELETE",
+    path: "/contacts/{identifier}",
+    pathParams: ["identifier"],
+    query: {"identifierType": "identifier_type"},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+  confirm: { summary: "Delete Brevo contact {identifier} for good, with its attributes and list memberships: irreversible." },
+})
+
 export const contactCampaignStats = defineFunction({
   name: "brevo.contact_campaign_stats",
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one contact's email campaign statistics: messages sent, opened, clicked (links), bounces, unsubscriptions, each with its campaign. start_date and end_date (YYYY-MM-DD, both or none) bound them.",
+  description: "Get one contact's email campaign statistics: messages sent, opened, clicked (links), bounces, unsubscriptions, each with its campaign. start_date and end_date (YYYY-MM-DD, both or none) bound them. In French: statistiques d'un contact, ouvertures d'un contact, clics d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -289,7 +331,7 @@ export const importContacts = defineFunction({
   connector: "brevo",
   class: "sensitive",
   act: true,
-  description: "Import contacts in bulk, asynchronously: answers {processId}, not the contacts. The way past 150 contacts. One source: json_body (a list of {email, attributes}), file_url (a remote CSV, TXT or JSON) or file_body (CSV text, ; between columns). Into list_ids, or into a list created on the way (new_list: listName, folderId). Existing contacts are updated unless update_existing_contacts is false; empty_contacts_attributes true erases their attributes left empty.",
+  description: "Import contacts in bulk, asynchronously: answers {processId}, not the contacts. The way past 150 contacts. One source: json_body (a list of {email, attributes}), file_url (a remote CSV, TXT or JSON) or file_body (CSV text, ; between columns). Into list_ids, or into a list created on the way (new_list: listName, folderId). Existing contacts are updated unless update_existing_contacts is false; empty_contacts_attributes true erases their attributes left empty. In French: importer des contacts, import de contacts, import csv de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -349,7 +391,7 @@ export const exportContacts = defineFunction({
   connector: "brevo",
   class: "sensitive",
   act: true,
-  description: "Export contacts to a file, asynchronously: answers {processId}, not the contacts; Brevo makes the file and, given notify_url, posts its link there. contact_filter selects them: actionForContacts (allContacts, subscribed, unsubscribed, unsubscribedPerList) with listId, segmentId, modifiedSince or createdSince; or actionForEmailCampaigns with emailCampaignId; or actionForSmsCampaigns. To read contacts, list them.",
+  description: "Export contacts to a file, asynchronously: answers {processId}, not the contacts; Brevo makes the file and, given notify_url, posts its link there. contact_filter selects them: actionForContacts (allContacts, subscribed, unsubscribed, unsubscribedPerList) with listId, segmentId, modifiedSince or createdSince; or actionForEmailCampaigns with emailCampaignId; or actionForSmsCampaigns. To read contacts, list them. In French: exporter des contacts, export de contacts, fichier de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -409,7 +451,7 @@ export const listAttributes = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the contact attributes declared on the account: name, category (normal, transactional, category, calculated, global), type (text, date, float, boolean…), and the choices of a category attribute. Read it before writing attributes: an unknown one is refused.",
+  description: "List the contact attributes declared on the account: name, category (normal, transactional, category, calculated, global), type (text, date, float, boolean…), and the choices of a category attribute. Read it before writing attributes: an unknown one is refused. In French: attributs des contacts, champs des contacts.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every attribute", input: {} },
@@ -431,18 +473,19 @@ export const listSegments = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the segments, the dynamic lists a filter defines (read-only): {segments, count}. A segment's id restricts list_contacts.",
+  description: "List the segments, the dynamic lists a filter defines (read-only): {segments, count}, count being the total: past limit, read the next page with offset. A segment's id restricts list_contacts. In French: segments de contacts, listes dynamiques.",
   schema: {
     "type": "object",
     "additionalProperties": false,
+    "required": ["limit"],
     "properties": {
-      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Page size, 50 by default, at most 50."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Page size, at most 50."},
       "offset": {"type": "integer", "minimum": 0, "description": "Index of the first record, 0 by default."},
       "sort": {"type": "string", "enum": ["asc", "desc"], "description": "Order of creation, desc by default."}
     }
   },
   examples: [
-    { title: "Every segment", input: {} },
+    { title: "Every segment", input: {"limit": 50} },
   ],
   refusals: [],
   request: {
@@ -461,18 +504,20 @@ export const listLists = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the account's contact lists: id, name, folderId, uniqueSubscribers, totalBlacklisted: {lists, count}. The lists of one folder: list_folder_lists.",
+  description: "List the account's contact lists: {lists, count}, each list with id, name, folderId, uniqueSubscribers; count is the total of lists: past limit, read the next page with offset. The exact number of subscribers and of blacklisted contacts of a list: get_list (Brevo no longer gives them here). The lists of one folder: list_folder_lists. In French: listes de contacts, abonnés d'une liste, liste de diffusion, listes newsletter.",
   schema: {
     "type": "object",
     "additionalProperties": false,
+    "required": ["limit"],
     "properties": {
-      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Page size, 50 by default, at most 50."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Page size, at most 50."},
       "offset": {"type": "integer", "minimum": 0, "description": "Index of the first record, 0 by default."},
       "sort": {"type": "string", "enum": ["asc", "desc"], "description": "Order of creation, desc by default."}
     }
   },
   examples: [
-    { title: "Every list", input: {} },
+    { title: "Every list", input: {"limit": 50} },
+    { title: "The next page", input: {"limit": 50, "offset": 50} },
   ],
   refusals: [],
   request: {
@@ -483,6 +528,7 @@ export const listLists = defineFunction({
     body: {},
     headers: {},
   },
+  output: { strip: ["lists.totalSubscribers", "lists.totalBlacklisted"] },
   cost: { per: "request" },
 })
 
@@ -491,20 +537,20 @@ export const listFolderLists = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the contact lists of one folder: {lists, count}.",
+  description: "List the contact lists of one folder: {lists, count}, count being the total: past limit, read the next page with offset. The number of subscribers of a list: get_list. In French: listes d'un dossier, listes de diffusion d'un dossier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
-    "required": ["folder_id"],
+    "required": ["folder_id", "limit"],
     "properties": {
       "folder_id": {"type": "integer", "minimum": 1, "description": "Folder id (list_folders)."},
-      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Page size, 50 by default, at most 50."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Page size, at most 50."},
       "offset": {"type": "integer", "minimum": 0, "description": "Index of the first record, 0 by default."},
       "sort": {"type": "string", "enum": ["asc", "desc"], "description": "Order of creation, desc by default."}
     }
   },
   examples: [
-    { title: "The lists of a folder", input: {"folder_id": 1} },
+    { title: "The lists of a folder", input: {"folder_id": 1, "limit": 50} },
   ],
   refusals: [],
   request: {
@@ -515,6 +561,7 @@ export const listFolderLists = defineFunction({
     body: {},
     headers: {},
   },
+  output: { strip: ["lists.totalSubscribers", "lists.totalBlacklisted"] },
   cost: { per: "request" },
 })
 
@@ -523,7 +570,7 @@ export const getList = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one list: name, folder, number of subscribers and of blacklisted contacts, creation date, its campaigns' statistics.",
+  description: "Get one list: name, folder, number of subscribers and of blacklisted contacts, creation date, its campaigns' statistics. In French: nombre d'abonnés, abonnés d'une liste, détail d'une liste de diffusion, abonnés newsletter.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -550,7 +597,7 @@ export const listContactsOfList = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the contacts of one list: {contacts, count}. Page with limit (50 by default, at most 500) and offset.",
+  description: "List the contacts of one list: {contacts, count}. Page with limit (50 by default, at most 500) and offset. In French: contacts d'une liste, membres d'une liste de diffusion, inscrits d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -587,7 +634,7 @@ export const createList = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Create a contact list in a folder (list_folders gives the ids). Answers {id}.",
+  description: "Create a contact list in a folder (list_folders gives the ids). Answers {id}. In French: créer une liste, nouvelle liste de diffusion, nouvelle liste de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -617,7 +664,7 @@ export const updateList = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Rename a list, or move it to another folder; answers {} on success. Brevo changes one of the two per call.",
+  description: "Rename a list, or move it to another folder; answers {} on success. Brevo changes one of the two per call. In French: renommer une liste, déplacer une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -643,12 +690,40 @@ export const updateList = defineFunction({
   cost: { per: "request" },
 })
 
+export const deleteList = defineFunction({
+  name: "brevo.delete_list",
+  connector: "brevo",
+  class: "sensitive",
+  act: true,
+  description: "Delete a contact list for good; answers {} on success. Its contacts stay in the account (delete_contact deletes one). To take contacts out but keep the list: remove_from_list. In French: supprimer une liste de contacts, effacer une liste de diffusion, supprimer une liste.",
+  schema: {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["list_id"],
+    "properties": {"list_id": {"type": "integer", "minimum": 1, "description": "List id."}}
+  },
+  examples: [
+    { title: "Delete a list", input: {"list_id": 3} },
+  ],
+  refusals: [],
+  request: {
+    method: "DELETE",
+    path: "/contacts/lists/{list_id}",
+    pathParams: ["list_id"],
+    query: {},
+    body: {},
+    headers: {},
+  },
+  cost: { per: "request" },
+  confirm: { summary: "Delete Brevo list {list_id} for good (its contacts stay in the account): irreversible." },
+})
+
 export const addToList = defineFunction({
   name: "brevo.add_to_list",
   connector: "brevo",
   class: "sensitive",
   act: true,
-  description: "Add existing contacts to a list, by emails, ids or ext_ids (one kind, 150 at most); adding may start the automations tied to the list. Answers {contacts: {success, failure}}: read failure, an unknown contact fails without failing the call. Past 150, or to create contacts, import them.",
+  description: "Add existing contacts to a list, by emails, ids or ext_ids (one kind, 150 at most); adding may start the automations tied to the list. Answers {contacts: {success, failure}}: read failure, an unknown contact fails without failing the call. Past 150, or to create contacts, import them. In French: ajouter à une liste, inscrire à une liste, abonner à la newsletter.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -700,7 +775,7 @@ export const removeFromList = defineFunction({
   connector: "brevo",
   class: "sensitive",
   act: true,
-  description: "Remove contacts from a list, by emails, ids or ext_ids (one kind, 150 at most), or every contact of the list with all_contacts true; the contacts themselves stay. Answers {contacts: {success, failure}}, or a processId when the list is emptied.",
+  description: "Remove contacts from a list, by emails, ids or ext_ids (one kind, 150 at most), or every contact of the list with all_contacts true; the contacts themselves stay. Answers {contacts: {success, failure}}, or a processId when the list is emptied. In French: retirer d'une liste, désinscrire d'une liste, vider une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -759,18 +834,19 @@ export const listFolders = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the folders of contact lists: {folders, count}. A folder id is needed to create a list.",
+  description: "List the folders of contact lists: {folders, count}, count being the total: past limit, read the next page with offset. A folder id is needed to create a list. In French: dossiers de listes, dossiers de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
+    "required": ["limit"],
     "properties": {
-      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Page size, 50 by default, at most 50."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 50, "description": "Page size, at most 50."},
       "offset": {"type": "integer", "minimum": 0, "description": "Index of the first record, 0 by default."},
       "sort": {"type": "string", "enum": ["asc", "desc"], "description": "Order of creation, desc by default."}
     }
   },
   examples: [
-    { title: "Every folder", input: {} },
+    { title: "Every folder", input: {"limit": 50} },
   ],
   refusals: [],
   request: {
@@ -789,7 +865,7 @@ export const sendEmail = defineFunction({
   connector: "brevo",
   class: "sensitive",
   act: true,
-  description: "Send one transactional email for real; answers {messageId}. Either from a template (template_id, its variables in params as {{params.NAME}}), or direct: subject, html_content (or text_content) and sender, a verified sender of the account (list_senders). to holds up to 99 recipients. scheduled_at (UTC date-time, up to 72 h ahead) sends later. A send to a list is a campaign, not this.",
+  description: "Send one transactional email for real; answers {messageId}. Either from a template (template_id, its variables in params as {{params.NAME}}), or direct: subject, html_content (or text_content) and sender, a verified sender of the account (list_senders). to holds up to 99 recipients. scheduled_at (UTC date-time, up to 72 h ahead) sends later. A send to a list is a campaign, not this. In French: envoyer un email, envoyer un mail, email transactionnel, mail transactionnel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -901,10 +977,11 @@ export const listTransactionalEmails = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List sent transactional emails for a recipient, a template or a message id (at least one of the three): their uuid, subject, date. Dates are YYYY-MM-DD, a month at most. What became of an email (delivered, opened, bounced): transactional_events.",
+  description: "List sent transactional emails for a recipient, a template or a message id (at least one of the three, Brevo requires it): their uuid, subject, date. Dates are YYYY-MM-DD, a month at most. What became of an email (delivered, opened, bounced), or every email sent over a period whatever its recipient or template: transactional_events. In French: emails envoyés à un contact, historique des emails d'un destinataire, emails d'un modèle.",
   schema: {
     "type": "object",
     "additionalProperties": false,
+    "required": ["limit"],
     "anyOf": [{"required": ["email"]}, {"required": ["template_id"]}, {"required": ["message_id"]}],
     "properties": {
       "email": {"type": "string", "minLength": 1, "personal": true, "description": "Recipient."},
@@ -912,13 +989,13 @@ export const listTransactionalEmails = defineFunction({
       "message_id": {"type": "string", "minLength": 1},
       "start_date": {"type": "string", "minLength": 1, "description": "YYYY-MM-DD."},
       "end_date": {"type": "string", "minLength": 1, "description": "YYYY-MM-DD."},
-      "limit": {"type": "integer", "minimum": 1, "maximum": 500, "description": "Page size, 50 by default."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 500, "description": "Page size, at most 500."},
       "offset": {"type": "integer", "minimum": 0, "description": "Index of the first record, 0 by default."},
       "sort": {"type": "string", "enum": ["asc", "desc"], "description": "Order of creation, desc by default."}
     }
   },
   examples: [
-    { title: "The emails sent to a recipient", input: {"email": "marie@example.test"} },
+    { title: "The emails sent to a recipient", input: {"email": "marie@example.test", "limit": 50} },
   ],
   refusals: [],
   request: {
@@ -937,7 +1014,7 @@ export const getTransactionalEmailContent = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get the personalized content of one sent transactional email (its HTML, subject, events), by the uuid that list_transactional_emails gives.",
+  description: "Get the personalized content of one sent transactional email (its HTML, subject, events), by the uuid that list_transactional_emails gives. In French: contenu d'un email envoyé, contenu d'un mail envoyé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -964,12 +1041,13 @@ export const transactionalEvents = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the deliverability events of transactional emails, the source of truth per email: delivered, opened, clicks, hardBounces, softBounces, spam, blocked, unsubscribed, deferred… Over days (90 at most) or between two dates (YYYY-MM-DD); 30 days by default. limit 50 by default, at most 100.",
+  description: "List the deliverability events of transactional emails, the source of truth per email: delivered, opened, clicks, hardBounces, softBounces, spam, blocked, unsubscribed, deferred… Over days (90 at most) or between two dates (YYYY-MM-DD); 30 days by default. Every email sent over the period, with no recipient or template filter: event requests. limit at most 100; past it, read the next page with offset. In French: emails partis, envoyés sur une période, emails envoyés sur une période, emails délivrés, rebonds des emails.",
   schema: {
     "type": "object",
     "additionalProperties": false,
+    "required": ["limit"],
     "properties": {
-      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "description": "Page size, 50 by default."},
+      "limit": {"type": "integer", "minimum": 1, "maximum": 100, "description": "Page size, at most 100."},
       "offset": {"type": "integer", "minimum": 0, "description": "Index of the first record, 0 by default."},
       "start_date": {"type": "string", "minLength": 1, "description": "YYYY-MM-DD."},
       "end_date": {"type": "string", "minLength": 1, "description": "YYYY-MM-DD."},
@@ -1006,7 +1084,8 @@ export const transactionalEvents = defineFunction({
     }
   },
   examples: [
-    { title: "The hard bounces of the week", input: {"event": "hardBounces", "days": 7} },
+    { title: "The hard bounces of the week", input: {"event": "hardBounces", "days": 7, "limit": 100} },
+    { title: "Every email sent in October", input: {"event": "requests", "start_date": "2026-10-01", "end_date": "2026-10-31", "limit": 100} },
   ],
   refusals: [],
   request: {
@@ -1025,7 +1104,7 @@ export const transactionalReport = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get the transactional counters summed over a period: requests, delivered, opens, clicks, bounces, spam reports, unsubscriptions. Over days (90 at most, 90 by default) or between two dates (YYYY-MM-DD); for one tag. One row per day: transactional_report_by_day.",
+  description: "Get the transactional counters summed over a period: requests, delivered, opens, clicks, bounces, spam reports, unsubscriptions. Over days (90 at most, 90 by default) or between two dates (YYYY-MM-DD); for one tag. One row per day: transactional_report_by_day. In French: bilan des emails transactionnels, statistiques des emails transactionnels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1061,7 +1140,7 @@ export const transactionalReportByDay = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get the transactional counters one row per day: requests, delivered, opens, clicks, bounces, spam reports. Over days (30 at most) or between two dates (YYYY-MM-DD); limit 10 rows by default, at most 30.",
+  description: "Get the transactional counters one row per day: requests, delivered, opens, clicks, bounces, spam reports. Over days (30 at most) or between two dates (YYYY-MM-DD); limit 10 rows by default, at most 30. In French: envois par jour, statistiques quotidiennes des emails.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1099,7 +1178,7 @@ export const listBlocked = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the contacts blocked for transactional email (hard bounce, spam complaint, unsubscription, admin block): a blocked contact silently receives nothing. limit 50 by default, at most 100.",
+  description: "List the contacts blocked for transactional email (hard bounce, spam complaint, unsubscription, admin block): a blocked contact silently receives nothing. limit 50 by default, at most 100. In French: contacts bloqués, adresses bloquées, désinscrits des emails transactionnels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1137,7 +1216,7 @@ export const listBlockedDomains = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the domains blocked for transactional email on the account (no paging).",
+  description: "List the domains blocked for transactional email on the account (no paging). In French: domaines bloqués, domaines bloqués pour l'envoi.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The blocked domains", input: {} },
@@ -1159,7 +1238,7 @@ export const listTemplates = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the transactional email templates: id, name, subject, sender, active, with their HTML. active_only true keeps the active ones, false the inactive ones. One template: get_template.",
+  description: "List the transactional email templates: id, name, subject, sender, active, with their HTML. active_only true keeps the active ones, false the inactive ones. One template: get_template. In French: modèles d'email, templates d'email, gabarits d'email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1190,7 +1269,7 @@ export const getTemplate = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one transactional template with its HTML: name, subject, sender, replyTo, tag, active.",
+  description: "Get one transactional template with its HTML: name, subject, sender, replyTo, tag, active. In French: détail d'un modèle d'email, contenu d'un template.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1217,7 +1296,7 @@ export const createTemplate = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Create a transactional template; answers {id}. sender is a verified sender of the account (list_senders). The body is html_content (more than 10 characters) or html_url; variables {{params.NAME}} and {{contact.FIRSTNAME}}. is_active true makes it usable at once.",
+  description: "Create a transactional template; answers {id}. sender is a verified sender of the account (list_senders). The body is html_content (more than 10 characters) or html_url; variables {{params.NAME}} and {{contact.FIRSTNAME}}. is_active true makes it usable at once. In French: créer un modèle d'email, nouveau template d'email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1265,7 +1344,7 @@ export const updateTemplate = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Update a transactional template, the fields given only; answers {} on success. An active template changes the emails sent from it next.",
+  description: "Update a transactional template, the fields given only; answers {} on success. An active template changes the emails sent from it next. In French: modifier un modèle d'email, modifier un template.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1313,7 +1392,7 @@ export const listCampaigns = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List email campaigns: id, name, subject, status, sender, recipients, dates, statistics if asked (globalStats, linksStats, statsByDomain). exclude_html_content true keeps the answer light (the HTML stays in Brevo). Filter by type (classic, trigger), status (draft, sent, queued, suspended, archive, inProcess…), sent dates. limit 50 by default, at most 100.",
+  description: "List email campaigns: id, name, subject, status, sender, recipients, dates, statistics if asked (globalStats, linksStats, statsByDomain). exclude_html_content true keeps the answer light (the HTML stays in Brevo). Filter by type (classic, trigger), status (draft, sent, queued, suspended, archive, inProcess…), sent dates. limit 50 by default, at most 100. In French: campagnes email, campagnes d'emailing, campagnes envoyées, newsletters envoyées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1350,7 +1429,7 @@ export const getCampaign = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one email campaign, with its statistics (globalStats, linksStats, statsByDomain, statsByDevice, statsByBrowser). exclude_html_content true leaves its HTML out.",
+  description: "Get one email campaign, with its statistics (globalStats, linksStats, statsByDomain, statsByDevice, statsByBrowser). exclude_html_content true leaves its HTML out. In French: détail d'une campagne, résultats d'une campagne, statistiques d'une campagne emailing.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1385,7 +1464,7 @@ export const createCampaign = defineFunction({
   connector: "brevo",
   class: "write",
   act: false,
-  description: "Create an email campaign as a draft; answers {id}. Nothing is sent: the send is started in the Brevo app, after review; send_campaign_test sends a test first. sender is a verified sender (list_senders). The body is html_content, html_url or template_id (a template's content copied). recipients: {listIds, exclusionListIds, segmentIds, exclusionSegmentIds}.",
+  description: "Create an email campaign as a draft; answers {id}. Nothing is sent: the send is started in the Brevo app, after review; send_campaign_test sends a test first. sender is a verified sender (list_senders). The body is html_content, html_url or template_id (a template's content copied). recipients: {listIds, exclusionListIds, segmentIds, exclusionSegmentIds}. In French: créer une campagne, brouillon de campagne, préparer une newsletter, nouvelle campagne emailing.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1449,7 +1528,7 @@ export const updateCampaign = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Update an email campaign not yet sent, the keys of fields only, under Brevo's names (name, subject, previewText, htmlContent, htmlUrl, sender, recipients, replyTo, tag, toField, params, header, footer, mirrorActive, inlineImageActivation, utmCampaign); answers {} on success. Its send is not scheduled here.",
+  description: "Update an email campaign not yet sent, the keys of fields only, under Brevo's names (name, subject, previewText, htmlContent, htmlUrl, sender, recipients, replyTo, tag, toField, params, header, footer, mirrorActive, inlineImageActivation, utmCampaign); answers {} on success. Its send is not scheduled here. In French: modifier une campagne, changer l'objet d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1526,7 +1605,7 @@ export const sendCampaignTest = defineFunction({
   connector: "brevo",
   class: "sensitive",
   act: true,
-  description: "Send a test of an email campaign, for real, to the given addresses only (not to its recipients). Each address must be a contact of the account, otherwise Brevo refuses. Answers {} on success.",
+  description: "Send a test of an email campaign, for real, to the given addresses only (not to its recipients). Each address must be a contact of the account, otherwise Brevo refuses. Answers {} on success. In French: test de campagne, envoyer un bat, email de test d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1562,7 +1641,7 @@ export const campaignAbTestResult = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get the result of an A/B test campaign: the winning version, its criterion, open and click rates, the clicks of each version.",
+  description: "Get the result of an A/B test campaign: the winning version, its criterion, open and click rates, the clicks of each version. In French: test a/b, résultat du test ab, version gagnante d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1589,7 +1668,7 @@ export const campaignSharedUrl = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get the share link of a campaign (a page other Brevo users can open).",
+  description: "Get the share link of a campaign (a page other Brevo users can open). In French: lien de partage d'une campagne, partager une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1616,7 +1695,7 @@ export const crmListDeals = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List CRM deals: {items}, each with its attributes (deal_name, amount, deal_stage, pipeline, deal_owner, close_date…) and linked contacts and companies. Filter by name, owner (an account email), stage or pipeline id (pipelines), a linked company or contact. limit 50 by default.",
+  description: "List CRM deals: {items}, each with its attributes (deal_name, amount, deal_stage, pipeline, deal_owner, close_date…) and linked contacts and companies. Filter by name, owner (an account email), stage or pipeline id (pipelines), a linked company or contact. limit 50 by default. In French: affaires du crm, opportunités brevo, deals du crm, pipeline commercial.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1664,7 +1743,7 @@ export const crmGetDeal = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one CRM deal by id, its attributes and linked contacts and companies.",
+  description: "Get one CRM deal by id, its attributes and linked contacts and companies. In French: détail d'une affaire, fiche d'une opportunité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1691,7 +1770,7 @@ export const crmCreateDeal = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Create a CRM deal; answers {id}. attributes: deal_stage and pipeline (ids from pipelines), amount, close_date, deal_owner (an account email or id), and the custom attributes (crm_attributes deals), a text, a number or a boolean each.",
+  description: "Create a CRM deal; answers {id}. attributes: deal_stage and pipeline (ids from pipelines), amount, close_date, deal_owner (an account email or id), and the custom attributes (crm_attributes deals), a text, a number or a boolean each. In French: créer une affaire, nouvelle opportunité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1736,7 +1815,7 @@ export const crmUpdateDeal = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Update a CRM deal, the keys given only; answers {} on success. linkedContactsIds and linkedCompaniesIds replace the linked lists (an id left out is unlinked): to add or remove one, crm_link_deal.",
+  description: "Update a CRM deal, the keys given only; answers {} on success. linkedContactsIds and linkedCompaniesIds replace the linked lists (an id left out is unlinked): to add or remove one, crm_link_deal. In French: modifier une affaire, changer l'étape d'une affaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1782,7 +1861,7 @@ export const crmLinkDeal = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Link or unlink contacts (ids) and companies (link_ids, unlink_ids) to a CRM deal, the others left as they are.",
+  description: "Link or unlink contacts (ids) and companies (link_ids, unlink_ids) to a CRM deal, the others left as they are. In French: lier un contact à une affaire, rattacher une entreprise à une affaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1825,7 +1904,7 @@ export const crmListCompanies = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List CRM companies: {items}, each with its attributes (name, domain, owner…) and linked contacts and deals. Pages by number: page (1 by default) and limit (50 by default). Filter by name or owner (an account email).",
+  description: "List CRM companies: {items}, each with its attributes (name, domain, owner…) and linked contacts and deals. Pages by number: page (1 by default) and limit (50 by default). Filter by name or owner (an account email). In French: entreprises du crm, sociétés brevo, comptes clients du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1868,7 +1947,7 @@ export const crmGetCompany = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one CRM company by id, its attributes and linked contacts and deals.",
+  description: "Get one CRM company by id, its attributes and linked contacts and deals. In French: fiche d'une entreprise, détail d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1895,7 +1974,7 @@ export const crmCreateCompany = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Create a CRM company; answers {id}. attributes: domain, industry, owner (an account id), phone_number (countryCode then says its country), and the custom attributes (crm_attributes companies), a text, a number or a boolean each.",
+  description: "Create a CRM company; answers {id}. attributes: domain, industry, owner (an account id), phone_number (countryCode then says its country), and the custom attributes (crm_attributes companies), a text, a number or a boolean each. In French: créer une entreprise, nouvelle société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1941,7 +2020,7 @@ export const crmUpdateCompany = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Update a CRM company, the keys given only. linkedContactsIds and linkedDealsIds replace the linked lists (an id left out is unlinked): to add or remove one, crm_link_company.",
+  description: "Update a CRM company, the keys given only. linkedContactsIds and linkedDealsIds replace the linked lists (an id left out is unlinked): to add or remove one, crm_link_company. In French: modifier une entreprise, modifier une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1988,7 +2067,7 @@ export const crmLinkCompany = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Link or unlink contacts (ids) and deals (link_ids, unlink_ids) to a CRM company, the others left as they are.",
+  description: "Link or unlink contacts (ids) and deals (link_ids, unlink_ids) to a CRM company, the others left as they are. In French: lier un contact à une entreprise, rattacher une affaire à une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2031,7 +2110,7 @@ export const crmListTasks = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List CRM tasks: {items}. Filter by type (a task type id, task_types), status (done, undone), date (overdue, today, tomorrow, week), assignee (an account email or id), a linked contact, deal or company. limit 50 by default.",
+  description: "List CRM tasks: {items}. Filter by type (a task type id, task_types), status (done, undone), date (overdue, today, tomorrow, week), assignee (an account email or id), a linked contact, deal or company. limit 50 by default. In French: tâches du crm, tâches en retard, relances à faire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2069,7 +2148,7 @@ export const crmGetTask = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one CRM task by id.",
+  description: "Get one CRM task by id. In French: détail d'une tâche, lire une tâche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2096,7 +2175,7 @@ export const crmCreateTask = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Create a CRM task; answers {id}. name, taskTypeId (task_types) and date (ISO 8601) are required; assignToId takes an account email or id; duration is in milliseconds; reminder {value, unit, types}.",
+  description: "Create a CRM task; answers {id}. name, taskTypeId (task_types) and date (ISO 8601) are required; assignToId takes an account email or id; duration is in milliseconds; reminder {value, unit, types}. In French: créer une tâche, planifier une relance, nouvelle tâche crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2151,7 +2230,7 @@ export const crmUpdateTask = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Update a CRM task, the keys given only: done true marks it done.",
+  description: "Update a CRM task, the keys given only: done true marks it done. In French: terminer une tâche, modifier une tâche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2207,7 +2286,7 @@ export const crmListNotes = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List CRM notes, or those of some contacts, deals or companies (entity and entity_ids, comma separated), between two dates (timestamps in milliseconds). limit 50 by default.",
+  description: "List CRM notes, or those of some contacts, deals or companies (entity and entity_ids, comma separated), between two dates (timestamps in milliseconds). limit 50 by default. In French: notes du crm, notes d'une affaire, notes d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2241,7 +2320,7 @@ export const crmGetNote = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "Get one CRM note by id.",
+  description: "Get one CRM note by id. In French: détail d'une note, lire une note.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2268,7 +2347,7 @@ export const crmCreateNote = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Create a CRM note on contacts, deals or companies; answers {id}. text takes simple HTML (p, b, i, u, br, a).",
+  description: "Create a CRM note on contacts, deals or companies; answers {id}. text takes simple HTML (p, b, i, u, br, a). In French: ajouter une note, nouvelle note crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2307,7 +2386,7 @@ export const crmUpdateNote = defineFunction({
   connector: "brevo",
   class: "write",
   act: true,
-  description: "Update a CRM note; text is required by Brevo, the links given replace the note's.",
+  description: "Update a CRM note; text is required by Brevo, the links given replace the note's. In French: modifier une note, corriger une note.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2347,7 +2426,7 @@ export const pipelines = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the deal pipelines and their stages: a deal's pipeline and deal_stage are these ids.",
+  description: "List the deal pipelines and their stages: a deal's pipeline and deal_stage are these ids. In French: étapes du pipeline, pipelines de vente.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every pipeline", input: {} },
@@ -2369,7 +2448,7 @@ export const taskTypes = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the task types of the account (call, email, meeting…): a task's taskTypeId is one of these ids.",
+  description: "List the task types of the account (call, email, meeting…): a task's taskTypeId is one of these ids. In French: types de tâches, catégories de tâches.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every task type", input: {} },
@@ -2391,7 +2470,7 @@ export const crmAttributes = defineFunction({
   connector: "brevo",
   class: "read",
   act: false,
-  description: "List the attributes of CRM deals or companies: internal name, label, type, choices. Read it before writing attributes.",
+  description: "List the attributes of CRM deals or companies: internal name, label, type, choices. Read it before writing attributes. In French: attributs des affaires, champs des entreprises du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2417,8 +2496,9 @@ export const connector = defineConnector({
   name: "brevo",
   label: "Brevo",
   namespace: "brevo",
-  version: "1.0.0",
+  version: "2.1.0",
   apiVersion: "v3",
+  description: "Brevo, emailing and marketing automation: newsletters and email campaigns, contact lists and their subscribers, segments, transactional emails and their deliverability events, templates, senders, the account's sending credits, and a light CRM (deals, companies, tasks, notes).",
   baseUrl: "https://api.brevo.com/v3",
   auth: {"kind": "api_key", "in": "header", "name": "api-key", "key": "api_key"},
   credential: [{"name": "api_key", "label": "API key (v3)", "secret": true, "holder": "account"}],
@@ -2426,14 +2506,14 @@ export const connector = defineConnector({
   timeoutMs: 30000,
   queryArrays: "repeat",
   errors: [
-    { status: 400, code: "credits_exhausted", message: "Brevo credits are exhausted for this send or this plan. Top up or upgrade the Brevo account.", retryable: false, body: {"path": "code", "equals": ["not_enough_credits"]}, marksAccount: "quota_exhausted" },
+    { status: [400, 402], code: "credits_exhausted", message: "Brevo credits are exhausted for this send or this plan. Top up or upgrade the Brevo account.", retryable: false, body: {"path": "code", "equals": ["not_enough_credits"]}, marksAccount: "quota_exhausted" },
     { status: 400, code: "invalid_request", message: "Brevo rejected the request: its code and message say why (invalid_parameter, missing_parameter, duplicate_parameter, campaign_sent, an unknown attribute…).", retryable: false },
     { status: 401, code: "ip_not_authorized", message: "Brevo refused the calling IP address: the key is valid, but the account allows only its authorised IPs (Brevo, Security, Authorised IPs).", retryable: false, body: {"path": "message", "contains": ["unrecognised ip address"]} },
     { status: 401, code: "key_refused", message: "Brevo refused the API key: invalid or revoked. A new v3 key is made in Brevo, SMTP & API, API keys.", retryable: false, marksAccount: "credential_rejected" },
-    { status: 402, code: "credits_exhausted", message: "Brevo credits are exhausted for this send or this plan. Top up or upgrade the Brevo account.", retryable: false, body: {"path": "code", "equals": ["not_enough_credits"]}, marksAccount: "quota_exhausted" },
     { status: 402, code: "payment_required", message: "Brevo refused for billing: the account needs an activation or a plan that includes this.", retryable: false },
     { status: 403, code: "forbidden", message: "Brevo refused this call for this account: a permission or a feature it lacks.", retryable: false },
     { status: 404, code: "not_found", message: "Not found in Brevo: wrong id or address, or not in this account.", retryable: false },
+    { status: 405, code: "deletion_not_allowed", message: "Brevo does not allow deleting this contact: it is the account's own registered email.", retryable: false },
     { status: 425, code: "account_in_process", message: "Brevo is still processing the account or the contact: wait, then retry.", retryable: true },
     { status: 429, code: "rate_limited", message: "Brevo rate limit reached for this route and plan: wait, then retry.", retryable: true },
     { status: [500, 502, 503, 504], code: "upstream_unavailable", message: "Brevo failed. A read can be retried; a send or a write may have gone through: read it back before acting again.", retryable: false },
@@ -2446,6 +2526,7 @@ export const connector = defineConnector({
     getContact,
     upsertContact,
     updateContact,
+    deleteContact,
     contactCampaignStats,
     importContacts,
     exportContacts,
@@ -2457,6 +2538,7 @@ export const connector = defineConnector({
     listContactsOfList,
     createList,
     updateList,
+    deleteList,
     addToList,
     removeFromList,
     listFolders,

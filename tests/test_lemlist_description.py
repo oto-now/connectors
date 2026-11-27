@@ -429,9 +429,9 @@ def _values(name: str, function: dict) -> dict:
     return {argument: values[argument] for argument in function["input"]["properties"]}
 
 
-def test_the_description_is_version_1_6_1_and_passes_the_fabrique():
+def test_the_description_is_version_1_6_2_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.6.1"
+    assert description["connector"]["version"] == "1.6.2"
     check(description, LEMLIST)
 
 

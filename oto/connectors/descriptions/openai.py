@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'openai',
                'label': 'OpenAI Images',
                'namespace': 'openai',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1',
                'base_url': 'https://api.openai.com/v1',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -63,7 +63,8 @@ DESCRIPTION = {'connector': {'name': 'openai',
                 'class': 'read',
                 'description': 'The models this key can call: each with its id (gpt-image-2, '
                                'gpt-image-2.5-flare…), created and owned_by. Free. Use it to check the key, '
-                               'or which image models the project can use.',
+                               'or which image models the project can use. In French: modèles openai '
+                               "disponibles, lister les modèles d'image.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every model of the key', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/models'}},
@@ -75,7 +76,8 @@ DESCRIPTION = {'connector': {'name': 'openai',
                                'tokens, more for a higher quality and a larger size: the model, quality and '
                                'size decide the price. quality xhigh and max exist on the gpt-image-2.5 '
                                'models only. background transparent gives a PNG with alpha. A prompt refused '
-                               "by OpenAI's safety system answers 400. Takes up to three minutes.",
+                               "by OpenAI's safety system answers 400. Takes up to three minutes. In French: "
+                               "générer une image, créer une illustration, image à partir d'un texte.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['prompt', 'model'],
@@ -156,7 +158,9 @@ DESCRIPTION = {'connector': {'name': 'openai',
                                'consumed once OpenAI accepts it, a page file stays. The answer is a PNG file '
                                'of yours, kept 24 hours: pass its id as is to a function that takes a file. '
                                'Billed by OpenAI in tokens, the input image included. A prompt or image '
-                               "refused by OpenAI's safety system answers 400. Takes up to three minutes.",
+                               "refused by OpenAI's safety system answers 400. Takes up to three minutes. In "
+                               "French: modifier une image, retoucher une image, changer le décor d'une "
+                               'photo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['prompt', 'model', 'image'],

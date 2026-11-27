@@ -1,4 +1,4 @@
-"""La description `brevo` 1.0.0 : celle du client existant (`oto.tools.brevo`), sans rien y changer.
+"""La description `brevo` 2.1.0 : celle du client (`oto.tools.brevo`), sans rien y changer.
 
 Une fonction par requête : une méthode du client qui envoie une seule requête à une seule route est la fonction de son
 nom ; une méthode qui choisit sa route par un argument est une fonction par route, l'argument fixé par la fonction
@@ -97,11 +97,13 @@ ARGUMENTS_ADDED = {
 }
 # Ce que le client pose quand l'appel ne le donne pas, et que Brevo prend de même par défaut : pas un défaut déclaré.
 _PAGE = {"limit": 50, "offset": 0}
+# Brevo's default page differs from the client's 50 (10, 500, 2500): `limit` is required there.
+_LIMIT_REQUIRED = ("list_segments", "list_lists", "list_folder_lists", "list_folders", "list_transactional_emails",
+                   "transactional_events")
 CLIENT_FILLS = {
-    **{n: _PAGE for n in ("list_contacts", "list_segments", "list_lists", "list_folder_lists", "list_folders",
-                          "list_contacts_of_list", "list_transactional_emails", "transactional_events",
-                          "list_blocked", "list_templates", "list_campaigns", "crm_list_deals", "crm_list_tasks",
-                          "crm_list_notes")},
+    **{n: _PAGE for n in ("list_contacts", "list_contacts_of_list", "list_blocked", "list_templates",
+                          "list_campaigns", "crm_list_deals", "crm_list_tasks", "crm_list_notes")},
+    **{n: {"offset": 0} for n in _LIMIT_REQUIRED},
     "transactional_report_by_day": {"limit": 10, "offset": 0},
     "crm_list_companies": {"limit": 50, "page": 1},
     "import_contacts": {"update_existing_contacts": True, "empty_contacts_attributes": False},
@@ -114,6 +116,7 @@ REQUIRED_WHERE_THE_CLIENT_FILLS = {
     "get_campaign": {"exclude_html_content": True},
     "import_contacts": {"disable_notification": True},
     "export_contacts": {"disable_notification": True, "contact_filter": {"emailBlacklisted": False}},
+    **{n: {"limit": 50} for n in _LIMIT_REQUIRED},
 }
 # Le client abaisse `limit` au plafond de Brevo (ou au sien) ; le schéma refuse au-delà.
 CLIENT_CAPS = {
@@ -147,6 +150,8 @@ CLIENT_REFUSES = {
 }
 # Les drapeaux qui ne partent que vrais, comme le client les envoie (`const: true`).
 ONLY_TRUE = {"remove_from_list": {"all_contacts": "all"}}
+# Les seules suppressions, et leur route.
+DELETES = {"delete_list": "/contacts/lists/{list_id}", "delete_contact": "/contacts/{identifier}"}
 # Ce que fait chaque fonction : une écriture mal classée est un défaut grave.
 CLASSES = {
     "read": {
@@ -171,7 +176,16 @@ CLASSES = {
         "upsert_contact", "update_contact", "add_to_list", "remove_from_list",
         # Des milliers de contacts écrits d'un coup ; un fichier de contacts dont le lien part à une adresse.
         "import_contacts", "export_contacts",
+        # Les deux suppressions, que JB a ouvertes pour qu'un test ou un utilisateur nettoie derrière lui.
+        "delete_list", "delete_contact",
     },
+}
+# Ce que la réponse perd avant l'agent : les identifiants du relais et du traceur du compte ; les compteurs que les
+# routes des listes ne remplissent plus (0), que get_list donne.
+STRIPPED = {
+    "get_account": ["relay.data.userName", "marketingAutomation.key"],
+    "list_lists": ["lists.totalSubscribers", "lists.totalBlacklisted"],
+    "list_folder_lists": ["lists.totalSubscribers", "lists.totalBlacklisted"],
 }
 # Une écriture qui ne fait que préparer : servie du côté lecture.
 NOT_ACT = {"create_campaign"}
@@ -181,6 +195,7 @@ PERSONAL = {
     "get_contact": [("identifier",)],
     "update_contact": [("identifier",), ("attributes", "additionalProperties")],
     "contact_campaign_stats": [("identifier",)],
+    "delete_contact": [("identifier",)],
     "upsert_contact": [("email",), ("attributes", "additionalProperties")],
     "import_contacts": [("json_body", "items", "properties", "email"),
                         ("json_body", "items", "properties", "attributes", "additionalProperties"), ("file_body",)],
@@ -395,9 +410,9 @@ def _node(function: dict, path: tuple) -> dict:
     return node
 
 
-def test_the_description_is_version_1_0_0_and_passes_the_fabrique():
+def test_the_description_is_version_2_1_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.0"
+    assert description["connector"]["version"] == "2.1.0"
     check(description, BREVO)
 
 
@@ -544,16 +559,33 @@ def test_reads_and_writes_are_classified_and_every_write_is_served_on_the_act_si
     for name, function in functions.items():
         method = function["call"]["method"]
         assert (method in WRITING_METHODS) == (function["class"] != "read"), name
-        assert method != "DELETE", "no delete: the client and oto 1 leave them to the Brevo app"
+        assert (method == "DELETE") == (name in DELETES), name
         assert ("confirm" in function) == (function["class"] == "sensitive"), name
         acts = function.get("act", function["class"] != "read")
         assert acts == (function["class"] != "read" and name not in NOT_ACT), name
     assert {n for n, f in functions.items() if "act" in f} == NOT_ACT
 
 
+def test_the_two_deletes_are_sensitive_confirmed_and_destroy():
+    """Deux suppressions seulement, une liste et un contact : chacune sensible, confirmée, d'effet `destroy`, servie
+    du côté act ; aucune autre fonction ne dit d'effet."""
+    functions = _functions()
+    for name, path in DELETES.items():
+        function = functions[name]
+        assert function["class"] == "sensitive" and function["effect"] == "destroy", name
+        assert function["call"]["method"] == "DELETE" and function["call"]["path"] == path, name
+        summary = function["confirm"]["summary"]
+        assert "irreversible" in summary and "{" + function["input"]["required"][0] + "}" in summary, name
+        assert function.get("act", True) is True, name
+    assert {n for n, f in functions.items() if "effect" in f} == set(DELETES)
+    assert _sent_by_the_client("delete_list", {"list_id": 3})["url"].endswith("/contacts/lists/3")
+    sent = _sent_by_the_client("delete_contact", {"identifier": "42", "identifier_type": "contact_id"})
+    assert (sent["method"], sent["params"]) == ("DELETE", {"identifierType": "contact_id"})
+
+
 def test_what_the_client_keeps_out_stays_out():
-    """Ni envoi de campagne, ni planification, ni suppression, ni purge : rien de ce que le client et oto 1 laissent à
-    l'application Brevo."""
+    """Ni envoi de campagne, ni planification, ni suppression hors des deux ouvertes (`DELETES`), ni purge : rien de
+    ce que le client et oto 1 laissent à l'application Brevo."""
     for name, function in _functions().items():
         call = function["call"]
         assert not re.search(r"sendNow|status|hardbounces", call["path"], re.I), name
@@ -570,7 +602,7 @@ def test_no_pagination_is_declared_and_each_call_costs_one_request():
     l'appelant pagine lui-même, par les arguments du client."""
     for name, function in _functions().items():
         assert "pagination" not in function, name
-        assert "output" not in function, name
+        assert function.get("output", {}).get("strip") == STRIPPED.get(name), name
         assert function["cost"] == REQUEST, name
         paged = {"limit", "offset"} & set(_parameters(_method(name))) - set(ARGUMENTS_LEFT_OUT.get(name, {}))
         taken = {ARGUMENTS_ADDED.get(name, {}).get(a, a) for a in function["input"]["properties"]}
@@ -618,10 +650,10 @@ def test_the_401_and_spent_credits_mark_the_account_and_a_blocked_ip_does_not():
     marking = [(e["status"], e["code"], e["marks_account"], e.get("body")) for e in errors if "marks_account" in e]
     credits = {"path": "code", "equals": ["not_enough_credits"]}
     assert marking == [
-        (400, "credits_exhausted", "quota_exhausted", credits),
+        ([400, 402], "credits_exhausted", "quota_exhausted", credits),
         (401, "key_refused", "credential_rejected", None),
-        (402, "credits_exhausted", "quota_exhausted", credits),
     ]
+    assert len([e for e in errors if e["code"] == "credits_exhausted"]) == 1
     ip = next(e for e in errors if e["code"] == "ip_not_authorized")
     assert ip["status"] == 401 and "marks_account" not in ip
     assert ip["body"] == {"path": "message", "contains": ["unrecognised ip address"]}
@@ -641,3 +673,13 @@ def test_the_typescript_output_and_the_python_table():
     table = python.declared([checked])["brevo"]
     assert set(table) == set(_functions())
     assert DECLARED.get("brevo") == table, "oto/connectors/declared.py is out of date: run `python -m fabrique`"
+
+
+def test_each_function_ends_with_its_french_phrasings():
+    """La recherche de l'hôte lit « In French: … » en fin de description : des formules de deux mots au moins."""
+    for name, function in _functions().items():
+        found = re.search(r"In French: ([^.]*)[.]$", function["description"])
+        assert found, name
+        formulas = [f.strip() for f in found.group(1).split(",")]
+        assert 2 <= len(formulas) <= 5, name
+        assert all(len(f.split()) >= 2 and f == f.lower() for f in formulas), name

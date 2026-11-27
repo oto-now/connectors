@@ -22,7 +22,7 @@ connector:
   name: malibou
   label: Malibou
   namespace: malibou
-  version: 1.0.0
+  version: 1.0.1
   api_version: 1.11.0
   base_url: https://app.malibou.com/api/public/v1/organizations/{organization_id}
   auth:
@@ -63,7 +63,8 @@ functions:
       when the key holds the details scope. contract_status narrows on today's
       employment: active (at least one active contract), past (all contracts
       ended) or future (only an upcoming contract). Pages are numbered from 1;
-      the last page holds fewer than limit items.
+      the last page holds fewer than limit items. In French: lister les
+      salariés, liste des collaborateurs, effectif de l'entreprise.
     input:
       type: object
       additionalProperties: false
@@ -101,7 +102,8 @@ functions:
       seniority, team, manager, current contract, and every contract
       {contractId, startDate, endDate}. Personal fields (socialSecurityNumber,
       address, phone, bankAccount, countryOfBirth) come only when the key holds
-      the details scope.
+      the details scope. In French: fiche d'un salarié, détail d'un
+      collaborateur, contrat d'un salarié.
     input:
       type: object
       additionalProperties: false
@@ -127,7 +129,8 @@ functions:
       YYYY-MM-DD), ordered by start date: {data: [{id, collaboratorId,
       startDate, endDate, startHalfDay, endHalfDay, status, type, createdAt}],
       total, page, limit}. type (the leave code) needs the absence-type scope.
-      status narrows to approved, pending or rejected.
+      status narrows to approved, pending or rejected. In French: absences des
+      salariés, congés de l'équipe, qui est absent.
     input:
       type: object
       additionalProperties: false
@@ -163,7 +166,8 @@ functions:
       date window (both bounds required, YYYY-MM-DD), ordered by start date:
       {data: [{id, collaboratorId, isRemoteWork, location, startDate, endDate,
       startHalfDay, endHalfDay, status, createdAt}], total, page, limit}.
-      status narrows to approved, pending or rejected.
+      status narrows to approved, pending or rejected. In French: télétravail
+      des salariés, qui est en télétravail, lieux de travail déclarés.
     input:
       type: object
       additionalProperties: false

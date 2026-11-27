@@ -6,7 +6,7 @@ export const listSignatureRequests = defineFunction({
   connector: "yousign",
   class: "read",
   act: false,
-  description: "List the signature requests of the organization, newest first: {meta: {next_cursor}, data: [{id, name, status, created_at, activated_at, completed_at, expiration_date, source, external_id, workspace_id, signers: [{id, status}], documents: [{id, nature}]}]}. status: draft (not sent), ongoing (waiting for signers), done (every signer signed), approval, paused, expired, canceled, declined, rejected, deleted. By default only the requests created through the API are listed: pass source [public_api, app] to include those created in the Yousign app. Dates are YYYY-MM-DD. To get the next page, pass meta.next_cursor as after.",
+  description: "List the signature requests of the organization, newest first: {meta: {next_cursor}, data: [{id, name, status, created_at, activated_at, completed_at, expiration_date, source, external_id, workspace_id, signers: [{id, status}], documents: [{id, nature}]}]}. status: draft (not sent), ongoing (waiting for signers), done (every signer signed), approval, paused, expired, canceled, declined, rejected, deleted. By default only the requests created through the API are listed: pass source [public_api, app] to include those created in the Yousign app. Dates are YYYY-MM-DD. To get the next page, pass meta.next_cursor as after. In French: demandes de signature, lister les signatures électroniques, documents en attente de signature.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -91,7 +91,7 @@ export const getSignatureRequest = defineFunction({
   connector: "yousign",
   class: "read",
   act: false,
-  description: "Get one signature request by id: name, status, dates (created_at, activated_at, completed_at, expiration_date), signers [{id, status}] (initiated, notified, verified, processing, consent_given, signed, declined, aborted, error), approvers, documents [{id, nature}], sender, workspace_id, external_id. Only status done means every signer signed.",
+  description: "Get one signature request by id: name, status, dates (created_at, activated_at, completed_at, expiration_date), signers [{id, status}] (initiated, notified, verified, processing, consent_given, signed, declined, aborted, error), approvers, documents [{id, nature}], sender, workspace_id, external_id. Only status done means every signer signed. In French: détail d'une demande de signature, statut d'une signature, qui a signé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -119,7 +119,7 @@ export const listTemplates = defineFunction({
   connector: "yousign",
   class: "read",
   act: false,
-  description: "List the signature templates of the organization: {meta: {next_cursor}, data: [{id, name, description, status, created_at, workspace_id}]}. Only an active template can start a signature request. Its id is the template_id of get_template and create_signature_request_from_template.",
+  description: "List the signature templates of the organization: {meta: {next_cursor}, data: [{id, name, description, status, created_at, workspace_id}]}. Only an active template can start a signature request. Its id is the template_id of get_template and create_signature_request_from_template. In French: modèles de signature, lister les modèles yousign.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -157,7 +157,7 @@ export const getTemplate = defineFunction({
   connector: "yousign",
   class: "read",
   act: false,
-  description: "Get one signature template: name, status, workspace_id, expiration_delay, and placeholders: {signers: [{label}], read_only_text_fields: [{label}], documents}, the slots a signature request created from it must fill, matched by label.",
+  description: "Get one signature template: name, status, workspace_id, expiration_delay, and placeholders: {signers: [{label}], read_only_text_fields: [{label}], documents}, the slots a signature request created from it must fill, matched by label. In French: détail d'un modèle de signature, emplacements d'un modèle yousign.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -185,7 +185,7 @@ export const createSignatureRequestFromTemplate = defineFunction({
   connector: "yousign",
   class: "write",
   act: false,
-  description: "Create a draft signature request from an active template, with its documents and fields; nothing is sent until activation. Fill each signer placeholder of the template (get_template) by its label, with the signer's identity; every signer is notified by email at activation. Returns the request, with its id and status draft.",
+  description: "Create a draft signature request from an active template, with its documents and fields; nothing is sent until activation. Fill each signer placeholder of the template (get_template) by its label, with the signer's identity; every signer is notified by email at activation. Returns the request, with its id and status draft. In French: préparer une signature depuis un modèle, demande de signature à partir d'un modèle.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -303,7 +303,7 @@ export const createSignatureRequest = defineFunction({
   connector: "yousign",
   class: "write",
   act: false,
-  description: "Create an empty draft signature request, without a template; nothing is sent until activation. Then add its documents (add_document), its signers (add_signer) and their fields (add_field or the signers' fields). With ordered_signers, each signer is invited after the previous one signed, in the order they were added. Every signer is notified by email at activation. Returns the request, with its id and status draft.",
+  description: "Create an empty draft signature request, without a template; nothing is sent until activation. Then add its documents (add_document), its signers (add_signer) and their fields (add_field or the signers' fields). With ordered_signers, each signer is invited after the previous one signed, in the order they were added. Every signer is notified by email at activation. Returns the request, with its id and status draft. In French: créer une demande de signature, préparer un document à signer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -353,7 +353,7 @@ export const addDocument = defineFunction({
   connector: "yousign",
   class: "write",
   act: false,
-  description: "Upload a document into a draft signature request: PDF or DOCX (converted to PDF) to be signed, or a PDF, DOCX, JPEG or PNG attachment shown but never signed, 50 MB and 50 documents per request at most. With parse_anchors, each smart anchor written in the text, {{s1|signature|85|37}} (signer rank, width, height in points), becomes a signature field of that signer; anchors only make signature fields. Returns the document: id (the document_id of the fields), total_pages, total_anchors.",
+  description: "Upload a document into a draft signature request: PDF or DOCX (converted to PDF) to be signed, or a PDF, DOCX, JPEG or PNG attachment shown but never signed, 50 MB and 50 documents per request at most. With parse_anchors, each smart anchor written in the text, {{s1|signature|85|37}} (signer rank, width, height in points), becomes a signature field of that signer; anchors only make signature fields. Returns the document: id (the document_id of the fields), total_pages, total_anchors. In French: ajouter un document à signer, joindre un pdf à une demande de signature.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -407,7 +407,7 @@ export const addSigner = defineFunction({
   connector: "yousign",
   class: "write",
   act: false,
-  description: "Add a signer to a draft signature request; they are emailed at activation. A signer needs at least one signature field on a document, placed here (fields), by add_field, or by a smart anchor of the document; for a request built from a template, fill the signer placeholders at creation instead. Fields placed here are signature, mention, text, checkbox or radio_group, by page and coordinates in points from the top left of the page. Returns the signer, with its id and status.",
+  description: "Add a signer to a draft signature request; they are emailed at activation. A signer needs at least one signature field on a document, placed here (fields), by add_field, or by a smart anchor of the document; for a request built from a template, fill the signer placeholders at creation instead. Fields placed here are signature, mention, text, checkbox or radio_group, by page and coordinates in points from the top left of the page. Returns the signer, with its id and status. In French: ajouter un signataire, désigner un signataire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -679,7 +679,7 @@ export const addField = defineFunction({
   connector: "yousign",
   class: "write",
   act: false,
-  description: "Place one field on a document of a draft signature request, by page and coordinates in points from the top left of the page (an A4 page is 595 by 842). type: signature (min 85 by 37), mention (text the signer sees written, %date% for the signing date), signature_date, text (the signer types an answer to question), checkbox, radio_group (radios, each its own x and y), read_only_text (fixed text, no signer), signer_name, signer_email. Every type but read_only_text belongs to a signer (signer_id, from add_signer). On mention, text and read_only_text, font requires width and height; height is lines x font size x 1.5. 500 fields per request at most. Returns the field, with its id.",
+  description: "Place one field on a document of a draft signature request, by page and coordinates in points from the top left of the page (an A4 page is 595 by 842). type: signature (min 85 by 37), mention (text the signer sees written, %date% for the signing date), signature_date, text (the signer types an answer to question), checkbox, radio_group (radios, each its own x and y), read_only_text (fixed text, no signer), signer_name, signer_email. Every type but read_only_text belongs to a signer (signer_id, from add_signer). On mention, text and read_only_text, font requires width and height; height is lines x font size x 1.5. 500 fields per request at most. Returns the field, with its id. In French: placer un champ de signature, ajouter une zone de signature.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1036,7 +1036,7 @@ export const listFields = defineFunction({
   connector: "yousign",
   class: "read",
   act: false,
-  description: "List the fields placed on one document of a signature request: {meta: {next_cursor}, data: [{id, type, signer_id, document_id, page, x, y, width, height, and the values of its type}]}, those from smart anchors included once resolved. Filter by type or by signer. To get the next page, pass meta.next_cursor as after.",
+  description: "List the fields placed on one document of a signature request: {meta: {next_cursor}, data: [{id, type, signer_id, document_id, page, x, y, width, height, and the values of its type}]}, those from smart anchors included once resolved. Filter by type or by signer. To get the next page, pass meta.next_cursor as after. In French: champs d'un document à signer, zones de signature d'un document.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1103,7 +1103,7 @@ export const updateField = defineFunction({
   connector: "yousign",
   class: "write",
   act: false,
-  description: "Change a field of a draft signature request: move or resize it, give it to another signer, or change its values; only the values passed change, and each must fit the field's type (as in add_field). The type itself cannot change, nor can a signer_name or signer_email field: delete it and add another. Returns the field.",
+  description: "Change a field of a draft signature request: move or resize it, give it to another signer, or change its values; only the values passed change, and each must fit the field's type (as in add_field). The type itself cannot change, nor can a signer_name or signer_email field: delete it and add another. Returns the field. In French: déplacer un champ de signature, modifier une zone de signature.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1309,7 +1309,7 @@ export const deleteField = defineFunction({
   connector: "yousign",
   class: "write",
   act: true,
-  description: "Delete a field from a document of a draft signature request. A signer left without any signature field cannot be activated: add another one first. Returns nothing.",
+  description: "Delete a field from a document of a draft signature request. A signer left without any signature field cannot be activated: add another one first. Returns nothing. In French: supprimer un champ de signature, retirer une zone de signature.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1346,7 +1346,7 @@ export const activateSignatureRequest = defineFunction({
   connector: "yousign",
   class: "sensitive",
   act: true,
-  description: "Activate a draft signature request: Yousign emails every signer (and approver) an invitation to sign, and the request becomes ongoing (or approval). It cannot be undone here. The request needs at least one document and, for each signer, a signature field. Returns the request; signature links are not returned.",
+  description: "Activate a draft signature request: Yousign emails every signer (and approver) an invitation to sign, and the request becomes ongoing (or approval). It cannot be undone here. The request needs at least one document and, for each signer, a signature field. Returns the request; signature links are not returned. In French: envoyer en signature, lancer une demande de signature, envoyer un document à signer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1376,7 +1376,7 @@ export const connector = defineConnector({
   name: "yousign",
   label: "Yousign",
   namespace: "yousign",
-  version: "1.1.1",
+  version: "1.1.2",
   apiVersion: "v3",
   baseUrls: {"setting": "environment", "values": {"production": "https://api.yousign.app/v3", "sandbox": "https://api-sandbox.yousign.app/v3"}},
   auth: {"kind": "bearer", "token": "api_key"},

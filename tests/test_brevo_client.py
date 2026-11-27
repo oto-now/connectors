@@ -207,11 +207,42 @@ def test_list_templates_single(client, calls):
     assert calls[0]["url"] == f"{BASE}/smtp/templates/5"
 
 
+# --- Suppressions : une liste et un contact, rien d'autre ---------------------
+
+def test_delete_list(client, calls, monkeypatch):
+    client.delete_list("3")
+    assert calls[0]["method"] == "DELETE"
+    assert calls[0]["url"] == f"{BASE}/contacts/lists/3"
+    assert "json" not in calls[0] and "params" not in calls[0]
+    monkeypatch.setattr("requests.Session.request",
+                        lambda *a, **k: _Resp(payload=None, status_code=204))
+    assert client.delete_list(3) == {}
+
+
+def test_delete_contact_by_email_then_by_id(client, calls):
+    client.delete_contact("a@b.c")
+    client.delete_contact("42", identifier_type="contact_id")
+    assert [c["method"] for c in calls] == ["DELETE", "DELETE"]
+    assert calls[0]["url"] == f"{BASE}/contacts/a@b.c"
+    assert calls[0]["params"] is None
+    assert calls[1]["url"] == f"{BASE}/contacts/42"
+    assert calls[1]["params"] == {"identifierType": "contact_id"}
+
+
+def test_delete_contact_not_allowed_is_typed(client, monkeypatch):
+    monkeypatch.setattr(
+        "requests.Session.request",
+        lambda *a, **k: _Resp({"message": "not allowed"}, status_code=405))
+    with pytest.raises(UpstreamHTTPError) as exc:
+        client.delete_contact("owner@acme.example")
+    assert exc.value.status_code == 405
+
+
 # --- Campagnes : les writes dangereux ne sont pas exposés ---------------------
 
 @pytest.mark.parametrize("forbidden", [
-    "send_campaign", "send_now", "delete_campaign", "delete_contact",
-    "delete_list", "delete_template", "delete_hardbounces", "set_campaign_status",
+    "send_campaign", "send_now", "delete_campaign", "delete_template",
+    "delete_folder", "delete_hardbounces", "set_campaign_status",
 ])
 def test_destructive_writes_are_absent(client, forbidden):
     assert not hasattr(client, forbidden)

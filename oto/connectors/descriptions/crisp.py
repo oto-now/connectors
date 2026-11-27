@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'crisp',
                'label': 'Crisp',
                'namespace': 'crisp',
-               'version': '1.1.0',
+               'version': '1.1.1',
                'api_version': 'REST API V1',
                'base_url': 'https://api.crisp.chat/v1/website/{website_id}',
                'auth': {'kind': 'basic', 'username': 'token_identifier', 'password': 'token_key'},
@@ -63,7 +63,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
  'functions': [{'name': 'get_website',
                 'class': 'read',
                 'description': 'Get the Crisp workspace (website) the account reads: {error, reason, data: '
-                               '{website_id, name, domain, logo, verified, institutional}}.',
+                               '{website_id, name, domain, logo, verified, institutional}}. In French: '
+                               'espace crisp, site crisp, workspace crisp.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The workspace of the account', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/'},
@@ -74,7 +75,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                'order, operators, teams, team_operators, operator, conditions: [{model, '
                                'criterion, operator, query}], created_at, updated_at}]. An inbox_id filters '
                                "list_conversations; an inbox's conditions say which conversations it gathers "
-                               '(a channel, for instance).',
+                               '(a channel, for instance). In French: boîtes de réception crisp, lister les '
+                               'inbox du support.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['page_number'],
@@ -90,7 +92,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'class': 'read',
                 'description': 'Get one inbox of the Crisp workspace: {error, reason, data: {inbox_id, name, '
                                'emoji, order, operators, teams, team_operators, operator, conditions, '
-                               'created_at, updated_at}}.',
+                               "created_at, updated_at}}. In French: détail d'une boîte de réception crisp, "
+                               "règles d'une inbox crisp.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['inbox_id'],
@@ -108,19 +111,19 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                {'name': 'list_conversations',
                 'class': 'read',
                 'description': 'List the conversations of the Crisp workspace (chat, email and the other '
-                               'channels connected to the workspace), by page of per_page (20 to 50, default '
-                               '20): [{session_id, inbox_id, people_id, state (pending, unresolved, '
-                               'resolved), is_verified, is_blocked, availability, last_message (excerpt of '
-                               "the visitor's last message), preview_message, topic, segments, participants, "
-                               'assigned, unread, created_at, updated_at, waiting_since, meta: {nickname, '
-                               'email, phone, origin, subject, data, segments...}}]. The channel is '
-                               'meta.origin: chat, email or a urn: there is no channel parameter; '
-                               'filter_inbox_id narrows to one inbox. For incremental reading, '
+                               'connected channels), by page of per_page (20 to 50, default 20): '
+                               '[{session_id, inbox_id, people_id, state (pending, unresolved, resolved), '
+                               'is_verified, is_blocked, availability, last_message, preview_message, topic, '
+                               'segments, participants, assigned, unread, created_at, updated_at, '
+                               'waiting_since, meta: {nickname, email, phone, origin, subject, data, '
+                               'segments...}}]. The channel is meta.origin: chat, email or a urn: there is '
+                               'no channel parameter; filter_inbox_id narrows to one inbox. Incrementally, '
                                'filter_date_start and filter_date_end (ISO 8601) bound the UPDATE date, and '
                                'order_date_updated orders by it; the response gives neither a total nor a '
                                'next page. Timestamps are numbers. May contain personal or health data: read '
                                'only what the task needs, and do not look a person up by name or phone '
-                               'number unless the task requires it.',
+                               'number unless the task requires it. In French: conversations crisp, messages '
+                               'des visiteurs.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['page_number'],
@@ -214,7 +217,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                'paging and items as list_conversations. Search a topic or a segment, not a '
                                'person. May contain personal or health data: read only what the task needs, '
                                'and do not look a person up by name or phone number unless the task requires '
-                               'it.',
+                               'it. In French: chercher une conversation, rechercher dans les conversations '
+                               "crisp, conversations d'un segment.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['page_number', 'search_query'],
@@ -321,7 +325,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                "(such as WhatsApp's 24 hours) is open: read the date of the contact's last "
                                'message in list_conversation_messages. May contain personal or health data: '
                                'read only what the task needs, and do not look a person up by name or phone '
-                               'number unless the task requires it.',
+                               "number unless the task requires it. In French: détail d'une conversation "
+                               "crisp, état d'une conversation.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id'],
@@ -344,7 +349,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                'ip, connection, data (custom data of the conversation), avatar, device, '
                                'useragent, timezone, locales, segments}}. May contain personal or health '
                                'data: read only what the task needs, and do not look a person up by name or '
-                               'phone number unless the task requires it.',
+                               "phone number unless the task requires it. In French: coordonnées d'une "
+                               "conversation, email du visiteur, métadonnées d'une conversation.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id'],
@@ -373,7 +379,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                "an internal note of the team. The date of the contact's last message is the "
                                'latest timestamp with from user. May contain personal or health data: read '
                                'only what the task needs, and do not look a person up by name or phone '
-                               'number unless the task requires it.',
+                               "number unless the task requires it. In French: messages d'une conversation, "
+                               'historique du chat, lire un échange avec un client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id'],
@@ -421,7 +428,7 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                'the CREATION date of the profile. Custom data is not here: see '
                                'get_person_data. May contain personal or health data: read only what the '
                                'task needs, and do not look a person up by name or phone number unless the '
-                               'task requires it.',
+                               'task requires it. In French: contacts crisp, lister les profils clients.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['page_number'],
@@ -465,7 +472,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                '(search_text); same paging, filters and items as list_people. Prefer an id '
                                'or an email received from the task. May contain personal or health data: '
                                'read only what the task needs, and do not look a person up by name or phone '
-                               'number unless the task requires it.',
+                               'number unless the task requires it. In French: chercher un contact crisp, '
+                               'rechercher un profil client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['page_number', 'search_text'],
@@ -514,7 +522,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                'employment, geolocation, locales}, company, segments, notepad, active, '
                                'score, created_at, updated_at}}. May contain personal or health data: read '
                                'only what the task needs, and do not look a person up by name or phone '
-                               'number unless the task requires it.',
+                               "number unless the task requires it. In French: fiche d'un contact crisp, "
+                               "profil d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['people_id'],
@@ -536,7 +545,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'Get the custom data of one contact of the Crisp workspace: {error, reason, '
                                'data: {data: {<key>: <value>}}}, the keys the workspace defined. May contain '
                                'personal or health data: read only what the task needs, and do not look a '
-                               'person up by name or phone number unless the task requires it.',
+                               'person up by name or phone number unless the task requires it. In French: '
+                               "données personnalisées d'un contact, champs personnalisés d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['people_id'],
@@ -558,7 +568,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'List the conversations of one contact of the Crisp workspace, by page: data '
                                'is a list of session_id, to read with get_conversation. May contain personal '
                                'or health data: read only what the task needs, and do not look a person up '
-                               'by name or phone number unless the task requires it.',
+                               'by name or phone number unless the task requires it. In French: '
+                               "conversations d'un contact, historique des échanges d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['people_id', 'page_number'],
@@ -600,7 +611,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                {'name': 'get_helpdesk',
                 'class': 'read',
                 'description': 'Get the knowledge base (helpdesk) of the Crisp workspace: {error, reason, '
-                               'data: {name, url}}.',
+                               "data: {name, url}}. In French: base de connaissances crisp, centre d'aide "
+                               'crisp.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The knowledge base', 'input': {}}],
                 'refusals': [{'code': 'helpdesk_not_found',
@@ -613,7 +625,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'List the locales of the Crisp knowledge base, by page: [{locale_id, locale '
                                '(ISO 639-1), url, statistics: {articles, guides, references, news: {entries, '
                                'groups}}}]. The locale code is the locale argument of the other helpdesk '
-                               'functions.',
+                               'functions. In French: langues de la base de connaissances, langues du centre '
+                               "d'aide.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['page_number'],
@@ -632,7 +645,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'class': 'read',
                 'description': 'List the published pages of the Crisp knowledge base for one locale and '
                                'content type, by page: [{entity_id, title, tree_path, url}]. tree_path reads '
-                               'the page with get_helpdesk_content.',
+                               'the page with get_helpdesk_content. In French: articles publiés du centre '
+                               "d'aide, pages de la base de connaissances.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['locale', 'content_type', 'page_number'],
@@ -664,7 +678,9 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                'type, drafts and hidden entries included, by page: [{type (file or '
                                'directory), slug, title, state, children}]. sub_path lists from a directory; '
                                'search_title searches the titles; search_filter_status keeps one status; '
-                               'filter_date_start and filter_date_end bound the update date of an entry.',
+                               'filter_date_start and filter_date_end bound the update date of an entry. In '
+                               "French: arborescence de la base de connaissances, brouillons d'articles "
+                               "d'aide.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['locale', 'content_type', 'page_number'],
@@ -721,7 +737,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                {'name': 'get_helpdesk_entry',
                 'class': 'read',
                 'description': 'Get one entry of the Crisp knowledge base tree (a file or a directory) by '
-                               'its tree path: {error, reason, data: {type, slug, title, state, children}}.',
+                               'its tree path: {error, reason, data: {type, slug, title, state, children}}. '
+                               "In French: entrée de la base de connaissances, dossier du centre d'aide.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['locale', 'content_type', 'tree_path'],
@@ -751,7 +768,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                {'name': 'get_helpdesk_content',
                 'class': 'read',
                 'description': 'Get the body of one file of the Crisp knowledge base tree: {error, reason, '
-                               'data: {content}}.',
+                               "data: {content}}. In French: contenu d'un article d'aide, texte d'une page "
+                               "du centre d'aide.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['locale', 'content_type', 'tree_path'],
@@ -784,7 +802,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'Get the metadata of one file or directory of the Crisp knowledge base tree: '
                                '{error, reason, data: {format (articles, categories, sections), title, '
                                'description, state: {published, hidden, featured}, author: {user_id}, color, '
-                               'image}}.',
+                               "image}}. In French: métadonnées d'un article d'aide, statut de publication "
+                               "d'un article.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['locale', 'content_type', 'tree_path'],
@@ -818,7 +837,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                'from the team, that the team sees in the conversation and the contact never '
                                "receives. It stays in the conversation's history (nothing here deletes it). "
                                'Answers {error, reason, data: {fingerprint}}. The conversation is a real '
-                               'one: write only what the task needs.',
+                               'one: write only what the task needs. In French: ajouter une note interne, '
+                               'note privée dans une conversation.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id', 'content'],
@@ -846,7 +866,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'class': 'write',
                 'description': 'Change the state of one Crisp conversation: pending, unresolved or resolved '
                                '(the team sees it; the reference does not say that the contact is told). '
-                               'Answers {error, reason, data: {}}.',
+                               'Answers {error, reason, data: {}}. In French: résoudre une conversation, '
+                               "clôturer un ticket, changer l'état d'une conversation.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id', 'state'],
@@ -872,7 +893,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'Change the contact details one Crisp conversation carries (its meta): '
                                'nickname, email, phone, address. Only the fields given are sent. The contact '
                                'profile is a separate record: see update_person. Answers {error, reason, '
-                               'data: {}}.',
+                               "data: {}}. In French: modifier les coordonnées d'une conversation, changer "
+                               "l'email d'une conversation.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id'],
@@ -912,7 +934,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'Set the segments (tags) of one Crisp conversation to the list given: it is '
                                'sent whole, and a segment that is not in it may be lost. To add or remove '
                                'one segment, read the current list (get_conversation_meta, data.segments) '
-                               'and send it changed. Answers {error, reason, data: {}}.',
+                               'and send it changed. Answers {error, reason, data: {}}. In French: étiqueter '
+                               "une conversation, segments d'une conversation, tags d'une conversation.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id', 'segments'],
@@ -948,7 +971,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                                'be taken back. The reference does not say how the message reaches the '
                                "conversation's channel, nor what happens when a channel's messaging window "
                                "(such as WhatsApp's 24 hours) is closed. Answers 202 {error, reason, data: "
-                               '{fingerprint}}.',
+                               '{fingerprint}}. In French: répondre à un client, envoyer un message dans une '
+                               'conversation, répondre dans le chat.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id', 'content'],
@@ -987,7 +1011,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'Change one contact (people profile) of the Crisp workspace: its email, and '
                                'its nickname, phone and address. Only the fields given are sent; Crisp keeps '
                                "the others. 409 when the email is another contact's. Answers {error, reason, "
-                               'data: {}}.',
+                               'data: {}}. In French: modifier un contact crisp, mettre à jour un profil '
+                               'client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['people_id'],
@@ -1030,7 +1055,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'Change the custom data of one contact of the Crisp workspace: the keys given '
                                'are merged with the data already set (a key given replaces its value, the '
                                'other keys stay). Values are texts, numbers or booleans. Answers {error, '
-                               'reason, data: {}}.',
+                               "reason, data: {}}. In French: modifier les données personnalisées d'un "
+                               "contact, mettre à jour les champs d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['people_id', 'data'],
@@ -1061,7 +1087,8 @@ DESCRIPTION = {'connector': {'name': 'crisp',
                 'description': 'Set the segments (tags) of one contact of the Crisp workspace to the list '
                                'given: it is sent whole, and a segment that is not in it may be lost. To add '
                                'or remove one segment, read the current list (get_person, data.segments) and '
-                               'send it changed. Answers {error, reason, data: {}}.',
+                               'send it changed. Answers {error, reason, data: {}}. In French: étiqueter un '
+                               "contact, segments d'un contact, tags d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['people_id', 'segments'],

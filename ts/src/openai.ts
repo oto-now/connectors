@@ -6,7 +6,7 @@ export const listModels = defineFunction({
   connector: "openai",
   class: "read",
   act: false,
-  description: "The models this key can call: each with its id (gpt-image-2, gpt-image-2.5-flare…), created and owned_by. Free. Use it to check the key, or which image models the project can use.",
+  description: "The models this key can call: each with its id (gpt-image-2, gpt-image-2.5-flare…), created and owned_by. Free. Use it to check the key, or which image models the project can use. In French: modèles openai disponibles, lister les modèles d'image.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every model of the key", input: {} },
@@ -27,7 +27,7 @@ export const generateImage = defineFunction({
   connector: "openai",
   class: "write",
   act: true,
-  description: "Generate one image from a text prompt with an OpenAI GPT image model. The answer is a PNG file of yours, kept 24 hours: pass its id as is to a function that takes a file; never a link nor bytes. Billed by OpenAI in tokens, more for a higher quality and a larger size: the model, quality and size decide the price. quality xhigh and max exist on the gpt-image-2.5 models only. background transparent gives a PNG with alpha. A prompt refused by OpenAI's safety system answers 400. Takes up to three minutes.",
+  description: "Generate one image from a text prompt with an OpenAI GPT image model. The answer is a PNG file of yours, kept 24 hours: pass its id as is to a function that takes a file; never a link nor bytes. Billed by OpenAI in tokens, more for a higher quality and a larger size: the model, quality and size decide the price. quality xhigh and max exist on the gpt-image-2.5 models only. background transparent gives a PNG with alpha. A prompt refused by OpenAI's safety system answers 400. Takes up to three minutes. In French: générer une image, créer une illustration, image à partir d'un texte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -93,7 +93,7 @@ export const editImage = defineFunction({
   connector: "openai",
   class: "write",
   act: true,
-  description: "Edit an image of yours with an OpenAI GPT image model, following a prompt: change a part, restyle it, put the subject in a new scene. image is the id of a PNG, WebP or JPEG file (under 50 MB): a transit file of yours or a file on a page you can read; mask, optional, a PNG of the same size whose fully transparent pixels mark where to edit (under 4 MB). A transit file is consumed once OpenAI accepts it, a page file stays. The answer is a PNG file of yours, kept 24 hours: pass its id as is to a function that takes a file. Billed by OpenAI in tokens, the input image included. A prompt or image refused by OpenAI's safety system answers 400. Takes up to three minutes.",
+  description: "Edit an image of yours with an OpenAI GPT image model, following a prompt: change a part, restyle it, put the subject in a new scene. image is the id of a PNG, WebP or JPEG file (under 50 MB): a transit file of yours or a file on a page you can read; mask, optional, a PNG of the same size whose fully transparent pixels mark where to edit (under 4 MB). A transit file is consumed once OpenAI accepts it, a page file stays. The answer is a PNG file of yours, kept 24 hours: pass its id as is to a function that takes a file. Billed by OpenAI in tokens, the input image included. A prompt or image refused by OpenAI's safety system answers 400. Takes up to three minutes. In French: modifier une image, retoucher une image, changer le décor d'une photo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -163,7 +163,7 @@ export const connector = defineConnector({
   name: "openai",
   label: "OpenAI Images",
   namespace: "openai",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v1",
   baseUrl: "https://api.openai.com/v1",
   auth: {"kind": "bearer", "token": "api_key"},

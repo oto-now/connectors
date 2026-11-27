@@ -5,7 +5,7 @@ connector:
   name: sivan
   label: Sivan
   namespace: sivan
-  version: 1.1.0
+  version: 1.1.1
   api_version: external-1.0
   base_url: https://api2.sivan.io
   auth:
@@ -37,7 +37,9 @@ functions:
     description: >-
       List the activated companies of the group, each with its salaries (and
       their contracts), localisations and opening hours. The API key is scoped
-      to one company group; this returns every company in it.
+      to one company group; this returns every company in it. In French:
+      établissements du groupe, lister les sociétés sivan, horaires d'ouverture
+      des établissements.
     input:
       type: object
       additionalProperties: false
@@ -54,7 +56,8 @@ functions:
     description: >-
       List the salaries of the group. with_counter adds each salary's hour
       counter (in seconds) for the current ISO week/year; with_absences_counter
-      adds the absences counter object. Both default to false.
+      adds the absences counter object. Both default to false. In French: lister
+      les salariés, liste du personnel, compteur d'heures des salariés.
     input:
       type: object
       additionalProperties: false
@@ -84,6 +87,8 @@ functions:
       into successive windows. with_absence_type adds absenceType on each event
       (null when it is not an absence). companies_ids and salaries_ids, when
       non-empty, restrict the load BEFORE generation — use them on large groups.
+      In French: planning des salariés, plannings de la semaine, créneaux
+      planifiés.
     input:
       type: object
       additionalProperties: false
@@ -129,7 +134,8 @@ functions:
       List time-clock (badged) events over a window, grouped by company then
       salary. Requires the time-clock module to be enabled on the group (400
       otherwise). The period cannot exceed 31 days (inclusive). companies_ids
-      and salaries_ids, when non-empty, restrict the load BEFORE generation.
+      and salaries_ids, when non-empty, restrict the load BEFORE generation. In
+      French: pointages des salariés, badgeages des salariés, heures badgées.
     input:
       type: object
       additionalProperties: false
@@ -158,7 +164,8 @@ functions:
     description: >-
       List absences overlapping the window, as a flat list. By default includes
       PENDING, ACCEPTED and REFUSED; pass status to restrict to a subset.
-      salaries_ids, when non-empty, restricts to the listed salaries.
+      salaries_ids, when non-empty, restricts to the listed salaries. In French:
+      absences des salariés, congés posés, demandes d'absence.
     input:
       type: object
       additionalProperties: false
@@ -195,7 +202,8 @@ functions:
       totals and daily planned/done events, in seconds. Root and week objects
       may carry extra numeric aggregates (overtime, paid vacation, night time…),
       returned as-is. The period cannot exceed 31 days (inclusive). salaries_ids,
-      when non-empty, restricts to the listed salaries.
+      when non-empty, restricts to the listed salaries. In French: feuilles de
+      temps, heures travaillées par salarié, heures planifiées et réalisées.
     input:
       type: object
       additionalProperties: false
@@ -226,7 +234,9 @@ functions:
       days array (planned/done events) is dropped. Weekly aggregates
       (contractWorkingTime, accountedWorkingTime, overtime…) are kept as-is; a
       missing field stays missing. The period cannot exceed 31 days (inclusive).
-      salaries_ids, when non-empty, restricts to the listed salaries.
+      salaries_ids, when non-empty, restricts to the listed salaries. In French:
+      totaux d'heures pour la paie, récapitulatif hebdomadaire des heures,
+      préparation de la paie.
     input:
       type: object
       additionalProperties: false

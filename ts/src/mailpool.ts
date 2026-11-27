@@ -6,7 +6,7 @@ export const listDomains = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "List the workspace's domains with their type (google, outlook, shared, private), status, expiry, owner and redirect URL. Mailpool requires limit and offset on every list.",
+  description: "List the workspace's domains with their type (google, outlook, shared, private), status, expiry, owner and redirect URL. Mailpool requires limit and offset on every list. In French: lister les domaines mailpool, domaines d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -37,7 +37,7 @@ export const getDomain = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Get one domain by its id: type, status, expiry, owner, redirect URL.",
+  description: "Get one domain by its id: type, status, expiry, owner, redirect URL. In French: détail d'un domaine mailpool, expiration d'un domaine.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -65,7 +65,7 @@ export const getDomainDns = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Get the DNS records Mailpool holds for a domain, as {type, key, value, priority}; key is the host label, null for the apex. This is the stored configuration, not a live lookup. The _dmarc record is published from the domain's DMARC settings (set_dmarc_email, set_dmarc_policy).",
+  description: "Get the DNS records Mailpool holds for a domain, as {type, key, value, priority}; key is the host label, null for the apex. This is the stored configuration, not a live lookup. The _dmarc record is published from the domain's DMARC settings (set_dmarc_email, set_dmarc_policy). In French: enregistrements dns d'un domaine, configuration dns.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -93,7 +93,7 @@ export const setDmarcEmail = defineFunction({
   connector: "mailpool",
   class: "write",
   act: true,
-  description: "Set the address that receives a domain's DMARC reports. It is written as both rua and ruf, and the stored _dmarc record is published with it.",
+  description: "Set the address that receives a domain's DMARC reports. It is written as both rua and ruf, and the stored _dmarc record is published with it. In French: adresse des rapports dmarc, recevoir les rapports dmarc.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -124,7 +124,7 @@ export const setDmarcPolicy = defineFunction({
   connector: "mailpool",
   class: "write",
   act: true,
-  description: "Set a domain's DMARC policy: none, quarantine or reject.",
+  description: "Set a domain's DMARC policy: none, quarantine or reject. In French: politique dmarc d'un domaine, régler le dmarc.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -155,7 +155,7 @@ export const setRedirectUrl = defineFunction({
   connector: "mailpool",
   class: "write",
   act: true,
-  description: "Set where a web visit to the domain is redirected.",
+  description: "Set where a web visit to the domain is redirected. In French: redirection d'un domaine, rediriger un domaine vers un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -186,7 +186,7 @@ export const getDomainInfo = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Tell whether a domain can be registered through Mailpool, and its price. Nothing is bought.",
+  description: "Tell whether a domain can be registered through Mailpool, and its price. Nothing is bought. In French: disponibilité d'un nom de domaine, prix d'un domaine.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -214,7 +214,7 @@ export const getDomainSuggestions = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Suggest available domain names close to a name, with their price. Nothing is bought.",
+  description: "Suggest available domain names close to a name, with their price. Nothing is bought. In French: suggestions de noms de domaine, trouver un domaine disponible.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -246,7 +246,7 @@ export const checkGoogleWorkspaceAvailability = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Tell whether a domain is already used by a Google Workspace account. Must be enabled for the workspace, otherwise 403.",
+  description: "Tell whether a domain is already used by a Google Workspace account. Must be enabled for the workspace, otherwise 403. In French: domaine déjà sur google workspace, vérifier un domaine google workspace.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -274,7 +274,7 @@ export const checkMicrosoft365Availability = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Tell whether a domain is already used by a Microsoft 365 tenant. Must be enabled for the workspace, otherwise 403.",
+  description: "Tell whether a domain is already used by a Microsoft 365 tenant. Must be enabled for the workspace, otherwise 403. In French: domaine déjà sur microsoft 365, vérifier un domaine microsoft 365.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -302,7 +302,7 @@ export const listDomainOwners = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "List the saved registrant contacts used when registering domains.",
+  description: "List the saved registrant contacts used when registering domains. In French: titulaires des domaines, contacts d'enregistrement de domaine.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Saved owners", input: {} },
@@ -325,7 +325,7 @@ export const listMailboxes = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "List the workspace's mailboxes: address, name, type (google, outlook, shared, private), status, domain and IMAP/SMTP hosts. Credentials are never returned.",
+  description: "List the workspace's mailboxes: address, name, type (google, outlook, shared, private), status, domain and IMAP/SMTP hosts. Credentials are never returned. In French: lister les boîtes mail mailpool, boîtes d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -357,7 +357,7 @@ export const getMailbox = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Get one mailbox by its id. Credentials are never returned.",
+  description: "Get one mailbox by its id. Credentials are never returned. In French: détail d'une boîte mail mailpool, lire une boîte d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -385,7 +385,7 @@ export const updateMailbox = defineFunction({
   connector: "mailpool",
   class: "write",
   act: true,
-  description: "Change a mailbox's sender settings in place: first and last name, signature, forwarding address, and the avatar of a Google or Outlook mailbox (null removes it). The four text fields are always sent, so a write that replaces the whole settings erases nothing: read the mailbox with get_mailbox first and pass its current first name, last name, signature and forwarding address, with your changes on top. The avatar is sent only when given. The address, type and domain cannot be changed. Credentials are never returned.",
+  description: "Change a mailbox's sender settings in place: first and last name, signature, forwarding address, and the avatar of a Google or Outlook mailbox (null removes it). The four text fields are always sent, so a write that replaces the whole settings erases nothing: read the mailbox with get_mailbox first and pass its current first name, last name, signature and forwarding address, with your changes on top. The avatar is sent only when given. The address, type and domain cannot be changed. Credentials are never returned. In French: modifier une boîte mail, changer la signature d'une boîte, nom d'expéditeur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -434,7 +434,7 @@ export const listSpamChecks = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "List past spam checks with their state and results (SPF, DKIM, DMARC, blacklists, SpamAssassin, score).",
+  description: "List past spam checks with their state and results (SPF, DKIM, DMARC, blacklists, SpamAssassin, score). In French: historique des tests de spam, tests de délivrabilité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -465,7 +465,7 @@ export const createSpamCheck = defineFunction({
   connector: "mailpool",
   class: "write",
   act: true,
-  description: "Run a spam check: Mailpool sends a test email from the mailbox and scores it. Free; the state goes from pending to completed within seconds. Read it with get_spam_check. Refused with 404 for mailbox types it does not support.",
+  description: "Run a spam check: Mailpool sends a test email from the mailbox and scores it. Free; the state goes from pending to completed within seconds. Read it with get_spam_check. Refused with 404 for mailbox types it does not support. In French: lancer un test de spam, tester la délivrabilité d'une boîte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -493,7 +493,7 @@ export const getSpamCheck = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Get one spam check with its state and detailed results.",
+  description: "Get one spam check with its state and detailed results. In French: résultat d'un test de spam, score de délivrabilité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -521,7 +521,7 @@ export const deleteSpamCheck = defineFunction({
   connector: "mailpool",
   class: "write",
   act: true,
-  description: "Delete one spam check from the history.",
+  description: "Delete one spam check from the history. In French: supprimer un test de spam, effacer un test de délivrabilité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -549,7 +549,7 @@ export const listWarmupInboxes = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "List the inboxes enrolled in Mailpool warmup, with their status.",
+  description: "List the inboxes enrolled in Mailpool warmup, with their status. In French: boîtes en warmup, boîtes en préchauffe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -580,7 +580,7 @@ export const getWarmupInbox = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Get one warmup inbox: settings and daily counters.",
+  description: "Get one warmup inbox: settings and daily counters. In French: détail du warmup d'une boîte, compteurs de préchauffe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -608,7 +608,7 @@ export const listAvailableWarmupInboxes = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "List the active mailboxes that are not enrolled in warmup yet.",
+  description: "List the active mailboxes that are not enrolled in warmup yet. In French: boîtes disponibles pour le warmup, boîtes non préchauffées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -639,7 +639,7 @@ export const getSubscriptionSlots = defineFunction({
   connector: "mailpool",
   class: "read",
   act: false,
-  description: "Get the mailboxes used and the slots paid, per mailbox type, and the warmup slots. A mailbox can only be created while a slot is free.",
+  description: "Get the mailboxes used and the slots paid, per mailbox type, and the warmup slots. A mailbox can only be created while a slot is free. In French: places de l'abonnement mailpool, boîtes restantes dans l'abonnement.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Slots in use", input: {} },
@@ -661,7 +661,7 @@ export const connector = defineConnector({
   name: "mailpool",
   label: "Mailpool",
   namespace: "mailpool",
-  version: "2.0.0",
+  version: "2.0.1",
   apiVersion: "v1",
   baseUrl: "https://app.mailpool.io/v1/api",
   auth: {"kind": "api_key", "in": "header", "name": "X-Api-Authorization", "key": "api_key"},

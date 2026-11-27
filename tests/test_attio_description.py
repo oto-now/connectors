@@ -334,9 +334,9 @@ def _shaped(answer, paths: list[str]):
     return answer
 
 
-def test_the_description_is_version_1_3_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_3_1_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.3.0"
+    assert description["connector"]["version"] == "1.3.1"
     check(description, ATTIO)
 
 

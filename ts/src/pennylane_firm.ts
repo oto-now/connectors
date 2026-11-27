@@ -6,7 +6,7 @@ export const listCompanies = defineFunction({
   connector: "pennylane_firm",
   class: "read",
   act: false,
-  description: "List the companies of the firm the token belongs to: id, name, billing_company_name, siren, address, city, postal_code, activity_nomenclature, activity_code, external_id, client_code. The id is the company_id every other function takes; it is the firm-side id and means nothing to the Company API. Paged by page number: the response carries current_page, total_pages, total_items and per_page; ask for page + 1 while it is below total_pages. Scope companies:readonly.",
+  description: "List the companies of the firm the token belongs to: id, name, billing_company_name, siren, address, city, postal_code, activity_nomenclature, activity_code, external_id, client_code. The id is the company_id every other function takes; it is the firm-side id and means nothing to the Company API. Paged by page number: the response carries current_page, total_pages, total_items and per_page; ask for page + 1 while it is below total_pages. Scope companies:readonly. In French: dossiers du cabinet, lister les sociétés clientes du cabinet, entreprises du cabinet comptable.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -59,7 +59,7 @@ export const getCompany = defineFunction({
   connector: "pennylane_firm",
   class: "read",
   act: false,
-  description: "Get one company of the firm by its firm-side id (from list_companies): name, billing_company_name, siren, address, activity codes, external_id, client_code. Scope companies:readonly.",
+  description: "Get one company of the firm by its firm-side id (from list_companies): name, billing_company_name, siren, address, activity codes, external_id, client_code. Scope companies:readonly. In French: fiche d'un dossier client, détail d'une société du cabinet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -94,7 +94,7 @@ export const listFiscalYears = defineFunction({
   connector: "pennylane_firm",
   class: "read",
   act: false,
-  description: "List the fiscal years of one company: id, start, finish (YYYY-MM-DD) and status (open, reopen, closed, frozen). Paged by page number, up to 100 per page: the response carries current_page and total_pages. Scope fiscal_years:readonly.",
+  description: "List the fiscal years of one company: id, start, finish (YYYY-MM-DD) and status (open, reopen, closed, frozen). Paged by page number, up to 100 per page: the response carries current_page and total_pages. Scope fiscal_years:readonly. In French: exercices d'un dossier client, exercices comptables d'une société cliente.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -129,7 +129,7 @@ export const listDmsFolders = defineFunction({
   connector: "pennylane_firm",
   class: "read",
   act: false,
-  description: "List the folders of one company's DMS: id, name, path (full path from the root, e.g. /Annual/2018/FEC), parent_folder ({id}, or null at the root), files.url, created_at, updated_at. The tree is rebuilt from parent_folder or path. Paged by limit and cursor: pass next_cursor as cursor for the next page. Folders cannot be renamed, moved or deleted through the API. Scope dms_files:readonly.",
+  description: "List the folders of one company's DMS: id, name, path (full path from the root, e.g. /Annual/2018/FEC), parent_folder ({id}, or null at the root), files.url, created_at, updated_at. The tree is rebuilt from parent_folder or path. Paged by limit and cursor: pass next_cursor as cursor for the next page. Folders cannot be renamed, moved or deleted through the API. Scope dms_files:readonly. In French: dossiers de la ged, arborescence documentaire d'un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -197,7 +197,7 @@ export const listDmsFiles = defineFunction({
   connector: "pennylane_firm",
   class: "read",
   act: false,
-  description: "List the files of one company's DMS: id, name, path (full path, folders included), parent_folder ({id}, or null at the root), url (to download the file), created_at, updated_at. Filter on parent_folder_id to list one folder. There is no single-file read: filter on id instead. Files cannot be renamed, moved or deleted through the API. Paged by limit and cursor: pass next_cursor as cursor for the next page. Scope dms_files:readonly.",
+  description: "List the files of one company's DMS: id, name, path (full path, folders included), parent_folder ({id}, or null at the root), url (to download the file), created_at, updated_at. Filter on parent_folder_id to list one folder. There is no single-file read: filter on id instead. Files cannot be renamed, moved or deleted through the API. Paged by limit and cursor: pass next_cursor as cursor for the next page. Scope dms_files:readonly. In French: fichiers de la ged, documents d'un dossier client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -265,7 +265,7 @@ export const createDmsFolder = defineFunction({
   connector: "pennylane_firm",
   class: "write",
   act: true,
-  description: "Create a folder in one company's DMS, at the root or under parent_folder_id. Returns the folder with its id and full path. A folder cannot be renamed, moved or deleted through the API afterwards: list the folders first and reuse an existing one rather than creating a duplicate. Scope dms_files:all.",
+  description: "Create a folder in one company's DMS, at the root or under parent_folder_id. Returns the folder with its id and full path. A folder cannot be renamed, moved or deleted through the API afterwards: list the folders first and reuse an existing one rather than creating a duplicate. Scope dms_files:all. In French: créer un dossier dans la ged, nouveau dossier documentaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -306,7 +306,7 @@ export const uploadDmsFile = defineFunction({
   connector: "pennylane_firm",
   class: "sensitive",
   act: true,
-  description: "Upload a file into a folder of one company's DMS. file is the id of a transit file of yours (sent to the platform beforehand, or produced by another connector) or of a file on a page you can read: it is sent as is, under its own name and type. A transit file is consumed once Pennylane accepts it, and after a refusal stays yours until it expires; a page file stays. name is the name shown in the DMS, the file's own name without it. parent_folder_id is required: list the folders first. The DMS has no delete through the API: an upload cannot be undone. Returns the file with its id, name and full path. Scope dms_files:all.",
+  description: "Upload a file into a folder of one company's DMS. file is the id of a transit file of yours (sent to the platform beforehand, or produced by another connector) or of a file on a page you can read: it is sent as is, under its own name and type. A transit file is consumed once Pennylane accepts it, and after a refusal stays yours until it expires; a page file stays. name is the name shown in the DMS, the file's own name without it. parent_folder_id is required: list the folders first. The DMS has no delete through the API: an upload cannot be undone. Returns the file with its id, name and full path. Scope dms_files:all. In French: déposer un document dans la ged, téléverser un fichier pour un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -362,7 +362,7 @@ export const listDmsFileChanges = defineFunction({
   connector: "pennylane_firm",
   class: "read",
   act: false,
-  description: "List the changes to one company's DMS files, oldest first: id (of the file), operation (insert, update, delete), processed_at, updated_at, created_at. Start from start_date (RFC 3339), or from the oldest change kept without it; changes are kept four weeks, and an older start_date is refused. Then pass next_cursor as cursor, without start_date, while has_more is true. Up to 1000 changes per page. Scope dms_files:readonly.",
+  description: "List the changes to one company's DMS files, oldest first: id (of the file), operation (insert, update, delete), processed_at, updated_at, created_at. Start from start_date (RFC 3339), or from the oldest change kept without it; changes are kept four weeks, and an older start_date is refused. Then pass next_cursor as cursor, without start_date, while has_more is true. Up to 1000 changes per page. Scope dms_files:readonly. In French: modifications des documents de la ged, nouveaux fichiers déposés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -404,7 +404,7 @@ export const connector = defineConnector({
   name: "pennylane_firm",
   label: "Pennylane (firm)",
   namespace: "pennylane_firm",
-  version: "1.1.1",
+  version: "1.1.2",
   apiVersion: "v1",
   baseUrl: "https://app.pennylane.com/api/external/firm/v1",
   auth: {"kind": "bearer", "token": "token"},

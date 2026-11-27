@@ -6,7 +6,7 @@ export const getCompany = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get the company and the user the API key belongs to, and the key's scopes. One key reaches one company only. The scopes field is the key's actual set of rights: read it whenever Pennylane refuses access (401/403), and tell the user which scope is missing rather than retrying. Scopes are split by object: journals:*, ledger_accounts:* and ledger_entries:* are distinct, so a key that reads entries may not read journals.",
+  description: "Get the company and the user the API key belongs to, and the key's scopes. One key reaches one company only. The scopes field is the key's actual set of rights: read it whenever Pennylane refuses access (401/403), and tell the user which scope is missing rather than retrying. Scopes are split by object: journals:*, ledger_accounts:* and ledger_entries:* are distinct, so a key that reads entries may not read journals. In French: société pennylane, droits de la clé pennylane, entreprise connectée à pennylane.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Company, user and scopes of the key", input: {} },
@@ -28,7 +28,7 @@ export const listFiscalYears = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the company's fiscal years, newest first by default. Paged by limit and cursor: pass next_cursor as cursor for the next page.",
+  description: "List the company's fiscal years, newest first by default. Paged by limit and cursor: pass next_cursor as cursor for the next page. In French: exercices comptables, lister les exercices fiscaux.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -68,7 +68,7 @@ export const listLedgerAccounts = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the chart of accounts. Every ledger entry line needs a ledger_account_id, read here, never guessed. Scope ledger_accounts:readonly. Up to 1000 accounts per page.",
+  description: "List the chart of accounts. Every ledger entry line needs a ledger_account_id, read here, never guessed. Scope ledger_accounts:readonly. Up to 1000 accounts per page. In French: plan comptable, lister les comptes comptables, comptes du grand livre.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -130,7 +130,7 @@ export const listJournals = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the company's journals ({id, code, label, type}: purchases, sales, bank...). A ledger entry needs a journal_id: these ids are specific to the company, resolve them here every time and never hard-code them. Scope journals:readonly, distinct from the scope of ledger entries.",
+  description: "List the company's journals ({id, code, label, type}: purchases, sales, bank...). A ledger entry needs a journal_id: these ids are specific to the company, resolve them here every time and never hard-code them. Scope journals:readonly, distinct from the scope of ledger entries. In French: journaux comptables, lister les journaux, journal des achats ou des ventes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -192,7 +192,7 @@ export const listCategories = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the analytical categories (expense and revenue categories), each in one group (an analytical axis, see list_category_groups). Scope categories:readonly.",
+  description: "List the analytical categories (expense and revenue categories), each in one group (an analytical axis, see list_category_groups). Scope categories:readonly. In French: catégories analytiques, lister les catégories de dépenses et de recettes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -254,7 +254,7 @@ export const listCategoryGroups = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the category groups, the analytical axes ({id, label}): a category belongs to one group, and the weights an object carries within one group sum to 1. Scope categories:readonly.",
+  description: "List the category groups, the analytical axes ({id, label}): a category belongs to one group, and the weights an object carries within one group sum to 1. Scope categories:readonly. In French: axes analytiques, groupes de catégories analytiques.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -293,7 +293,7 @@ export const listSupplierInvoiceCategories = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the analytical categories of one supplier invoice, each with its weight (a string between 0 and 1). Scope supplier_invoices:readonly.",
+  description: "List the analytical categories of one supplier invoice, each with its weight (a string between 0 and 1). Scope supplier_invoices:readonly. In French: catégories d'une facture fournisseur, ventilation analytique d'une facture fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -334,7 +334,7 @@ export const listCustomerInvoiceCategories = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the analytical categories of one customer invoice, each with its weight (a string between 0 and 1). Scope customer_invoices:readonly.",
+  description: "List the analytical categories of one customer invoice, each with its weight (a string between 0 and 1). Scope customer_invoices:readonly. In French: catégories d'une facture client, ventilation analytique d'une facture client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -375,7 +375,7 @@ export const listLedgerEntryLineCategories = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the analytical categories of one ledger entry line, each with its weight (a string between 0 and 1). The line ids come from list_ledger_entry_lines. Scope ledger_entries:readonly.",
+  description: "List the analytical categories of one ledger entry line, each with its weight (a string between 0 and 1). The line ids come from list_ledger_entry_lines. Scope ledger_entries:readonly. In French: catégories d'une ligne d'écriture, ventilation analytique d'une écriture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -416,7 +416,7 @@ export const listInvoiceTemplates = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the customer invoice templates. The template drives the PDF rendering: a credit-note template without the payment and IBAN block is the only way through the API to get a credit-note layout. Pass its id as customer_invoice_template_id when creating or updating an invoice or a credit note. Scope customer_invoice_templates:readonly.",
+  description: "List the customer invoice templates. The template drives the PDF rendering: a credit-note template without the payment and IBAN block is the only way through the API to get a credit-note layout. Pass its id as customer_invoice_template_id when creating or updating an invoice or a credit note. Scope customer_invoice_templates:readonly. In French: modèles de facture, gabarits de facture client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -455,7 +455,7 @@ export const listProducts = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the product catalogue (id, label, price, unit, vat_rate...). Resolve the product_id of an invoice or quote line here, never guess it. Beware of near-homonym labels: choose on the full record (price, unit), not on the start of the name.",
+  description: "List the product catalogue (id, label, price, unit, vat_rate...). Resolve the product_id of an invoice or quote line here, never guess it. Beware of near-homonym labels: choose on the full record (price, unit), not on the start of the name. In French: catalogue produits, lister les produits et services, articles du catalogue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -517,7 +517,7 @@ export const getProduct = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one product by its id.",
+  description: "Get one product by its id. In French: fiche d'un produit, détail d'un article du catalogue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -546,7 +546,7 @@ export const createProduct = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Create a product in the catalogue. price_before_tax is a decimal string (\"700.00\"). vat_rate is a Pennylane code, never a percentage: 20% is FR_200, 10% FR_100, 5.5% FR_55, 2.1% FR_21, exempt is exempt.",
+  description: "Create a product in the catalogue. price_before_tax is a decimal string (\"700.00\"). vat_rate is a Pennylane code, never a percentage: 20% is FR_200, 10% FR_100, 5.5% FR_55, 2.1% FR_21, exempt is exempt. In French: créer un produit, ajouter un article au catalogue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -591,7 +591,7 @@ export const listCustomers = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List customers (companies and individuals) with their contact details. Resolve a customer_id from a name here: invoice lists carry only customer.{id, url}. Before creating a customer, look it up by external_reference with the filter: creating it again is refused (\"External reference has already been taken\"); reuse the id found.",
+  description: "List customers (companies and individuals) with their contact details. Resolve a customer_id from a name here: invoice lists carry only customer.{id, url}. Before creating a customer, look it up by external_reference with the filter: creating it again is refused (\"External reference has already been taken\"); reuse the id found. In French: lister les clients, chercher un client, fichier clients.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -656,7 +656,7 @@ export const createCustomer = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Create a company customer. The full billing address is required. Look the customer up by external_reference first (list_customers): an external_reference already taken is refused. Returns the customer with its id, to pass as customer_id when creating an invoice or a quote.",
+  description: "Create a company customer. The full billing address is required. Look the customer up by external_reference first (list_customers): an external_reference already taken is refused. Returns the customer with its id, to pass as customer_id when creating an invoice or a quote. In French: créer un client, ajouter une société cliente.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -722,7 +722,7 @@ export const updateCustomer = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Update a company customer: complete its emails, VAT number, registration number, IBAN, external_reference... Typical use: a customer known to Pennylane without email or identifier, completed before invoicing it. Only the arguments passed are changed.",
+  description: "Update a company customer: complete its emails, VAT number, registration number, IBAN, external_reference... Typical use: a customer known to Pennylane without email or identifier, completed before invoicing it. Only the arguments passed are changed. In French: modifier un client, compléter la fiche d'une société cliente.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -790,7 +790,7 @@ export const listSuppliers = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List suppliers (id, name...). Resolve the supplier_id of an existing supplier here before creating one.",
+  description: "List suppliers (id, name...). Resolve the supplier_id of an existing supplier here before creating one. In French: lister les fournisseurs, chercher un fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -852,7 +852,7 @@ export const getSupplier = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one supplier by its id.",
+  description: "Get one supplier by its id. In French: fiche d'un fournisseur, détail d'un fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -881,7 +881,7 @@ export const createSupplier = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Create a supplier, before recording the purchase invoice of a new supplier. Look it up first (list_suppliers). Returns the supplier with its id.",
+  description: "Create a supplier, before recording the purchase invoice of a new supplier. Look it up first (list_suppliers). Returns the supplier with its id. In French: créer un fournisseur, ajouter un fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -943,7 +943,7 @@ export const listCustomerInvoices = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List customer invoices and credit notes (the revenue side), newest first: to match against incoming payments, or to find unpaid invoices. Without a filter the whole history comes back; start with a date or customer filter. To find one invoice by its external_reference (e.g. before creating a credit note for a failed payment: if an invoice already carries the reference, the credit note exists), filter on external_reference: the server filter is exhaustive, archived and old invoices included.",
+  description: "List customer invoices and credit notes (the revenue side), newest first: to match against incoming payments, or to find unpaid invoices. Without a filter the whole history comes back; start with a date or customer filter. To find one invoice by its external_reference (e.g. before creating a credit note for a failed payment: if an invoice already carries the reference, the credit note exists), filter on external_reference: the server filter is exhaustive, archived and old invoices included. In French: factures clients, lister les factures de vente, factures impayées, avoirs clients.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1018,7 +1018,7 @@ export const listCustomerInvoiceLines = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the lines of a customer invoice or credit note, with their id (needed to update a line of a draft).",
+  description: "List the lines of a customer invoice or credit note, with their id (needed to update a line of a draft). In French: lignes d'une facture client, lignes d'un avoir.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1059,7 +1059,7 @@ export const createCustomerInvoice = defineFunction({
   connector: "pennylane",
   class: "write",
   act: false,
-  description: "Create a customer invoice, always as a draft. The customer must exist (list_customers, create_customer). Finalizing and sending are separate functions, called only after explicit human validation. Each line takes exactly one of two shapes, with no other key (any deviation is refused as NotAnyOf): a product line {product_id, quantity}, the product filling the rest (label, raw_currency_unit_price, unit, vat_rate may override it); or a free line {label, quantity, unit, raw_currency_unit_price, vat_rate}, all required. raw_currency_unit_price is the unit price before tax as a string (\"700.00\"); quantity is a number, never a string. Pass an external_reference to trace the source and look it up before creating again.",
+  description: "Create a customer invoice, always as a draft. The customer must exist (list_customers, create_customer). Finalizing and sending are separate functions, called only after explicit human validation. Each line takes exactly one of two shapes, with no other key (any deviation is refused as NotAnyOf): a product line {product_id, quantity}, the product filling the rest (label, raw_currency_unit_price, unit, vat_rate may override it); or a free line {label, quantity, unit, raw_currency_unit_price, vat_rate}, all required. raw_currency_unit_price is the unit price before tax as a string (\"700.00\"); quantity is a number, never a string. Pass an external_reference to trace the source and look it up before creating again. In French: créer une facture, brouillon de facture client, facturer un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1150,7 +1150,7 @@ export const createCreditNote = defineFunction({
   connector: "pennylane",
   class: "write",
   act: false,
-  description: "Create a standalone credit note, always as a draft. In Pennylane v2 a credit note is a customer invoice with negative amounts: give every line a NEGATIVE quantity (crediting 195 credits at 1.45 is quantity -195, unit price \"1.45\"). Lines follow the invoice line shapes (product line or free line). Nothing is linked at creation: the creation-time credited_invoice_id is broken upstream; link afterwards with link_credit_note if needed, or name the original invoice in pdf_invoice_free_text. Pass the source event as external_reference and look it up first (list_customer_invoices) so one event gives one credit note. For the credit-note layout, pass the id of a credit-note template.",
+  description: "Create a standalone credit note, always as a draft. In Pennylane v2 a credit note is a customer invoice with negative amounts: give every line a NEGATIVE quantity (crediting 195 credits at 1.45 is quantity -195, unit price \"1.45\"). Lines follow the invoice line shapes (product line or free line). Nothing is linked at creation: the creation-time credited_invoice_id is broken upstream; link afterwards with link_credit_note if needed, or name the original invoice in pdf_invoice_free_text. Pass the source event as external_reference and look it up first (list_customer_invoices) so one event gives one credit note. For the credit-note layout, pass the id of a credit-note template. In French: créer un avoir, avoir client, annuler une facture par un avoir.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1240,7 +1240,7 @@ export const linkCreditNote = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Link an existing credit note to the customer invoice it credits. The only working way to link them (the creation-time attribute is broken upstream). The API offers no unlinking.",
+  description: "Link an existing credit note to the customer invoice it credits. The only working way to link them (the creation-time attribute is broken upstream). The API offers no unlinking. In French: lier un avoir à une facture, rattacher un avoir.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1271,7 +1271,7 @@ export const updateCustomerInvoice = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Update a draft customer invoice or credit note: dates, customer, template, free text, external_reference, and its lines through invoice_lines {create, update, delete} (update and delete need the line id, from list_customer_invoice_lines). Typical use: switch a draft credit note to the credit-note template before finalizing. On a finalized document Pennylane only accepts label, external_reference and line updates: never use this to correct an issued document.",
+  description: "Update a draft customer invoice or credit note: dates, customer, template, free text, external_reference, and its lines through invoice_lines {create, update, delete} (update and delete need the line id, from list_customer_invoice_lines). Typical use: switch a draft credit note to the credit-note template before finalizing. On a finalized document Pennylane only accepts label, external_reference and line updates: never use this to correct an issued document. In French: modifier un brouillon de facture, corriger une facture brouillon.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1406,7 +1406,7 @@ export const finalizeCustomerInvoice = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Finalize a draft customer invoice or credit note: it gets its definitive number and can no longer be edited. Only after explicit human validation of the draft.",
+  description: "Finalize a draft customer invoice or credit note: it gets its definitive number and can no longer be edited. Only after explicit human validation of the draft. In French: finaliser une facture, valider une facture client, numéroter une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1434,7 +1434,7 @@ export const sendCustomerInvoice = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Email a finalized customer invoice or credit note to the customer, at the addresses on the customer's record. Only after explicit human validation. The PDF takes a few minutes to generate after finalization: a conflict means it is not ready yet, retry later.",
+  description: "Email a finalized customer invoice or credit note to the customer, at the addresses on the customer's record. Only after explicit human validation. The PDF takes a few minutes to generate after finalization: a conflict means it is not ready yet, retry later. In French: envoyer une facture au client, envoyer un avoir par email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1464,7 +1464,7 @@ export const deleteCustomerInvoice = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Delete a draft customer invoice or credit note, e.g. an obsolete draft before it is finalized by mistake. A finalized document cannot be deleted: it is cancelled with a credit note.",
+  description: "Delete a draft customer invoice or credit note, e.g. an obsolete draft before it is finalized by mistake. A finalized document cannot be deleted: it is cancelled with a credit note. In French: supprimer un brouillon de facture, effacer une facture brouillon.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1494,7 +1494,7 @@ export const listQuotes = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List sales quotes, newest first. Without a filter the whole history comes back: filter on status or customer_id. Statuses: pending, accepted, denied, invoiced, expired.",
+  description: "List sales quotes, newest first. Without a filter the whole history comes back: filter on status or customer_id. Statuses: pending, accepted, denied, invoiced, expired. In French: lister les devis, devis en attente, devis acceptés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1556,7 +1556,7 @@ export const getQuote = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one quote: status, quote_number, linked_invoices, and public_file_url, its PDF (a link that expires after 30 minutes).",
+  description: "Get one quote: status, quote_number, linked_invoices, and public_file_url, its PDF (a link that expires after 30 minutes). In French: détail d'un devis, statut d'un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1585,7 +1585,7 @@ export const getQuotePdfLink = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get the PDF link of a quote, to attach to an email. The link expires after 30 minutes: read it right before use, never store it.",
+  description: "Get the PDF link of a quote, to attach to an email. The link expires after 30 minutes: read it right before use, never store it. In French: pdf d'un devis, lien du devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1619,7 +1619,7 @@ export const listQuoteLines = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the lines of a quote.",
+  description: "List the lines of a quote. In French: lignes d'un devis, articles d'un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1660,7 +1660,7 @@ export const createQuote = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Create a sales quote. A quote has no draft: it is created pending and reaches the customer only when sent. The customer must exist. Tell the user the customer, the lines and the validity date before calling. Lines follow the invoice line shapes: a product line {product_id, quantity} or a free line {label, quantity, unit, raw_currency_unit_price, vat_rate}, all required; a discount is a free line with a negative price (\"-100.00\").",
+  description: "Create a sales quote. A quote has no draft: it is created pending and reaches the customer only when sent. The customer must exist. Tell the user the customer, the lines and the validity date before calling. Lines follow the invoice line shapes: a product line {product_id, quantity} or a free line {label, quantity, unit, raw_currency_unit_price, vat_rate}, all required; a discount is a free line with a negative price (\"-100.00\"). In French: créer un devis, faire un devis, nouveau devis client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1751,7 +1751,7 @@ export const updateQuoteStatus = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Set the status of a quote: pending, accepted, denied, invoiced or expired; e.g. accepted once the customer has signed.",
+  description: "Set the status of a quote: pending, accepted, denied, invoiced or expired; e.g. accepted once the customer has signed. In French: changer le statut d'un devis, marquer un devis accepté, devis signé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1783,7 +1783,7 @@ export const createInvoiceFromQuote = defineFunction({
   connector: "pennylane",
   class: "write",
   act: false,
-  description: "Create a draft customer invoice from a quote, taking over its customer and lines. Finalizing and sending it remain separate steps after human validation. Needs the scope customer_invoices:all on top of quotes.",
+  description: "Create a draft customer invoice from a quote, taking over its customer and lines. Finalizing and sending it remain separate steps after human validation. Needs the scope customer_invoices:all on top of quotes. In French: transformer un devis en facture, facturer un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1815,7 +1815,7 @@ export const listSupplierInvoices = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List supplier invoices (the expense side), newest first: to match against outgoing payments, or to find what remains to pay. Without a filter the whole history comes back: filter on date or supplier_id.",
+  description: "List supplier invoices (the expense side), newest first: to match against outgoing payments, or to find what remains to pay. Without a filter the whole history comes back: filter on date or supplier_id. In French: factures fournisseurs, factures d'achat, factures à payer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1888,7 +1888,7 @@ export const getSupplierInvoice = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one supplier invoice, with its accounting_status: draft, archived, entry, validation_needed or complete. Its lines are read with list_supplier_invoice_lines.",
+  description: "Get one supplier invoice, with its accounting_status: draft, archived, entry, validation_needed or complete. Its lines are read with list_supplier_invoice_lines. In French: détail d'une facture fournisseur, statut comptable d'une facture d'achat.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1917,7 +1917,7 @@ export const listSupplierInvoiceLines = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the lines of a supplier invoice, with their id (needed to update or delete a line) and their vat_rate.",
+  description: "List the lines of a supplier invoice, with their id (needed to update or delete a line) and their vat_rate. In French: lignes d'une facture fournisseur, lignes d'une facture d'achat.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1958,7 +1958,7 @@ export const updateSupplierInvoice = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Correct a supplier invoice not yet validated: label, dates, invoice number, supplier, amounts, external_reference, and its lines through invoice_lines {create, update, delete} (update and delete need the line id, from list_supplier_invoice_lines). Amounts are decimal strings. The amount before tax exists at invoice level only: a line carries currency_amount (tax included) and currency_tax, plus its vat_rate. No intracom_200 code exists: for an intra-EU acquisition at 20%, ask the user which code applies, never guess. Pennylane decides whether an invoice already complete can be changed.",
+  description: "Correct a supplier invoice not yet validated: label, dates, invoice number, supplier, amounts, external_reference, and its lines through invoice_lines {create, update, delete} (update and delete need the line id, from list_supplier_invoice_lines). Amounts are decimal strings. The amount before tax exists at invoice level only: a line carries currency_amount (tax included) and currency_tax, plus its vat_rate. No intracom_200 code exists: for an intra-EU acquisition at 20%, ask the user which code applies, never guess. Pennylane decides whether an invoice already complete can be changed. In French: corriger une facture fournisseur, modifier une facture d'achat.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2088,7 +2088,7 @@ export const validateSupplierInvoice = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Validate the accounting of a supplier invoice: it moves to complete and its accounting entry is posted. The API offers no way back. Call it only on the user's explicit request, invoice by invoice, never right after a correction. Refused when the entry lines are not balanced.",
+  description: "Validate the accounting of a supplier invoice: it moves to complete and its accounting entry is posted. The API offers no way back. Call it only on the user's explicit request, invoice by invoice, never right after a correction. Refused when the entry lines are not balanced. In French: valider une facture fournisseur, comptabiliser une facture d'achat.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2119,7 +2119,7 @@ export const listLedgerEntries = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List ledger entries. Without a filter the whole history comes back, thousands of entries on a real ledger: filter at the source on date, journal_id or id, the only way to find an entry without reading every page. Scope ledger_entries:readonly.",
+  description: "List ledger entries. Without a filter the whole history comes back, thousands of entries on a real ledger: filter at the source on date, journal_id or id, the only way to find an entry without reading every page. Scope ledger_entries:readonly. In French: écritures comptables, lister les écritures, journal des écritures.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2182,7 +2182,7 @@ export const getLedgerEntry = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "One ledger entry by its id, e.g. to read back an entry just posted.",
+  description: "One ledger entry by its id, e.g. to read back an entry just posted. In French: détail d'une écriture comptable, relire une écriture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2211,7 +2211,7 @@ export const listLedgerEntryLines = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the lines of a ledger entry with their id: lettering takes line ids, not entry ids. Line order is not guaranteed: match a line on its content, never on its position.",
+  description: "List the lines of a ledger entry with their id: lettering takes line ids, not entry ids. Line order is not guaranteed: match a line on its content, never on its position. In French: lignes d'une écriture comptable, débit et crédit d'une écriture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2277,7 +2277,7 @@ export const listLetteredLines = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the ledger entry lines lettered with a given line: the way to see what a lettering actually grouped, since lettering spreads to lines already lettered.",
+  description: "List the ledger entry lines lettered with a given line: the way to see what a lettering actually grouped, since lettering spreads to lines already lettered. In French: lignes lettrées ensemble, voir un lettrage.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2318,7 +2318,7 @@ export const createLedgerEntry = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Post an entry to the general ledger. Pennylane has no draft for a ledger entry and the API cannot delete one: the entry is posted at once, and the only remedy is update_ledger_entry. Before calling, give the user the exact detail (journal, date, label, each line with its account and amount) and wait for agreement. Each line carries debit and credit as decimal strings (\"120.50\", \"0.00\") and a ledger_account_id (list_ledger_accounts); total debits must equal total credits, or Pennylane refuses the entry. journal_id comes from list_journals. 1 to 1000 lines. The order of the returned lines is not guaranteed: find a line by its content.",
+  description: "Post an entry to the general ledger. Pennylane has no draft for a ledger entry and the API cannot delete one: the entry is posted at once, and the only remedy is update_ledger_entry. Before calling, give the user the exact detail (journal, date, label, each line with its account and amount) and wait for agreement. Each line carries debit and credit as decimal strings (\"120.50\", \"0.00\") and a ledger_account_id (list_ledger_accounts); total debits must equal total credits, or Pennylane refuses the entry. journal_id comes from list_journals. 1 to 1000 lines. The order of the returned lines is not guaranteed: find a line by its content. In French: passer une écriture comptable, saisir une écriture, écriture d'opération diverse.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2382,7 +2382,7 @@ export const updateLedgerEntry = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Change a posted ledger entry: the only remedy for a wrong entry, since the API cannot delete one. ledger_entry_lines takes {create, update, delete}, and delete removes lines by id: this commits as much as a creation, so give the user the exact detail and wait for agreement. The lines must stay balanced; line ids come from list_ledger_entry_lines.",
+  description: "Change a posted ledger entry: the only remedy for a wrong entry, since the API cannot delete one. ledger_entry_lines takes {create, update, delete}, and delete removes lines by id: this commits as much as a creation, so give the user the exact detail and wait for agreement. The lines must stay balanced; line ids come from list_ledger_entry_lines. In French: corriger une écriture comptable, modifier une écriture passée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2482,7 +2482,7 @@ export const letterLedgerEntryLines = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Letter ledger entry lines together. Not to be confused with matching a bank transaction to an invoice (match_customer_invoice_transaction, match_supplier_invoice_transaction): the wrong one raises no error, it just acts on the wrong objects. Lettering spreads: if a line passed is already lettered, the lettering extends to the lines it is already lettered with (asking for A and C when A and B are lettered gives A, B and C); check the result with list_lettered_lines. Pass line ids, not entry ids (list_ledger_entry_lines). unbalanced_lettering_strategy none refuses an unbalanced lettering, partial accepts it.",
+  description: "Letter ledger entry lines together. Not to be confused with matching a bank transaction to an invoice (match_customer_invoice_transaction, match_supplier_invoice_transaction): the wrong one raises no error, it just acts on the wrong objects. Lettering spreads: if a line passed is already lettered, the lettering extends to the lines it is already lettered with (asking for A and C when A and B are lettered gives A, B and C); check the result with list_lettered_lines. Pass line ids, not entry ids (list_ledger_entry_lines). unbalanced_lettering_strategy none refuses an unbalanced lettering, partial accepts it. In French: lettrer des écritures, lettrage comptable, lettrer un compte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2527,7 +2527,7 @@ export const unletterLedgerEntryLines = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Undo the lettering of ledger entry lines. The previous grouping is not returned: read it first with list_lettered_lines if it may have to be restored.",
+  description: "Undo the lettering of ledger entry lines. The previous grouping is not returned: read it first with list_lettered_lines if it may have to be restored. In French: délettrer des écritures, annuler un lettrage.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2572,7 +2572,7 @@ export const listTransactions = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List bank transactions, newest first. Without a filter the whole history comes back, far beyond what an agent can read: filter on date at the source. A transaction not fully matched carries a non-zero outstanding_balance.",
+  description: "List bank transactions, newest first. Without a filter the whole history comes back, far beyond what an agent can read: filter on date at the source. A transaction not fully matched carries a non-zero outstanding_balance. In French: transactions bancaires, mouvements bancaires, relevé bancaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2634,7 +2634,7 @@ export const getTrialBalance = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get the trial balance for a period: balances grouped by ledger account. Scope trial_balance:readonly. Up to 1000 accounts per page.",
+  description: "Get the trial balance for a period: balances grouped by ledger account. Scope trial_balance:readonly. Up to 1000 accounts per page. In French: balance comptable, balance générale, soldes des comptes comptables.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2676,7 +2676,7 @@ export const matchCustomerInvoiceTransaction = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Match a bank transaction to a finalized customer invoice, e.g. to settle a paid invoice whose incoming transfer is not matched (else Pennylane keeps it late and reminds the customer wrongly). A reconciliation link, not an accounting entry. Not to be confused with lettering ledger entry lines (letter_ledger_entry_lines). One transaction per call.",
+  description: "Match a bank transaction to a finalized customer invoice, e.g. to settle a paid invoice whose incoming transfer is not matched (else Pennylane keeps it late and reminds the customer wrongly). A reconciliation link, not an accounting entry. Not to be confused with lettering ledger entry lines (letter_ledger_entry_lines). One transaction per call. In French: rapprocher un paiement d'une facture client, rapprochement bancaire client, lettrer un virement reçu.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2703,7 +2703,7 @@ export const matchSupplierInvoiceTransaction = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Match a bank transaction to a supplier invoice. A reconciliation link, not an accounting entry. Not to be confused with lettering ledger entry lines (letter_ledger_entry_lines). One transaction per call.",
+  description: "Match a bank transaction to a supplier invoice. A reconciliation link, not an accounting entry. Not to be confused with lettering ledger entry lines (letter_ledger_entry_lines). One transaction per call. In French: rapprocher une facture fournisseur, rapprochement bancaire fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2730,7 +2730,7 @@ export const listBankAccounts = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the company's bank accounts with their current balance: id, name, currency, balance, bank_establishment {id}, journal and ledger_account. balance is a decimal string as Pennylane holds it (\"12345.67\"): parse it as a decimal, never a float, before adding up. Pennylane exposes no IBAN and no bank sync date on an account; updated_at is when the record last changed, not proof that the bank feed ran. The bank's name is read with list_bank_establishments. Scope bank_accounts:readonly.",
+  description: "List the company's bank accounts with their current balance: id, name, currency, balance, bank_establishment {id}, journal and ledger_account. balance is a decimal string as Pennylane holds it (\"12345.67\"): parse it as a decimal, never a float, before adding up. Pennylane exposes no IBAN and no bank sync date on an account; updated_at is when the record last changed, not proof that the bank feed ran. The bank's name is read with list_bank_establishments. Scope bank_accounts:readonly. In French: comptes bancaires, solde des comptes bancaires, trésorerie disponible.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2770,7 +2770,7 @@ export const getBankAccount = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one bank account and its current balance, a decimal string (\"12345.67\"). Scope bank_accounts:readonly.",
+  description: "Get one bank account and its current balance, a decimal string (\"12345.67\"). Scope bank_accounts:readonly. In French: solde d'un compte bancaire, détail d'un compte bancaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2799,7 +2799,7 @@ export const listBankEstablishments = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the bank establishments {id, name}: the bank behind each account (bank_establishment.id of a bank account). Filter on id to name only the banks of the accounts read. Scope bank_establishments:readonly, distinct from bank_accounts:readonly: a key can read balances without it.",
+  description: "List the bank establishments {id, name}: the bank behind each account (bank_establishment.id of a bank account). Filter on id to name only the banks of the accounts read. Scope bank_establishments:readonly, distinct from bank_accounts:readonly: a key can read balances without it. In French: banques des comptes, établissements bancaires.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2862,7 +2862,7 @@ export const getTransaction = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one bank transaction: amount, date, label, bank_account, outstanding_balance (non-zero while not fully matched), customer or supplier, categories and matched_invoices. Scope transactions:readonly.",
+  description: "Get one bank transaction: amount, date, label, bank_account, outstanding_balance (non-zero while not fully matched), customer or supplier, categories and matched_invoices. Scope transactions:readonly. In French: détail d'une transaction bancaire, détail d'un mouvement bancaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2891,7 +2891,7 @@ export const createTransaction = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Record a bank transaction on a bank account by hand, e.g. for an account without a bank feed. amount is a decimal string, negative for money out (\"-120.50\"). A transaction the bank feed also brings would be recorded twice: check list_transactions on the account and date first. Scope transactions:all.",
+  description: "Record a bank transaction on a bank account by hand, e.g. for an account without a bank feed. amount is a decimal string, negative for money out (\"-120.50\"). A transaction the bank feed also brings would be recorded twice: check list_transactions on the account and date first. Scope transactions:all. In French: saisir une transaction bancaire, ajouter un mouvement bancaire à la main.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2932,7 +2932,7 @@ export const updateTransaction = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Attach a bank transaction to a customer or to a supplier (one of the two per call), or detach it with null. Matching it to an invoice is match_customer_invoice_transaction or match_supplier_invoice_transaction. Scope transactions:all.",
+  description: "Attach a bank transaction to a customer or to a supplier (one of the two per call), or detach it with null. Matching it to an invoice is match_customer_invoice_transaction or match_supplier_invoice_transaction. Scope transactions:all. In French: rattacher une transaction à un client, associer une transaction à un fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2966,7 +2966,7 @@ export const listTransactionCategories = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the analytical categories of one bank transaction, each with its weight (a string between 0 and 1). Scope transactions:readonly.",
+  description: "List the analytical categories of one bank transaction, each with its weight (a string between 0 and 1). Scope transactions:readonly. In French: catégories d'une transaction, ventilation analytique d'une transaction.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3007,7 +3007,7 @@ export const listTransactionMatchedInvoices = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the invoices matched to one bank transaction, each {id, type, url}: type tells a customer invoice from a supplier invoice. Scope transactions:readonly.",
+  description: "List the invoices matched to one bank transaction, each {id, type, url}: type tells a customer invoice from a supplier invoice. Scope transactions:readonly. In French: factures rapprochées d'une transaction, factures payées par une transaction.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3048,7 +3048,7 @@ export const listChanges = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List what changed on one kind of object ({id, operation, processed_at}), oldest first, to sync without reading everything again. Pennylane keeps four weeks of changes: an older start_date is refused (422). Pass start_date for the first page, then only cursor (next_cursor): both together are refused (400). Scope: the read scope of the object (transactions:readonly for transactions, ledger_entries:readonly for the four ledger kinds...).",
+  description: "List what changed on one kind of object ({id, operation, processed_at}), oldest first, to sync without reading everything again. Pennylane keeps four weeks of changes: an older start_date is refused (422). Pass start_date for the first page, then only cursor (next_cursor): both together are refused (400). Scope: the read scope of the object (transactions:readonly for transactions, ledger_entries:readonly for the four ledger kinds...). In French: modifications récentes pennylane, synchroniser les changements pennylane, ce qui a changé dans pennylane.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3101,7 +3101,7 @@ export const getCustomerInvoice = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one customer invoice or credit note: status, paid, remaining_amount_with_tax, amounts, customer, lines, payments, installments, matched_transactions, public_file_url (the PDF). Scope customer_invoices:readonly.",
+  description: "Get one customer invoice or credit note: status, paid, remaining_amount_with_tax, amounts, customer, lines, payments, installments, matched_transactions, public_file_url (the PDF). Scope customer_invoices:readonly. In French: détail d'une facture client, reste à payer d'une facture, pdf d'une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3130,7 +3130,7 @@ export const listCustomerInvoicePayments = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the payments recorded on one customer invoice ({id, label, currency_amount, status}). Scope customer_invoices:readonly.",
+  description: "List the payments recorded on one customer invoice ({id, label, currency_amount, status}). Scope customer_invoices:readonly. In French: paiements d'une facture client, règlements d'une facture client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3172,7 +3172,7 @@ export const listSupplierInvoicePayments = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the payments recorded on one supplier invoice ({id, label, currency_amount, status}). Scope supplier_invoices:readonly.",
+  description: "List the payments recorded on one supplier invoice ({id, label, currency_amount, status}). Scope supplier_invoices:readonly. In French: paiements d'une facture fournisseur, règlements d'une facture d'achat.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3214,7 +3214,7 @@ export const listCustomerInvoiceInstallments = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the installments of one customer invoice, by deadline: amount, deadline, status, remaining_amount_with_tax, payment_methods. The installment ids are what mark_customer_invoice_installment_paid takes. Scope customer_invoices:readonly.",
+  description: "List the installments of one customer invoice, by deadline: amount, deadline, status, remaining_amount_with_tax, payment_methods. The installment ids are what mark_customer_invoice_installment_paid takes. Scope customer_invoices:readonly. In French: échéances d'une facture, échéancier d'une facture client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3256,7 +3256,7 @@ export const markCustomerInvoiceInstallmentPaid = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Mark one installment of a customer invoice as paid; once every installment is paid, the invoice is paid too. Pennylane matches no transaction then, and the API offers no way back: when the payment is on the bank account, match the transaction instead. Needs a plan with installments (get_company_features), else 403. Scope customer_invoices:all.",
+  description: "Mark one installment of a customer invoice as paid; once every installment is paid, the invoice is paid too. Pennylane matches no transaction then, and the API offers no way back: when the payment is on the bank account, match the transaction instead. Needs a plan with installments (get_company_features), else 403. Scope customer_invoices:all. In French: marquer une échéance payée, échéance de facture réglée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3286,7 +3286,7 @@ export const markCustomerInvoicePaid = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Mark a finalized customer invoice as paid, e.g. paid in cash or by a channel without a bank transaction. Pennylane matches no transaction then, and the API offers no way back: when the payment is on the bank account, match the transaction instead (match_customer_invoice_transaction). Scope customer_invoices:all.",
+  description: "Mark a finalized customer invoice as paid, e.g. paid in cash or by a channel without a bank transaction. Pennylane matches no transaction then, and the API offers no way back: when the payment is on the bank account, match the transaction instead (match_customer_invoice_transaction). Scope customer_invoices:all. In French: marquer une facture payée, facture réglée en espèces, facture payée par chèque.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3315,7 +3315,7 @@ export const listCustomerInvoiceMatchedTransactions = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the bank transactions matched to one customer invoice. The ids are what unmatch_customer_invoice_transaction takes. Scope customer_invoices:readonly.",
+  description: "List the bank transactions matched to one customer invoice. The ids are what unmatch_customer_invoice_transaction takes. Scope customer_invoices:readonly. In French: transactions rapprochées d'une facture client, paiements bancaires d'une facture client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3357,7 +3357,7 @@ export const listSupplierInvoiceMatchedTransactions = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the bank transactions matched to one supplier invoice. The ids are what unmatch_supplier_invoice_transaction takes. Scope supplier_invoices:readonly.",
+  description: "List the bank transactions matched to one supplier invoice. The ids are what unmatch_supplier_invoice_transaction takes. Scope supplier_invoices:readonly. In French: transactions rapprochées d'une facture fournisseur, paiements bancaires d'une facture d'achat.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3399,7 +3399,7 @@ export const unmatchCustomerInvoiceTransaction = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Remove the match between a bank transaction and a customer invoice: the invoice may go back to unpaid or late, and Pennylane may remind the customer. Not applicable to a draft. Restoring it is match_customer_invoice_transaction with the same ids. Scope customer_invoices:all.",
+  description: "Remove the match between a bank transaction and a customer invoice: the invoice may go back to unpaid or late, and Pennylane may remind the customer. Not applicable to a draft. Restoring it is match_customer_invoice_transaction with the same ids. Scope customer_invoices:all. In French: annuler un rapprochement client, défaire le rapprochement d'une facture client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3427,7 +3427,7 @@ export const unmatchSupplierInvoiceTransaction = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Remove the match between a bank transaction and a supplier invoice: the invoice may go back to unpaid. Restoring it is match_supplier_invoice_transaction with the same ids. Scope supplier_invoices:all.",
+  description: "Remove the match between a bank transaction and a supplier invoice: the invoice may go back to unpaid. Restoring it is match_supplier_invoice_transaction with the same ids. Scope supplier_invoices:all. In French: annuler un rapprochement fournisseur, défaire le rapprochement d'une facture fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3455,7 +3455,7 @@ export const updateSupplierInvoicePaymentStatus = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Set the payment status of a supplier invoice: paid or to_be_paid, e.g. paid by the manager's own card, with no bank transaction to match. Scope supplier_invoices:all.",
+  description: "Set the payment status of a supplier invoice: paid or to_be_paid, e.g. paid by the manager's own card, with no bank transaction to match. Scope supplier_invoices:all. In French: marquer une facture fournisseur payée, statut de paiement d'une facture d'achat.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3484,7 +3484,7 @@ export const listCustomerInvoiceAppendices = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the files appended to one customer invoice ({id, filename, url}). Scope customer_invoices:readonly.",
+  description: "List the files appended to one customer invoice ({id, filename, url}). Scope customer_invoices:readonly. In French: pièces jointes d'une facture client, annexes d'une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3525,7 +3525,7 @@ export const listCustomerInvoiceCustomHeaderFields = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the custom header fields of one customer invoice ({id, title, value, rank}), printed at the top of the PDF. Scope customer_invoices:readonly.",
+  description: "List the custom header fields of one customer invoice ({id, title, value, rank}), printed at the top of the PDF. Scope customer_invoices:readonly. In French: champs d'en-tête d'une facture, mentions personnalisées d'une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3567,7 +3567,7 @@ export const listCategoryGroupCategories = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the categories of one analytical axis (category group). Scope categories:readonly.",
+  description: "List the categories of one analytical axis (category group). Scope categories:readonly. In French: catégories d'un axe analytique, contenu d'un axe analytique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3608,7 +3608,7 @@ export const getCategoryGroup = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one analytical axis (category group) with its kind and its categories. Scope categories:readonly.",
+  description: "Get one analytical axis (category group) with its kind and its categories. Scope categories:readonly. In French: détail d'un axe analytique, type d'un axe analytique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3635,7 +3635,7 @@ export const createCategoryGroup = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Create an analytical axis (category group). kind: profit_and_loss (revenue and expense analysis), treasury (cash in and out) or building. Look the axes up first (list_category_groups): the API cannot delete one. Scope categories:all.",
+  description: "Create an analytical axis (category group). kind: profit_and_loss (revenue and expense analysis), treasury (cash in and out) or building. Look the axes up first (list_category_groups): the API cannot delete one. Scope categories:all. In French: créer un axe analytique, nouveau groupe de catégories.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3665,7 +3665,7 @@ export const updateCategoryGroup = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Rename an analytical axis or change its kind. label is required by Pennylane even when unchanged. Scope categories:all.",
+  description: "Rename an analytical axis or change its kind. label is required by Pennylane even when unchanged. Scope categories:all. In French: renommer un axe analytique, modifier un axe analytique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3696,7 +3696,7 @@ export const getCategory = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one analytical category: label, category_group, analytical_code, direction (treasury categories) and ledger_account. Scope categories:readonly.",
+  description: "Get one analytical category: label, category_group, analytical_code, direction (treasury categories) and ledger_account. Scope categories:readonly. In French: détail d'une catégorie analytique, code analytique d'une catégorie.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3723,7 +3723,7 @@ export const createCategory = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Create an analytical category in an axis (category group). direction only applies to a treasury axis (cash_out when absent). ledger_account_id is only accepted in an axis with self-service accounting, and never a bank, pending or cash account. Look the categories up first (list_categories): the API cannot delete one. Scope categories:all.",
+  description: "Create an analytical category in an axis (category group). direction only applies to a treasury axis (cash_out when absent). ledger_account_id is only accepted in an axis with self-service accounting, and never a bank, pending or cash account. Look the categories up first (list_categories): the API cannot delete one. Scope categories:all. In French: créer une catégorie analytique, ajouter une catégorie de dépense.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3756,7 +3756,7 @@ export const updateCategory = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Change an analytical category: label, direction (treasury axes), analytical_code (not in a structured analytical axis), ledger_account_id (self-service accounting axes only, never cleared). Only the arguments passed change. Scope categories:all.",
+  description: "Change an analytical category: label, direction (treasury axes), analytical_code (not in a structured analytical axis), ledger_account_id (self-service accounting axes only, never cleared). Only the arguments passed change. Scope categories:all. In French: modifier une catégorie analytique, renommer une catégorie analytique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3790,7 +3790,7 @@ export const getJournal = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one journal ({id, code, label, type}). Scope journals:readonly.",
+  description: "Get one journal ({id, code, label, type}). Scope journals:readonly. In French: détail d'un journal comptable, code d'un journal comptable.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3817,7 +3817,7 @@ export const createJournal = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Create a journal: code of 2 to 5 letters and a label. Look the journals up first (list_journals): the API cannot delete one. Scope journals:all.",
+  description: "Create a journal: code of 2 to 5 letters and a label. Look the journals up first (list_journals): the API cannot delete one. Scope journals:all. In French: créer un journal comptable, nouveau journal comptable.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3847,7 +3847,7 @@ export const getLedgerAccount = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one ledger account: number, label, type, vat_rate, letterable, enabled. Scope ledger_accounts:readonly.",
+  description: "Get one ledger account: number, label, type, vat_rate, letterable, enabled. Scope ledger_accounts:readonly. In French: détail d'un compte comptable, numéro d'un compte comptable.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3874,7 +3874,7 @@ export const createLedgerAccount = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Add an account to the chart of accounts. A number starting with 401 also creates a supplier, one starting with 411 a company customer: look both up first. Look the account up by number first (list_ledger_accounts, start_with): the API cannot delete one. Scope ledger_accounts:all.",
+  description: "Add an account to the chart of accounts. A number starting with 401 also creates a supplier, one starting with 411 a company customer: look both up first. Look the account up by number first (list_ledger_accounts, start_with): the API cannot delete one. Scope ledger_accounts:all. In French: créer un compte comptable, ajouter un compte au plan comptable.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3910,7 +3910,7 @@ export const updateLedgerAccount = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Change a ledger account's label, or whether its lines can be lettered (letterable). The number cannot change. Scope ledger_accounts:all.",
+  description: "Change a ledger account's label, or whether its lines can be lettered (letterable). The number cannot change. Scope ledger_accounts:all. In French: renommer un compte comptable, rendre un compte lettrable.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3942,7 +3942,7 @@ export const updateProduct = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Change a product of the catalogue: label, price_before_tax (decimal string), vat_rate (Pennylane code, FR_200 for 20%), unit, currency, reference, external_reference, description, ledger_account_id or substance (goods or services; with ledger_account_id, both must name the same account). Invoices already issued keep their lines. Only the arguments passed change. Scope products:all.",
+  description: "Change a product of the catalogue: label, price_before_tax (decimal string), vat_rate (Pennylane code, FR_200 for 20%), unit, currency, reference, external_reference, description, ledger_account_id or substance (goods or services; with ledger_account_id, both must name the same account). Invoices already issued keep their lines. Only the arguments passed change. Scope products:all. In French: modifier un produit, changer le prix d'un article.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3992,7 +3992,7 @@ export const listNumberings = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the document numbering set up per document type ({kind, number_prefix, next_number}); a type never set up is absent. Check it before acting: finalizing an invoice fails without the invoice numbering, a quote created without its numbering has no number, and a commercial document fails without its own. Numbering is set up in the Pennylane app only. Scope customer_invoices:readonly, quotes:readonly or commercial_documents:readonly.",
+  description: "List the document numbering set up per document type ({kind, number_prefix, next_number}); a type never set up is absent. Check it before acting: finalizing an invoice fails without the invoice numbering, a quote created without its numbering has no number, and a commercial document fails without its own. Numbering is set up in the Pennylane app only. Scope customer_invoices:readonly, quotes:readonly or commercial_documents:readonly. In French: numérotation des factures, prochain numéro de facture, préfixes de numérotation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4032,7 +4032,7 @@ export const getCompanyFeatures = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Tell which gated features the company can use now: installments, custom_fields, products_and_services_catalog, each true or false. A feature is true only when the plan and the rollout both allow it: it can be false on a plan that includes it. Read it before an action that a feature gates, rather than reading a 403 as a missing scope. No scope required.",
+  description: "Tell which gated features the company can use now: installments, custom_fields, products_and_services_catalog, each true or false. A feature is true only when the plan and the rollout both allow it: it can be false on a plan that includes it. Read it before an action that a feature gates, rather than reading a 403 as a missing scope. No scope required. In French: fonctionnalités disponibles, options de l'abonnement pennylane.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Features of the company", input: {} },
@@ -4054,7 +4054,7 @@ export const getCustomer = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one customer, company or individual, by its id (the customer.id of an invoice): name, emails, addresses, payment conditions, ledger account, contacts. Scope customers:readonly.",
+  description: "Get one customer, company or individual, by its id (the customer.id of an invoice): name, emails, addresses, payment conditions, ledger account, contacts. Scope customers:readonly. In French: fiche d'un client, coordonnées d'un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4083,7 +4083,7 @@ export const getCompanyCustomer = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one company customer: name, reg_no, vat_number, emails, addresses, billing_iban, payment conditions, mandates. An individual's id is refused here: get_individual_customer. Scope customers:readonly.",
+  description: "Get one company customer: name, reg_no, vat_number, emails, addresses, billing_iban, payment conditions, mandates. An individual's id is refused here: get_individual_customer. Scope customers:readonly. In French: fiche d'une société cliente, numéro de tva d'un client, iban d'un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4112,7 +4112,7 @@ export const getIndividualCustomer = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one individual customer (a person): first_name, last_name, emails, addresses, payment conditions. A company's id is refused here: get_company_customer. Scope customers:readonly.",
+  description: "Get one individual customer (a person): first_name, last_name, emails, addresses, payment conditions. A company's id is refused here: get_company_customer. Scope customers:readonly. In French: fiche d'un client particulier, coordonnées d'un particulier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4141,7 +4141,7 @@ export const createIndividualCustomer = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Create an individual customer (a person, not a company): first_name, last_name and the full billing address are required. Look it up first by external_reference (list_customers): creating it again is refused. Returns the customer with its id. Scope customers:all.",
+  description: "Create an individual customer (a person, not a company): first_name, last_name and the full billing address are required. Look it up first by external_reference (list_customers): creating it again is refused. Returns the customer with its id. Scope customers:all. In French: créer un client particulier, ajouter un particulier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4219,7 +4219,7 @@ export const updateIndividualCustomer = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Update an individual customer: names, addresses, emails, phone, payment conditions, IBAN, external_reference... Only the arguments passed change. Scope customers:all.",
+  description: "Update an individual customer: names, addresses, emails, phone, payment conditions, IBAN, external_reference... Only the arguments passed change. Scope customers:all. In French: modifier un client particulier, mettre à jour un particulier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4301,7 +4301,7 @@ export const listCustomerContacts = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the contacts of one customer (first_name, last_name, email, role, phone numbers). Contacts are separate from the customer's invoice recipients (its emails). Scope customers:readonly.",
+  description: "List the contacts of one customer (first_name, last_name, email, role, phone numbers). Contacts are separate from the customer's invoice recipients (its emails). Scope customers:readonly. In French: contacts d'un client, interlocuteurs d'un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4343,7 +4343,7 @@ export const getCustomerContact = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one contact of a customer. Scope customers:readonly.",
+  description: "Get one contact of a customer. Scope customers:readonly. In French: détail d'un contact client, fiche d'un interlocuteur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4372,7 +4372,7 @@ export const createCustomerContact = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Add a contact to a customer. A contact is not an invoice recipient: to have invoices sent to this address, add it to the customer's emails (update_customer). Scope customers:all.",
+  description: "Add a contact to a customer. A contact is not an invoice recipient: to have invoices sent to this address, add it to the customer's emails (update_customer). Scope customers:all. In French: ajouter un contact à un client, nouvel interlocuteur client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4407,7 +4407,7 @@ export const updateCustomerContact = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Update a contact of a customer; only the arguments passed change, and an empty string clears role or a phone number. The customer's invoice recipients do not change. Scope customers:all.",
+  description: "Update a contact of a customer; only the arguments passed change, and an empty string clears role or a phone number. The customer's invoice recipients do not change. Scope customers:all. In French: modifier un contact client, changer le téléphone d'un interlocuteur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4446,7 +4446,7 @@ export const deleteCustomerContact = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Delete a contact of a customer. Its address stays among the invoice recipients if it is there. Read the contact first if it may have to be recreated. Scope customers:all.",
+  description: "Delete a contact of a customer. Its address stays among the invoice recipients if it is there. Read the contact first if it may have to be recreated. Scope customers:all. In French: supprimer un contact client, retirer un interlocuteur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4476,7 +4476,7 @@ export const updateSupplier = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Update a supplier: name, SIREN (reg_no), SIRET (establishment_no), VAT number, address, emails, IBAN, payment method and due date rule, external_reference. Only the arguments passed change; null clears establishment_no and the payment settings. Scope suppliers:all.",
+  description: "Update a supplier: name, SIREN (reg_no), SIRET (establishment_no), VAT number, address, emails, IBAN, payment method and due date rule, external_reference. Only the arguments passed change; null clears establishment_no and the payment settings. Scope suppliers:all. In French: modifier un fournisseur, changer l'iban d'un fournisseur, siret d'un fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4541,7 +4541,7 @@ export const createFecExport = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Start a FEC export (fichier des écritures comptables, the French legal ledger file) over a period. Pennylane builds it in the background: the answer is {id, status: pending}; read it again with get_fec_export until status is ready (or error). Scope exports:fec.",
+  description: "Start a FEC export (fichier des écritures comptables, the French legal ledger file) over a period. Pennylane builds it in the background: the answer is {id, status: pending}; read it again with get_fec_export until status is ready (or error). Scope exports:fec. In French: export fec, fichier des écritures comptables, exporter le fec.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4572,7 +4572,7 @@ export const getFecExport = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Read a FEC export started by create_fec_export: status pending, ready or error, and file_url once ready. The file_url expires 30 minutes after this read: download it at once, or read the export again for a fresh one. Scope exports:fec.",
+  description: "Read a FEC export started by create_fec_export: status pending, ready or error, and file_url once ready. The file_url expires 30 minutes after this read: download it at once, or read the export again for a fresh one. Scope exports:fec. In French: télécharger le fec, statut de l'export fec.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4601,7 +4601,7 @@ export const createGeneralLedgerExport = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Start a general ledger export (an xlsx file) over a period. The answer is {id, status: pending}; read it again with get_general_ledger_export until status is ready (or error). Scope exports:gl.",
+  description: "Start a general ledger export (an xlsx file) over a period. The answer is {id, status: pending}; read it again with get_general_ledger_export until status is ready (or error). Scope exports:gl. In French: export du grand livre, exporter le grand livre.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4632,7 +4632,7 @@ export const getGeneralLedgerExport = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Read a general ledger export started by create_general_ledger_export: status pending, ready or error, and file_url (xlsx) once ready. The file_url expires 30 minutes after this read. Scope exports:gl.",
+  description: "Read a general ledger export started by create_general_ledger_export: status pending, ready or error, and file_url (xlsx) once ready. The file_url expires 30 minutes after this read. Scope exports:gl. In French: télécharger le grand livre, statut de l'export du grand livre.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4661,7 +4661,7 @@ export const createAnalyticalGeneralLedgerExport = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Start an analytical general ledger export (an xlsx file, the ledger lines with their analytical categories) over a period. mode in_line (the default) gives one row per line and category, in_column one column per axis. The answer is {id, status: pending}; read it again with get_analytical_general_ledger_export until status is ready (or error). Scope exports:agl.",
+  description: "Start an analytical general ledger export (an xlsx file, the ledger lines with their analytical categories) over a period. mode in_line (the default) gives one row per line and category, in_column one column per axis. The answer is {id, status: pending}; read it again with get_analytical_general_ledger_export until status is ready (or error). Scope exports:agl. In French: export du grand livre analytique, exporter l'analytique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4693,7 +4693,7 @@ export const getAnalyticalGeneralLedgerExport = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Read an analytical general ledger export started by create_analytical_general_ledger_export: status pending, ready or error, and file_url (xlsx) once ready. The file_url expires 30 minutes after this read. Scope exports:agl.",
+  description: "Read an analytical general ledger export started by create_analytical_general_ledger_export: status pending, ready or error, and file_url (xlsx) once ready. The file_url expires 30 minutes after this read. Scope exports:agl. In French: télécharger le grand livre analytique, statut de l'export analytique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4722,7 +4722,7 @@ export const listBillingSubscriptions = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the billing subscriptions (recurring invoices): customer, label, status (draft, not_started, in_progress, pending, stopped, finished), mode (awaiting_validation: invoices come as drafts; finalized; email: finalized and emailed), recurring_rule, next_occurrence. Scope billing_subscriptions:readonly.",
+  description: "List the billing subscriptions (recurring invoices): customer, label, status (draft, not_started, in_progress, pending, stopped, finished), mode (awaiting_validation: invoices come as drafts; finalized; email: finalized and emailed), recurring_rule, next_occurrence. Scope billing_subscriptions:readonly. In French: abonnements de facturation, factures récurrentes, lister les abonnements clients.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4785,7 +4785,7 @@ export const getBillingSubscription = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one billing subscription: customer, status, mode, recurring_rule, start, finish, next_occurrence, payment conditions and the data of the invoices it generates. Scope billing_subscriptions:readonly.",
+  description: "Get one billing subscription: customer, status, mode, recurring_rule, start, finish, next_occurrence, payment conditions and the data of the invoices it generates. Scope billing_subscriptions:readonly. In French: détail d'un abonnement de facturation, prochaine facture d'un abonnement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4812,7 +4812,7 @@ export const listBillingSubscriptionLines = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the invoice lines of one billing subscription (label, quantity, raw_currency_unit_price, vat_rate, product). Scope billing_subscriptions:readonly.",
+  description: "List the invoice lines of one billing subscription (label, quantity, raw_currency_unit_price, vat_rate, product). Scope billing_subscriptions:readonly. In French: lignes d'un abonnement, articles facturés par un abonnement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4854,7 +4854,7 @@ export const listCommercialDocuments = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the commercial documents: proformas, shipping orders and purchasing orders (document_type), with customer, amounts, lines and public_file_url. Quotes and invoices have their own functions. Scope commercial_documents:readonly.",
+  description: "List the commercial documents: proformas, shipping orders and purchasing orders (document_type), with customer, amounts, lines and public_file_url. Quotes and invoices have their own functions. Scope commercial_documents:readonly. In French: documents commerciaux, factures proforma, bons de commande, bons de livraison.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4917,7 +4917,7 @@ export const getCommercialDocument = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one commercial document (proforma, shipping order or purchasing order): document_number, customer, amounts, lines, public_file_url. Scope commercial_documents:readonly.",
+  description: "Get one commercial document (proforma, shipping order or purchasing order): document_number, customer, amounts, lines, public_file_url. Scope commercial_documents:readonly. In French: détail d'un document commercial, détail d'une proforma.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4946,7 +4946,7 @@ export const listCommercialDocumentLines = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the lines of one commercial document. Scope commercial_documents:readonly.",
+  description: "List the lines of one commercial document. Scope commercial_documents:readonly. In French: lignes d'un document commercial, lignes d'une proforma.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4988,7 +4988,7 @@ export const listCommercialDocumentAppendices = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the files appended to one commercial document ({id, filename, url}). Scope commercial_documents:readonly.",
+  description: "List the files appended to one commercial document ({id, filename, url}). Scope commercial_documents:readonly. In French: pièces jointes d'un document commercial, annexes d'une proforma.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5029,7 +5029,7 @@ export const sendCommercialDocument = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Email a commercial document to the customer: to recipients when given, else to the addresses on the customer's record. Only after explicit human validation. The PDF takes a few minutes to generate after creation: a conflict means it is not ready yet, retry later. email_template_id picks a billing email template of the matching kind. Scope commercial_documents:all.",
+  description: "Email a commercial document to the customer: to recipients when given, else to the addresses on the customer's record. Only after explicit human validation. The PDF takes a few minutes to generate after creation: a conflict means it is not ready yet, retry later. email_template_id picks a billing email template of the matching kind. Scope commercial_documents:all. In French: envoyer une proforma, envoyer un bon de commande au client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5068,7 +5068,7 @@ export const sendQuote = defineFunction({
   connector: "pennylane",
   class: "sensitive",
   act: true,
-  description: "Email a quote to the customer: to recipients when given, else to the addresses on the customer's record. Only after explicit human validation. The PDF takes a few minutes to generate after creation: a conflict means it is not ready yet, retry later. email_template_id picks a billing email template of kind billing_email_quote. Scope quotes:all.",
+  description: "Email a quote to the customer: to recipients when given, else to the addresses on the customer's record. Only after explicit human validation. The PDF takes a few minutes to generate after creation: a conflict means it is not ready yet, retry later. email_template_id picks a billing email template of kind billing_email_quote. Scope quotes:all. In French: envoyer un devis, envoyer un devis par email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5107,7 +5107,7 @@ export const listQuoteAppendices = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the files appended to one quote ({id, filename, url}). Scope quotes:readonly.",
+  description: "List the files appended to one quote ({id, filename, url}). Scope quotes:readonly. In French: pièces jointes d'un devis, annexes d'un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5148,7 +5148,7 @@ export const listPurchaseRequests = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the purchase requests: supplier, amounts, reason, status (to_be_validated, approved, rejected, invoiced), purchase order and linked_invoices. Scope purchase_requests:readonly.",
+  description: "List the purchase requests: supplier, amounts, reason, status (to_be_validated, approved, rejected, invoiced), purchase order and linked_invoices. Scope purchase_requests:readonly. In French: demandes d'achat, lister les demandes d'achat à valider.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5211,7 +5211,7 @@ export const getPurchaseRequest = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one purchase request. Scope purchase_requests:readonly.",
+  description: "Get one purchase request. Scope purchase_requests:readonly. In French: détail d'une demande d'achat, statut d'une demande d'achat.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5238,7 +5238,7 @@ export const listSepaMandates = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the customers' SEPA direct debit mandates: customer, identifier, bank, bic, iban, signed_at, sequence_type (FRST, OOFF, RCUR, FNAL). Scope customer_mandates:readonly.",
+  description: "List the customers' SEPA direct debit mandates: customer, identifier, bank, bic, iban, signed_at, sequence_type (FRST, OOFF, RCUR, FNAL). Scope customer_mandates:readonly. In French: mandats sepa, mandats de prélèvement, prélèvements clients.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5301,7 +5301,7 @@ export const getSepaMandate = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one SEPA mandate. Scope customer_mandates:readonly.",
+  description: "Get one SEPA mandate. Scope customer_mandates:readonly. In French: détail d'un mandat sepa, mandat de prélèvement d'un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5328,7 +5328,7 @@ export const searchLedgerEntryLines = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List ledger entry lines across all entries, filtered at the source: the lines of one account over a period, of one journal, of some entries. Without a filter the whole ledger comes back, far beyond what an agent can read. Each line carries debit, credit, date, label, ledger_account, journal, ledger_entry and its lettering. Scope ledger_entries:readonly.",
+  description: "List ledger entry lines across all entries, filtered at the source: the lines of one account over a period, of one journal, of some entries. Without a filter the whole ledger comes back, far beyond what an agent can read. Each line carries debit, credit, date, label, ledger_account, journal, ledger_entry and its lettering. Scope ledger_entries:readonly. In French: grand livre d'un compte, lignes d'écriture d'un compte, chercher des écritures sur une période.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5391,7 +5391,7 @@ export const getLedgerEntryLine = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "Get one ledger entry line: debit, credit, date, label, ledger_account, journal, ledger_entry, categories and the lines it is lettered with. Scope ledger_entries:readonly.",
+  description: "Get one ledger entry line: debit, credit, date, label, ledger_account, journal, ledger_entry, categories and the lines it is lettered with. Scope ledger_entries:readonly. In French: détail d'une ligne d'écriture, lettrage d'une ligne d'écriture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5418,7 +5418,7 @@ export const listLedgerEntryDocuments = defineFunction({
   connector: "pennylane",
   class: "read",
   act: false,
-  description: "List the documents attached to one ledger entry ({id, name, url}), the receipts and invoices it was booked from. Scope ledger_entries:readonly.",
+  description: "List the documents attached to one ledger entry ({id, name, url}), the receipts and invoices it was booked from. Scope ledger_entries:readonly. In French: justificatifs d'une écriture, pièces jointes d'une écriture comptable.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -5460,7 +5460,7 @@ export const connector = defineConnector({
   name: "pennylane",
   label: "Pennylane",
   namespace: "pennylane",
-  version: "2.2.0",
+  version: "2.2.1",
   apiVersion: "v2",
   baseUrl: "https://app.pennylane.com/api/external/v2",
   auth: {"kind": "bearer", "token": "api_key"},

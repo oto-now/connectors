@@ -6,7 +6,7 @@ export const getIssue = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "One Linear issue, by its id or its identifier (ENG-123), under data.issue: identifier, title, description (markdown), priority (0 none, 1 urgent, 2 high, 3 normal, 4 low), estimate, due date, url, dates, state, assignee, team, project, cycle, labels, parent issue.",
+  description: "One Linear issue, by its id or its identifier (ENG-123), under data.issue: identifier, title, description (markdown), priority (0 none, 1 urgent, 2 high, 3 normal, 4 low), estimate, due date, url, dates, state, assignee, team, project, cycle, labels, parent issue. In French: lire un ticket, détail d'une issue, fiche d'un ticket linear.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -40,7 +40,7 @@ export const createIssue = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Create a Linear issue in a team; the answer is under data.issueCreate: success and the issue (its fields as get_issue). priority: 0 none, 1 urgent, 2 high, 3 normal, 4 low. state_id comes from list_workflow_states; parent_id makes it a sub-issue.",
+  description: "Create a Linear issue in a team; the answer is under data.issueCreate: success and the issue (its fields as get_issue). priority: 0 none, 1 urgent, 2 high, 3 normal, 4 low. state_id comes from list_workflow_states; parent_id makes it a sub-issue. In French: créer un ticket, ouvrir une issue, signaler un bug.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -108,7 +108,7 @@ export const updateIssue = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Change a Linear issue: only the fields given change; label_ids replaces all its labels. The answer is under data.issueUpdate: success and the issue (its fields as get_issue). At least one change.",
+  description: "Change a Linear issue: only the fields given change; label_ids replaces all its labels. The answer is under data.issueUpdate: success and the issue (its fields as get_issue). At least one change. In French: modifier un ticket, changer le statut d'un ticket, assigner un ticket.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -172,7 +172,7 @@ export const archiveIssue = defineFunction({
   connector: "linear",
   class: "sensitive",
   act: true,
-  description: "Archive a Linear issue: it leaves the lists, and can be restored from Linear. The answer is data.issueArchive.success.",
+  description: "Archive a Linear issue: it leaves the lists, and can be restored from Linear. The answer is data.issueArchive.success. In French: archiver un ticket, archiver une issue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -207,7 +207,7 @@ export const deleteIssue = defineFunction({
   connector: "linear",
   class: "sensitive",
   act: true,
-  description: "Delete a Linear issue: it moves to the trash, where Linear keeps it for a while before deleting it for good. The answer is data.issueDelete.success.",
+  description: "Delete a Linear issue: it moves to the trash, where Linear keeps it for a while before deleting it for good. The answer is data.issueDelete.success. In French: supprimer un ticket, mettre une issue à la corbeille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -242,7 +242,7 @@ export const getComment = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "One comment on a Linear issue, under data.comment: body (markdown), dates, author, issue, parent comment.",
+  description: "One comment on a Linear issue, under data.comment: body (markdown), dates, author, issue, parent comment. In French: lire un commentaire, détail d'un commentaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -274,7 +274,7 @@ export const listComments = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "The comments of a Linear issue, a page at a time, under data.comments.nodes (each as get_comment); data.comments.pageInfo.endCursor is the after of the next page while hasNextPage is true.",
+  description: "The comments of a Linear issue, a page at a time, under data.comments.nodes (each as get_comment); data.comments.pageInfo.endCursor is the after of the next page while hasNextPage is true. In French: commentaires d'un ticket, lister les commentaires d'une issue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -326,7 +326,7 @@ export const createComment = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Comment on a Linear issue, in markdown; parent_id answers another comment, in its thread. The answer is under data.commentCreate: success and the comment.",
+  description: "Comment on a Linear issue, in markdown; parent_id answers another comment, in its thread. The answer is under data.commentCreate: success and the comment. In French: commenter un ticket, répondre à un commentaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -363,7 +363,7 @@ export const updateComment = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Replace the text of a comment on a Linear issue. The answer is under data.commentUpdate: success and the comment.",
+  description: "Replace the text of a comment on a Linear issue. The answer is under data.commentUpdate: success and the comment. In French: modifier un commentaire, corriger un commentaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -398,7 +398,7 @@ export const deleteComment = defineFunction({
   connector: "linear",
   class: "sensitive",
   act: true,
-  description: "Delete a comment on a Linear issue. The answer is data.commentDelete.success.",
+  description: "Delete a comment on a Linear issue. The answer is data.commentDelete.success. In French: supprimer un commentaire, effacer un commentaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -431,7 +431,7 @@ export const getProject = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "One Linear project, under data.project: name, description, status (id, name, type), url, target date, dates, lead, teams.",
+  description: "One Linear project, under data.project: name, description, status (id, name, type), url, target date, dates, lead, teams. In French: détail d'un projet, lire un projet linear.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -463,7 +463,7 @@ export const createProject = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Create a Linear project in one or more teams. status_id is one of the workspace's project statuses (read one from an existing project with get_project), not a free text. The answer is under data.projectCreate: success and the project (as get_project).",
+  description: "Create a Linear project in one or more teams. status_id is one of the workspace's project statuses (read one from an existing project with get_project), not a free text. The answer is under data.projectCreate: success and the project (as get_project). In French: créer un projet, nouveau projet linear.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -517,7 +517,7 @@ export const updateProject = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Change a Linear project: only the fields given change. The answer is under data.projectUpdate: success and the project (as get_project). At least one change.",
+  description: "Change a Linear project: only the fields given change. The answer is under data.projectUpdate: success and the project (as get_project). At least one change. In French: modifier un projet, changer la date cible d'un projet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -566,7 +566,7 @@ export const deleteProject = defineFunction({
   connector: "linear",
   class: "sensitive",
   act: true,
-  description: "Delete a Linear project: it moves to the trash. Its issues stay, out of the project. The answer is data.projectDelete.success.",
+  description: "Delete a Linear project: it moves to the trash. Its issues stay, out of the project. The answer is data.projectDelete.success. In French: supprimer un projet, mettre un projet à la corbeille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -599,7 +599,7 @@ export const getTeam = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "One Linear team, under data.team - name, key (the prefix of its issue identifiers), description, private.",
+  description: "One Linear team, under data.team - name, key (the prefix of its issue identifiers), description, private. In French: détail d'une équipe, lire une équipe linear.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -631,7 +631,7 @@ export const listTeams = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "The Linear teams the key's holder sees, a page at a time, under data.teams.nodes (each as get_team); data.teams.pageInfo.endCursor is the after of the next page while hasNextPage is true.",
+  description: "The Linear teams the key's holder sees, a page at a time, under data.teams.nodes (each as get_team); data.teams.pageInfo.endCursor is the after of the next page while hasNextPage is true. In French: lister les équipes, équipes linear.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -680,7 +680,7 @@ export const listWorkflowStates = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "The workflow states of a Linear team (Backlog, Todo, In Progress, Done, Canceled and the team's own), a page at a time, under data.workflowStates.nodes: id, name, type, position, color. Read here the state_id of create_issue and update_issue.",
+  description: "The workflow states of a Linear team (Backlog, Todo, In Progress, Done, Canceled and the team's own), a page at a time, under data.workflowStates.nodes: id, name, type, position, color. Read here the state_id of create_issue and update_issue. In French: statuts d'une équipe, colonnes du workflow, états des tickets.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -731,7 +731,7 @@ export const getCycle = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "One Linear cycle (a sprint), under data.cycle - number, name, start, end, completion date, team.",
+  description: "One Linear cycle (a sprint), under data.cycle - number, name, start, end, completion date, team. In French: détail d'un cycle, lire un sprint.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -763,7 +763,7 @@ export const getLabel = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "One Linear issue label, under data.issueLabel - name, color, description, team (none for a workspace label).",
+  description: "One Linear issue label, under data.issueLabel - name, color, description, team (none for a workspace label). In French: détail d'une étiquette, lire un label.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -795,7 +795,7 @@ export const createLabel = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Create a Linear issue label, in a team, or for the whole workspace without team_id. The answer is under data.issueLabelCreate: success and the label.",
+  description: "Create a Linear issue label, in a team, or for the whole workspace without team_id. The answer is under data.issueLabelCreate: success and the label. In French: créer une étiquette, ajouter un label.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -832,7 +832,7 @@ export const deleteLabel = defineFunction({
   connector: "linear",
   class: "sensitive",
   act: true,
-  description: "Delete a Linear issue label; the issues that carry it lose it. The answer is data.issueLabelDelete.success.",
+  description: "Delete a Linear issue label; the issues that carry it lose it. The answer is data.issueLabelDelete.success. In French: supprimer une étiquette, supprimer un label.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -865,7 +865,7 @@ export const getViewer = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "The Linear user who holds the API key, under data.viewer: id, name, email, display name, whether active and admin, creation date. Use it to know on whose behalf the key acts.",
+  description: "The Linear user who holds the API key, under data.viewer: id, name, email, display name, whether active and admin, creation date. Use it to know on whose behalf the key acts. In French: mon compte linear, utilisateur de la clé linear.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who holds the key", input: {} },
@@ -892,7 +892,7 @@ export const getUser = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "One member of the Linear workspace, under data.user: name, email, display name, whether active and admin, creation date.",
+  description: "One member of the Linear workspace, under data.user: name, email, display name, whether active and admin, creation date. In French: fiche d'un membre, lire un utilisateur linear.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -924,7 +924,7 @@ export const listUsers = defineFunction({
   connector: "linear",
   class: "read",
   act: false,
-  description: "The members of the Linear workspace, a page at a time, under data.users.nodes (each as get_user); data.users.pageInfo.endCursor is the after of the next page while hasNextPage is true.",
+  description: "The members of the Linear workspace, a page at a time, under data.users.nodes (each as get_user); data.users.pageInfo.endCursor is the after of the next page while hasNextPage is true. In French: lister les membres, utilisateurs de l'espace linear.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -973,7 +973,7 @@ export const createWebhook = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Register an https address that Linear posts events to, for the resource types listed (Issue, Comment, IssueLabel, Project, Cycle, ProjectUpdate, Reaction…), from one team (team_id) or every public team (all_public_teams). Disabled from the start with enabled false. Linear makes the signing secret, readable in its settings only. The answer is under data.webhookCreate: success and the webhook (url, enabled, resource types, team, date).",
+  description: "Register an https address that Linear posts events to, for the resource types listed (Issue, Comment, IssueLabel, Project, Cycle, ProjectUpdate, Reaction…), from one team (team_id) or every public team (all_public_teams). Disabled from the start with enabled false. Linear makes the signing secret, readable in its settings only. The answer is under data.webhookCreate: success and the webhook (url, enabled, resource types, team, date). In French: créer un webhook, s'abonner aux événements linear.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1021,7 +1021,7 @@ export const updateWebhook = defineFunction({
   connector: "linear",
   class: "write",
   act: true,
-  description: "Change a Linear webhook: its address, its resource types, or enable or disable it; only what is given changes. The answer is under data.webhookUpdate: success and the webhook. At least one change.",
+  description: "Change a Linear webhook: its address, its resource types, or enable or disable it; only what is given changes. The answer is under data.webhookUpdate: success and the webhook. At least one change. In French: modifier un webhook, désactiver un webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1068,7 +1068,7 @@ export const deleteWebhook = defineFunction({
   connector: "linear",
   class: "sensitive",
   act: true,
-  description: "Delete a Linear webhook; Linear stops posting to its address. The answer is data.webhookDelete.success.",
+  description: "Delete a Linear webhook; Linear stops posting to its address. The answer is data.webhookDelete.success. In French: supprimer un webhook, arrêter un webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1100,7 +1100,7 @@ export const connector = defineConnector({
   name: "linear",
   label: "Linear",
   namespace: "linear",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "GraphQL (unversioned)",
   baseUrl: "https://api.linear.app",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "key": "api_key"},

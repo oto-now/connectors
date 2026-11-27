@@ -15,7 +15,7 @@ connector:
   name: pappers
   label: Pappers
   namespace: pappers
-  version: 1.0.0
+  version: 1.0.1
   api_version: v2
   base_url: https://api.pappers.fr/v2
   auth:
@@ -55,7 +55,9 @@ functions:
       The siren of a result is what get_company takes. Every criterion is
       optional; dates are DD-MM-YYYY. Page-based browsing stops at the first
       400 results: to go further, pass curseur "*" then each curseurSuivant
-      returned. A 404 means no company matches.
+      returned. A 404 means no company matches. In French: chercher une
+      entreprise française, trouver une société, recherche de sociétés par
+      critères.
     input:
       type: object
       additionalProperties: false
@@ -132,7 +134,8 @@ functions:
       depots_actes, comptes and finances. diffusable false means the company
       restricts its Insee data: names and address may be null. A 206 answer
       is partial: one source did not answer in time. Some extra_fields cost
-      extra credits, listed in their description.
+      extra credits, listed in their description. In French: fiche d'une
+      entreprise, infos société par siren, extrait kbis.
     input:
       type: object
       additionalProperties: false
@@ -192,7 +195,8 @@ functions:
       nb_entreprises_total, entreprises: [{siren, nom_entreprise, ...}]}]}.
       Find everyone who runs a company (siren), or every company one person
       runs (q, or nom_dirigeant with prenom_dirigeant, narrowed by birth date).
-      Dates are DD-MM-YYYY. A 404 means nobody matches.
+      Dates are DD-MM-YYYY. A 404 means nobody matches. In French: chercher un
+      dirigeant, mandats d'un dirigeant, représentants légaux.
     input:
       type: object
       additionalProperties: false
@@ -252,7 +256,8 @@ functions:
       Get the credit usage of this Pappers key: jetons_abonnement (monthly
       credits of the plan), jetons_abonnement_utilises (used this month),
       jetons_pay_as_you_go_restants (prepaid credits left). Read it before a
-      large search.
+      large search. In French: crédits pappers restants, consommation de jetons
+      pappers.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - title: Credits left

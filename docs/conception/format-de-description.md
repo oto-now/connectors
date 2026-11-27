@@ -1,7 +1,7 @@
 # Format de description d'un connecteur
 
 - **Statut** : validé par le mainteneur le 29/09/2026
-- **Dernière révision** : 2026-11-25
+- **Dernière révision** : 2026-11-27
 
 ## Résumé
 
@@ -90,7 +90,7 @@ Les champs du compte (`auth`, `credential`, `accesses`, `settings`, `account_ide
 | `effect` | non, `sensitive` seulement | Ce que fait une fonction sensible une fois confirmée : `send` (quelque chose part vers un tiers : un message, des pistes inscrites dans une campagne active) ou `destroy` (supprime, arrête pour de bon, remplace sans garder). Pas de défaut ; refusé sur `read` et `write` (le schéma et la règle 9). Un hôte qui sert les fonctions sensibles par effet, le lecteur d'oto 1, refuse au montage une fonction sensible qui ne le dit pas. |
 | `free_read` | non | `true` : lecture libre, gratuite chez le tiers et sans effet, ni chez lui ni chez nous ; un hôte peut l'exécuter sans demander l'accord à chaque appel. Absent par défaut, jamais `false` (le schéma) ; admis sur une seule forme, vérifiable dans la description (règle 28 de la fabrique) : « Lecture libre », ci-dessous. |
 | `scopes` | si le connecteur a des niveaux d'accès, interdit sinon | Les droits OAuth que la fonction exige, tous ([niveaux d'accès](niveaux-d-acces.md)). |
-| `description` | oui | En anglais, 1000 caractères au plus (borne du paquet d'oto 2) : ce que l'agent lit. |
+| `description` | oui | En anglais, 1000 caractères au plus (borne du paquet d'oto 2) : ce que l'agent lit ; peut finir par ses formules françaises (« Formules françaises », ci-dessous). |
 | `input` | oui | JSON Schema 2020-12 d'un objet strict (`type: object`, `additionalProperties: false`, `properties`), servi et validé tel quel. Une propriété peut porter `personal: true` (« Donnée personnelle », ci-dessous). |
 | `examples` | oui, au moins un | `title` et `input`, chaque `input` validé contre `input`. |
 | `refusals` | non | `code`, `when` (statut HTTP ou condition), `message` : surcharge ou complète la table commune ; sous un statut seulement, `body` et `marks_account` comme dans la table. |
@@ -106,6 +106,14 @@ Les champs du compte (`auth`, `credential`, `accesses`, `settings`, `account_ide
 | `cost` | non | Ce que coûte un appel : `per` (`request`, `page` ou `item`), `quantity` (ce que coûte une requête, `request` et `page`), `items` et `times` (les listes comptées, `per: item`) ou `weights` (le poids des valeurs que liste chaque élément), `unit`, `settle` (la quantité réelle relue, et `scale`, son facteur vers `unit`) ; voir [coût et solde](cout-et-solde.md). |
 | `confirm` | si `sensitive` | `summary`, gabarit du résumé montré avant exécution (`Validate invoice {id}: irreversible.`) ; ou `by: host`, les deux temps de l'API elle-même, au [profil hôte](profil-hote.md) seulement (règle 26). |
 
+
+**Formules françaises.** La recherche de fonctions d'un hôte doit marcher en anglais et en français ; l'anglais marche déjà par les descriptions, le français est la première langue ajoutée. La description reste en anglais ; elle peut finir par une phrase `In French: <formules>.` qui ajoute les formulations françaises : ce qu'un utilisateur français dit pour demander la fonction, chacune de deux mots au moins, séparées par des virgules, en minuscules, sans point avant le point final, propres à la fonction (aucune qui réponde à une demande sans rapport). Oto-core les lit comme autant de formulations du résumé (`ranking.ts`, expression `In French: ([^.]*)\.`). Une autre langue aurait sa propre phrase de même forme ; aucune n'est écrite aujourd'hui.
+
+```yaml
+description: >-
+  List the account's contact lists: {lists, count}.
+  In French: listes de contacts, abonnés d'une liste, liste de diffusion.
+```
 
 **Lire et agir.** Chaque connecteur à effet se partage en deux côtés : `<connecteur>` (lire et simuler, brouillon compris) et `<connecteur>_act` (tout ce qui engage ou détruit : envoi, corbeille, archive, déplacement). Le partage se lit sur `act`, fonction par fonction : une seule description, un seul compte, et l'hôte sert les fonctions `act` sous le nom `<connecteur>_act.<fonction>`, les autres sous `<connecteur>.<fonction>`. `class` dit ce que fait une fonction et si elle se confirme ; `act`, de quel côté elle est servie : un brouillon est une écriture (`write`) qui reste du côté lecture (`act: false`). Une écriture qui crée un enregistrement, même réversible, garde `act: true` (une facture modifiable après finalisation, un devis sans brouillon), comme tout appel qui dépense des crédits du compte sur une personne ou une entreprise, ou qui envoie réellement (un test anti-spam). Une suppression est sensible.
 
@@ -190,7 +198,7 @@ Deux gardes de CI :
 - **Un langage d'expressions pour les contrôles** (une formule « débits = crédits ») : écarté le 06/10. Des genres fermés et nommés (`equal_sums`, `non_empty`), chacun lié à un refus de la table, se lisent et s'exécutent pareil dans les deux langages ; un genre s'ajoute quand une description en a besoin.
 - **Une seule version** : écarté. La version du fichier (semver) et celle de l'API tierce (en clair) sont deux champs.
 - **Convertir les 713 outils existants, ou leur attribuer une classe** : écarté. La classe s'écrit à l'entrée d'un connecteur dans le format.
-- **Garder les descriptions en français** : écarté. Ce que lit l'agent est en anglais ; une description française se traduit à son entrée.
+- **Garder les descriptions en français** : écarté. Ce que lit l'agent est en anglais ; une description française se traduit à son entrée. Les formules françaises de fin de description ne sont pas une description : des formulations pour la recherche.
 - **Un résumé de chaque connecteur dans cette note** : écarté le 2026-11-03. Il doublait l'en-tête de chaque description et vieillissait sans elle ; la carte du parc, générée, dit la vue d'ensemble.
 
 ## Sécurité et confidentialité
@@ -243,3 +251,4 @@ Deux gardes de CI :
 - 2026-11-19 : `accesses`, plusieurs accès aux mêmes fonctions, à la place de `auth`, `credential` et `modes` ([compte](compte.md), « Plusieurs accès ») — décidé par le mainteneur (source : oto-now/connectors#244, lot 2).
 - 2026-11-22 : huitième mode d'authentification, `host_delegated` (le jeton vient de l'hôte qui exécute), et `confirm: { by: host }`, réservés au [profil hôte](profil-hote.md) ; règle 26 — décidé par Alexis (source : la conception des fonctions d'un hôte, dans oto-core).
 - 2026-11-25 : `free_read`, la lecture libre d'une fonction, facultative, refusée hors d'une lecture `GET` sans corps, sans coût, sans `act`, `background` ni `async`, et, paginée, sur un connecteur à `quota` ou `rate_limit` ; règle 28 ; aucune description ne la porte encore — choix du projet (source : oto-now/oto-core#167, l'outil `read` qu'un client autorise une fois pour toutes).
+- 2026-11-27 : une description de fonction peut finir par `In French: <formules>.`, les formulations françaises d'un utilisateur, deux mots au moins chacune, lues par la recherche de l'hôte ; la description reste en anglais, le français est la première langue ajoutée — décidé par JB (source : test du connecteur Brevo par le MCP d'oto).

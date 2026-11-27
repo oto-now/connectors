@@ -7,7 +7,7 @@ export const getPrimaryCalendar = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
-  description: "Get the primary calendar of the signed-in person: its id, which is their email address, its summary and its time zone.",
+  description: "Get the primary calendar of the signed-in person: its id, which is their email address, its summary and its time zone. In French: mon agenda principal, fuseau horaire de mon agenda.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Whose calendar this is", input: {} },
@@ -30,7 +30,7 @@ export const listCalendars = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
-  description: "List the calendars in the signed-in person's calendar list: id, summary, whether it is primary, and their access role (owner, writer, reader, freeBusyReader).",
+  description: "List the calendars in the signed-in person's calendar list: id, summary, whether it is primary, and their access role (owner, writer, reader, freeBusyReader). In French: lister mes agendas, agendas partagés avec moi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -76,7 +76,7 @@ export const listEvents = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
-  description: "List the events of a calendar in start order, recurring events expanded into their occurrences, optionally between two instants and matching free text. calendar_id primary is the signed-in person's own calendar.",
+  description: "List the events of a calendar in start order, recurring events expanded into their occurrences, optionally between two instants and matching free text. calendar_id primary is the signed-in person's own calendar. In French: lister les rendez-vous, mes rendez-vous de la semaine, événements de l'agenda.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -147,7 +147,7 @@ export const getEvent = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
-  description: "Get one event by id: summary, description, location, start, end, guests and their responses, organizer, recurrence, conference link.",
+  description: "Get one event by id: summary, description, location, start, end, guests and their responses, organizer, recurrence, conference link. In French: détail d'un rendez-vous, participants d'une réunion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -184,7 +184,7 @@ export const createEvent = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/calendar"],
-  description: "Create an event. start and end are both a date (all-day event, end exclusive) or both a dateTime with offset or timeZone. Guests are invited by email; send_updates says who Google emails: all, externalOnly (guests outside the organization) or none.",
+  description: "Create an event. start and end are both a date (all-day event, end exclusive) or both a dateTime with offset or timeZone. Guests are invited by email; send_updates says who Google emails: all, externalOnly (guests outside the organization) or none. In French: créer un rendez-vous, planifier une réunion, ajouter un événement à l'agenda.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -268,7 +268,7 @@ export const updateEvent = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/calendar"],
-  description: "Change an event: only the fields given change. attendees replaces the whole guest list: pass the full list, current guests included; an empty list removes every guest. send_updates says who Google emails about the change.",
+  description: "Change an event: only the fields given change. attendees replaces the whole guest list: pass the full list, current guests included; an empty list removes every guest. send_updates says who Google emails about the change. In French: déplacer un rendez-vous, modifier une réunion, ajouter un invité à une réunion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -361,7 +361,7 @@ export const deleteEvent = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/calendar"],
-  description: "Delete an event. For the guests it is cancelled; send_updates says who Google emails about it.",
+  description: "Delete an event. For the guests it is cancelled; send_updates says who Google emails about it. In French: annuler un rendez-vous, supprimer un événement de l'agenda.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -402,7 +402,7 @@ export const connector = defineConnector({
   name: "google_calendar",
   label: "Google Calendar",
   namespace: "google_calendar",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v3",
   baseUrl: "https://www.googleapis.com/calendar/v3",
   auth: {

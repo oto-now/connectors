@@ -7,7 +7,7 @@ export const getSpreadsheet = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-  description: "Get the metadata of a spreadsheet: title, locale, time zone, link, and each sheet with its id, title, position and size. No cell values: read them with read_ranges.",
+  description: "Get the metadata of a spreadsheet: title, locale, time zone, link, and each sheet with its id, title, position and size. No cell values: read them with read_ranges. In French: onglets d'un tableur, informations d'une feuille de calcul, structure d'un google sheet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -44,7 +44,7 @@ export const readRanges = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-  description: "Read the values of one or more ranges of a spreadsheet. Each range comes back in valueRanges, as rows of cells; trailing empty rows and cells are left out.",
+  description: "Read the values of one or more ranges of a spreadsheet. Each range comes back in valueRanges, as rows of cells; trailing empty rows and cells are left out. In French: lire un tableur, lire des cellules, contenu d'une feuille de calcul.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -96,7 +96,7 @@ export const writeRanges = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  description: "Write values into one or more ranges, replacing what the cells held. USER_ENTERED parses each value as if typed in Google Sheets (numbers, dates, formulas starting with =); RAW stores it as given.",
+  description: "Write values into one or more ranges, replacing what the cells held. USER_ENTERED parses each value as if typed in Google Sheets (numbers, dates, formulas starting with =); RAW stores it as given. In French: écrire dans un tableur, modifier des cellules, remplir une feuille de calcul.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -155,7 +155,7 @@ export const appendRows = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  description: "Append rows after the last row of a table, inserting new rows. Give only the first column of the table, e.g. Sheet1!A:A: Google appends after the table it finds in the range, starting at that table's first column, so a wider range can send the rows to another column.",
+  description: "Append rows after the last row of a table, inserting new rows. Give only the first column of the table, e.g. Sheet1!A:A: Google appends after the table it finds in the range, starting at that table's first column, so a wider range can send the rows to another column. In French: ajouter des lignes, ajouter une ligne dans un tableur, compléter un tableau google sheets.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -208,7 +208,7 @@ export const clearRanges = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  description: "Clear the values of one or more ranges; formatting stays. The version history of the spreadsheet keeps what was there.",
+  description: "Clear the values of one or more ranges; formatting stays. The version history of the spreadsheet keeps what was there. In French: effacer des cellules, vider une plage de cellules, effacer le contenu d'un tableur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -249,7 +249,7 @@ export const connector = defineConnector({
   name: "google_sheets",
   label: "Google Sheets",
   namespace: "google_sheets",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v4",
   baseUrl: "https://sheets.googleapis.com/v4",
   auth: {

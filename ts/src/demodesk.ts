@@ -6,7 +6,7 @@ export const getCurrentUser = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "Who the API key belongs to: id, firstName, lastName, email, role, locale, timeZone and groups. Every list answers what this user sees in Demodesk, so this says whose meetings \"my meetings\" are, and whether the key can see the whole company (an admin in every restricted group) or only part of it.",
+  description: "Who the API key belongs to: id, firstName, lastName, email, role, locale, timeZone and groups. Every list answers what this user sees in Demodesk, so this says whose meetings \"my meetings\" are, and whether the key can see the whole company (an admin in every restricted group) or only part of it. In French: utilisateur de la clé demodesk, mon compte demodesk.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Whose key is this", input: {} },
@@ -27,7 +27,7 @@ export const listUsers = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "The active users of the company visible to the key's user, one page of items {id, firstName, lastName, email, role, locale, timeZone}. search matches part of a name or an email, case-insensitive. Use it to resolve a teammate before filtering meetings or recordings by host; those filters also take an email directly. Next page: pass next_cursor back as cursor (null on the last page).",
+  description: "The active users of the company visible to the key's user, one page of items {id, firstName, lastName, email, role, locale, timeZone}. search matches part of a name or an email, case-insensitive. Use it to resolve a teammate before filtering meetings or recordings by host; those filters also take an email directly. Next page: pass next_cursor back as cursor (null on the last page). In French: lister les utilisateurs demodesk, trouver un collègue, équipe commerciale demodesk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -77,7 +77,7 @@ export const listMeetings = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "Meetings visible to the key's user, recorded or not, ordered by start date OLDEST FIRST: bound them with starts_from (and starts_before) to get recent ones. Items {demoId, name, status (scheduled, in_progress, ended, canceled), host {userId, displayName, email}, startDate, endDate (both scheduled), access, recordingTokens}: recordingTokens are the tokens to read with get_recording, get_transcript and list_summaries ([] = not recorded, or not visible). Zoom, Teams and Meet calls stay scheduled while they run; ended does not mean the attendees came. Next page: pass next_cursor back as cursor.",
+  description: "Meetings visible to the key's user, recorded or not, ordered by start date OLDEST FIRST: bound them with starts_from (and starts_before) to get recent ones. Items {demoId, name, status (scheduled, in_progress, ended, canceled), host {userId, displayName, email}, startDate, endDate (both scheduled), access, recordingTokens}: recordingTokens are the tokens to read with get_recording, get_transcript and list_summaries ([] = not recorded, or not visible). Zoom, Teams and Meet calls stay scheduled while they run; ended does not mean the attendees came. Next page: pass next_cursor back as cursor. In French: lister les rendez-vous, réunions demodesk, démos planifiées, rendez-vous de la semaine.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -144,7 +144,7 @@ export const listRecordings = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "Recorded calls visible to the key's user, one page of items {recordingToken, demoId, userId (the host), name, recordingWebUrl (the call in Demodesk), status, postprocessingStatus, demoStartDate, durationMs, access, crmLinks, groupIds}. postprocessing_statuses [done] keeps the calls whose transcript and summaries are ready. To find the calls with a company, filter by its attendees' email domains (all of them), not by title. hosts and attendees take emails or me. The video link is never given. Next page: pass next_cursor back as cursor.",
+  description: "Recorded calls visible to the key's user, one page of items {recordingToken, demoId, userId (the host), name, recordingWebUrl (the call in Demodesk), status, postprocessingStatus, demoStartDate, durationMs, access, crmLinks, groupIds}. postprocessing_statuses [done] keeps the calls whose transcript and summaries are ready. To find the calls with a company, filter by its attendees' email domains (all of them), not by title. hosts and attendees take emails or me. The video link is never given. Next page: pass next_cursor back as cursor. In French: enregistrements d'appels, appels enregistrés, démos enregistrées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -258,7 +258,7 @@ export const getRecording = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "One recorded call by its token: name, recordingWebUrl, status, postprocessingStatus, demoStartDate, durationMs, access, host, groups, crmLinks, meetingLocation, audioOnly, attendeeClassification (internal or external meeting), participants [{displayName, email, permission, attended, crmLinks}] and statistics {engagementScore, feedbackScore}. The transcript, the AI summaries and the scorecards are read with get_transcript, list_summaries and list_scorecards. The video link is never given.",
+  description: "One recorded call by its token: name, recordingWebUrl, status, postprocessingStatus, demoStartDate, durationMs, access, host, groups, crmLinks, meetingLocation, audioOnly, attendeeClassification (internal or external meeting), participants [{displayName, email, permission, attended, crmLinks}] and statistics {engagementScore, feedbackScore}. The transcript, the AI summaries and the scorecards are read with get_transcript, list_summaries and list_scorecards. The video link is never given. In French: détail d'un enregistrement, infos d'un appel enregistré.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -291,7 +291,7 @@ export const getTranscript = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "The transcript of one recorded call, structured: data {language, paragraphs [{speaker {displayName}, startInSeconds, endInSeconds, sentences [{text, startInSeconds, endInSeconds}]}]}. lang translates it on the fly (de, fr, en-US). An answer holding error instead of data means the transcript is still being processed: retry later. An empty answer means it exists but is empty or too short. Heavy for a long call: list_summaries is shorter, and get_transcripts gives plain text.",
+  description: "The transcript of one recorded call, structured: data {language, paragraphs [{speaker {displayName}, startInSeconds, endInSeconds, sentences [{text, startInSeconds, endInSeconds}]}]}. lang translates it on the fly (de, fr, en-US). An answer holding error instead of data means the transcript is still being processed: retry later. An empty answer means it exists but is empty or too short. Heavy for a long call: list_summaries is shorter, and get_transcripts gives plain text. In French: transcription d'un appel, verbatim d'une démo, ce qui a été dit en rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -329,7 +329,7 @@ export const getTranscripts = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "The transcripts of up to 25 recorded calls in one request, each with its own status: data [{recordingToken, status (ready, processing, not_requested, empty, not_found), transcript}]. format plaintext (the compact one) gives transcript {language, text} with speaker-prefixed lines; json gives paragraphs and sentences as get_transcript. lang translates them. A token that is not visible to the key's user comes back not_found, the others still answer.",
+  description: "The transcripts of up to 25 recorded calls in one request, each with its own status: data [{recordingToken, status (ready, processing, not_requested, empty, not_found), transcript}]. format plaintext (the compact one) gives transcript {language, text} with speaker-prefixed lines; json gives paragraphs and sentences as get_transcript. lang translates them. A token that is not visible to the key's user comes back not_found, the others still answer. In French: transcriptions de plusieurs appels, transcriptions en lot.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -374,7 +374,7 @@ export const listSummaries = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "The AI-generated notes of one recorded call: data [{summaryId, promptName (the summary template), languageCode, content, createdAt, updatedAt}], one per template the company runs (recap, next steps, CRM notes...). Shorter than the transcript: read it first for what was decided. [] while post-processing is not done.",
+  description: "The AI-generated notes of one recorded call: data [{summaryId, promptName (the summary template), languageCode, content, createdAt, updatedAt}], one per template the company runs (recap, next steps, CRM notes...). Shorter than the transcript: read it first for what was decided. [] while post-processing is not done. In French: compte rendu d'un appel, résumé d'une démo, prochaines étapes d'un rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -407,7 +407,7 @@ export const listScorecards = defineFunction({
   connector: "demodesk",
   class: "read",
   act: false,
-  description: "The coaching scorecards of one recorded call (deleted ones left out): data [{scorecardId, templateName, score, comment, giverUserId, receiverUserId, questions [{name, text, criteria, weight, score, comment}], createdAt}]. [] when nobody scored the call.",
+  description: "The coaching scorecards of one recorded call (deleted ones left out): data [{scorecardId, templateName, score, comment, giverUserId, receiverUserId, questions [{name, text, criteria, weight, score, comment}], createdAt}]. [] when nobody scored the call. In French: grilles d'évaluation d'un appel, notes de coaching, scorecard d'un commercial.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -438,7 +438,7 @@ export const connector = defineConnector({
   name: "demodesk",
   label: "Demodesk",
   namespace: "demodesk",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v2",
   baseUrl: "https://demodesk.com/api/v2",
   auth: {"kind": "bearer", "token": "api_key"},

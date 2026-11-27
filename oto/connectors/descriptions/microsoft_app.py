@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'microsoft_app',
                'label': 'Microsoft 365 mail (application access)',
                'namespace': 'microsoft_app',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1.0',
                'base_url': 'https://graph.microsoft.com/v1.0/users/{mailbox}',
                'auth': {'kind': 'oauth2_client_credentials',
@@ -71,7 +71,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft_app',
                                'a property in orderby must also come first in filter. Needs the application '
                                'permission Mail.Read. Granted in Microsoft Entra, it opens every mailbox of '
                                "the tenant to the application, not only this account's, unless the admin "
-                               'grants it through Exchange RBAC for Applications and removes it from Entra.',
+                               'grants it through Exchange RBAC for Applications and removes it from Entra. '
+                               'In French: lister les emails, mails reçus, chercher un email dans outlook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string',
@@ -152,7 +153,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft_app',
                 'class': 'read',
                 'description': "List the messages of one folder of the account's mailbox, same answer and "
                                'query rules as list_messages. folder is a folder id or a well-known name: '
-                               'inbox, sentitems, drafts, deleteditems, archive, junkemail.',
+                               'inbox, sentitems, drafts, deleteditems, archive, junkemail. In French: '
+                               "emails d'un dossier, mails de la boîte de réception, emails envoyés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['folder'],
@@ -230,7 +232,7 @@ DESCRIPTION = {'connector': {'name': 'microsoft_app',
                 'description': "Get one message of the account's mailbox by id: subject, from, sender, "
                                'toRecipients, ccRecipients, receivedDateTime, sentDateTime, body (as text), '
                                'hasAttachments, internetMessageId, conversationId, webLink. Needs Mail.Read '
-                               '(application).',
+                               "(application). In French: lire un email, contenu d'un mail outlook.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -277,7 +279,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft_app',
                 'class': 'read',
                 'description': 'List the attachments of one message, metadata only: {value: [{id, name, '
                                'contentType, size, isInline, lastModifiedDateTime}]}; size is in bytes. The '
-                               'content is not returned. Needs Mail.Read (application).',
+                               'content is not returned. Needs Mail.Read (application). In French: pièces '
+                               "jointes d'un email, lister les pièces jointes d'un mail.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -299,7 +302,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft_app',
                 'act': False,
                 'description': "Create a draft in the Drafts folder of the account's mailbox, without "
                                'sending it, and return it with its id and webLink, where someone can review '
-                               'and send it from Outlook. Needs Mail.ReadWrite (application).',
+                               'and send it from Outlook. Needs Mail.ReadWrite (application). In French: '
+                               'créer un brouillon, préparer un email, rédiger un brouillon outlook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['subject'],
@@ -379,7 +383,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft_app',
                                'first. Needs the application permission Mail.Send. Granted in Microsoft '
                                'Entra, it lets the application send as any mailbox of the tenant, not only '
                                "this account's, unless the admin grants it through Exchange RBAC for "
-                               'Applications and removes it from Entra.',
+                               'Applications and removes it from Entra. In French: envoyer un email, envoyer '
+                               'un mail outlook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message'],
