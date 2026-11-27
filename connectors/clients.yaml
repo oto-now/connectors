@@ -67,6 +67,7 @@ without_description:
   infosec: { category: not_describable, reason: "lectures DNS en nombre (DNS-over-HTTPS), poignée de main TLS par socket, rapport calculé à partir de plusieurs lectures" }
   linkedin_ads: { category: not_describable, reason: "syntaxe de requête Rest.li 2.0 composée à l'appel : List(...) aux éléments encodés, enregistrements imbriqués pour search et dateRange, URN encodé dans le chemin d'une publicité" }
   searchapi: { category: not_describable, reason: "paramètres de query à clés libres, propres à chaque moteur" }
+  twilio: { category: not_describable, reason: "écritures en corps formulaire (application/x-www-form-urlencoded) à noms répétés ; TwiML (XML) composé à l'appel ; signature HMAC-SHA1 des webhooks calculée ; média d'enregistrement en octets" }
   ubersuggest: { category: not_describable, reason: "transport MCP en JSON-RPC sur un seul point d'entrée ; client OAuth public obtenu par enregistrement dynamique" }
   wordpress: { category: not_describable, reason: "la racine REST se découvre à l'appel (/wp-json/ ou ?rest_route=) ; téléversement de média en corps binaire" }
   zeendoc: { category: not_describable, reason: "session ouverte par le login d'un compte utilisateur, portée par un cookie ; texte et fichiers servis par des pages de l'application, document absent signalé par une redirection" }
