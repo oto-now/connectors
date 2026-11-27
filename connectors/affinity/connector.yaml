@@ -9,6 +9,7 @@
 connector:
   name: affinity
   label: Affinity
+  logo_domain: affinity.co
   namespace: affinity
   version: 1.0.0
   api_version: "v1 and v2 (2026-09-17)"

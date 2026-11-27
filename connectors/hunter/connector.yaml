@@ -42,6 +42,7 @@
 connector:
   name: hunter
   label: Hunter.io
+  logo_domain: hunter.io
   namespace: hunter
   version: 1.0.0
   api_version: v2

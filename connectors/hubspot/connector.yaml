@@ -54,6 +54,7 @@
 connector:
   name: hubspot
   label: HubSpot
+  logo_domain: hubspot.com
   namespace: hubspot
   version: 1.0.2
   api_version: v3

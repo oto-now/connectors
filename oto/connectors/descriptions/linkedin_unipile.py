@@ -2,6 +2,8 @@
 """The `linkedin_unipile` description as a host serves it: without `output.sample`, each `input` as served, `call` kept for the engine (`oto.connectors.descriptions.load`)."""
 DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                'label': 'LinkedIn (Unipile)',
+               'logo_domain': 'www.linkedin.com',
+               'logo': 'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACqklEQVR42u2bMWzaQBSGf0dBCh3iUDOkyUBaS+mQSDgrQ+Is2RDZyJg1nTywA0M3Bk/NGLplbMQWVYqlSiypFFdqhlZyJYRKl1jELI7E4A4NiFSAzwRk7nz/BPgx/N+9u/eeLQue5yHKWkDExQFEHcDiqAtCoVYCoAEQKffoANAB6F4le+8LQCjUVgAYANKMLLIIoAjgEIBCsgU0hswPKv2Y1UQAWJVGAkBkGIDIqwBpFfCTKktQ5SQAwLDuYFh2NACosoTq0Q5SiXj/tyI20Wi7OD6/oQ7EQlDzVyeZJ+Z7SiXiuDrJQJUldgFUj3amEkMlAFWWhq78sEygKQsCAEhiFrF8GKIFgGHdYRaxFAGw0Wi7vnGNtktVKQy0BY7Pb6YSQy0Aw7Kxf1ofmgmNtov90zp1jVDgTtCwbGy8/xzdVngQBK2mpwJg1uo1U6qchNlycO92AQBmq9P/HAoAr5Ide10o1Ijjy5c/Ubr88cS0tvsGua1V30pTvW5C//Lr2TDmIgM2Xr5ANa9gj7CFTiXiKB5sQtt9De3iFtXrJr0AlLVlGO8yEJdigf8rLsVwlv93n3NSCKG2wsr65OYHdZZXJh7AQgWQ21p9tvmeSgdvoz0M7ckSlLXlaE+Dh9uv6O8DnIcuzN+d/veVeAxpwpWd5BxYnCfjo0qaKkvQc9u+IJR1SreA89CF+qE+spQZlk00ZU5yoM4FAO3iFmarMzbGbHXw8WsTzN0S67W1JBo8G5gB8On7H+JYs+WwByDskTp0ANMcbZnvBGeRLXwLAPzBCAfAAXAAHAAHwAFwABwABxBFCf+/MyQUaky/RORVsgLPAA6AAxgLwGHYr0MCQGcYgO5bBR4rgQn23hv65lWyCukZoAIoM7IdHADlYeZHZgCvAhwABxAZ/QUic+TrYhIotwAAAABJRU5ErkJggg==',
                'namespace': 'linkedin_unipile',
                'version': '1.4.0',
                'api_version': 'v2',

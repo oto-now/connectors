@@ -36,7 +36,8 @@ def test_every_description_is_served_and_only_them():
 def test_a_served_description_keeps_the_call_drops_the_sample_and_serves_its_input():
     for described in load_all():
         served = descriptions.load(described.name)
-        assert served["connector"] == described.data["connector"]
+        logo = {} if described.logo is None else {"logo": described.logo}
+        assert served["connector"] == {**described.data["connector"], **logo}
         assert [f["name"] for f in served["functions"]] == [f["name"] for f in described.data["functions"]]
         for function, source in zip(served["functions"], described.data["functions"]):
             assert function["call"] == source["call"], function["name"]

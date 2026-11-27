@@ -11,6 +11,7 @@
 connector:
   name: meta_ads
   label: Meta Ads
+  logo_domain: meta.com
   namespace: meta_ads
   version: 1.1.0
   api_version: v25.0

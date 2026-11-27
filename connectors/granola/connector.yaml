@@ -40,6 +40,7 @@
 connector:
   name: granola
   label: Granola
+  logo_domain: granola.ai
   namespace: granola
   version: 1.0.0
   api_version: v1

@@ -59,6 +59,7 @@
 connector:
   name: pipecorn
   label: Pipecorn
+  logo_domain: pipecorn.com
   namespace: pipecorn
   version: 1.0.0
   api_version: v2

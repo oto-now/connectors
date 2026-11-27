@@ -5,6 +5,7 @@
 connector:
   name: mux
   label: Mux
+  logo_domain: mux.com
   namespace: mux
   version: 1.0.0
   api_version: video v1

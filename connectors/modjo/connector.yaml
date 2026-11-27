@@ -9,6 +9,7 @@
 connector:
   name: modjo
   label: Modjo
+  logo_domain: modjo.ai
   namespace: modjo
   version: 2.0.0
   api_version: v2

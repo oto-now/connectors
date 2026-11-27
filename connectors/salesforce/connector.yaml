@@ -58,6 +58,7 @@
 connector:
   name: salesforce
   label: Salesforce
+  logo_domain: www.salesforce.com
   namespace: salesforce
   version: 1.0.1
   api_version: v60.0

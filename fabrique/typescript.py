@@ -343,6 +343,8 @@ def connector_module(description: Description, source: str | None = None) -> Mod
     for key in ("description", "logo_domain"):
         if key in connector:
             entries.append((camel(key), js(connector[key])))
+    if description.logo is not None:
+        entries.append(("logo", js(description.logo)))
     if "base_url" in connector:
         entries.append(("baseUrl", js(connector["base_url"])))
     if "base_urls" in connector:

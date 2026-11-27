@@ -21,6 +21,7 @@
 connector:
   name: nextmotion
   label: Nextmotion
+  logo_domain: nextmotion.net
   namespace: nextmotion
   version: 1.2.0
   api_version: v4

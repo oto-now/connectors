@@ -22,6 +22,7 @@
 connector:
   name: allo
   label: Allo
+  logo_domain: withallo.com
   namespace: allo
   version: 1.2.0
   api_version: v2 (SMS on v1)

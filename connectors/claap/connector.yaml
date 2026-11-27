@@ -3,6 +3,7 @@
 connector:
   name: claap
   label: Claap
+  logo_domain: claap.io
   namespace: claap
   version: 1.0.1
   api_version: v1

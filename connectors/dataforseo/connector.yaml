@@ -70,6 +70,7 @@
 connector:
   name: dataforseo
   label: DataForSEO
+  logo_domain: dataforseo.com
   namespace: dataforseo
   version: 1.0.4
   api_version: v3

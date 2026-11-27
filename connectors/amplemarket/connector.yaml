@@ -104,6 +104,7 @@
 connector:
   name: amplemarket
   label: Amplemarket
+  logo_domain: amplemarket.com
   namespace: amplemarket
   version: 1.0.0
   api_version: v1

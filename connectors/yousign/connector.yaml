@@ -39,6 +39,7 @@
 connector:
   name: yousign
   label: Yousign
+  logo_domain: youtrust.com
   namespace: yousign
   version: 1.1.1
   api_version: v3

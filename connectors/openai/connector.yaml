@@ -52,6 +52,7 @@
 connector:
   name: openai
   label: OpenAI Images
+  logo_domain: openai.com
   namespace: openai
   version: 1.0.0
   api_version: v1
