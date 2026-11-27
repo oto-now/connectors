@@ -1059,7 +1059,7 @@ export const createCustomerInvoice = defineFunction({
   connector: "pennylane",
   class: "write",
   act: false,
-  description: "Create a customer invoice, always as a draft. The customer must exist (list_customers, create_customer). Finalizing and sending are separate functions, called only after explicit human validation. Each line takes exactly one of two shapes, with no other key (any deviation is refused as NotAnyOf): a product line {product_id, quantity}, the product filling the rest (label, raw_currency_unit_price, unit, vat_rate may override it); or a free line {label, quantity, unit, raw_currency_unit_price, vat_rate}, all required. raw_currency_unit_price is the unit price before tax as a string (\"700.00\"); quantity is a number, never a string. Pass an external_reference to trace the source and look it up before creating again.",
+  description: "Create a customer invoice, always as a draft. The customer must exist (list_customers, create_customer). Finalizing and sending are separate functions, called only after explicit human validation. Each line takes exactly one of two shapes, with no other key (any deviation is refused as NotAnyOf): a product line {product_id, quantity}, the product filling the rest (label, raw_currency_unit_price, unit, vat_rate may override it); or a free line {label, quantity, unit, raw_currency_unit_price, vat_rate}, all required. raw_currency_unit_price is the unit price before tax as a string (\"700.00\"); quantity is a number, never a string. Pass an external_reference to trace the source and look it up before creating again. Payment methods (card or online transfer through the payment link, direct debit...) are chosen per installment: installments here, or update_customer_invoice once the draft exists.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1125,10 +1125,42 @@ export const createCustomerInvoice = defineFunction({
       "customer_invoice_template_id": {"type": "integer", "minimum": 1, "description": "Rendering template, from list_invoice_templates."},
       "label": {"type": "string", "description": "Label of the accounting entry; generated when absent."},
       "currency": {"type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217, EUR by default."},
-      "language": {"enum": ["fr_FR", "en_GB", "de_DE", "es_ES"]}
+      "language": {"enum": ["fr_FR", "en_GB", "de_DE", "es_ES"]},
+      "installments": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 60,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["deadline", "amount"],
+          "properties": {
+            "deadline": {
+              "type": "string",
+              "format": "date",
+              "description": "Payment deadline of the installment, YYYY-MM-DD."
+            },
+            "amount": {
+              "type": "string",
+              "pattern": "^[0-9]+(\\.[0-9]+)?$",
+              "description": "Amount with tax, in the invoice currency, as a string (\"1440.00\")."
+            },
+            "payment_methods": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": ["transfer", "e_transfer", "credit_card", "sepa", "cheque", "cash", "lcr", "pro_account_pos"]
+              },
+              "description": "How the customer may pay this installment, among the methods the company has enabled. credit_card and e_transfer go through the invoice's payment link (the pay-now button): credit_card is a card payment processed by Adyen, at a fee of 0.75% excl. VAT for European cards and 2% excl. VAT for business cards; e_transfer is a transfer the customer starts online from that link. transfer: bank transfer to the IBAN printed on the invoice. sepa: SEPA direct debit, which needs a mandate. cheque, cash. lcr: French bill of exchange (LCR). pro_account_pos: card terminal of the Pennylane pro account. Absent or empty: no method, so no online payment is offered."
+            }
+          }
+        },
+        "description": "Payment schedule, one entry per installment. Absent: Pennylane creates one installment for the total with tax at the deadline, with no payment method. The amounts must add up to the invoice total with tax, so give it only when that total is known (free lines, or product prices read beforehand); otherwise create without it and set the methods with update_customer_invoice. Needs a plan with installments (get_company_features), else 403."
+      }
     }
   },
   examples: [
+    { title: "A draft invoice payable by card or online transfer", input: {"customer_id": 3001, "date": "2026-10-06", "deadline": "2026-11-05", "invoice_lines": [{"label": "Workshop", "quantity": 1, "unit": "day", "raw_currency_unit_price": "1200.00", "vat_rate": "FR_200"}], "installments": [{"deadline": "2026-11-05", "amount": "1440.00", "payment_methods": ["credit_card", "e_transfer"]}]} },
     { title: "A draft invoice with one product line", input: {"customer_id": 3001, "date": "2026-10-06", "deadline": "2026-11-05", "invoice_lines": [{"product_id": 1201, "quantity": 3}]} },
     { title: "A draft invoice with one free line", input: {"customer_id": 3001, "date": "2026-10-06", "deadline": "2026-11-05", "invoice_lines": [{"label": "Workshop", "quantity": 1, "unit": "day", "raw_currency_unit_price": "1200.00", "vat_rate": "FR_200"}]} },
   ],
@@ -1138,7 +1170,7 @@ export const createCustomerInvoice = defineFunction({
     path: "/customer_invoices",
     pathParams: [],
     query: {},
-    body: {"customer_id": "customer_id", "date": "date", "deadline": "deadline", "invoice_lines": "invoice_lines", "external_reference": "external_reference", "pdf_invoice_free_text": "pdf_invoice_free_text", "pdf_invoice_subject": "pdf_invoice_subject", "customer_invoice_template_id": "customer_invoice_template_id", "label": "label", "currency": "currency", "language": "language"},
+    body: {"customer_id": "customer_id", "date": "date", "deadline": "deadline", "invoice_lines": "invoice_lines", "external_reference": "external_reference", "pdf_invoice_free_text": "pdf_invoice_free_text", "pdf_invoice_subject": "pdf_invoice_subject", "customer_invoice_template_id": "customer_invoice_template_id", "label": "label", "currency": "currency", "language": "language", "installments": "installments"},
     headers: {},
     constants: {"body": {"draft": true}},
   },
@@ -1271,7 +1303,7 @@ export const updateCustomerInvoice = defineFunction({
   connector: "pennylane",
   class: "write",
   act: true,
-  description: "Update a draft customer invoice or credit note: dates, customer, template, free text, external_reference, and its lines through invoice_lines {create, update, delete} (update and delete need the line id, from list_customer_invoice_lines). Typical use: switch a draft credit note to the credit-note template before finalizing. On a finalized document Pennylane only accepts label, external_reference and line updates: never use this to correct an issued document.",
+  description: "Update a draft customer invoice or credit note: dates, customer, template, free text, external_reference, and its lines through invoice_lines {create, update, delete} (update and delete need the line id, from list_customer_invoice_lines). Typical use: switch a draft credit note to the credit-note template before finalizing. To choose how a draft is paid, read its installment ids (list_customer_invoice_installments) and set their payment_methods through installments.update. On a finalized document Pennylane only accepts label, external_reference and line updates: never use this to correct an issued document.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1382,12 +1414,106 @@ export const updateCustomerInvoice = defineFunction({
           }
         },
         "description": "Lines to add, change or remove."
+      },
+      "installments": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "create": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 60,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["deadline", "amount"],
+              "properties": {
+                "deadline": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Payment deadline of the installment, YYYY-MM-DD."
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^[0-9]+(\\.[0-9]+)?$",
+                  "description": "Amount with tax, in the invoice currency, as a string (\"1440.00\")."
+                },
+                "payment_methods": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "transfer",
+                      "e_transfer",
+                      "credit_card",
+                      "sepa",
+                      "cheque",
+                      "cash",
+                      "lcr",
+                      "pro_account_pos"
+                    ]
+                  },
+                  "description": "How the customer may pay this installment, among the methods the company has enabled. credit_card and e_transfer go through the invoice's payment link (the pay-now button): credit_card is a card payment processed by Adyen, at a fee of 0.75% excl. VAT for European cards and 2% excl. VAT for business cards; e_transfer is a transfer the customer starts online from that link. transfer: bank transfer to the IBAN printed on the invoice. sepa: SEPA direct debit, which needs a mandate. cheque, cash. lcr: French bill of exchange (LCR). pro_account_pos: card terminal of the Pennylane pro account. Absent or empty: no method, so no online payment is offered."
+                }
+              }
+            }
+          },
+          "update": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id"],
+              "minProperties": 2,
+              "properties": {
+                "id": {"type": "integer", "minimum": 1, "description": "From list_customer_invoice_installments."},
+                "deadline": {"type": "string", "format": "date", "description": "YYYY-MM-DD."},
+                "amount": {
+                  "type": "string",
+                  "pattern": "^[0-9]+(\\.[0-9]+)?$",
+                  "description": "Amount with tax, in the invoice currency, as a string (\"1440.00\")."
+                },
+                "payment_methods": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "transfer",
+                      "e_transfer",
+                      "credit_card",
+                      "sepa",
+                      "cheque",
+                      "cash",
+                      "lcr",
+                      "pro_account_pos"
+                    ]
+                  },
+                  "description": "How the customer may pay this installment, among the methods the company has enabled. credit_card and e_transfer go through the invoice's payment link (the pay-now button): credit_card is a card payment processed by Adyen, at a fee of 0.75% excl. VAT for European cards and 2% excl. VAT for business cards; e_transfer is a transfer the customer starts online from that link. transfer: bank transfer to the IBAN printed on the invoice. sepa: SEPA direct debit, which needs a mandate. cheque, cash. lcr: French bill of exchange (LCR). pro_account_pos: card terminal of the Pennylane pro account. Absent or empty: no method, so no online payment is offered."
+                }
+              }
+            }
+          },
+          "delete": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id"],
+              "properties": {"id": {"type": "integer", "minimum": 1}}
+            }
+          }
+        },
+        "description": "Installments to add, change or remove. A draft has one installment, created with it: to choose how it is paid, update it with {id, payment_methods}. The amounts must still add up to the total with tax; a paid, cancelled or waiting_funds installment cannot change; an invoice with several installments cannot go back to one, and its only installment is deleted only when others are created in the same call. Needs a plan with installments (get_company_features), else 403."
       }
     }
   },
   examples: [
     { title: "Switch a draft credit note to the credit-note template", input: {"invoice_id": 5002, "customer_invoice_template_id": 7001} },
     { title: "Change the quantity of one line of a draft", input: {"invoice_id": 5001, "invoice_lines": {"update": [{"id": 9001, "quantity": 2}]}} },
+    { title: "Let the customer pay a draft by card or online transfer", input: {"invoice_id": 5001, "installments": {"update": [{"id": 61, "payment_methods": ["credit_card", "e_transfer"]}]}} },
   ],
   refusals: [],
   request: {
@@ -1395,7 +1521,7 @@ export const updateCustomerInvoice = defineFunction({
     path: "/customer_invoices/{invoice_id}",
     pathParams: ["invoice_id"],
     query: {},
-    body: {"date": "date", "deadline": "deadline", "customer_id": "customer_id", "customer_invoice_template_id": "customer_invoice_template_id", "pdf_invoice_free_text": "pdf_invoice_free_text", "pdf_invoice_subject": "pdf_invoice_subject", "label": "label", "external_reference": "external_reference", "currency": "currency", "language": "language", "invoice_lines": "invoice_lines"},
+    body: {"date": "date", "deadline": "deadline", "customer_id": "customer_id", "customer_invoice_template_id": "customer_invoice_template_id", "pdf_invoice_free_text": "pdf_invoice_free_text", "pdf_invoice_subject": "pdf_invoice_subject", "label": "label", "external_reference": "external_reference", "currency": "currency", "language": "language", "invoice_lines": "invoice_lines", "installments": "installments"},
     headers: {},
   },
   cost: { per: "request" },
@@ -5460,7 +5586,7 @@ export const connector = defineConnector({
   name: "pennylane",
   label: "Pennylane",
   namespace: "pennylane",
-  version: "2.2.0",
+  version: "2.3.0",
   apiVersion: "v2",
   baseUrl: "https://app.pennylane.com/api/external/v2",
   auth: {"kind": "bearer", "token": "api_key"},
