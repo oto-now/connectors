@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'amplemarket',
                'label': 'Amplemarket',
                'namespace': 'amplemarket',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1',
                'base_url': 'https://api.amplemarket.com',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -78,7 +78,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                       'sending it again.'}]},
  'functions': [{'name': 'get_account_info',
                 'class': 'read',
-                'description': 'The Amplemarket workspace the API key belongs to: {id, name}.',
+                'description': 'The Amplemarket workspace the API key belongs to: {id, name}. In French: '
+                               'espace de travail amplemarket, compte amplemarket.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The workspace', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/account-info'},
@@ -88,7 +89,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'description': 'The users of the workspace: {users: [{id, email, name, role, status}], '
                                '_links}. A user id is what list_tasks, log_call and review_phone_number '
                                'take; a user email is what owner fields take. For the next page, pass the '
-                               'page[after] value of _links.next.href as page_after.',
+                               'page[after] value of _links.next.href as page_after. In French: utilisateurs '
+                               'amplemarket, lister les commerciaux amplemarket.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'string',
@@ -123,7 +125,7 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'list_personas',
                 'class': 'read',
                 'description': 'The buyer personas defined in the workspace: {personas, _links}, at most 20 '
-                               'per page.',
+                               'per page. In French: personas acheteurs, lister les personas amplemarket.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -152,7 +154,7 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'list_territories',
                 'class': 'read',
                 'description': 'The sales territories of the workspace: {territories, _links}, at most 20 '
-                               'per page.',
+                               'per page. In French: territoires commerciaux, secteurs de vente amplemarket.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -177,7 +179,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'description': 'Prospect Hub accounts (companies tracked in Amplemarket): {accounts: [{id, '
                                'name, domain, linkedin_url, industry, size, location, owner, tags}], '
                                '_links}, at most 50 per page. name matches partially; domain and owner_email '
-                               'match exactly.',
+                               'match exactly. In French: comptes du prospect hub, lister les entreprises '
+                               'suivies, comptes prospects amplemarket.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -213,7 +216,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'get_account',
                 'class': 'read',
                 'description': 'One Prospect Hub account by id, with its description, owner, tags and AI '
-                               'insights (insights, insights_status).',
+                               "insights (insights, insights_status). In French: fiche d'un compte prospect, "
+                               "détail d'une entreprise suivie.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['account_id'],
@@ -226,7 +230,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'list_mailboxes',
                 'class': 'read',
                 'description': 'The sending mailboxes: {mailboxes: [{id, email, email_provider, '
-                               'daily_email_limit, status, user}], _links}, at most 20 per page.',
+                               'daily_email_limit, status, user}], _links}, at most 20 per page. In French: '
+                               "boîtes d'envoi amplemarket, lister les boîtes mail d'envoi.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'enum': ['active', 'inactive', 'needs_reconnection'],
@@ -266,7 +271,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'update_mailbox_daily_limit',
                 'class': 'write',
                 'description': 'Set how many emails a mailbox may send per day. Amplemarket accepts one '
-                               'change per mailbox per minute and per hour.',
+                               "change per mailbox per minute and per hour. In French: limite d'envoi "
+                               "quotidienne, changer le quota d'emails par jour.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['mailbox_id', 'daily_email_limit'],
@@ -291,7 +297,9 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                'start_person_enrichment for that. Pages are numbered from 1, page_size is '
                                'capped at 100. Seniorities, sizes, revenue and funding take the listed '
                                "values; industries, departments and job functions take Amplemarket's "
-                               'supported values (see the API reference). 300 calls per minute.',
+                               'supported values (see the API reference). 300 calls per minute. In French: '
+                               'chercher des prospects, rechercher des personnes par poste, trouver des '
+                               'décideurs.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'person_name': {'type': 'string',
@@ -543,7 +551,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                '[{id, name, domain, linkedin_url, industry, size, location}], _pagination: '
                                '{page, page_size, total_pages, total}}. Pages are numbered from 1, page_size '
                                "is capped at 50. Industries take Amplemarket's supported values (see the API "
-                               'reference).',
+                               'reference). In French: chercher des entreprises, rechercher des sociétés '
+                               "cibles, base d'entreprises amplemarket.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'company_names': {'type': 'array', 'items': {'type': 'string'}},
@@ -728,7 +737,9 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                'Spends credits: 0.5 email credit when a person is found (at most once per 24 '
                                'hours), 1 per email revealed, 1 phone credit per number revealed (402 '
                                'insufficient_credits when none are left). 404 person_not_found when nobody '
-                               'matches. 350 calls per minute; for many people, use start_person_enrichment.',
+                               'matches. 350 calls per minute; for many people, use start_person_enrichment. '
+                               "In French: enrichir un contact, trouver l'email d'une personne, trouver le "
+                               "téléphone d'un prospect.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['email']},
@@ -777,7 +788,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                'linkedin_url, or name with company_name or company_domain. Answers 202 {id, '
                                'status, results, _links}: read the results with get_person_enrichment until '
                                'the status is final, or stop it with cancel_person_enrichment. Reveals '
-                               'consume credits; 15,000 enrichments per hour.',
+                               'consume credits; 15,000 enrichments per hour. In French: enrichissement en '
+                               'masse de contacts, enrichir une liste de personnes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['leads'],
@@ -815,7 +827,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'read',
                 'description': 'The status and results of a person enrichment batch: {id, status, results, '
                                '_errors, _links}, a page of results at a time: for the next page, pass the '
-                               'page[after] value of _links.next.href as page_after.',
+                               'page[after] value of _links.next.href as page_after. In French: résultat '
+                               "d'un enrichissement de contacts, statut de l'enrichissement des personnes.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],
@@ -845,7 +858,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'cancel_person_enrichment',
                 'class': 'write',
                 'description': 'Stop a running person enrichment batch; results already produced stay '
-                               'readable.',
+                               'readable. In French: annuler un enrichissement de contacts, arrêter '
+                               "l'enrichissement des personnes.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],
@@ -860,7 +874,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'find_company',
                 'class': 'read',
                 'description': 'Enrich ONE company by domain or LinkedIn URL: name, overview, website, '
-                               'industry, size, estimated employees, locations, keywords, logo.',
+                               'industry, size, estimated employees, locations, keywords, logo. In French: '
+                               'enrichir une entreprise, informations sur une société par domaine.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['domain']}, {'required': ['linkedin_url']}],
@@ -876,7 +891,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'write',
                 'description': 'Start a batch enrichment of up to 10,000 companies, each identified by '
                                'domain or linkedin_url. Answers 202 {id, status, results, _links}: read the '
-                               'results with get_company_enrichment until the status is final.',
+                               'results with get_company_enrichment until the status is final. In French: '
+                               "enrichissement en masse d'entreprises, enrichir une liste de sociétés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['companies'],
@@ -899,7 +915,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'read',
                 'description': 'The status and results of a company enrichment batch: {id, status, results, '
                                '_errors, _links}, a page of results at a time: for the next page, pass the '
-                               'page[after] value of _links.next.href as page_after.',
+                               'page[after] value of _links.next.href as page_after. In French: résultat '
+                               "d'un enrichissement d'entreprises, statut de l'enrichissement des sociétés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],
@@ -928,7 +945,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'cost': {'per': 'request'}},
                {'name': 'cancel_company_enrichment',
                 'class': 'write',
-                'description': 'Stop a running company enrichment batch.',
+                'description': 'Stop a running company enrichment batch. In French: annuler un '
+                               "enrichissement d'entreprises, arrêter l'enrichissement des sociétés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],
@@ -944,7 +962,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'write',
                 'description': 'Start validating up to 100,000 emails (15,000 per hour); consumes credits. '
                                'Answers 202 {id, status, results, _links}: read the results with '
-                               'get_email_validation until the status is final.',
+                               'get_email_validation until the status is final. In French: vérifier des '
+                               "adresses email, valider une liste d'emails.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['emails'],
@@ -966,7 +985,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'get_email_validation',
                 'class': 'read',
                 'description': 'The status and results of an email validation batch, a page at a time: {id, '
-                               'status, results: [{email, result, catch_all}], _links}.',
+                               'status, results: [{email, result, catch_all}], _links}. In French: résultat '
+                               'de la vérification des emails, emails valides ou invalides.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['validation_id'],
@@ -996,7 +1016,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'cost': {'per': 'request'}},
                {'name': 'cancel_email_validation',
                 'class': 'write',
-                'description': 'Stop a running email validation batch.',
+                'description': 'Stop a running email validation batch. In French: annuler la vérification '
+                               "des emails, arrêter la validation d'emails.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['validation_id'],
@@ -1013,7 +1034,9 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'read',
                 'description': "A company's open positions, the company given by Amplemarket id, domain or "
                                'LinkedIn URL: {company, job_openings: [{id, title, url, raw_location, '
-                               'seniorities, departments, first_seen_at}], _links}, at most 100 per page.',
+                               'seniorities, departments, first_seen_at}], _links}, at most 100 per page. In '
+                               "French: offres d'emploi d'une entreprise, postes ouverts d'une société, "
+                               "recrutements en cours d'une entreprise.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['company_id']},
@@ -1069,7 +1092,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'get_job_opening',
                 'class': 'read',
                 'description': 'One job opening with its description, salary and contract types; 410 once it '
-                               'has closed.',
+                               "has closed. In French: détail d'une offre d'emploi, salaire d'un poste "
+                               'ouvert.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['job_opening_id'],
@@ -1080,7 +1104,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'list_lead_lists',
                 'class': 'read',
                 'description': 'The lead lists: {lead_lists: [{id, name, status, type, owner, shared, '
-                               'created_at}], _links}.',
+                               'created_at}], _links}. In French: listes de leads, lister les listes de '
+                               'prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'string', 'description': 'Lead list status.'},
@@ -1115,7 +1140,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'read',
                 'description': 'One lead list with a page of its leads (emails and phone numbers once '
                                'processed): {id, name, status, type, options, leads, _links}. 410 if the '
-                               'list was deleted.',
+                               "list was deleted. In French: détail d'une liste de leads, leads d'une liste "
+                               'de prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lead_list_id'],
@@ -1149,7 +1175,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                'or titles_and_company (title with company_name or company_domain). options '
                                'reveal_phone_numbers, validate_email and enrich consume credits. Answers '
                                '202: the list is processed asynchronously; follow its status with '
-                               'get_lead_list.',
+                               'get_lead_list. In French: créer une liste de leads, nouvelle liste de '
+                               'prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['owner', 'type', 'shared', 'leads'],
@@ -1213,7 +1240,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'write',
                 'description': 'Add up to 10,000 leads to an existing lead list (a list holds 60,000 at '
                                'most; beyond, leads are added partially). Answers {total, '
-                               'total_added_to_lead_list}.',
+                               'total_added_to_lead_list}. In French: ajouter des leads à une liste, '
+                               'compléter une liste de prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lead_list_id', 'leads'],
@@ -1254,7 +1282,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'list_sequences',
                 'class': 'read',
                 'description': 'The sequences: {sequences: [{id, name, status, created_by, ...}], _links}. A '
-                               'sequence id is what add_leads_to_sequence takes.',
+                               'sequence id is what add_leads_to_sequence takes. In French: séquences '
+                               "amplemarket, lister les séquences de prospection, campagnes d'emailing.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'string', 'description': 'Sequence status.'},
@@ -1294,7 +1323,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                'starts emailing or messaging them. Answers the counts: total, '
                                'total_added_to_sequence and those skipped (duplicates, exclusion list, '
                                'recently contacted, already in this or another sequence). 30 calls per '
-                               'minute.',
+                               'minute. In French: inscrire des leads dans une séquence, lancer une séquence '
+                               'de prospection, ajouter des prospects à une campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sequence_id', 'leads'],
@@ -1351,7 +1381,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'get_contact',
                 'class': 'read',
                 'description': 'One contact by id: name, email, title, company, owner, phone numbers, '
-                               'sequences.',
+                               "sequences. In French: fiche d'un contact amplemarket, détail d'un contact "
+                               'amplemarket.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_id'],
@@ -1361,7 +1392,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'cost': {'per': 'request'}},
                {'name': 'get_contact_by_email',
                 'class': 'read',
-                'description': 'One contact by email; 404 when no contact has it.',
+                'description': 'One contact by email; 404 when no contact has it. In French: contact '
+                               'amplemarket par email, chercher un contact par adresse email.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['email'],
@@ -1372,7 +1404,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'list_contacts',
                 'class': 'read',
                 'description': 'Contacts by id (up to 20), or by name and/or Prospect Hub account: '
-                               '{contacts}.',
+                               "{contacts}. In French: lister les contacts amplemarket, contacts d'un compte "
+                               'prospect.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['ids']},
@@ -1397,7 +1430,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'description': 'Create a contact (409 if one already has this email). The Prospect Hub '
                                'account is account_id, else resolved from crm_account_id, then '
                                'company_domain, then company_name. phone_numbers are attached as '
-                               'user-uploaded numbers.',
+                               'user-uploaded numbers. In French: créer un contact amplemarket, ajouter un '
+                               'contact prospect.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['email'],
@@ -1457,7 +1491,9 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'read',
                 'description': "One user's tasks (calls, LinkedIn steps, manual emails of sequences): "
                                '{tasks, _links}. type and status take the values of list_task_types and '
-                               "list_task_statuses; keyword matches the contact's name, email or company.",
+                               "list_task_statuses; keyword matches the contact's name, email or company. In "
+                               "French: tâches d'un commercial, lister les tâches de prospection, appels à "
+                               'passer.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user_id'],
@@ -1510,14 +1546,16 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'cost': {'per': 'request'}},
                {'name': 'list_task_statuses',
                 'class': 'read',
-                'description': 'The task statuses list_tasks filters on.',
+                'description': 'The task statuses list_tasks filters on. In French: statuts des tâches, '
+                               "états possibles d'une tâche.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Task statuses', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/tasks/statuses'},
                 'cost': {'per': 'request'}},
                {'name': 'list_task_types',
                 'class': 'read',
-                'description': 'The task types list_tasks filters on.',
+                'description': 'The task types list_tasks filters on. In French: types de tâches, catégories '
+                               'de tâches amplemarket.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Task types', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/tasks/types'},
@@ -1525,7 +1563,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                {'name': 'complete_task',
                 'class': 'sensitive',
                 'description': 'Mark a task done: the sequence moves the lead to its next step, or completes '
-                               'the lead with set_lead_to_completed.',
+                               'the lead with set_lead_to_completed. In French: terminer une tâche, marquer '
+                               'une tâche comme faite.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -1540,7 +1579,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                        'of its sequence, which may send an automatic email.'}},
                {'name': 'skip_task',
                 'class': 'sensitive',
-                'description': 'Skip a task; the sequence moves the lead to its next step.',
+                'description': 'Skip a task; the sequence moves the lead to its next step. In French: passer '
+                               'une tâche, sauter une étape de séquence.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -1555,7 +1595,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'description': 'Calls, newest first: {calls: [{id, from, to, duration, answered, '
                                'disposition_name, user_email, transcription}], _links}. Calls that never '
                                'connected are not returned. Dates are ISO 8601. A recording is never given '
-                               'as a link.',
+                               'as a link. In French: appels amplemarket, historique des appels de '
+                               'prospection.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'user_id': {'type': 'string'},
@@ -1601,7 +1642,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'output': {'strip': ['calls.recording_url']}},
                {'name': 'list_call_dispositions',
                 'class': 'read',
-                'description': 'The call outcomes (dispositions) log_call can take, with their action.',
+                'description': 'The call outcomes (dispositions) log_call can take, with their action. In '
+                               "French: issues d'appel, résultats possibles d'un appel.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Dispositions', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/calls/dispositions'},
@@ -1610,7 +1652,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'class': 'write',
                 'description': 'Log a call made outside Amplemarket against a task. A disposition whose '
                                'action is "complete" also completes the task. recording_url is stored as a '
-                               'link, not downloaded, and not given back in the answer.',
+                               'link, not downloaded, and not given back in the answer. In French: '
+                               'enregistrer un appel, consigner un appel passé.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id',
@@ -1662,7 +1705,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'output': {'strip': ['recording_url']}},
                {'name': 'list_excluded_emails',
                 'class': 'read',
-                'description': 'The emails excluded from all outreach, filtered by keyword.',
+                'description': 'The emails excluded from all outreach, filtered by keyword. In French: '
+                               "emails exclus, liste d'exclusion des emails, adresses désinscrites.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'email': {'type': 'string',
@@ -1691,7 +1735,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'cost': {'per': 'request'}},
                {'name': 'list_excluded_domains',
                 'class': 'read',
-                'description': 'The domains excluded from all outreach, filtered by keyword.',
+                'description': 'The domains excluded from all outreach, filtered by keyword. In French: '
+                               "domaines exclus, liste d'exclusion des domaines.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'domain': {'type': 'string',
@@ -1719,7 +1764,9 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'cost': {'per': 'request'}},
                {'name': 'add_excluded_emails',
                 'class': 'write',
-                'description': 'Exclude emails from all outreach (customers, opt-outs, competitors).',
+                'description': 'Exclude emails from all outreach (customers, opt-outs, competitors). In '
+                               "French: exclure des emails, ajouter à la liste d'exclusion, ne plus "
+                               'contacter une adresse.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['emails'],
@@ -1736,7 +1783,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'cost': {'per': 'request'}},
                {'name': 'add_excluded_domains',
                 'class': 'write',
-                'description': 'Exclude whole domains from all outreach.',
+                'description': 'Exclude whole domains from all outreach. In French: exclure un domaine, ne '
+                               'plus contacter une entreprise.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['domains'],
@@ -1754,7 +1802,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                 'cost': {'per': 'request'}},
                {'name': 'remove_excluded_emails',
                 'class': 'sensitive',
-                'description': 'Lift the exclusion of emails: sequences can contact them again.',
+                'description': 'Lift the exclusion of emails: sequences can contact them again. In French: '
+                               "retirer un email de la liste d'exclusion, réautoriser un email.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['emails'],
@@ -1775,7 +1824,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                        'can contact them again.'}},
                {'name': 'remove_excluded_domains',
                 'class': 'sensitive',
-                'description': 'Lift the exclusion of domains: sequences can contact their people again.',
+                'description': 'Lift the exclusion of domains: sequences can contact their people again. In '
+                               "French: retirer un domaine de la liste d'exclusion, réautoriser un domaine.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['domains'],
@@ -1795,7 +1845,8 @@ DESCRIPTION = {'connector': {'name': 'amplemarket',
                                        'can contact their people again.'}},
                {'name': 'review_phone_number',
                 'class': 'write',
-                'description': "Report a contact's phone number as wrong, on behalf of a user.",
+                'description': "Report a contact's phone number as wrong, on behalf of a user. In French: "
+                               'signaler un numéro erroné, numéro de téléphone faux.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['phone_number_id', 'user_id', 'reason'],

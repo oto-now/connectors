@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'typeform',
                'label': 'Typeform',
                'namespace': 'typeform',
-               'version': '1.2.0',
+               'version': '1.2.1',
                'api_version': 'Create API, Responses API and Webhooks API (unversioned)',
                'base_urls': {'setting': 'region',
                              'values': {'us': 'https://api.typeform.com',
@@ -52,7 +52,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                 'description': 'List the Typeform workspaces the token can access, across organizations: '
                                '{total_items, page_count, items: [{id, name, account_id, shared, forms: '
                                '{count, href}}]}. The id filters list_forms. Needs the workspaces:read '
-                               'scope.',
+                               'scope. In French: espaces de travail typeform, lister les workspaces '
+                               'typeform.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string',
@@ -74,7 +75,9 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                 'class': 'read',
                 'description': 'List the forms of the Typeform account, public and private: {total_items, '
                                'page_count, items: [{id, title, created_at, last_updated_at, settings: '
-                               '{is_public}, _links: {display, responses}}]}. Needs the forms:read scope.',
+                               '{is_public}, _links: {display, responses}}]}. Needs the forms:read scope. In '
+                               'French: lister les formulaires, formulaires typeform, questionnaires '
+                               'typeform.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string',
@@ -117,7 +120,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                                "_links.responses, the host that stores its responses. A response's "
                                'answers[].field.id points to these fields. If _links.responses is not on '
                                'api.typeform.com, the account lives in an EU data center and list_responses '
-                               'here would come back empty. Needs the forms:read scope.',
+                               'here would come back empty. Needs the forms:read scope. In French: questions '
+                               "d'un formulaire, structure d'un questionnaire typeform.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id'],
@@ -144,7 +148,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                                'item as before. Responses from the last ~30 minutes may not be listed yet. '
                                "Queried outside the account's data center, the list comes back empty without "
                                "error: check get_form's _links.responses first. Needs the responses:read "
-                               'scope.',
+                               "scope. In French: réponses à un formulaire, résultats d'un questionnaire, "
+                               'réponses typeform.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id'],
@@ -251,7 +256,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                                'properties.choices [{label}], a required answer in validations: {required: '
                                'true}. Images must already exist in the account. To put the form in a '
                                'workspace, pass workspace: {href: '
-                               '"https://api.typeform.com/workspaces/<id>"}. Needs the forms:write scope.',
+                               '"https://api.typeform.com/workspaces/<id>"}. Needs the forms:write scope. In '
+                               'French: créer un formulaire, créer un questionnaire typeform.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['title'],
@@ -378,7 +384,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                                'response, so start from get_form, change what is needed, and send every '
                                'field back with its id. Without theme, Typeform applies a new copy of the '
                                'default theme. settings.is_public publishes or unpublishes the form. Needs '
-                               'the forms:write scope.',
+                               'the forms:write scope. In French: modifier un formulaire, remplacer les '
+                               "questions d'un formulaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'title'],
@@ -508,7 +515,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                 'class': 'sensitive',
                 'description': 'Delete one Typeform form and all its responses, irreversibly. Returns '
                                'nothing. To stop collecting answers but keep them, unpublish the form '
-                               'instead (settings.is_public false). Needs the forms:write scope.',
+                               'instead (settings.is_public false). Needs the forms:write scope. In French: '
+                               'supprimer un formulaire, effacer un questionnaire typeform.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id'],
@@ -531,7 +539,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                                'not done, and ids that match no response are ignored without error; check '
                                'with list_responses and included_response_ids. Like list_responses, it must '
                                "reach the account's data center (see get_form's _links.responses). Needs the "
-                               'responses:write scope.',
+                               'responses:write scope. In French: supprimer des réponses, effacer les '
+                               "réponses d'un formulaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'included_response_ids'],
@@ -565,7 +574,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                 'description': 'List the webhooks of one Typeform form: each {id, tag, url, enabled, '
                                'event_types: {form_response, form_response_partial}, verify_ssl, form_id, '
                                'created_at, updated_at}. The tag names a webhook within its form. The '
-                               'signing secret is never returned. Needs the webhooks:read scope.',
+                               'signing secret is never returned. Needs the webhooks:read scope. In French: '
+                               "webhooks d'un formulaire, lister les webhooks typeform.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id'],
@@ -585,7 +595,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                 'class': 'read',
                 'description': 'Get one webhook of a Typeform form by its tag: {id, tag, url, enabled, '
                                'event_types, verify_ssl, form_id, created_at, updated_at}. The signing '
-                               'secret is never returned. Needs the webhooks:read scope.',
+                               'secret is never returned. Needs the webhooks:read scope. In French: détail '
+                               "d'un webhook typeform, configuration d'un webhook de formulaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'tag'],
@@ -612,7 +623,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                                'exists, and return it without its secret. Once enabled, every new response '
                                'of the form, with all its answers, is posted to url: form_response on '
                                'submission, form_response_partial on a partial submission. Set secret to '
-                               'have the payloads signed with HMAC SHA256. Needs the webhooks:write scope.',
+                               'have the payloads signed with HMAC SHA256. Needs the webhooks:write scope. '
+                               'In French: créer un webhook typeform, envoyer les réponses vers une url.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'tag', 'url', 'enabled'],
@@ -672,7 +684,8 @@ DESCRIPTION = {'connector': {'name': 'typeform',
                 'description': 'Delete one webhook of a Typeform form: its endpoint stops receiving '
                                'responses, and the integration behind it with it. To pause it instead, '
                                'upsert it with enabled false. Returns nothing. Needs the webhooks:write '
-                               'scope.',
+                               "scope. In French: supprimer un webhook typeform, arrêter l'envoi des "
+                               'réponses.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'tag'],

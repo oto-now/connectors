@@ -6,7 +6,7 @@ export const getWorkspace = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The Instantly workspace this API key reaches: id, name, owner, plan ids, timestamps. Free; needs workspaces:read (or all:read). Use it to check the connection.",
+  description: "The Instantly workspace this API key reaches: id, name, owner, plan ids, timestamps. Free; needs workspaces:read (or all:read). Use it to check the connection. In French: espace de travail instantly, compte instantly.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The workspace", input: {} },
@@ -29,7 +29,7 @@ export const listCampaigns = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The workspace's campaigns: items [{id, name, status, campaign_schedule, daily_limit, email_list (sending accounts), stop_on_reply, tracking flags, timestamps}] and next_starting_after. Each campaign's sequences (the email copy) are left out: get_campaign returns them. status: 0 draft, 1 active, 2 paused, 3 completed, 4 running subsequences, -1 accounts unhealthy, -2 bounce protect, -99 account suspended. search matches the name; tag_ids is a comma-separated list of tag ids. Needs campaigns:read.",
+  description: "The workspace's campaigns: items [{id, name, status, campaign_schedule, daily_limit, email_list (sending accounts), stop_on_reply, tracking flags, timestamps}] and next_starting_after. Each campaign's sequences (the email copy) are left out: get_campaign returns them. status: 0 draft, 1 active, 2 paused, 3 completed, 4 running subsequences, -1 accounts unhealthy, -2 bounce protect, -99 account suspended. search matches the name; tag_ids is a comma-separated list of tag ids. Needs campaigns:read. In French: lister les campagnes instantly, campagnes de prospection, campagnes d'emailing.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -81,7 +81,7 @@ export const getCampaign = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "One Instantly campaign by id, in full: status, schedule, sequences (steps, delays and the variants' subject and body), sending accounts (email_list), limits and tracking settings. Needs campaigns:read.",
+  description: "One Instantly campaign by id, in full: status, schedule, sequences (steps, delays and the variants' subject and body), sending accounts (email_list), limits and tracking settings. Needs campaigns:read. In French: détail d'une campagne instantly, séquence d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -115,7 +115,7 @@ export const searchCampaignsByLead = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The campaigns a lead is in, by the lead's email: items [{id, name, status, …}], sequences left out. Use it to find where a person is being emailed before adding them again. Needs campaigns:read.",
+  description: "The campaigns a lead is in, by the lead's email: items [{id, name, status, …}], sequences left out. Use it to find where a person is being emailed before adding them again. Needs campaigns:read. In French: campagnes d'un prospect, dans quelle campagne est ce lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -148,7 +148,7 @@ export const getCampaignAnalytics = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "Per-campaign totals: a list of {campaign_id, campaign_name, campaign_status, leads_count, contacted_count, emails_sent_count, open_count, reply_count (and unique and automatic variants), link_click_count, bounced_count, unsubscribed_count, completed_count, total_opportunities, total_opportunity_value}. One campaign by campaign_id, several by campaign_ids, all without either; start_date and end_date bound the counts. exclude_total_leads_count answers much faster. Scope: unstated by Instantly (campaigns:read or all:read expected).",
+  description: "Per-campaign totals: a list of {campaign_id, campaign_name, campaign_status, leads_count, contacted_count, emails_sent_count, open_count, reply_count (and unique and automatic variants), link_click_count, bounced_count, unsubscribed_count, completed_count, total_opportunities, total_opportunity_value}. One campaign by campaign_id, several by campaign_ids, all without either; start_date and end_date bound the counts. exclude_total_leads_count answers much faster. Scope: unstated by Instantly (campaigns:read or all:read expected). In French: statistiques des campagnes, taux de réponse des campagnes, résultats de campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -202,7 +202,7 @@ export const getCampaignAnalyticsOverview = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The totals summed over one campaign (campaign_id), several (campaign_ids) or all: open, click and reply counts (unique, by step, automatic), bounced, unsubscribed, completed, emails_sent_count, contacted_count, new_leads_contacted_count, total_opportunities and their value, total_interested, total_meeting_booked, total_meeting_completed, total_closed. campaign_status narrows to campaigns in that status. Interest totals count each lead's first event; expand_crm_events counts every event. Scope: unstated by Instantly (campaigns:read or all:read expected).",
+  description: "The totals summed over one campaign (campaign_id), several (campaign_ids) or all: open, click and reply counts (unique, by step, automatic), bounced, unsubscribed, completed, emails_sent_count, contacted_count, new_leads_contacted_count, total_opportunities and their value, total_interested, total_meeting_booked, total_meeting_completed, total_closed. campaign_status narrows to campaigns in that status. Interest totals count each lead's first event; expand_crm_events counts every event. Scope: unstated by Instantly (campaigns:read or all:read expected). In French: bilan global des campagnes, taux d'ouverture total, total des réponses.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -260,7 +260,7 @@ export const getCampaignDailyAnalytics = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "Day by day: a list of {date, sent, contacted, new_leads_contacted, opened, unique_opened, replies, unique_replies, replies_automatic, clicks, unique_clicks, opportunities, unique_opportunities}, for one campaign (campaign_id) or all, between start_date and end_date. Scope: unstated by Instantly (campaigns:read or all:read expected).",
+  description: "Day by day: a list of {date, sent, contacted, new_leads_contacted, opened, unique_opened, replies, unique_replies, replies_automatic, clicks, unique_clicks, opportunities, unique_opportunities}, for one campaign (campaign_id) or all, between start_date and end_date. Scope: unstated by Instantly (campaigns:read or all:read expected). In French: statistiques jour par jour, envois quotidiens d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -307,7 +307,7 @@ export const getCampaignStepsAnalytics = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "Step by step and variant by variant (variant 0 = A, 1 = B…): a list of {step, variant, sent, opened, unique_opened, replies, unique_replies, replies_automatic, clicks, unique_clicks}, for one campaign (campaign_id) or all. include_opportunities_count adds opportunities, unique_opportunities, meetings_booked and won. Use it to compare A/B variants. Scope: unstated by Instantly (campaigns:read or all:read expected).",
+  description: "Step by step and variant by variant (variant 0 = A, 1 = B…): a list of {step, variant, sent, opened, unique_opened, replies, unique_replies, replies_automatic, clicks, unique_clicks}, for one campaign (campaign_id) or all. include_opportunities_count adds opportunities, unique_opportunities, meetings_booked and won. Use it to compare A/B variants. Scope: unstated by Instantly (campaigns:read or all:read expected). In French: statistiques par étape de séquence, résultats par variante, performance des variantes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -350,7 +350,7 @@ export const listLeads = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "Leads, by filters: items [{id, email, first_name, last_name, company_name, company_domain, job_title, campaign, list_id, status (1 active, 2 paused, 3 completed, -1 bounced, -2 unsubscribed, -3 skipped), lt_interest_status, verification_status, email_open_count, email_reply_count, email_click_count, timestamps of creation, update, last contact, open, reply, click and interest change}] and next_starting_after; get_lead has its custom variables (payload). campaign or list_id narrows to one; search matches whole words of the email, names, company and title; contacts lists emails; ids lead ids; filter a state (FILTER_LEAD_INTERESTED, FILTER_VAL_REPLIED…). A read, sent as a POST. Needs leads:read.",
+  description: "Leads, by filters: items [{id, email, first_name, last_name, company_name, company_domain, job_title, campaign, list_id, status (1 active, 2 paused, 3 completed, -1 bounced, -2 unsubscribed, -3 skipped), lt_interest_status, verification_status, email_open_count, email_reply_count, email_click_count, timestamps of creation, update, last contact, open, reply, click and interest change}] and next_starting_after; get_lead has its custom variables (payload). campaign or list_id narrows to one; search matches whole words of the email, names, company and title; contacts lists emails; ids lead ids; filter a state (FILTER_LEAD_INTERESTED, FILTER_VAL_REPLIED…). A read, sent as a POST. Needs leads:read. In French: lister les prospects, chercher un lead, prospects d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -458,7 +458,7 @@ export const getLead = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "One lead by id: email, names, company, job_title, phone, website, personalization, campaign, list_id, status, lt_interest_status (1 interested, 2 meeting booked, 3 meeting completed, 4 won, 0 out of office, -1 not interested, -2 wrong person, -3 lost, -4 no show, or a custom label's value), payload (custom variables), open, reply and click counts and their last timestamps. Needs leads:read.",
+  description: "One lead by id: email, names, company, job_title, phone, website, personalization, campaign, list_id, status, lt_interest_status (1 interested, 2 meeting booked, 3 meeting completed, 4 won, 0 out of office, -1 not interested, -2 wrong person, -3 lost, -4 no show, or a custom label's value), payload (custom variables), open, reply and click counts and their last timestamps. Needs leads:read. In French: fiche d'un prospect, détail d'un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -492,7 +492,7 @@ export const listLeadLists = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The workspace's lead lists (leads kept outside any campaign): items [{id, name, has_enrichment_task, owned_by, timestamp_created}] and next_starting_after. search matches the name. Needs lead_lists:read.",
+  description: "The workspace's lead lists (leads kept outside any campaign): items [{id, name, has_enrichment_task, owned_by, timestamp_created}] and next_starting_after. search matches the name. Needs lead_lists:read. In French: listes de prospects, lister les listes de leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -534,7 +534,7 @@ export const getLeadList = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "One lead list by id. Needs lead_lists:read.",
+  description: "One lead list by id. Needs lead_lists:read. In French: détail d'une liste de prospects, lire une liste de leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -568,7 +568,7 @@ export const listLeadLabels = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The workspace's custom lead labels (interest statuses beyond the built-in ones): items [{id, label, interest_status (the number to set or filter with), interest_status_label (positive, neutral, negative), description}] and next_starting_after. Needs lead-labels:read.",
+  description: "The workspace's custom lead labels (interest statuses beyond the built-in ones): items [{id, label, interest_status (the number to set or filter with), interest_status_label (positive, neutral, negative), description}] and next_starting_after. Needs lead-labels:read. In French: statuts d'intérêt des prospects, étiquettes de leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -610,7 +610,7 @@ export const getBackgroundJob = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "A background job by id, as move_leads answers it: type, status (pending, in-progress, success, failed…), progress (0 to 100), data (for a move: moved_leads, moved_lead_emails, skipped_duplicate_emails…). data_fields keeps only the listed keys of data (comma-separated). Read it again until status is success or failed. Needs background-jobs:read.",
+  description: "A background job by id, as move_leads answers it: type, status (pending, in-progress, success, failed…), progress (0 to 100), data (for a move: moved_leads, moved_lead_emails, skipped_duplicate_emails…). data_fields keeps only the listed keys of data (comma-separated). Read it again until status is success or failed. Needs background-jobs:read. In French: état d'une tâche de fond, suivi d'un déplacement de leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -642,7 +642,7 @@ export const listEmails = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The Unibox, newest first: items [{id, thread_id, timestamp_email, subject, from_address_email, to_address_email_list, lead, eaccount (the sending account), campaign_id, ue_type (1 sent by a campaign, 2 received, 3 sent, 4 scheduled), is_unread, i_status, content_preview, body.text}] and next_starting_after; body.html is left out (get_email has it). email_type received for replies; is_unread; lead, an email; search, a lead's email or thread:<thread_id>; latest_of_thread one per thread. Limited to 20 requests per minute. Needs emails:read.",
+  description: "The Unibox, newest first: items [{id, thread_id, timestamp_email, subject, from_address_email, to_address_email_list, lead, eaccount (the sending account), campaign_id, ue_type (1 sent by a campaign, 2 received, 3 sent, 4 scheduled), is_unread, i_status, content_preview, body.text}] and next_starting_after; body.html is left out (get_email has it). email_type received for replies; is_unread; lead, an email; search, a lead's email or thread:<thread_id>; latest_of_thread one per thread. Limited to 20 requests per minute. Needs emails:read. In French: boîte de réception unibox, réponses des prospects, emails reçus des prospects.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -726,7 +726,7 @@ export const getEmail = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "One email by id, in full: subject, from, to, cc, body {text, html}, thread_id, lead, eaccount, campaign_id, step, ue_type, is_unread, i_status, attachment names and sizes (no download address). Reply to it with reply_to_email and this id. Needs emails:read.",
+  description: "One email by id, in full: subject, from, to, cc, body {text, html}, thread_id, lead, eaccount, campaign_id, step, ue_type, is_unread, i_status, attachment names and sizes (no download address). Reply to it with reply_to_email and this id. Needs emails:read. In French: lire un email unibox, contenu d'une réponse de prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -761,7 +761,7 @@ export const countUnreadEmails = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The number of unread emails in the Unibox, {count}. Needs emails:read.",
+  description: "The number of unread emails in the Unibox, {count}. Needs emails:read. In French: nombre d'emails non lus, réponses non lues.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Unread count", input: {} },
@@ -784,7 +784,7 @@ export const listAccounts = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The workspace's sending accounts (mailboxes): items [{email, first_name, last_name, status (1 active, 2 paused, -1 connection error, -2 soft bounce error, -3 sending error), warmup_status, stat_warmup_score, daily_limit, provider_code (1 IMAP/SMTP, 2 Google, 3 Microsoft, 4 AWS), status_message, setup_pending, timestamps of creation, update and warmup start}] and next_starting_after; get_account has its warmup settings. No credential is returned. search matches the email. Needs accounts:read.",
+  description: "The workspace's sending accounts (mailboxes): items [{email, first_name, last_name, status (1 active, 2 paused, -1 connection error, -2 soft bounce error, -3 sending error), warmup_status, stat_warmup_score, daily_limit, provider_code (1 IMAP/SMTP, 2 Google, 3 Microsoft, 4 AWS), status_message, setup_pending, timestamps of creation, update and warmup start}] and next_starting_after; get_account has its warmup settings. No credential is returned. search matches the email. Needs accounts:read. In French: comptes d'envoi, boîtes mail d'envoi, état du warmup des boîtes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -832,7 +832,7 @@ export const getAccount = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "One sending account by its email: status and status_message (the last SMTP or IMAP error), warmup settings and score, daily_limit, sending_gap, signature, tracking domain. No credential is returned. Needs accounts:read.",
+  description: "One sending account by its email: status and status_message (the last SMTP or IMAP error), warmup settings and score, daily_limit, sending_gap, signature, tracking domain. No credential is returned. Needs accounts:read. In French: détail d'un compte d'envoi, erreur d'une boîte d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -861,7 +861,7 @@ export const listWebhooks = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The workspace's webhooks: items [{id, name, target_hook_url, event_type, campaign (null = every campaign), custom_interest_value, status (1 active, -1 disabled after delivery failures), timestamp_error}] and next_starting_after. Delivery headers are never returned. Scope: unstated by Instantly (webhooks:read or all:read expected).",
+  description: "The workspace's webhooks: items [{id, name, target_hook_url, event_type, campaign (null = every campaign), custom_interest_value, status (1 active, -1 disabled after delivery failures), timestamp_error}] and next_starting_after. Delivery headers are never returned. Scope: unstated by Instantly (webhooks:read or all:read expected). In French: lister les webhooks instantly, webhooks de l'espace instantly.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -926,7 +926,7 @@ export const listWebhookEventTypes = defineFunction({
   connector: "instantly",
   class: "read",
   act: false,
-  description: "The events a webhook can listen to, custom lead labels included: event_types [{id, label, type}]. Scope: unstated by Instantly (webhooks:read or all:read expected).",
+  description: "The events a webhook can listen to, custom lead labels included: event_types [{id, label, type}]. Scope: unstated by Instantly (webhooks:read or all:read expected). In French: événements de webhook instantly, types d'événements instantly.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Event types", input: {} },
@@ -947,7 +947,7 @@ export const addLeads = defineFunction({
   connector: "instantly",
   class: "sensitive",
   act: true,
-  description: "Add up to 1000 leads to ONE campaign (campaign_id) or ONE lead list (list_id). In a campaign each lead needs an email, and an active campaign starts emailing them on its schedule. Instantly checks emails, the block list (blocklist_id, or the workspace's) and duplicates; skip_if_in_workspace / _in_campaign / _in_list skip leads already there. custom_variables fill the sequence's {{variables}} (text, number, true/false). Answers counts: leads_uploaded, duplicated_leads, in_blocklist, invalid_email_count, skipped_count, remaining_in_plan, and created_leads [{index, id, email}]. Needs leads:create.",
+  description: "Add up to 1000 leads to ONE campaign (campaign_id) or ONE lead list (list_id). In a campaign each lead needs an email, and an active campaign starts emailing them on its schedule. Instantly checks emails, the block list (blocklist_id, or the workspace's) and duplicates; skip_if_in_workspace / _in_campaign / _in_list skip leads already there. custom_variables fill the sequence's {{variables}} (text, number, true/false). Answers counts: leads_uploaded, duplicated_leads, in_blocklist, invalid_email_count, skipped_count, remaining_in_plan, and created_leads [{index, id, email}]. Needs leads:create. In French: ajouter des prospects à une campagne, importer des leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1021,7 +1021,7 @@ export const createLead = defineFunction({
   connector: "instantly",
   class: "sensitive",
   act: true,
-  description: "Create ONE lead, in a campaign (campaign) or a lead list (list_id): in an active campaign its sequence emails the lead. email, names, company, job_title, phone, website, personalization, custom_variables (sequence variables: text, number, true/false). skip_if_in_workspace / _in_campaign / _in_list skip a lead already there. Answers the lead. For many leads, add_leads. Needs leads:create.",
+  description: "Create ONE lead, in a campaign (campaign) or a lead list (list_id): in an active campaign its sequence emails the lead. email, names, company, job_title, phone, website, personalization, custom_variables (sequence variables: text, number, true/false). skip_if_in_workspace / _in_campaign / _in_list skip a lead already there. Answers the lead. For many leads, add_leads. Needs leads:create. In French: créer un prospect, ajouter un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1080,7 +1080,7 @@ export const updateLead = defineFunction({
   connector: "instantly",
   class: "write",
   act: true,
-  description: "Change fields of ONE lead by id: names, company_name, job_title, phone, website, personalization, pl_value_lead, custom_variables (sequence variables, added to the lead's payload). A field not given is kept; the email cannot change. The interest status changes with update_lead_interest_status. Answers the lead. Needs leads:update.",
+  description: "Change fields of ONE lead by id: names, company_name, job_title, phone, website, personalization, pl_value_lead, custom_variables (sequence variables, added to the lead's payload). A field not given is kept; the email cannot change. The interest status changes with update_lead_interest_status. Answers the lead. Needs leads:update. In French: modifier un prospect, mettre à jour un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1128,7 +1128,7 @@ export const updateLeadInterestStatus = defineFunction({
   connector: "instantly",
   class: "sensitive",
   act: true,
-  description: "Set a lead's interest status, by its email: interest_value 1 interested, 2 meeting booked, 3 meeting completed, 4 won, 0 out of office, -1 not interested, -2 wrong person, -3 lost, -4 no show, a custom label's interest_status (list_lead_labels), or null to reset it to Lead. campaign_id or list_id says where the lead is. Instantly may then complete the lead in its campaign, create or update an opportunity, and start a subsequence tied to that status, which sends. Accepted at once (202), applied shortly after. Scope: unstated by Instantly (leads:update or all:update expected).",
+  description: "Set a lead's interest status, by its email: interest_value 1 interested, 2 meeting booked, 3 meeting completed, 4 won, 0 out of office, -1 not interested, -2 wrong person, -3 lost, -4 no show, a custom label's interest_status (list_lead_labels), or null to reset it to Lead. campaign_id or list_id says where the lead is. Instantly may then complete the lead in its campaign, create or update an opportunity, and start a subsequence tied to that status, which sends. Accepted at once (202), applied shortly after. Scope: unstated by Instantly (leads:update or all:update expected). In French: statut d'intérêt d'un prospect, marquer un lead intéressé, rendez-vous pris avec un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1167,7 +1167,7 @@ export const moveLeads = defineFunction({
   connector: "instantly",
   class: "sensitive",
   act: true,
-  description: "Move (or copy, copy_leads) leads from ONE campaign (campaign) or list (list_id) to ONE campaign (to_campaign_id) or list (to_list_id), all of the source, or only those matching ids, contacts (emails), search or filter, at most limit. Moved into an active campaign, they are emailed. check_duplicates skips leads already in the destination, check_duplicates_in_campaigns those in any campaign; skip_invalid_emails leaves behind invalid and risky emails. Runs in the background: answers a job {id, status, progress}; read it with get_background_job. Needs leads:update.",
+  description: "Move (or copy, copy_leads) leads from ONE campaign (campaign) or list (list_id) to ONE campaign (to_campaign_id) or list (to_list_id), all of the source, or only those matching ids, contacts (emails), search or filter, at most limit. Moved into an active campaign, they are emailed. check_duplicates skips leads already in the destination, check_duplicates_in_campaigns those in any campaign; skip_invalid_emails leaves behind invalid and risky emails. Runs in the background: answers a job {id, status, progress}; read it with get_background_job. Needs leads:update. In French: déplacer des prospects, copier des leads vers une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1272,7 +1272,7 @@ export const createLeadList = defineFunction({
   connector: "instantly",
   class: "write",
   act: true,
-  description: "Create an empty lead list by name; answers it with its id, for add_leads. No enrichment is attached (it spends credits). Needs lead_lists:create.",
+  description: "Create an empty lead list by name; answers it with its id, for add_leads. No enrichment is attached (it spends credits). Needs lead_lists:create. In French: créer une liste de prospects, nouvelle liste de leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1300,7 +1300,7 @@ export const addBlockListEntry = defineFunction({
   connector: "instantly",
   class: "write",
   act: true,
-  description: "Block an email or a whole domain in the workspace: no campaign emails it any more. Answers {id, bl_value, is_domain}. Needs block_list_entries:create.",
+  description: "Block an email or a whole domain in the workspace: no campaign emails it any more. Answers {id, bl_value, is_domain}. Needs block_list_entries:create. In French: bloquer un email, liste de blocage, exclure un domaine des campagnes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1336,7 +1336,7 @@ export const activateCampaign = defineFunction({
   connector: "instantly",
   class: "sensitive",
   act: true,
-  description: "Start (or resume) a campaign: it emails its leads on its schedule from its sending accounts. Answers the campaign. Refused (400) when it cannot run: no lead, no sending account, no sequence. Needs campaigns:update.",
+  description: "Start (or resume) a campaign: it emails its leads on its schedule from its sending accounts. Answers the campaign. Refused (400) when it cannot run: no lead, no sending account, no sequence. Needs campaigns:update. In French: lancer une campagne, reprendre une campagne, activer une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1371,7 +1371,7 @@ export const pauseCampaign = defineFunction({
   connector: "instantly",
   class: "write",
   act: true,
-  description: "Pause a campaign: it stops sending until it is activated again. Answers the campaign. Needs campaigns:update.",
+  description: "Pause a campaign: it stops sending until it is activated again. Answers the campaign. Needs campaigns:update. In French: mettre en pause une campagne, arrêter les envois d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1405,7 +1405,7 @@ export const replyToEmail = defineFunction({
   connector: "instantly",
   class: "sensitive",
   act: true,
-  description: "Send a reply to an email of the Unibox (reply_to_uuid, its id), from a sending account of the workspace (eaccount): text and/or html, a subject (usually \"Re: \" and the original subject), optional cc and bcc (comma-separated emails). The reply goes to the sender of that email and leaves at once: it cannot be recalled. Answers the email sent. Needs emails:create.",
+  description: "Send a reply to an email of the Unibox (reply_to_uuid, its id), from a sending account of the workspace (eaccount): text and/or html, a subject (usually \"Re: \" and the original subject), optional cc and bcc (comma-separated emails). The reply goes to the sender of that email and leaves at once: it cannot be recalled. Answers the email sent. Needs emails:create. In French: répondre à un prospect, répondre à un email unibox.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1453,7 +1453,7 @@ export const markThreadAsRead = defineFunction({
   connector: "instantly",
   class: "write",
   act: true,
-  description: "Mark every email of a thread (thread_id, from list_emails or get_email) as read in the Unibox. Answers {success}. Needs emails:update.",
+  description: "Mark every email of a thread (thread_id, from list_emails or get_email) as read in the Unibox. Answers {success}. Needs emails:update. In French: marquer une conversation comme lue, marquer comme lu dans unibox.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1486,7 +1486,7 @@ export const createWebhook = defineFunction({
   connector: "instantly",
   class: "sensitive",
   act: true,
-  description: "Have Instantly POST an event to an https address: event_type (reply_received, lead_interested, email_bounced, all_events…), for one campaign or all (campaign absent), or a custom label's events (custom_interest_value, event_type absent). Each delivery carries the lead's email and the event's data: the address must be one the workspace trusts. Answers the webhook with its id. Needs webhooks:create.",
+  description: "Have Instantly POST an event to an https address: event_type (reply_received, lead_interested, email_bounced, all_events…), for one campaign or all (campaign absent), or a custom label's events (custom_interest_value, event_type absent). Each delivery carries the lead's email and the event's data: the address must be one the workspace trusts. Answers the webhook with its id. Needs webhooks:create. In French: créer un webhook instantly, recevoir les réponses des prospects par webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1548,7 +1548,7 @@ export const deleteWebhook = defineFunction({
   connector: "instantly",
   class: "sensitive",
   act: true,
-  description: "Delete a webhook by id: Instantly stops posting its events. Answers the deleted webhook. Needs webhooks:delete.",
+  description: "Delete a webhook by id: Instantly stops posting its events. Answers the deleted webhook. Needs webhooks:delete. In French: supprimer un webhook instantly, effacer un webhook instantly.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1583,7 +1583,7 @@ export const connector = defineConnector({
   name: "instantly",
   label: "Instantly",
   namespace: "instantly",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v2",
   baseUrl: "https://api.instantly.ai/api/v2",
   auth: {"kind": "bearer", "token": "api_key"},

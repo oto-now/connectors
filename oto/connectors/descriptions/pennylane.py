@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'pennylane',
                'label': 'Pennylane',
                'namespace': 'pennylane',
-               'version': '2.2.0',
+               'version': '2.2.1',
                'api_version': 'v2',
                'base_url': 'https://app.pennylane.com/api/external/v2',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -53,7 +53,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'of rights: read it whenever Pennylane refuses access (401/403), and tell the '
                                'user which scope is missing rather than retrying. Scopes are split by '
                                'object: journals:*, ledger_accounts:* and ledger_entries:* are distinct, so '
-                               'a key that reads entries may not read journals.',
+                               'a key that reads entries may not read journals. In French: société '
+                               'pennylane, droits de la clé pennylane, entreprise connectée à pennylane.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Company, user and scopes of the key', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/me'},
@@ -61,7 +62,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_fiscal_years',
                 'class': 'read',
                 'description': "List the company's fiscal years, newest first by default. Paged by limit and "
-                               'cursor: pass next_cursor as cursor for the next page.',
+                               'cursor: pass next_cursor as cursor for the next page. In French: exercices '
+                               'comptables, lister les exercices fiscaux.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -96,7 +98,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the chart of accounts. Every ledger entry line needs a '
                                'ledger_account_id, read here, never guessed. Scope ledger_accounts:readonly. '
-                               'Up to 1000 accounts per page.',
+                               'Up to 1000 accounts per page. In French: plan comptable, lister les comptes '
+                               'comptables, comptes du grand livre.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -168,7 +171,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': "List the company's journals ({id, code, label, type}: purchases, sales, "
                                'bank...). A ledger entry needs a journal_id: these ids are specific to the '
                                'company, resolve them here every time and never hard-code them. Scope '
-                               'journals:readonly, distinct from the scope of ledger entries.',
+                               'journals:readonly, distinct from the scope of ledger entries. In French: '
+                               'journaux comptables, lister les journaux, journal des achats ou des ventes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -233,7 +237,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the analytical categories (expense and revenue categories), each in one '
                                'group (an analytical axis, see list_category_groups). Scope '
-                               'categories:readonly.',
+                               'categories:readonly. In French: catégories analytiques, lister les '
+                               'catégories de dépenses et de recettes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -304,7 +309,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the category groups, the analytical axes ({id, label}): a category '
                                'belongs to one group, and the weights an object carries within one group sum '
-                               'to 1. Scope categories:readonly.',
+                               'to 1. Scope categories:readonly. In French: axes analytiques, groupes de '
+                               'catégories analytiques.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -335,7 +341,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_supplier_invoice_categories',
                 'class': 'read',
                 'description': 'List the analytical categories of one supplier invoice, each with its weight '
-                               '(a string between 0 and 1). Scope supplier_invoices:readonly.',
+                               '(a string between 0 and 1). Scope supplier_invoices:readonly. In French: '
+                               "catégories d'une facture fournisseur, ventilation analytique d'une facture "
+                               'fournisseur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['supplier_invoice_id'],
@@ -369,7 +377,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_customer_invoice_categories',
                 'class': 'read',
                 'description': 'List the analytical categories of one customer invoice, each with its weight '
-                               '(a string between 0 and 1). Scope customer_invoices:readonly.',
+                               '(a string between 0 and 1). Scope customer_invoices:readonly. In French: '
+                               "catégories d'une facture client, ventilation analytique d'une facture "
+                               'client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_invoice_id'],
@@ -404,7 +414,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the analytical categories of one ledger entry line, each with its '
                                'weight (a string between 0 and 1). The line ids come from '
-                               'list_ledger_entry_lines. Scope ledger_entries:readonly.',
+                               'list_ledger_entry_lines. Scope ledger_entries:readonly. In French: '
+                               "catégories d'une ligne d'écriture, ventilation analytique d'une écriture.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ledger_entry_line_id'],
@@ -441,7 +452,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'a credit-note template without the payment and IBAN block is the only way '
                                'through the API to get a credit-note layout. Pass its id as '
                                'customer_invoice_template_id when creating or updating an invoice or a '
-                               'credit note. Scope customer_invoice_templates:readonly.',
+                               'credit note. Scope customer_invoice_templates:readonly. In French: modèles '
+                               'de facture, gabarits de facture client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -474,7 +486,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'List the product catalogue (id, label, price, unit, vat_rate...). Resolve '
                                'the product_id of an invoice or quote line here, never guess it. Beware of '
                                'near-homonym labels: choose on the full record (price, unit), not on the '
-                               'start of the name.',
+                               'start of the name. In French: catalogue produits, lister les produits et '
+                               'services, articles du catalogue.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -542,7 +555,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'cost': {'per': 'request'}},
                {'name': 'get_product',
                 'class': 'read',
-                'description': 'Get one product by its id.',
+                'description': "Get one product by its id. In French: fiche d'un produit, détail d'un "
+                               'article du catalogue.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['product_id'],
@@ -557,7 +571,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'write',
                 'description': 'Create a product in the catalogue. price_before_tax is a decimal string '
                                '("700.00"). vat_rate is a Pennylane code, never a percentage: 20% is FR_200, '
-                               '10% FR_100, 5.5% FR_55, 2.1% FR_21, exempt is exempt.',
+                               '10% FR_100, 5.5% FR_55, 2.1% FR_21, exempt is exempt. In French: créer un '
+                               'produit, ajouter un article au catalogue.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['label', 'price_before_tax', 'vat_rate'],
@@ -609,7 +624,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'Resolve a customer_id from a name here: invoice lists carry only '
                                'customer.{id, url}. Before creating a customer, look it up by '
                                'external_reference with the filter: creating it again is refused ("External '
-                               'reference has already been taken"); reuse the id found.',
+                               'reference has already been taken"); reuse the id found. In French: lister '
+                               'les clients, chercher un client, fichier clients.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -693,7 +709,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Create a company customer. The full billing address is required. Look the '
                                'customer up by external_reference first (list_customers): an '
                                'external_reference already taken is refused. Returns the customer with its '
-                               'id, to pass as customer_id when creating an invoice or a quote.',
+                               'id, to pass as customer_id when creating an invoice or a quote. In French: '
+                               'créer un client, ajouter une société cliente.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'billing_address'],
@@ -778,7 +795,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Update a company customer: complete its emails, VAT number, registration '
                                'number, IBAN, external_reference... Typical use: a customer known to '
                                'Pennylane without email or identifier, completed before invoicing it. Only '
-                               'the arguments passed are changed.',
+                               'the arguments passed are changed. In French: modifier un client, compléter '
+                               "la fiche d'une société cliente.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id'],
@@ -853,7 +871,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_suppliers',
                 'class': 'read',
                 'description': 'List suppliers (id, name...). Resolve the supplier_id of an existing '
-                               'supplier here before creating one.',
+                               'supplier here before creating one. In French: lister les fournisseurs, '
+                               'chercher un fournisseur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -926,7 +945,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'cost': {'per': 'request'}},
                {'name': 'get_supplier',
                 'class': 'read',
-                'description': 'Get one supplier by its id.',
+                'description': "Get one supplier by its id. In French: fiche d'un fournisseur, détail d'un "
+                               'fournisseur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['supplier_id'],
@@ -940,7 +960,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'create_supplier',
                 'class': 'write',
                 'description': 'Create a supplier, before recording the purchase invoice of a new supplier. '
-                               'Look it up first (list_suppliers). Returns the supplier with its id.',
+                               'Look it up first (list_suppliers). Returns the supplier with its id. In '
+                               'French: créer un fournisseur, ajouter un fournisseur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -1017,7 +1038,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'To find one invoice by its external_reference (e.g. before creating a credit '
                                'note for a failed payment: if an invoice already carries the reference, the '
                                'credit note exists), filter on external_reference: the server filter is '
-                               'exhaustive, archived and old invoices included.',
+                               'exhaustive, archived and old invoices included. In French: factures clients, '
+                               'lister les factures de vente, factures impayées, avoirs clients.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -1105,7 +1127,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_customer_invoice_lines',
                 'class': 'read',
                 'description': 'List the lines of a customer invoice or credit note, with their id (needed '
-                               'to update a line of a draft).',
+                               "to update a line of a draft). In French: lignes d'une facture client, lignes "
+                               "d'un avoir.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -1147,7 +1170,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'free line {label, quantity, unit, raw_currency_unit_price, vat_rate}, all '
                                'required. raw_currency_unit_price is the unit price before tax as a string '
                                '("700.00"); quantity is a number, never a string. Pass an external_reference '
-                               'to trace the source and look it up before creating again.',
+                               'to trace the source and look it up before creating again. In French: créer '
+                               'une facture, brouillon de facture client, facturer un client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id', 'date', 'deadline', 'invoice_lines'],
@@ -1319,7 +1343,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'the original invoice in pdf_invoice_free_text. Pass the source event as '
                                'external_reference and look it up first (list_customer_invoices) so one '
                                'event gives one credit note. For the credit-note layout, pass the id of a '
-                               'credit-note template.',
+                               'credit-note template. In French: créer un avoir, avoir client, annuler une '
+                               'facture par un avoir.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id', 'date', 'deadline', 'invoice_lines'],
@@ -1478,7 +1503,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'sensitive',
                 'description': 'Link an existing credit note to the customer invoice it credits. The only '
                                'working way to link them (the creation-time attribute is broken upstream). '
-                               'The API offers no unlinking.',
+                               'The API offers no unlinking. In French: lier un avoir à une facture, '
+                               'rattacher un avoir.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id', 'credit_note_id'],
@@ -1502,7 +1528,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'list_customer_invoice_lines). Typical use: switch a draft credit note to the '
                                'credit-note template before finalizing. On a finalized document Pennylane '
                                'only accepts label, external_reference and line updates: never use this to '
-                               'correct an issued document.',
+                               'correct an issued document. In French: modifier un brouillon de facture, '
+                               'corriger une facture brouillon.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -1712,7 +1739,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'sensitive',
                 'description': 'Finalize a draft customer invoice or credit note: it gets its definitive '
                                'number and can no longer be edited. Only after explicit human validation of '
-                               'the draft.',
+                               'the draft. In French: finaliser une facture, valider une facture client, '
+                               'numéroter une facture.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -1727,7 +1755,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Email a finalized customer invoice or credit note to the customer, at the '
                                "addresses on the customer's record. Only after explicit human validation. "
                                'The PDF takes a few minutes to generate after finalization: a conflict means '
-                               'it is not ready yet, retry later.',
+                               'it is not ready yet, retry later. In French: envoyer une facture au client, '
+                               'envoyer un avoir par email.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -1743,7 +1772,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'sensitive',
                 'description': 'Delete a draft customer invoice or credit note, e.g. an obsolete draft '
                                'before it is finalized by mistake. A finalized document cannot be deleted: '
-                               'it is cancelled with a credit note.',
+                               'it is cancelled with a credit note. In French: supprimer un brouillon de '
+                               'facture, effacer une facture brouillon.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -1760,7 +1790,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List sales quotes, newest first. Without a filter the whole history comes '
                                'back: filter on status or customer_id. Statuses: pending, accepted, denied, '
-                               'invoiced, expired.',
+                               'invoiced, expired. In French: lister les devis, devis en attente, devis '
+                               'acceptés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -1830,7 +1861,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'get_quote',
                 'class': 'read',
                 'description': 'Get one quote: status, quote_number, linked_invoices, and public_file_url, '
-                               'its PDF (a link that expires after 30 minutes).',
+                               "its PDF (a link that expires after 30 minutes). In French: détail d'un "
+                               "devis, statut d'un devis.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['quote_id'],
@@ -1844,7 +1876,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'get_quote_pdf_link',
                 'class': 'read',
                 'description': 'Get the PDF link of a quote, to attach to an email. The link expires after '
-                               '30 minutes: read it right before use, never store it.',
+                               "30 minutes: read it right before use, never store it. In French: pdf d'un "
+                               'devis, lien du devis.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['quote_id'],
@@ -1862,7 +1895,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'cost': {'per': 'request'}},
                {'name': 'list_quote_lines',
                 'class': 'read',
-                'description': 'List the lines of a quote.',
+                'description': "List the lines of a quote. In French: lignes d'un devis, articles d'un "
+                               'devis.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['quote_id'],
@@ -1899,7 +1933,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'the customer, the lines and the validity date before calling. Lines follow '
                                'the invoice line shapes: a product line {product_id, quantity} or a free '
                                'line {label, quantity, unit, raw_currency_unit_price, vat_rate}, all '
-                               'required; a discount is a free line with a negative price ("-100.00").',
+                               'required; a discount is a free line with a negative price ("-100.00"). In '
+                               'French: créer un devis, faire un devis, nouveau devis client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id', 'date', 'deadline', 'invoice_lines'],
@@ -2047,7 +2082,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'update_quote_status',
                 'class': 'write',
                 'description': 'Set the status of a quote: pending, accepted, denied, invoiced or expired; '
-                               'e.g. accepted once the customer has signed.',
+                               'e.g. accepted once the customer has signed. In French: changer le statut '
+                               "d'un devis, marquer un devis accepté, devis signé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['quote_id', 'status'],
@@ -2071,7 +2107,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'act': False,
                 'description': 'Create a draft customer invoice from a quote, taking over its customer and '
                                'lines. Finalizing and sending it remain separate steps after human '
-                               'validation. Needs the scope customer_invoices:all on top of quotes.',
+                               'validation. Needs the scope customer_invoices:all on top of quotes. In '
+                               'French: transformer un devis en facture, facturer un devis.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['quote_id'],
@@ -2096,7 +2133,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List supplier invoices (the expense side), newest first: to match against '
                                'outgoing payments, or to find what remains to pay. Without a filter the '
-                               'whole history comes back: filter on date or supplier_id.',
+                               'whole history comes back: filter on date or supplier_id. In French: factures '
+                               "fournisseurs, factures d'achat, factures à payer.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -2178,7 +2216,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one supplier invoice, with its accounting_status: draft, archived, '
                                'entry, validation_needed or complete. Its lines are read with '
-                               'list_supplier_invoice_lines.',
+                               "list_supplier_invoice_lines. In French: détail d'une facture fournisseur, "
+                               "statut comptable d'une facture d'achat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -2192,7 +2231,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_supplier_invoice_lines',
                 'class': 'read',
                 'description': 'List the lines of a supplier invoice, with their id (needed to update or '
-                               'delete a line) and their vat_rate.',
+                               "delete a line) and their vat_rate. In French: lignes d'une facture "
+                               "fournisseur, lignes d'une facture d'achat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -2231,7 +2271,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'tax exists at invoice level only: a line carries currency_amount (tax '
                                'included) and currency_tax, plus its vat_rate. No intracom_200 code exists: '
                                'for an intra-EU acquisition at 20%, ask the user which code applies, never '
-                               'guess. Pennylane decides whether an invoice already complete can be changed.',
+                               'guess. Pennylane decides whether an invoice already complete can be changed. '
+                               "In French: corriger une facture fournisseur, modifier une facture d'achat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -2419,7 +2460,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Validate the accounting of a supplier invoice: it moves to complete and its '
                                'accounting entry is posted. The API offers no way back. Call it only on the '
                                "user's explicit request, invoice by invoice, never right after a correction. "
-                               'Refused when the entry lines are not balanced.',
+                               'Refused when the entry lines are not balanced. In French: valider une '
+                               "facture fournisseur, comptabiliser une facture d'achat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -2441,7 +2483,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'List ledger entries. Without a filter the whole history comes back, '
                                'thousands of entries on a real ledger: filter at the source on date, '
                                'journal_id or id, the only way to find an entry without reading every page. '
-                               'Scope ledger_entries:readonly.',
+                               'Scope ledger_entries:readonly. In French: écritures comptables, lister les '
+                               'écritures, journal des écritures.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -2514,7 +2557,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'cost': {'per': 'request'}},
                {'name': 'get_ledger_entry',
                 'class': 'read',
-                'description': 'One ledger entry by its id, e.g. to read back an entry just posted.',
+                'description': 'One ledger entry by its id, e.g. to read back an entry just posted. In '
+                               "French: détail d'une écriture comptable, relire une écriture.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entry_id'],
@@ -2529,7 +2573,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the lines of a ledger entry with their id: lettering takes line ids, '
                                'not entry ids. Line order is not guaranteed: match a line on its content, '
-                               'never on its position.',
+                               "never on its position. In French: lignes d'une écriture comptable, débit et "
+                               "crédit d'une écriture.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entry_id'],
@@ -2600,7 +2645,7 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the ledger entry lines lettered with a given line: the way to see what '
                                'a lettering actually grouped, since lettering spreads to lines already '
-                               'lettered.',
+                               'lettered. In French: lignes lettrées ensemble, voir un lettrage.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['line_id'],
@@ -2640,7 +2685,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                '("120.50", "0.00") and a ledger_account_id (list_ledger_accounts); total '
                                'debits must equal total credits, or Pennylane refuses the entry. journal_id '
                                'comes from list_journals. 1 to 1000 lines. The order of the returned lines '
-                               'is not guaranteed: find a line by its content.',
+                               'is not guaranteed: find a line by its content. In French: passer une '
+                               "écriture comptable, saisir une écriture, écriture d'opération diverse.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['date', 'label', 'journal_id', 'ledger_entry_lines'],
@@ -2722,7 +2768,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'API cannot delete one. ledger_entry_lines takes {create, update, delete}, '
                                'and delete removes lines by id: this commits as much as a creation, so give '
                                'the user the exact detail and wait for agreement. The lines must stay '
-                               'balanced; line ids come from list_ledger_entry_lines.',
+                               'balanced; line ids come from list_ledger_entry_lines. In French: corriger '
+                               'une écriture comptable, modifier une écriture passée.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entry_id'],
@@ -2829,7 +2876,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                '(asking for A and C when A and B are lettered gives A, B and C); check the '
                                'result with list_lettered_lines. Pass line ids, not entry ids '
                                '(list_ledger_entry_lines). unbalanced_lettering_strategy none refuses an '
-                               'unbalanced lettering, partial accepts it.',
+                               'unbalanced lettering, partial accepts it. In French: lettrer des écritures, '
+                               'lettrage comptable, lettrer un compte.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ledger_entry_lines', 'unbalanced_lettering_strategy'],
@@ -2863,7 +2911,7 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'sensitive',
                 'description': 'Undo the lettering of ledger entry lines. The previous grouping is not '
                                'returned: read it first with list_lettered_lines if it may have to be '
-                               'restored.',
+                               'restored. In French: délettrer des écritures, annuler un lettrage.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ledger_entry_lines', 'unbalanced_lettering_strategy'],
@@ -2896,7 +2944,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List bank transactions, newest first. Without a filter the whole history '
                                'comes back, far beyond what an agent can read: filter on date at the source. '
-                               'A transaction not fully matched carries a non-zero outstanding_balance.',
+                               'A transaction not fully matched carries a non-zero outstanding_balance. In '
+                               'French: transactions bancaires, mouvements bancaires, relevé bancaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -2970,7 +3019,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'get_trial_balance',
                 'class': 'read',
                 'description': 'Get the trial balance for a period: balances grouped by ledger account. '
-                               'Scope trial_balance:readonly. Up to 1000 accounts per page.',
+                               'Scope trial_balance:readonly. Up to 1000 accounts per page. In French: '
+                               'balance comptable, balance générale, soldes des comptes comptables.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['period_start', 'period_end'],
@@ -3015,7 +3065,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'paid invoice whose incoming transfer is not matched (else Pennylane keeps it '
                                'late and reminds the customer wrongly). A reconciliation link, not an '
                                'accounting entry. Not to be confused with lettering ledger entry lines '
-                               '(letter_ledger_entry_lines). One transaction per call.',
+                               '(letter_ledger_entry_lines). One transaction per call. In French: rapprocher '
+                               "un paiement d'une facture client, rapprochement bancaire client, lettrer un "
+                               'virement reçu.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id', 'transaction_id'],
@@ -3031,7 +3083,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'write',
                 'description': 'Match a bank transaction to a supplier invoice. A reconciliation link, not '
                                'an accounting entry. Not to be confused with lettering ledger entry lines '
-                               '(letter_ledger_entry_lines). One transaction per call.',
+                               '(letter_ledger_entry_lines). One transaction per call. In French: rapprocher '
+                               'une facture fournisseur, rapprochement bancaire fournisseur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id', 'transaction_id'],
@@ -3051,7 +3104,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'a decimal, never a float, before adding up. Pennylane exposes no IBAN and no '
                                'bank sync date on an account; updated_at is when the record last changed, '
                                "not proof that the bank feed ran. The bank's name is read with "
-                               'list_bank_establishments. Scope bank_accounts:readonly.',
+                               'list_bank_establishments. Scope bank_accounts:readonly. In French: comptes '
+                               'bancaires, solde des comptes bancaires, trésorerie disponible.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -3085,7 +3139,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'get_bank_account',
                 'class': 'read',
                 'description': 'Get one bank account and its current balance, a decimal string ("12345.67"). '
-                               'Scope bank_accounts:readonly.',
+                               "Scope bank_accounts:readonly. In French: solde d'un compte bancaire, détail "
+                               "d'un compte bancaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['bank_account_id'],
@@ -3101,7 +3156,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'List the bank establishments {id, name}: the bank behind each account '
                                '(bank_establishment.id of a bank account). Filter on id to name only the '
                                'banks of the accounts read. Scope bank_establishments:readonly, distinct '
-                               'from bank_accounts:readonly: a key can read balances without it.',
+                               'from bank_accounts:readonly: a key can read balances without it. In French: '
+                               'banques des comptes, établissements bancaires.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -3170,7 +3226,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one bank transaction: amount, date, label, bank_account, '
                                'outstanding_balance (non-zero while not fully matched), customer or '
-                               'supplier, categories and matched_invoices. Scope transactions:readonly.',
+                               'supplier, categories and matched_invoices. Scope transactions:readonly. In '
+                               "French: détail d'une transaction bancaire, détail d'un mouvement bancaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['transaction_id'],
@@ -3187,7 +3244,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'without a bank feed. amount is a decimal string, negative for money out '
                                '("-120.50"). A transaction the bank feed also brings would be recorded '
                                'twice: check list_transactions on the account and date first. Scope '
-                               'transactions:all.',
+                               'transactions:all. In French: saisir une transaction bancaire, ajouter un '
+                               'mouvement bancaire à la main.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['bank_account_id', 'label', 'date', 'amount'],
@@ -3222,7 +3280,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Attach a bank transaction to a customer or to a supplier (one of the two per '
                                'call), or detach it with null. Matching it to an invoice is '
                                'match_customer_invoice_transaction or match_supplier_invoice_transaction. '
-                               'Scope transactions:all.',
+                               'Scope transactions:all. In French: rattacher une transaction à un client, '
+                               'associer une transaction à un fournisseur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['transaction_id'],
@@ -3246,7 +3305,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_transaction_categories',
                 'class': 'read',
                 'description': 'List the analytical categories of one bank transaction, each with its weight '
-                               '(a string between 0 and 1). Scope transactions:readonly.',
+                               '(a string between 0 and 1). Scope transactions:readonly. In French: '
+                               "catégories d'une transaction, ventilation analytique d'une transaction.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['transaction_id'],
@@ -3280,7 +3340,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the invoices matched to one bank transaction, each {id, type, url}: '
                                'type tells a customer invoice from a supplier invoice. Scope '
-                               'transactions:readonly.',
+                               "transactions:readonly. In French: factures rapprochées d'une transaction, "
+                               'factures payées par une transaction.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['transaction_id'],
@@ -3318,7 +3379,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'weeks of changes: an older start_date is refused (422). Pass start_date for '
                                'the first page, then only cursor (next_cursor): both together are refused '
                                '(400). Scope: the read scope of the object (transactions:readonly for '
-                               'transactions, ledger_entries:readonly for the four ledger kinds...).',
+                               'transactions, ledger_entries:readonly for the four ledger kinds...). In '
+                               'French: modifications récentes pennylane, synchroniser les changements '
+                               'pennylane, ce qui a changé dans pennylane.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['resource'],
@@ -3359,7 +3422,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Get one customer invoice or credit note: status, paid, '
                                'remaining_amount_with_tax, amounts, customer, lines, payments, installments, '
                                'matched_transactions, public_file_url (the PDF). Scope '
-                               'customer_invoices:readonly.',
+                               "customer_invoices:readonly. In French: détail d'une facture client, reste à "
+                               "payer d'une facture, pdf d'une facture.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3373,7 +3437,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_customer_invoice_payments',
                 'class': 'read',
                 'description': 'List the payments recorded on one customer invoice ({id, label, '
-                               'currency_amount, status}). Scope customer_invoices:readonly.',
+                               'currency_amount, status}). Scope customer_invoices:readonly. In French: '
+                               "paiements d'une facture client, règlements d'une facture client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3409,7 +3474,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_supplier_invoice_payments',
                 'class': 'read',
                 'description': 'List the payments recorded on one supplier invoice ({id, label, '
-                               'currency_amount, status}). Scope supplier_invoices:readonly.',
+                               'currency_amount, status}). Scope supplier_invoices:readonly. In French: '
+                               "paiements d'une facture fournisseur, règlements d'une facture d'achat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3447,7 +3513,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'List the installments of one customer invoice, by deadline: amount, '
                                'deadline, status, remaining_amount_with_tax, payment_methods. The '
                                'installment ids are what mark_customer_invoice_installment_paid takes. Scope '
-                               'customer_invoices:readonly.',
+                               "customer_invoices:readonly. In French: échéances d'une facture, échéancier "
+                               "d'une facture client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3485,7 +3552,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'is paid, the invoice is paid too. Pennylane matches no transaction then, and '
                                'the API offers no way back: when the payment is on the bank account, match '
                                'the transaction instead. Needs a plan with installments '
-                               '(get_company_features), else 403. Scope customer_invoices:all.',
+                               '(get_company_features), else 403. Scope customer_invoices:all. In French: '
+                               'marquer une échéance payée, échéance de facture réglée.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id', 'installment_id'],
@@ -3505,7 +3573,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'without a bank transaction. Pennylane matches no transaction then, and the '
                                'API offers no way back: when the payment is on the bank account, match the '
                                'transaction instead (match_customer_invoice_transaction). Scope '
-                               'customer_invoices:all.',
+                               'customer_invoices:all. In French: marquer une facture payée, facture réglée '
+                               'en espèces, facture payée par chèque.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3520,7 +3589,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the bank transactions matched to one customer invoice. The ids are what '
                                'unmatch_customer_invoice_transaction takes. Scope '
-                               'customer_invoices:readonly.',
+                               "customer_invoices:readonly. In French: transactions rapprochées d'une "
+                               "facture client, paiements bancaires d'une facture client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3557,7 +3627,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the bank transactions matched to one supplier invoice. The ids are what '
                                'unmatch_supplier_invoice_transaction takes. Scope '
-                               'supplier_invoices:readonly.',
+                               "supplier_invoices:readonly. In French: transactions rapprochées d'une "
+                               "facture fournisseur, paiements bancaires d'une facture d'achat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3598,7 +3669,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'invoice may go back to unpaid or late, and Pennylane may remind the '
                                'customer. Not applicable to a draft. Restoring it is '
                                'match_customer_invoice_transaction with the same ids. Scope '
-                               'customer_invoices:all.',
+                               'customer_invoices:all. In French: annuler un rapprochement client, défaire '
+                               "le rapprochement d'une facture client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id', 'transaction_id'],
@@ -3617,7 +3689,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Remove the match between a bank transaction and a supplier invoice: the '
                                'invoice may go back to unpaid. Restoring it is '
                                'match_supplier_invoice_transaction with the same ids. Scope '
-                               'supplier_invoices:all.',
+                               'supplier_invoices:all. In French: annuler un rapprochement fournisseur, '
+                               "défaire le rapprochement d'une facture fournisseur.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id', 'transaction_id'],
@@ -3634,7 +3707,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'write',
                 'description': 'Set the payment status of a supplier invoice: paid or to_be_paid, e.g. paid '
                                "by the manager's own card, with no bank transaction to match. Scope "
-                               'supplier_invoices:all.',
+                               'supplier_invoices:all. In French: marquer une facture fournisseur payée, '
+                               "statut de paiement d'une facture d'achat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id', 'payment_status'],
@@ -3652,7 +3726,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_customer_invoice_appendices',
                 'class': 'read',
                 'description': 'List the files appended to one customer invoice ({id, filename, url}). Scope '
-                               'customer_invoices:readonly.',
+                               "customer_invoices:readonly. In French: pièces jointes d'une facture client, "
+                               "annexes d'une facture.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3685,7 +3760,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_customer_invoice_custom_header_fields',
                 'class': 'read',
                 'description': 'List the custom header fields of one customer invoice ({id, title, value, '
-                               'rank}), printed at the top of the PDF. Scope customer_invoices:readonly.',
+                               'rank}), printed at the top of the PDF. Scope customer_invoices:readonly. In '
+                               "French: champs d'en-tête d'une facture, mentions personnalisées d'une "
+                               'facture.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['invoice_id'],
@@ -3721,7 +3798,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_category_group_categories',
                 'class': 'read',
                 'description': 'List the categories of one analytical axis (category group). Scope '
-                               'categories:readonly.',
+                               "categories:readonly. In French: catégories d'un axe analytique, contenu d'un "
+                               'axe analytique.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['category_group_id'],
@@ -3754,7 +3832,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'get_category_group',
                 'class': 'read',
                 'description': 'Get one analytical axis (category group) with its kind and its categories. '
-                               'Scope categories:readonly.',
+                               "Scope categories:readonly. In French: détail d'un axe analytique, type d'un "
+                               'axe analytique.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['category_group_id'],
@@ -3767,7 +3846,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Create an analytical axis (category group). kind: profit_and_loss (revenue '
                                'and expense analysis), treasury (cash in and out) or building. Look the axes '
                                'up first (list_category_groups): the API cannot delete one. Scope '
-                               'categories:all.',
+                               'categories:all. In French: créer un axe analytique, nouveau groupe de '
+                               'catégories.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['label'],
@@ -3782,7 +3862,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'update_category_group',
                 'class': 'write',
                 'description': 'Rename an analytical axis or change its kind. label is required by Pennylane '
-                               'even when unchanged. Scope categories:all.',
+                               'even when unchanged. Scope categories:all. In French: renommer un axe '
+                               'analytique, modifier un axe analytique.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['category_group_id', 'label'],
@@ -3799,7 +3880,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one analytical category: label, category_group, analytical_code, '
                                'direction (treasury categories) and ledger_account. Scope '
-                               'categories:readonly.',
+                               "categories:readonly. In French: détail d'une catégorie analytique, code "
+                               "analytique d'une catégorie.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['category_id'],
@@ -3813,7 +3895,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'applies to a treasury axis (cash_out when absent). ledger_account_id is only '
                                'accepted in an axis with self-service accounting, and never a bank, pending '
                                'or cash account. Look the categories up first (list_categories): the API '
-                               'cannot delete one. Scope categories:all.',
+                               'cannot delete one. Scope categories:all. In French: créer une catégorie '
+                               'analytique, ajouter une catégorie de dépense.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['label', 'category_group_id'],
@@ -3840,7 +3923,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Change an analytical category: label, direction (treasury axes), '
                                'analytical_code (not in a structured analytical axis), ledger_account_id '
                                '(self-service accounting axes only, never cleared). Only the arguments '
-                               'passed change. Scope categories:all.',
+                               'passed change. Scope categories:all. In French: modifier une catégorie '
+                               'analytique, renommer une catégorie analytique.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['category_id'],
@@ -3862,7 +3946,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'cost': {'per': 'request'}},
                {'name': 'get_journal',
                 'class': 'read',
-                'description': 'Get one journal ({id, code, label, type}). Scope journals:readonly.',
+                'description': 'Get one journal ({id, code, label, type}). Scope journals:readonly. In '
+                               "French: détail d'un journal comptable, code d'un journal comptable.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['journal_id'],
@@ -3873,7 +3958,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'create_journal',
                 'class': 'write',
                 'description': 'Create a journal: code of 2 to 5 letters and a label. Look the journals up '
-                               'first (list_journals): the API cannot delete one. Scope journals:all.',
+                               'first (list_journals): the API cannot delete one. Scope journals:all. In '
+                               'French: créer un journal comptable, nouveau journal comptable.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code', 'label'],
@@ -3888,7 +3974,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'get_ledger_account',
                 'class': 'read',
                 'description': 'Get one ledger account: number, label, type, vat_rate, letterable, enabled. '
-                               'Scope ledger_accounts:readonly.',
+                               "Scope ledger_accounts:readonly. In French: détail d'un compte comptable, "
+                               "numéro d'un compte comptable.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ledger_account_id'],
@@ -3901,7 +3988,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Add an account to the chart of accounts. A number starting with 401 also '
                                'creates a supplier, one starting with 411 a company customer: look both up '
                                'first. Look the account up by number first (list_ledger_accounts, '
-                               'start_with): the API cannot delete one. Scope ledger_accounts:all.',
+                               'start_with): the API cannot delete one. Scope ledger_accounts:all. In '
+                               'French: créer un compte comptable, ajouter un compte au plan comptable.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'label'],
@@ -3935,7 +4023,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'update_ledger_account',
                 'class': 'write',
                 'description': "Change a ledger account's label, or whether its lines can be lettered "
-                               '(letterable). The number cannot change. Scope ledger_accounts:all.',
+                               '(letterable). The number cannot change. Scope ledger_accounts:all. In '
+                               'French: renommer un compte comptable, rendre un compte lettrable.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ledger_account_id'],
@@ -3956,7 +4045,7 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'external_reference, description, ledger_account_id or substance (goods or '
                                'services; with ledger_account_id, both must name the same account). Invoices '
                                'already issued keep their lines. Only the arguments passed change. Scope '
-                               'products:all.',
+                               "products:all. In French: modifier un produit, changer le prix d'un article.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['product_id'],
@@ -4013,7 +4102,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'without its numbering has no number, and a commercial document fails without '
                                'its own. Numbering is set up in the Pennylane app only. Scope '
                                'customer_invoices:readonly, quotes:readonly or '
-                               'commercial_documents:readonly.',
+                               'commercial_documents:readonly. In French: numérotation des factures, '
+                               'prochain numéro de facture, préfixes de numérotation.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -4050,7 +4140,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'custom_fields, products_and_services_catalog, each true or false. A feature '
                                'is true only when the plan and the rollout both allow it: it can be false on '
                                'a plan that includes it. Read it before an action that a feature gates, '
-                               'rather than reading a 403 as a missing scope. No scope required.',
+                               'rather than reading a 403 as a missing scope. No scope required. In French: '
+                               "fonctionnalités disponibles, options de l'abonnement pennylane.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Features of the company', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/company/features'},
@@ -4059,7 +4150,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one customer, company or individual, by its id (the customer.id of an '
                                'invoice): name, emails, addresses, payment conditions, ledger account, '
-                               'contacts. Scope customers:readonly.',
+                               "contacts. Scope customers:readonly. In French: fiche d'un client, "
+                               "coordonnées d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id'],
@@ -4074,7 +4166,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one company customer: name, reg_no, vat_number, emails, addresses, '
                                "billing_iban, payment conditions, mandates. An individual's id is refused "
-                               'here: get_individual_customer. Scope customers:readonly.',
+                               'here: get_individual_customer. Scope customers:readonly. In French: fiche '
+                               "d'une société cliente, numéro de tva d'un client, iban d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id'],
@@ -4089,7 +4182,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one individual customer (a person): first_name, last_name, emails, '
                                "addresses, payment conditions. A company's id is refused here: "
-                               'get_company_customer. Scope customers:readonly.',
+                               "get_company_customer. Scope customers:readonly. In French: fiche d'un client "
+                               "particulier, coordonnées d'un particulier.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id'],
@@ -4105,7 +4199,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Create an individual customer (a person, not a company): first_name, '
                                'last_name and the full billing address are required. Look it up first by '
                                'external_reference (list_customers): creating it again is refused. Returns '
-                               'the customer with its id. Scope customers:all.',
+                               'the customer with its id. Scope customers:all. In French: créer un client '
+                               'particulier, ajouter un particulier.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['first_name', 'last_name', 'billing_address'],
@@ -4205,7 +4300,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'write',
                 'description': 'Update an individual customer: names, addresses, emails, phone, payment '
                                'conditions, IBAN, external_reference... Only the arguments passed change. '
-                               'Scope customers:all.',
+                               'Scope customers:all. In French: modifier un client particulier, mettre à '
+                               'jour un particulier.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id'],
@@ -4297,7 +4393,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the contacts of one customer (first_name, last_name, email, role, phone '
                                "numbers). Contacts are separate from the customer's invoice recipients (its "
-                               'emails). Scope customers:readonly.',
+                               "emails). Scope customers:readonly. In French: contacts d'un client, "
+                               "interlocuteurs d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id'],
@@ -4332,7 +4429,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'cost': {'per': 'request'}},
                {'name': 'get_customer_contact',
                 'class': 'read',
-                'description': 'Get one contact of a customer. Scope customers:readonly.',
+                'description': 'Get one contact of a customer. Scope customers:readonly. In French: détail '
+                               "d'un contact client, fiche d'un interlocuteur.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id', 'contact_id'],
@@ -4348,7 +4446,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'write',
                 'description': 'Add a contact to a customer. A contact is not an invoice recipient: to have '
                                "invoices sent to this address, add it to the customer's emails "
-                               '(update_customer). Scope customers:all.',
+                               '(update_customer). Scope customers:all. In French: ajouter un contact à un '
+                               'client, nouvel interlocuteur client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id', 'first_name', 'last_name', 'email'],
@@ -4393,7 +4492,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'write',
                 'description': 'Update a contact of a customer; only the arguments passed change, and an '
                                "empty string clears role or a phone number. The customer's invoice "
-                               'recipients do not change. Scope customers:all.',
+                               'recipients do not change. Scope customers:all. In French: modifier un '
+                               "contact client, changer le téléphone d'un interlocuteur.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id', 'contact_id'],
@@ -4438,7 +4538,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'effect': 'destroy',
                 'description': 'Delete a contact of a customer. Its address stays among the invoice '
                                'recipients if it is there. Read the contact first if it may have to be '
-                               'recreated. Scope customers:all.',
+                               'recreated. Scope customers:all. In French: supprimer un contact client, '
+                               'retirer un interlocuteur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['customer_id', 'contact_id'],
@@ -4456,7 +4557,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Update a supplier: name, SIREN (reg_no), SIRET (establishment_no), VAT '
                                'number, address, emails, IBAN, payment method and due date rule, '
                                'external_reference. Only the arguments passed change; null clears '
-                               'establishment_no and the payment settings. Scope suppliers:all.',
+                               'establishment_no and the payment settings. Scope suppliers:all. In French: '
+                               "modifier un fournisseur, changer l'iban d'un fournisseur, siret d'un "
+                               'fournisseur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['supplier_id'],
@@ -4530,7 +4633,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Start a FEC export (fichier des écritures comptables, the French legal '
                                'ledger file) over a period. Pennylane builds it in the background: the '
                                'answer is {id, status: pending}; read it again with get_fec_export until '
-                               'status is ready (or error). Scope exports:fec.',
+                               'status is ready (or error). Scope exports:fec. In French: export fec, '
+                               'fichier des écritures comptables, exporter le fec.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['period_start', 'period_end'],
@@ -4554,7 +4658,7 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Read a FEC export started by create_fec_export: status pending, ready or '
                                'error, and file_url once ready. The file_url expires 30 minutes after this '
                                'read: download it at once, or read the export again for a fresh one. Scope '
-                               'exports:fec.',
+                               "exports:fec. In French: télécharger le fec, statut de l'export fec.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['export_id'],
@@ -4569,7 +4673,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Start a general ledger export (an xlsx file) over a period. The answer is '
                                '{id, status: pending}; read it again with get_general_ledger_export until '
-                               'status is ready (or error). Scope exports:gl.',
+                               'status is ready (or error). Scope exports:gl. In French: export du grand '
+                               'livre, exporter le grand livre.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['period_start', 'period_end'],
@@ -4593,7 +4698,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Read a general ledger export started by create_general_ledger_export: status '
                                'pending, ready or error, and file_url (xlsx) once ready. The file_url '
-                               'expires 30 minutes after this read. Scope exports:gl.',
+                               'expires 30 minutes after this read. Scope exports:gl. In French: télécharger '
+                               "le grand livre, statut de l'export du grand livre.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['export_id'],
@@ -4611,7 +4717,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'gives one row per line and category, in_column one column per axis. The '
                                'answer is {id, status: pending}; read it again with '
                                'get_analytical_general_ledger_export until status is ready (or error). Scope '
-                               'exports:agl.',
+                               'exports:agl. In French: export du grand livre analytique, exporter '
+                               "l'analytique.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['period_start', 'period_end'],
@@ -4640,7 +4747,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'Read an analytical general ledger export started by '
                                'create_analytical_general_ledger_export: status pending, ready or error, and '
                                'file_url (xlsx) once ready. The file_url expires 30 minutes after this read. '
-                               'Scope exports:agl.',
+                               'Scope exports:agl. In French: télécharger le grand livre analytique, statut '
+                               "de l'export analytique.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['export_id'],
@@ -4657,7 +4765,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                '(draft, not_started, in_progress, pending, stopped, finished), mode '
                                '(awaiting_validation: invoices come as drafts; finalized; email: finalized '
                                'and emailed), recurring_rule, next_occurrence. Scope '
-                               'billing_subscriptions:readonly.',
+                               'billing_subscriptions:readonly. In French: abonnements de facturation, '
+                               'factures récurrentes, lister les abonnements clients.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -4733,7 +4842,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one billing subscription: customer, status, mode, recurring_rule, start, '
                                'finish, next_occurrence, payment conditions and the data of the invoices it '
-                               'generates. Scope billing_subscriptions:readonly.',
+                               "generates. Scope billing_subscriptions:readonly. In French: détail d'un "
+                               "abonnement de facturation, prochaine facture d'un abonnement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['billing_subscription_id'],
@@ -4745,7 +4855,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the invoice lines of one billing subscription (label, quantity, '
                                'raw_currency_unit_price, vat_rate, product). Scope '
-                               'billing_subscriptions:readonly.',
+                               "billing_subscriptions:readonly. In French: lignes d'un abonnement, articles "
+                               'facturés par un abonnement.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['billing_subscription_id'],
@@ -4783,7 +4894,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'description': 'List the commercial documents: proformas, shipping orders and purchasing '
                                'orders (document_type), with customer, amounts, lines and public_file_url. '
                                'Quotes and invoices have their own functions. Scope '
-                               'commercial_documents:readonly.',
+                               'commercial_documents:readonly. In French: documents commerciaux, factures '
+                               'proforma, bons de commande, bons de livraison.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -4859,7 +4971,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one commercial document (proforma, shipping order or purchasing order): '
                                'document_number, customer, amounts, lines, public_file_url. Scope '
-                               'commercial_documents:readonly.',
+                               "commercial_documents:readonly. In French: détail d'un document commercial, "
+                               "détail d'une proforma.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['commercial_document_id'],
@@ -4873,7 +4986,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_commercial_document_lines',
                 'class': 'read',
                 'description': 'List the lines of one commercial document. Scope '
-                               'commercial_documents:readonly.',
+                               "commercial_documents:readonly. In French: lignes d'un document commercial, "
+                               "lignes d'une proforma.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['commercial_document_id'],
@@ -4910,7 +5024,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_commercial_document_appendices',
                 'class': 'read',
                 'description': 'List the files appended to one commercial document ({id, filename, url}). '
-                               'Scope commercial_documents:readonly.',
+                               "Scope commercial_documents:readonly. In French: pièces jointes d'un document "
+                               "commercial, annexes d'une proforma.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['commercial_document_id'],
@@ -4948,7 +5063,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                "to the addresses on the customer's record. Only after explicit human "
                                'validation. The PDF takes a few minutes to generate after creation: a '
                                'conflict means it is not ready yet, retry later. email_template_id picks a '
-                               'billing email template of the matching kind. Scope commercial_documents:all.',
+                               'billing email template of the matching kind. Scope commercial_documents:all. '
+                               'In French: envoyer une proforma, envoyer un bon de commande au client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['commercial_document_id'],
@@ -4978,7 +5094,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                "addresses on the customer's record. Only after explicit human validation. "
                                'The PDF takes a few minutes to generate after creation: a conflict means it '
                                'is not ready yet, retry later. email_template_id picks a billing email '
-                               'template of kind billing_email_quote. Scope quotes:all.',
+                               'template of kind billing_email_quote. Scope quotes:all. In French: envoyer '
+                               'un devis, envoyer un devis par email.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['quote_id'],
@@ -5004,7 +5121,7 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_quote_appendices',
                 'class': 'read',
                 'description': 'List the files appended to one quote ({id, filename, url}). Scope '
-                               'quotes:readonly.',
+                               "quotes:readonly. In French: pièces jointes d'un devis, annexes d'un devis.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['quote_id'],
@@ -5038,7 +5155,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'List the purchase requests: supplier, amounts, reason, status '
                                '(to_be_validated, approved, rejected, invoiced), purchase order and '
-                               'linked_invoices. Scope purchase_requests:readonly.',
+                               'linked_invoices. Scope purchase_requests:readonly. In French: demandes '
+                               "d'achat, lister les demandes d'achat à valider.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -5112,7 +5230,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'cost': {'per': 'request'}},
                {'name': 'get_purchase_request',
                 'class': 'read',
-                'description': 'Get one purchase request. Scope purchase_requests:readonly.',
+                'description': 'Get one purchase request. Scope purchase_requests:readonly. In French: '
+                               "détail d'une demande d'achat, statut d'une demande d'achat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['purchase_request_id'],
@@ -5124,7 +5243,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': "List the customers' SEPA direct debit mandates: customer, identifier, bank, "
                                'bic, iban, signed_at, sequence_type (FRST, OOFF, RCUR, FNAL). Scope '
-                               'customer_mandates:readonly.',
+                               'customer_mandates:readonly. In French: mandats sepa, mandats de prélèvement, '
+                               'prélèvements clients.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -5194,7 +5314,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'cost': {'per': 'request'}},
                {'name': 'get_sepa_mandate',
                 'class': 'read',
-                'description': 'Get one SEPA mandate. Scope customer_mandates:readonly.',
+                'description': 'Get one SEPA mandate. Scope customer_mandates:readonly. In French: détail '
+                               "d'un mandat sepa, mandat de prélèvement d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sepa_mandate_id'],
@@ -5208,7 +5329,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                                'lines of one account over a period, of one journal, of some entries. Without '
                                'a filter the whole ledger comes back, far beyond what an agent can read. '
                                'Each line carries debit, credit, date, label, ledger_account, journal, '
-                               'ledger_entry and its lettering. Scope ledger_entries:readonly.',
+                               'ledger_entry and its lettering. Scope ledger_entries:readonly. In French: '
+                               "grand livre d'un compte, lignes d'écriture d'un compte, chercher des "
+                               'écritures sur une période.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'array',
@@ -5289,7 +5412,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                 'class': 'read',
                 'description': 'Get one ledger entry line: debit, credit, date, label, ledger_account, '
                                'journal, ledger_entry, categories and the lines it is lettered with. Scope '
-                               'ledger_entries:readonly.',
+                               "ledger_entries:readonly. In French: détail d'une ligne d'écriture, lettrage "
+                               "d'une ligne d'écriture.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['line_id'],
@@ -5300,7 +5424,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane',
                {'name': 'list_ledger_entry_documents',
                 'class': 'read',
                 'description': 'List the documents attached to one ledger entry ({id, name, url}), the '
-                               'receipts and invoices it was booked from. Scope ledger_entries:readonly.',
+                               'receipts and invoices it was booked from. Scope ledger_entries:readonly. In '
+                               "French: justificatifs d'une écriture, pièces jointes d'une écriture "
+                               'comptable.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entry_id'],

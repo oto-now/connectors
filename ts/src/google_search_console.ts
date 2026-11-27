@@ -7,7 +7,7 @@ export const listSites = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
-  description: "List the Search Console properties this account can read, each with its permissionLevel (SITE_OWNER, SITE_FULL_USER, SITE_RESTRICTED_USER, SITE_UNVERIFIED_USER): {siteEntry: [{siteUrl, permissionLevel}]}. siteUrl is the name every other function takes: sc-domain:example.com for a Domain property, a full URL with a trailing slash for a URL-prefix property. An empty answer means the account was added to no property yet. Free.",
+  description: "List the Search Console properties this account can read, each with its permissionLevel (SITE_OWNER, SITE_FULL_USER, SITE_RESTRICTED_USER, SITE_UNVERIFIED_USER): {siteEntry: [{siteUrl, permissionLevel}]}. siteUrl is the name every other function takes: sc-domain:example.com for a Domain property, a full URL with a trailing slash for a URL-prefix property. An empty answer means the account was added to no property yet. Free. In French: propriétés search console, sites suivis, mes sites dans search console.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every property shared with the account", input: {} },
@@ -30,7 +30,7 @@ export const querySearchAnalytics = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
-  description: "Search performance of a property between two dates (inclusive, Pacific time): rows of {keys, clicks, impressions, ctr, position}, keys in the order of dimensions, sorted by clicks unless grouped by date. No dimension gives one total row. Data lags about two days; data_state all adds fresh, incomplete days (metadata says from when). Returns at most row_limit rows (default 1,000, up to 25,000) and may hold back the long tail. For more rows, call again with start_row = previous start_row + row_limit, until fewer rows come back. Free, bounded by quotas.",
+  description: "Search performance of a property between two dates (inclusive, Pacific time): rows of {keys, clicks, impressions, ctr, position}, keys in the order of dimensions, sorted by clicks unless grouped by date. No dimension gives one total row. Data lags about two days; data_state all adds fresh, incomplete days (metadata says from when). Returns at most row_limit rows (default 1,000, up to 25,000) and may hold back the long tail. For more rows, call again with start_row = previous start_row + row_limit, until fewer rows come back. Free, bounded by quotas. In French: clics et impressions, performances seo, requêtes google du site, position moyenne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -141,7 +141,7 @@ export const inspectUrl = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
-  description: "Index status of one URL as Google last saw it (not a live test): inspectionResult with indexStatusResult (verdict PASS, PARTIAL, FAIL or NEUTRAL, coverageState, robotsTxtState, indexingState, pageFetchState, lastCrawlTime, googleCanonical, userCanonical, crawledAs, sitemap, referringUrls), and when they apply mobileUsabilityResult, richResultsResult, ampResult, plus inspectionResultLink to the Search Console screen. The URL must belong to the property. Free, but bounded to 2,000 inspections a day and 600 a minute per property: inspect the pages that matter, not a whole sitemap.",
+  description: "Index status of one URL as Google last saw it (not a live test): inspectionResult with indexStatusResult (verdict PASS, PARTIAL, FAIL or NEUTRAL, coverageState, robotsTxtState, indexingState, pageFetchState, lastCrawlTime, googleCanonical, userCanonical, crawledAs, sitemap, referringUrls), and when they apply mobileUsabilityResult, richResultsResult, ampResult, plus inspectionResultLink to the Search Console screen. The URL must belong to the property. Free, but bounded to 2,000 inspections a day and 600 a minute per property: inspect the pages that matter, not a whole sitemap. In French: statut d'indexation d'une page, page indexée par google, inspecter une url.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -187,7 +187,7 @@ export const listSitemaps = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
-  description: "List the sitemaps submitted for a property, or those of one sitemap index: [{path, lastSubmitted, lastDownloaded, isPending, isSitemapsIndex, type, warnings, errors, contents: [{type, submitted}]}]; warnings, errors and submitted are counts written as strings. Read one sitemap with get_sitemap, submit one with add_sitemap. Free.",
+  description: "List the sitemaps submitted for a property, or those of one sitemap index: [{path, lastSubmitted, lastDownloaded, isPending, isSitemapsIndex, type, warnings, errors, contents: [{type, submitted}]}]; warnings, errors and submitted are counts written as strings. Read one sitemap with get_sitemap, submit one with add_sitemap. Free. In French: lister les sitemaps, sitemaps soumis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -228,7 +228,7 @@ export const getSitemap = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
-  description: "Get one submitted sitemap of a property: {path, lastSubmitted, lastDownloaded, isPending, isSitemapsIndex, type, warnings, errors, contents: [{type, submitted}]}; warnings, errors and submitted are counts written as strings. A sitemap never submitted for this property is not found. Free.",
+  description: "Get one submitted sitemap of a property: {path, lastSubmitted, lastDownloaded, isPending, isSitemapsIndex, type, warnings, errors, contents: [{type, submitted}]}; warnings, errors and submitted are counts written as strings. A sitemap never submitted for this property is not found. Free. In French: détail d'un sitemap, erreurs du sitemap.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -269,7 +269,7 @@ export const addSitemap = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/webmasters"],
-  description: "Submit a sitemap for a property, so Google crawls the addresses it lists: answers {} on success. Submitting an address already submitted submits it again. The sitemap must be reachable by Google and under the property; its processing (isPending, errors, warnings) is read afterwards with get_sitemap. The account must be an Owner or Full user of the property: Restricted only reads. Free.",
+  description: "Submit a sitemap for a property, so Google crawls the addresses it lists: answers {} on success. Submitting an address already submitted submits it again. The sitemap must be reachable by Google and under the property; its processing (isPending, errors, warnings) is read afterwards with get_sitemap. The account must be an Owner or Full user of the property: Restricted only reads. Free. In French: soumettre un sitemap, ajouter un sitemap.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -310,7 +310,7 @@ export const connector = defineConnector({
   name: "google_search_console",
   label: "Google Search Console",
   namespace: "google_search_console",
-  version: "2.0.0",
+  version: "2.0.1",
   apiVersion: "v1",
   baseUrl: "https://searchconsole.googleapis.com",
   accesses: [

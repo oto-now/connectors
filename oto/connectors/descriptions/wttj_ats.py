@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'wttj_ats',
                'label': 'Welcome to the Jungle ATS',
                'namespace': 'wttj_ats',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1 external',
                'base_url': 'https://www.welcomekit.co/api/v1/external',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -45,7 +45,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                                'and pipeline stages it can reach. Start here: every other call needs an '
                                'organization reference or a job reference, and this is where they are '
                                'listed. Needs the me_r scope; organizations need organizations_r, jobs need '
-                               'jobs_r.',
+                               'jobs_r. In French: compte recruteur welcome to the jungle, organisations '
+                               "accessibles, utilisateur de l'ats.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'organizations': {'type': 'boolean',
@@ -66,7 +67,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                 'class': 'read',
                 'description': 'Get one organization by its reference: name, slug, description, '
                                'subsidiaries, logo, sectors, size. Offices and websites on request. Needs '
-                               'the organizations_r scope (offices also need offices_r).',
+                               'the organizations_r scope (offices also need offices_r). In French: fiche de '
+                               "l'entreprise recruteuse, organisation welcome to the jungle.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['reference'],
@@ -93,7 +95,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                 'description': 'List the jobs (offers) of one organization, one page at a time: reference, '
                                'name, status, description, profile, contract type, salary, remote policy, '
                                'office, creation and publication dates. The answer is a bare array with no '
-                               'total: an empty or short page means the end. Needs the jobs_r scope.',
+                               'total: an empty or short page means the end. Needs the jobs_r scope. In '
+                               "French: offres d'emploi, lister les annonces, postes à pourvoir.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['organization_reference'],
@@ -145,7 +148,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                                'name, reference, visible, candidates_count}]: a stage is addressed by its '
                                'integer id (its reference may be null), the id that create_candidate and '
                                'update_candidate take as job_stage_id. Needs the jobs_r scope; '
-                               'candidates_count also needs candidates_r.',
+                               "candidates_count also needs candidates_r. In French: détail d'une offre "
+                               "d'emploi, étapes du processus de recrutement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['reference'],
@@ -188,7 +192,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                                'origin, archived flag, dates. There is no cross-job listing: a job reference '
                                'is required. The answer is a bare array with no total. Returns personal '
                                'data. Needs the candidates_r scope (my_candidates_r only reaches the '
-                               'candidates this token created).',
+                               "candidates this token created). In French: candidats d'une offre, lister les "
+                               'candidatures, candidats en cours.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['job_reference'],
@@ -239,7 +244,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                {'name': 'get_candidate',
                 'class': 'read',
                 'description': 'Get one candidate by its reference, same fields as a list item. Returns '
-                               'personal data. Needs the candidates_r scope.',
+                               "personal data. Needs the candidates_r scope. In French: fiche d'un candidat, "
+                               "profil d'un candidat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['reference'],
@@ -263,7 +269,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                 'class': 'write',
                 'description': 'Add a candidate to a job, at a given pipeline stage. job_stage_id is the '
                                'integer id of a stage of this job (get_job with stages). Needs the '
-                               'candidates_rw or my_candidates_rw scope.',
+                               'candidates_rw or my_candidates_rw scope. In French: ajouter un candidat, '
+                               'créer une candidature.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['organization_reference',
@@ -349,7 +356,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                 'class': 'write',
                 'description': 'Change a candidate: only the fields passed change. job_stage_id MOVES the '
                                'candidate to that stage of its job (there is no dedicated move endpoint); '
-                               'archived true archives it. Needs the candidates_rw scope.',
+                               'archived true archives it. Needs the candidates_rw scope. In French: '
+                               "déplacer un candidat, changer l'étape d'un candidat, archiver un candidat.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['reference'],
@@ -432,7 +440,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                 'class': 'write',
                 'description': 'Add a comment on a candidate, as plain text, HTML or markdown. Comments are '
                                'write-only in this API: none can be listed back. Needs the comments_w scope '
-                               'and candidates_rw or my_candidates_rw.',
+                               'and candidates_rw or my_candidates_rw. In French: commenter un candidat, '
+                               'ajouter une note sur un candidat.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['candidate_reference', 'content'],
@@ -453,7 +462,8 @@ DESCRIPTION = {'connector': {'name': 'wttj_ats',
                                'move is {candidate: {reference}, from: {stage, organization, job}, to: '
                                '{stage, organization, job}, created_at}. A move can change stage, job or '
                                'organization; a stage deleted after the move is not included. Needs the '
-                               'moves_r scope.',
+                               'moves_r scope. In French: historique des étapes, mouvements des candidats, '
+                               'suivi du pipeline de recrutement.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['organization_reference'],

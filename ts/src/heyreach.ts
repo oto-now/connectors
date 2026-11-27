@@ -6,7 +6,7 @@ export const checkApiKey = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "Whether the API key works: an empty answer when it does, a 401 when it is unknown, deleted or deactivated. Nothing else is returned.",
+  description: "Whether the API key works: an empty answer when it does, a 401 when it is unknown, deleted or deactivated. Nothing else is returned. In French: vérifier la clé heyreach, tester la connexion heyreach.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Test the key", input: {} },
@@ -27,7 +27,7 @@ export const listCampaigns = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The workspace's campaigns, one page: totalCount and items {id, name, status (DRAFT, IN_PROGRESS, PAUSED, FINISHED, CANCELED, FAILED, STARTING, SCHEDULED), creationTime, linkedInUserListId and linkedInUserListName (the lead list it draws from), campaignAccountIds (its sender accounts), progressStats {totalUsers, totalUsersInProgress, totalUsersPending, totalUsersFinished, totalUsersFailed}}; get_campaign has its exclusion settings. Next page: offset + limit, while a page returns limit items.",
+  description: "The workspace's campaigns, one page: totalCount and items {id, name, status (DRAFT, IN_PROGRESS, PAUSED, FINISHED, CANCELED, FAILED, STARTING, SCHEDULED), creationTime, linkedInUserListId and linkedInUserListName (the lead list it draws from), campaignAccountIds (its sender accounts), progressStats {totalUsers, totalUsersInProgress, totalUsersPending, totalUsersFinished, totalUsersFailed}}; get_campaign has its exclusion settings. Next page: offset + limit, while a page returns limit items. In French: campagnes heyreach, lister les campagnes linkedin, campagnes de prospection linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -73,7 +73,7 @@ export const getCampaign = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "One campaign: id, name, status, creationTime, linkedInUserListId and linkedInUserListName, campaignAccountIds, progressStats (totals of leads in progress, pending, finished, failed, manually stopped, excluded) and its exclusion settings.",
+  description: "One campaign: id, name, status, creationTime, linkedInUserListId and linkedInUserListName, campaignAccountIds, progressStats (totals of leads in progress, pending, finished, failed, manually stopped, excluded) and its exclusion settings. In French: détail d'une campagne linkedin, avancement d'une campagne heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -99,7 +99,7 @@ export const listCampaignLeads = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The leads a campaign is working on (its Lead Analytics), one page: totalCount and items {linkedInUserProfile {linkedin_id, profileUrl, firstName, lastName, headline, location, companyName, position, emailAddress}, leadCampaignStatus (Pending, InSequence, Finished, Paused, Failed), leadConnectionStatus (None, ConnectionSent, ConnectionAccepted), leadMessageStatus (None, MessageSent, MessageReply), leadCampaignStatusMessage (why it failed), lastActionTime, creationTime, linkedInSenderId, linkedInSenderFullName}. Only the pending leads already scheduled appear, not those the campaign will draw later from its list. time_filter picks which date time_from and time_to bound. Next page: offset + limit.",
+  description: "The leads a campaign is working on (its Lead Analytics), one page: totalCount and items {linkedInUserProfile {linkedin_id, profileUrl, firstName, lastName, headline, location, companyName, position, emailAddress}, leadCampaignStatus (Pending, InSequence, Finished, Paused, Failed), leadConnectionStatus (None, ConnectionSent, ConnectionAccepted), leadMessageStatus (None, MessageSent, MessageReply), leadCampaignStatusMessage (why it failed), lastActionTime, creationTime, linkedInSenderId, linkedInSenderFullName}. Only the pending leads already scheduled appear, not those the campaign will draw later from its list. time_filter picks which date time_from and time_to bound. Next page: offset + limit. In French: leads d'une campagne, prospects d'une campagne linkedin, statut des leads d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -147,7 +147,7 @@ export const listLeadCampaigns = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The campaigns a lead is in, found by its profile URL, its LinkedIn id (linkedin_id in other answers) or its email: items {campaignId, campaignName, campaignStatus, creationTime, leadStatus (Pending, InSequence, Finished, Paused, Failed, Excluded)}. Next page: offset + limit, while a page returns limit items.",
+  description: "The campaigns a lead is in, found by its profile URL, its LinkedIn id (linkedin_id in other answers) or its email: items {campaignId, campaignName, campaignStatus, creationTime, leadStatus (Pending, InSequence, Finished, Paused, Failed, Excluded)}. Next page: offset + limit, while a page returns limit items. In French: campagnes d'un lead, dans quelles campagnes est un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -191,7 +191,7 @@ export const listLists = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The workspace's lead and company lists, one page: items {id, name, totalItemsCount, listType (USER_LIST for leads, COMPANY_LIST), creationTime, campaignIds (campaigns that use it)}. Next page: offset + limit, while a page returns limit items.",
+  description: "The workspace's lead and company lists, one page: items {id, name, totalItemsCount, listType (USER_LIST for leads, COMPANY_LIST), creationTime, campaignIds (campaigns that use it)}. Next page: offset + limit, while a page returns limit items. In French: listes de leads heyreach, listes d'entreprises heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -229,7 +229,7 @@ export const getList = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "One lead or company list: id, name, totalItemsCount, listType, creationTime, campaignIds.",
+  description: "One lead or company list: id, name, totalItemsCount, listType, creationTime, campaignIds. In French: détail d'une liste heyreach, taille d'une liste de leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -255,7 +255,7 @@ export const listListLeads = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The leads of a lead list, one page of up to 1000: totalCount and items {linkedin_id, profileUrl, firstName, lastName, headline, location, companyName, companyUrl, position, about, tags, emailAddress, customFields [{name, value}]}. Narrow by keyword (name), one lead (lead_profile_url or lead_linkedin_id) or creation date. Next page: offset + limit.",
+  description: "The leads of a lead list, one page of up to 1000: totalCount and items {linkedin_id, profileUrl, firstName, lastName, headline, location, companyName, companyUrl, position, about, tags, emailAddress, customFields [{name, value}]}. Narrow by keyword (name), one lead (lead_profile_url or lead_linkedin_id) or creation date. Next page: offset + limit. In French: leads d'une liste, prospects d'une liste heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -317,7 +317,7 @@ export const listLeadLists = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The lists a lead is in, found by its profile URL, its LinkedIn id or its email: items {listId, listName}. Next page: offset + limit, while a page returns limit items.",
+  description: "The lists a lead is in, found by its profile URL, its LinkedIn id or its email: items {listId, listName}. Next page: offset + limit, while a page returns limit items. In French: listes d'un lead, dans quelles listes est un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -361,7 +361,7 @@ export const getLead = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "One lead by its LinkedIn profile URL: linkedin_id, firstName, lastName, fullName, headline, location, summary, about, companyName, companyUrl, position, industry, username, connections, followers, experiences and education (JSON in a string), emailAddress, enrichedEmailAddress, emailEnrichments. Personal data: read only what the task needs.",
+  description: "One lead by its LinkedIn profile URL: linkedin_id, firstName, lastName, fullName, headline, location, summary, about, companyName, companyUrl, position, industry, username, connections, followers, experiences and education (JSON in a string), emailAddress, enrichedEmailAddress, emailEnrichments. Personal data: read only what the task needs. In French: profil linkedin d'un lead, fiche d'un prospect heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -395,7 +395,7 @@ export const getLeadTags = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The tags of a lead, by its LinkedIn profile URL: {tags}, sorted alphabetically.",
+  description: "The tags of a lead, by its LinkedIn profile URL: {tags}, sorted alphabetically. In French: tags d'un lead, étiquettes d'un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -428,7 +428,7 @@ export const getOverallStats = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "Outreach statistics over a period, for some senders and campaigns (all of them when a list is empty): overallStats and byDayStats (one entry per day) with profileViews, postLikes, follows, connectionsSent, connectionsAccepted, connectionAcceptanceRate, messagesSent, totalMessageStarted, totalMessageReplies, messageReplyRate, inmailMessagesSent, totalInmailStarted, totalInmailReplies, inMailReplyRate. Rates are fractions (0.22 = 22 %).",
+  description: "Outreach statistics over a period, for some senders and campaigns (all of them when a list is empty): overallStats and byDayStats (one entry per day) with profileViews, postLikes, follows, connectionsSent, connectionsAccepted, connectionAcceptanceRate, messagesSent, totalMessageStarted, totalMessageReplies, messageReplyRate, inmailMessagesSent, totalInmailStarted, totalInmailReplies, inMailReplyRate. Rates are fractions (0.22 = 22 %). In French: statistiques de prospection linkedin, taux d'acceptation des invitations, taux de réponse linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -477,7 +477,7 @@ export const getStatsByCampaign = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The same statistics as get_overall_stats, broken down per campaign: overallStats is a list and byDayStats gives a list per day, each entry carrying campaignId, campaignName and isCampaignDeleted with the counters.",
+  description: "The same statistics as get_overall_stats, broken down per campaign: overallStats is a list and byDayStats gives a list per day, each entry carrying campaignId, campaignName and isCampaignDeleted with the counters. In French: statistiques par campagne, performance des campagnes linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -526,7 +526,7 @@ export const listConversations = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "LinkedIn conversations of the workspace's senders, newest message first: totalCount, nextCursor, hasNextPage and items {id (the conversation id), linkedInAccountId (the sender), read, lastMessageAt, lastMessageText, lastMessageSender (ME or CORRESPONDENT), totalMessages, campaignId (absent outside a campaign), correspondentProfile {linkedin_id, profileUrl, firstName, lastName, headline, companyName, position, tags, autoTags}, linkedInAccount, messages [{createdAt, body, subject, isInMail, sender}]}. seen false gives the unread ones. One lead by lead_profile_url or lead_linkedin_id, never both; every tag must exist. Next page: cursor = nextCursor while hasNextPage.",
+  description: "LinkedIn conversations of the workspace's senders, newest message first: totalCount, nextCursor, hasNextPage and items {id (the conversation id), linkedInAccountId (the sender), read, lastMessageAt, lastMessageText, lastMessageSender (ME or CORRESPONDENT), totalMessages, campaignId (absent outside a campaign), correspondentProfile {linkedin_id, profileUrl, firstName, lastName, headline, companyName, position, tags, autoTags}, linkedInAccount, messages [{createdAt, body, subject, isInMail, sender}]}. seen false gives the unread ones. One lead by lead_profile_url or lead_linkedin_id, never both; every tag must exist. Next page: cursor = nextCursor while hasNextPage. In French: conversations linkedin, messages linkedin reçus, boîte de réception heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -627,7 +627,7 @@ export const getConversation = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "One LinkedIn conversation with all its messages, by its sender (linkedInAccountId) and its id (id in list_conversations): read, lastMessageAt, totalMessages, correspondentProfile (profileUrl, names, headline, companyName, position, tags, emailAddress, customFields), linkedInAccount, messages [{createdAt, body, subject, postLink, isInMail, sender}].",
+  description: "One LinkedIn conversation with all its messages, by its sender (linkedInAccountId) and its id (id in list_conversations): read, lastMessageAt, totalMessages, correspondentProfile (profileUrl, names, headline, companyName, position, tags, emailAddress, customFields), linkedInAccount, messages [{createdAt, body, subject, postLink, isInMail, sender}]. In French: lire une conversation linkedin, messages d'une conversation linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -666,7 +666,7 @@ export const listLinkedinAccounts = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The workspace's LinkedIn sender accounts, one page: items {id, firstName, lastName, emailAddress, profileUrl, isActive, authIsValid (false: the session must be reconnected in HeyReach), isValidNavigator, isValidRecruiter, activeCampaigns}; get_linkedin_account has its cooldown flags and daily limits. Next page: offset + limit, while a page returns limit items.",
+  description: "The workspace's LinkedIn sender accounts, one page: items {id, firstName, lastName, emailAddress, profileUrl, isActive, authIsValid (false: the session must be reconnected in HeyReach), isValidNavigator, isValidRecruiter, activeCampaigns}; get_linkedin_account has its cooldown flags and daily limits. Next page: offset + limit, while a page returns limit items. In French: comptes linkedin expéditeurs, lister les comptes linkedin connectés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -697,7 +697,7 @@ export const getLinkedinAccount = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "One LinkedIn sender account: the fields of list_linkedin_accounts, its session state (authIsValid), its cooldown flags and its daily limits (accountLimits).",
+  description: "One LinkedIn sender account: the fields of list_linkedin_accounts, its session state (authIsValid), its cooldown flags and its daily limits (accountLimits). In French: détail d'un compte linkedin expéditeur, limites quotidiennes d'un compte linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -725,7 +725,7 @@ export const checkConnection = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "Whether a lead is a first-degree connection of a sender: {isConnection}. The lead by lead_profile_url or lead_linkedin_id, exactly one.",
+  description: "Whether a lead is a first-degree connection of a sender: {isConnection}. The lead by lead_profile_url or lead_linkedin_id, exactly one. In French: vérifier une relation linkedin, connexion de premier niveau.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -766,7 +766,7 @@ export const listWebhooks = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "The workspace's webhooks, one page: totalCount and items {id, webhookName, webhookUrl, eventType, campaignIds (empty: every campaign), isActive}. Their custom headers are never returned. Next page: offset + limit.",
+  description: "The workspace's webhooks, one page: totalCount and items {id, webhookName, webhookUrl, eventType, campaignIds (empty: every campaign), isActive}. Their custom headers are never returned. Next page: offset + limit. In French: webhooks heyreach, lister les webhooks heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -797,7 +797,7 @@ export const getWebhook = defineFunction({
   connector: "heyreach",
   class: "read",
   act: false,
-  description: "One webhook: id, webhookName, webhookUrl, eventType, campaignIds, isActive. Its custom headers are never returned.",
+  description: "One webhook: id, webhookName, webhookUrl, eventType, campaignIds, isActive. Its custom headers are never returned. In French: détail d'un webhook heyreach, configuration d'un webhook heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -825,7 +825,7 @@ export const addLeadsToCampaign = defineFunction({
   connector: "heyreach",
   class: "sensitive",
   act: true,
-  description: "Add up to 100 leads to a campaign, each {lead, linkedInAccountId?}: the lead with HeyReach's own keys (profileUrl required, firstName, lastName, location, summary, companyName, position, about, emailAddress, customUserFields [{name, value}] for the sequence's variables), and the sender that will contact it (otherwise the campaign distributes leads among its senders). An IN_PROGRESS campaign starts LinkedIn actions on them. resume_paused_campaign / resume_finished_campaign restart a paused or finished campaign. Answers addedLeadsCount, updatedLeadsCount, failedLeadsCount.",
+  description: "Add up to 100 leads to a campaign, each {lead, linkedInAccountId?}: the lead with HeyReach's own keys (profileUrl required, firstName, lastName, location, summary, companyName, position, about, emailAddress, customUserFields [{name, value}] for the sequence's variables), and the sender that will contact it (otherwise the campaign distributes leads among its senders). An IN_PROGRESS campaign starts LinkedIn actions on them. resume_paused_campaign / resume_finished_campaign restart a paused or finished campaign. Answers addedLeadsCount, updatedLeadsCount, failedLeadsCount. In French: ajouter des leads à une campagne, inscrire des prospects dans une campagne linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -906,7 +906,7 @@ export const stopLeadInCampaign = defineFunction({
   connector: "heyreach",
   class: "sensitive",
   act: true,
-  description: "Stop a lead's progression in a campaign: no further step runs for it. The lead by its LinkedIn member id (linkedin_id in list_campaign_leads) or its profile URL. Nothing here starts it again.",
+  description: "Stop a lead's progression in a campaign: no further step runs for it. The lead by its LinkedIn member id (linkedin_id in list_campaign_leads) or its profile URL. Nothing here starts it again. In French: arrêter un lead dans une campagne, sortir un prospect d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -948,7 +948,7 @@ export const pauseCampaign = defineFunction({
   connector: "heyreach",
   class: "write",
   act: true,
-  description: "Pause a campaign: its senders stop acting on its leads until it is resumed.",
+  description: "Pause a campaign: its senders stop acting on its leads until it is resumed. In French: mettre en pause une campagne, suspendre une campagne linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -974,7 +974,7 @@ export const resumeCampaign = defineFunction({
   connector: "heyreach",
   class: "sensitive",
   act: true,
-  description: "Resume a paused campaign: its senders start connecting with and messaging its leads again.",
+  description: "Resume a paused campaign: its senders start connecting with and messaging its leads again. In French: relancer une campagne en pause, reprendre une campagne linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1001,7 +1001,7 @@ export const addLeadsToList = defineFunction({
   connector: "heyreach",
   class: "sensitive",
   act: true,
-  description: "Add up to 100 leads to a lead list, each with HeyReach's own keys (profileUrl required, firstName, lastName, location, summary, companyName, position, about, emailAddress, customUserFields [{name, value}]). A running campaign that uses the list may pick them up; a finished one does not (add_leads_to_campaign targets a campaign). Answers addedLeadsCount, updatedLeadsCount, failedLeadsCount.",
+  description: "Add up to 100 leads to a lead list, each with HeyReach's own keys (profileUrl required, firstName, lastName, location, summary, companyName, position, about, emailAddress, customUserFields [{name, value}]). A running campaign that uses the list may pick them up; a finished one does not (add_leads_to_campaign targets a campaign). Answers addedLeadsCount, updatedLeadsCount, failedLeadsCount. In French: ajouter des leads à une liste, importer des prospects dans une liste heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1067,7 +1067,7 @@ export const createEmptyList = defineFunction({
   connector: "heyreach",
   class: "write",
   act: true,
-  description: "Create an empty list: a lead list (USER_LIST, the default) or a company list. Answers the list, with its id.",
+  description: "Create an empty list: a lead list (USER_LIST, the default) or a company list. Answers the list, with its id. In French: créer une liste de leads, nouvelle liste heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1096,7 +1096,7 @@ export const sendMessage = defineFunction({
   connector: "heyreach",
   class: "sensitive",
   act: true,
-  description: "Send a message in an existing LinkedIn conversation, from the sender that holds it (linkedInAccountId and id from list_conversations). It reaches the person at once and cannot be unsent. subject applies to an InMail thread.",
+  description: "Send a message in an existing LinkedIn conversation, from the sender that holds it (linkedInAccountId and id from list_conversations). It reaches the person at once and cannot be unsent. subject applies to an InMail thread. In French: envoyer un message linkedin, répondre sur linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1137,7 +1137,7 @@ export const setSeenStatus = defineFunction({
   connector: "heyreach",
   class: "write",
   act: true,
-  description: "Mark a LinkedIn conversation read (seen true) or unread (seen false).",
+  description: "Mark a LinkedIn conversation read (seen true) or unread (seen false). In French: marquer une conversation comme lue, marquer un message linkedin non lu.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1176,7 +1176,7 @@ export const addLeadTags = defineFunction({
   connector: "heyreach",
   class: "write",
   act: true,
-  description: "Add tags to a lead, its other tags kept; the lead by lead_profile_url or lead_linkedin_id. A tag that does not exist is refused (400) unless create_tag_if_not_existing is true. Answers newAssignedTags.",
+  description: "Add tags to a lead, its other tags kept; the lead by lead_profile_url or lead_linkedin_id. A tag that does not exist is refused (400) unless create_tag_if_not_existing is true. Answers newAssignedTags. In French: ajouter un tag à un lead, étiqueter un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1218,7 +1218,7 @@ export const replaceLeadTags = defineFunction({
   connector: "heyreach",
   class: "sensitive",
   act: true,
-  description: "Replace every tag of a lead with these: the tags it had are removed. The lead by lead_profile_url or lead_linkedin_id; a tag that does not exist is refused (400) unless create_tag_if_not_existing is true. Answers newAssignedTags.",
+  description: "Replace every tag of a lead with these: the tags it had are removed. The lead by lead_profile_url or lead_linkedin_id; a tag that does not exist is refused (400) unless create_tag_if_not_existing is true. Answers newAssignedTags. In French: remplacer les tags d'un lead, changer les étiquettes d'un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1261,7 +1261,7 @@ export const createWebhook = defineFunction({
   connector: "heyreach",
   class: "sensitive",
   act: true,
-  description: "Have HeyReach POST an event to an https address: CONNECTION_REQUEST_SENT, CONNECTION_REQUEST_ACCEPTED, MESSAGE_SENT, MESSAGE_REPLY_RECEIVED and INMAIL_REPLY_RECEIVED (the first reply only), EVERY_MESSAGE_REPLY_RECEIVED (every reply, messages and InMails), INMAIL_SENT, FOLLOW_SENT, LIKED_POST, VIEWED_PROFILE, CAMPAIGN_COMPLETED, LEAD_TAG_UPDATED. One event type per webhook; campaign_ids narrows it to these campaigns (empty: every campaign). The event carries the lead's data.",
+  description: "Have HeyReach POST an event to an https address: CONNECTION_REQUEST_SENT, CONNECTION_REQUEST_ACCEPTED, MESSAGE_SENT, MESSAGE_REPLY_RECEIVED and INMAIL_REPLY_RECEIVED (the first reply only), EVERY_MESSAGE_REPLY_RECEIVED (every reply, messages and InMails), INMAIL_SENT, FOLLOW_SENT, LIKED_POST, VIEWED_PROFILE, CAMPAIGN_COMPLETED, LEAD_TAG_UPDATED. One event type per webhook; campaign_ids narrows it to these campaigns (empty: every campaign). The event carries the lead's data. In French: créer un webhook heyreach, être notifié des réponses linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1312,7 +1312,7 @@ export const deleteWebhook = defineFunction({
   connector: "heyreach",
   class: "sensitive",
   act: true,
-  description: "Delete a webhook: its events stop being sent.",
+  description: "Delete a webhook: its events stop being sent. In French: supprimer un webhook heyreach, arrêter les notifications heyreach.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1338,7 +1338,7 @@ export const connector = defineConnector({
   name: "heyreach",
   label: "HeyReach",
   namespace: "heyreach",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "public API (Postman collection, 2026-11)",
   baseUrl: "https://api.heyreach.io/api/public",
   auth: {"kind": "api_key", "in": "header", "name": "X-API-KEY", "key": "api_key"},

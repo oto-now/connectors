@@ -6,7 +6,7 @@ export const searchOrganizations = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Search companies in the shared Apollo database by name, headquarters location, headcount range, activity keywords, technologies used or Apollo ids. Returns organizations (or accounts already saved by the team) with their firmographics, without the exact headcount (that is enrich_organization), and pagination (page, total_entries, total_pages). Costs 1 Apollo credit per page. An unknown filter value is not refused: check that the results match the filters.",
+  description: "Search companies in the shared Apollo database by name, headquarters location, headcount range, activity keywords, technologies used or Apollo ids. Returns organizations (or accounts already saved by the team) with their firmographics, without the exact headcount (that is enrich_organization), and pagination (page, total_entries, total_pages). Costs 1 Apollo credit per page. An unknown filter value is not refused: check that the results match the filters. In French: chercher des entreprises dans apollo, rechercher des sociétés par secteur, trouver des entreprises cibles.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -67,7 +67,7 @@ export const enrichOrganization = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Enrich one company from its domain: full firmographics from the shared Apollo database, among them estimated_num_employees, departmental headcounts, growth and revenue. Costs 1 Apollo credit.",
+  description: "Enrich one company from its domain: full firmographics from the shared Apollo database, among them estimated_num_employees, departmental headcounts, growth and revenue. Costs 1 Apollo credit. In French: enrichir une entreprise, fiche d'une société par son domaine, effectif d'une entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -100,7 +100,7 @@ export const bulkEnrichOrganizations = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Enrich up to 10 companies in one call, from their domains, with the same firmographics as enrich_organization. Costs 1 Apollo credit per organization, as in single mode: the batch saves calls, not credits.",
+  description: "Enrich up to 10 companies in one call, from their domains, with the same firmographics as enrich_organization. Costs 1 Apollo credit per organization, as in single mode: the batch saves calls, not credits. In French: enrichir plusieurs entreprises, enrichissement en masse de sociétés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -139,7 +139,7 @@ export const getJobPostings = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "List the job postings Apollo knows for one organization, by its Apollo id (from search_organizations or enrich_organization).",
+  description: "List the job postings Apollo knows for one organization, by its Apollo id (from search_organizations or enrich_organization). In French: offres d'emploi d'une entreprise, annonces de recrutement d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -166,7 +166,7 @@ export const searchPeople = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Search people in the shared Apollo database (net-new prospecting) by employer domain or id, title keywords, seniority and location. Returns people without email or phone, last names obfuscated (Vi***l), each with an id to pass to match_person or bulk_match_people, and pagination. Costs no credit. There is no department filter: target by titles and seniorities; on a global group, person_locations isolates a country.",
+  description: "Search people in the shared Apollo database (net-new prospecting) by employer domain or id, title keywords, seniority and location. Returns people without email or phone, last names obfuscated (Vi***l), each with an id to pass to match_person or bulk_match_people, and pagination. Costs no credit. There is no department filter: target by titles and seniorities; on a global group, person_locations isolates a country. In French: chercher des prospects, trouver des décideurs dans une entreprise, rechercher des personnes par poste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -249,7 +249,7 @@ export const matchPerson = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Enrich one person from the shared Apollo database: email, title, employer, employment history. Costs 1 Apollo credit per call, more with reveal_personal_emails (by plan), even when nothing matches. Give person_id (from search_people), email or linkedin_url; otherwise a full name (first and last) with domain or org_name. On too weak an identifier Apollo creates an empty person and bills it: a person without last_name, title, email, linkedin_url nor organization_id is such a shell, not a result. The phone reveal is not served here.",
+  description: "Enrich one person from the shared Apollo database: email, title, employer, employment history. Costs 1 Apollo credit per call, more with reveal_personal_emails (by plan), even when nothing matches. Give person_id (from search_people), email or linkedin_url; otherwise a full name (first and last) with domain or org_name. On too weak an identifier Apollo creates an empty person and bills it: a person without last_name, title, email, linkedin_url nor organization_id is such a shell, not a result. The phone reveal is not served here. In French: enrichir un contact, trouver l'email d'une personne, trouver le téléphone d'un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -306,7 +306,7 @@ export const bulkMatchPeople = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Enrich up to 10 people in one call, with the same identifiers as match_person, each entry on its own: id (from search_people), email or linkedin_url, otherwise a full name with domain or organization_name. Returns matches, one per entry in order, null where nothing matched. Costs 1 Apollo credit per person, more with reveal_personal_emails: the batch saves calls, not credits. An entry without last_name, title, email, linkedin_url nor organization_id is an empty shell Apollo created and billed. The phone reveal is not served here.",
+  description: "Enrich up to 10 people in one call, with the same identifiers as match_person, each entry on its own: id (from search_people), email or linkedin_url, otherwise a full name with domain or organization_name. Returns matches, one per entry in order, null where nothing matched. Costs 1 Apollo credit per person, more with reveal_personal_emails: the batch saves calls, not credits. An entry without last_name, title, email, linkedin_url nor organization_id is an empty shell Apollo created and billed. The phone reveal is not served here. In French: enrichir plusieurs contacts, enrichissement en masse de prospects.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -370,7 +370,7 @@ export const listEmailAccounts = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "List the mailboxes connected to this Apollo team, each with the id that sends a sequence's emails. Costs no credit.",
+  description: "List the mailboxes connected to this Apollo team, each with the id that sends a sequence's emails. Costs no credit. In French: lister les boîtes mail connectées, boîtes d'envoi apollo.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The connected mailboxes", input: {} },
@@ -392,7 +392,7 @@ export const listEmailSchedules = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "List the send schedules of this Apollo team, each with the id that create_sequence requires (emailer_schedule_id). Costs no credit.",
+  description: "List the send schedules of this Apollo team, each with the id that create_sequence requires (emailer_schedule_id). Costs no credit. In French: lister les plannings d'envoi, horaires d'envoi des séquences.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The send schedules", input: {} },
@@ -414,7 +414,7 @@ export const searchSequences = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Search this team's sequences by a part of their name. Returns emailer_campaigns (each with its id, name, active and archived state) and pagination. Costs no credit.",
+  description: "Search this team's sequences by a part of their name. Returns emailer_campaigns (each with its id, name, active and archived state) and pagination. Costs no credit. In French: chercher une séquence, lister les séquences apollo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -444,7 +444,7 @@ export const createSequence = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Create a sequence, always inactive: nothing is sent until activate_sequence. emailer_schedule_id comes from list_email_schedules. emailer_steps defines the steps (Apollo's structure, not checked here); label_names are created if absent. Costs no credit.",
+  description: "Create a sequence, always inactive: nothing is sent until activate_sequence. emailer_schedule_id comes from list_email_schedules. emailer_steps defines the steps (Apollo's structure, not checked here); label_names are created if absent. Costs no credit. In French: créer une séquence, nouvelle séquence de prospection.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -494,7 +494,7 @@ export const updateSequence = defineFunction({
   connector: "apollo",
   class: "sensitive",
   act: true,
-  description: "Update a sequence: only the fields given change. Steps with an id are modified, steps without one are created. cc_emails and bcc_emails are copied on every email the sequence sends, and changed steps reach the contacts still in it. Activating or deactivating has its own function. Costs no credit.",
+  description: "Update a sequence: only the fields given change. Steps with an id are modified, steps without one are created. cc_emails and bcc_emails are copied on every email the sequence sends, and changed steps reach the contacts still in it. Activating or deactivating has its own function. Costs no credit. In French: modifier une séquence, changer les étapes d'une séquence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -546,7 +546,7 @@ export const activateSequence = defineFunction({
   connector: "apollo",
   class: "sensitive",
   act: true,
-  description: "Activate a sequence: Apollo starts sending its emails to the contacts in it, on its schedule. Refused (422) if it is already active or has no step. Costs no credit at the call; sends and reveals cost as they go.",
+  description: "Activate a sequence: Apollo starts sending its emails to the contacts in it, on its schedule. Refused (422) if it is already active or has no step. Costs no credit at the call; sends and reveals cost as they go. In French: activer une séquence, lancer une séquence d'emails.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -580,7 +580,7 @@ export const deactivateSequence = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Deactivate a sequence: its sending stops until it is activated again. Refused (422) if it is already inactive. Costs no credit.",
+  description: "Deactivate a sequence: its sending stops until it is activated again. Refused (422) if it is already inactive. Costs no credit. In French: désactiver une séquence, mettre en pause une séquence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -613,7 +613,7 @@ export const archiveSequence = defineFunction({
   connector: "apollo",
   class: "sensitive",
   act: true,
-  description: "Archive a sequence: it stops and leaves the active lists. Needs to own it or have full access to it. Costs no credit.",
+  description: "Archive a sequence: it stops and leaves the active lists. Needs to own it or have full access to it. Costs no credit. In French: archiver une séquence, ranger une séquence terminée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -647,7 +647,7 @@ export const updateSequenceContactStatus = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Change the status of contacts in one or more sequences: mark_as_finished ends their sequence, remove takes them out of it, stop halts their progression. Returns an asynchronous job (entity_progress_job), without its final state. Costs no credit.",
+  description: "Change the status of contacts in one or more sequences: mark_as_finished ends their sequence, remove takes them out of it, stop halts their progression. Returns an asynchronous job (entity_progress_job), without its final state. Costs no credit. In French: retirer un contact d'une séquence, terminer la séquence d'un contact, arrêter un contact dans une séquence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -692,7 +692,7 @@ export const getContactSequenceActivity = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Read the sequence activity of one contact of this team, most recent first: at most per_page events, not a pagination. sequence_id keeps one sequence. Costs no credit.",
+  description: "Read the sequence activity of one contact of this team, most recent first: at most per_page events, not a pagination. sequence_id keeps one sequence. Costs no credit. In French: activité d'un contact dans les séquences, historique de séquence d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -731,7 +731,7 @@ export const createEmailDraft = defineFunction({
   connector: "apollo",
   class: "write",
   act: false,
-  description: "Write an email draft, which does not go out: send_email_now sends it. contact_id is the recipient (from search_contacts), unless the draft answers a thread (in_response_to_emailer_message_id). Apollo cleans the HTML. Costs no credit.",
+  description: "Write an email draft, which does not go out: send_email_now sends it. contact_id is the recipient (from search_contacts), unless the draft answers a thread (in_response_to_emailer_message_id). Apollo cleans the HTML. Costs no credit. In French: rédiger un brouillon d'email, préparer un email de prospection.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -789,7 +789,7 @@ export const sendEmailNow = defineFunction({
   connector: "apollo",
   class: "sensitive",
   act: true,
-  description: "Send an existing draft now, from create_email_draft: it reaches a real person and cannot be recalled. check_email_send_status follows it. Costs no credit.",
+  description: "Send an existing draft now, from create_email_draft: it reaches a real person and cannot be recalled. check_email_send_status follows it. Costs no credit. In French: envoyer un brouillon d'email, envoyer un email maintenant.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -820,7 +820,7 @@ export const checkEmailSendStatus = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Read the send status of one message: completed_at once sent, a failure or not-sent reason, or retry_after_seconds while it is pending. Costs no credit.",
+  description: "Read the send status of one message: completed_at once sent, a failure or not-sent reason, or retry_after_seconds while it is pending. Costs no credit. In French: statut d'envoi d'un email, vérifier si un email est parti.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -847,7 +847,7 @@ export const searchEmails = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Search this team's outreach emails by status, reply class, sequence, keywords and date range. Returns emailer_messages and emailer_steps. Apollo shows at most 50,000 results (500 pages of 100). Costs no credit.",
+  description: "Search this team's outreach emails by status, reply class, sequence, keywords and date range. Returns emailer_messages and emailer_steps. Apollo shows at most 50,000 results (500 pages of 100). Costs no credit. In French: chercher des emails envoyés, retrouver les réponses des prospects, emails de prospection d'une séquence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -938,7 +938,7 @@ export const getEmailContent = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Read the body of up to 10 sent emails, in the order asked; an id that matches no sent email is left out without error. Costs no credit.",
+  description: "Read the body of up to 10 sent emails, in the order asked; an id that matches no sent email is left out without error. Costs no credit. In French: lire le contenu d'un email envoyé, corps des emails envoyés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -974,7 +974,7 @@ export const getEmailStats = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Read the opens and clicks of one sent email (num_opens, num_clicks, activities). Needs a master API key. Costs no credit.",
+  description: "Read the opens and clicks of one sent email (num_opens, num_clicks, activities). Needs a master API key. Costs no credit. In French: ouvertures d'un email, clics d'un email envoyé, statistiques d'un email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1001,7 +1001,7 @@ export const searchConversations = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Search this team's recorded calls and video meetings by type, account, contacts, organizations, tags, trackers and date range. Returns conversations and pagination. Costs no credit; reading one with get_conversation may cost one.",
+  description: "Search this team's recorded calls and video meetings by type, account, contacts, organizations, tags, trackers and date range. Returns conversations and pagination. Costs no credit; reading one with get_conversation may cost one. In French: chercher des appels enregistrés, lister les réunions enregistrées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1052,7 +1052,7 @@ export const getConversation = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Read one recorded conversation: transcript, participants, opportunities. Costs 1 Apollo credit when the conversation has AI insights, none otherwise, which nothing says before the call. The recording links are not returned.",
+  description: "Read one recorded conversation: transcript, participants, opportunities. Costs 1 Apollo credit when the conversation has AI insights, none otherwise, which nothing says before the call. The recording links are not returned. In French: transcription d'un appel, lire une conversation enregistrée, compte rendu d'une réunion enregistrée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1086,7 +1086,7 @@ export const listTypedCustomFields = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "List this team's custom fields: id (the key update_contact expects in typed_custom_fields), name, modality (contact, account, opportunity), type and, for a picklist, its values with their ids (send the id, not the label). Needs a master API key. Costs no credit.",
+  description: "List this team's custom fields: id (the key update_contact expects in typed_custom_fields), name, modality (contact, account, opportunity), type and, for a picklist, its values with their ids (send the id, not the label). Needs a master API key. Costs no credit. In French: lister les champs personnalisés, champs personnalisés des contacts.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The custom fields", input: {} },
@@ -1108,7 +1108,7 @@ export const createCustomField = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Declare a new custom field on this team. Apollo does not deduplicate on the label: creating it twice makes two fields, so read list_typed_custom_fields first. A string field is bounded (120 characters by default) and silently truncated: use textarea for long text. Costs no credit.",
+  description: "Declare a new custom field on this team. Apollo does not deduplicate on the label: creating it twice makes two fields, so read list_typed_custom_fields first. A string field is bounded (120 characters by default) and silently truncated: use textarea for long text. Costs no credit. In French: créer un champ personnalisé, ajouter un champ personnalisé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1139,7 +1139,7 @@ export const searchContacts = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Search the contacts saved by this team (not the shared database, which is search_people): the only source of contact ids for sequences and emails. Returns contacts, breadcrumbs and pagination; Apollo shows at most 500 pages. Costs no credit.",
+  description: "Search the contacts saved by this team (not the shared database, which is search_people): the only source of contact ids for sequences and emails. Returns contacts, breadcrumbs and pagination; Apollo shows at most 500 pages. Costs no credit. In French: chercher un contact enregistré, lister les contacts de l'équipe, contacts apollo de l'équipe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1187,7 +1187,7 @@ export const getContact = defineFunction({
   connector: "apollo",
   class: "read",
   act: false,
-  description: "Read one contact of this team by its id: the values the team wrote (stage, owner, labels, custom fields, phones). Costs no credit, unlike match_person. Needs a master API key.",
+  description: "Read one contact of this team by its id: the values the team wrote (stage, owner, labels, custom fields, phones). Costs no credit, unlike match_person. Needs a master API key. In French: fiche d'un contact, lire un contact enregistré.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1222,7 +1222,7 @@ export const updateContact = defineFunction({
   connector: "apollo",
   class: "write",
   act: true,
-  description: "Update one contact of this team: fields not given stay as they are, except label_names, which replaces the contact's lists (one list given takes it out of all the others). typed_custom_fields is keyed by field id, from list_typed_custom_fields, and a picklist takes the id of its value. Needs a master API key. Costs no credit.",
+  description: "Update one contact of this team: fields not given stay as they are, except label_names, which replaces the contact's lists (one list given takes it out of all the others). typed_custom_fields is keyed by field id, from list_typed_custom_fields, and a picklist takes the id of its value. Needs a master API key. Costs no credit. In French: modifier un contact, mettre à jour un contact, changer l'étape d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1281,7 +1281,7 @@ export const connector = defineConnector({
   name: "apollo",
   label: "Apollo.io",
   namespace: "apollo",
-  version: "1.1.1",
+  version: "1.1.2",
   apiVersion: "v1",
   baseUrl: "https://api.apollo.io/api/v1",
   auth: {"kind": "api_key", "in": "header", "name": "X-Api-Key", "key": "api_key"},

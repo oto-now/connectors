@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'pipecorn',
                'label': 'Pipecorn',
                'namespace': 'pipecorn',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v2',
                'base_url': 'https://app.pipecorn.com/api/v2',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'X-API-KEY', 'key': 'api_key'},
@@ -70,7 +70,9 @@ DESCRIPTION = {'connector': {'name': 'pipecorn',
                                'per result found: 3 credits a professional email, 30 a phone, and a phone '
                                "only when a mobile is found; nothing on a miss. A third party's personal "
                                'email is never looked up. A retry with the same idempotency_key and body '
-                               'returns the stored answer instead of spending again (24 hours).',
+                               'returns the stored answer instead of spending again (24 hours). In French: '
+                               "enrichir un contact, trouver l'email d'un prospect, trouver le téléphone "
+                               "d'un contact.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['enrichment_type'],
@@ -144,7 +146,8 @@ DESCRIPTION = {'connector': {'name': 'pipecorn',
                                'type}], phone_status. A number the workspace suppressed reads "Contacts not '
                                'shared". failed: the credits ran out while it ran (code insufficient_credits '
                                'or workspace_limit_exceeded), nothing found nor billed. Free, and exempt '
-                               'from the rate limit.',
+                               "from the rate limit. In French: résultat d'un enrichissement, suivi d'un "
+                               'enrichissement pipecorn.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['enrichment_id'],
@@ -162,7 +165,8 @@ DESCRIPTION = {'connector': {'name': 'pipecorn',
                 'class': 'read',
                 'description': 'The balance of the Pipecorn account behind this key: credits.enrichment is '
                                "what lookups spend; the other credits.* are the plan's remaining extraction "
-                               'quotas, limits.* their ceilings. Free.',
+                               'quotas, limits.* their ceilings. Free. In French: crédits pipecorn restants, '
+                               "solde de crédits d'enrichissement.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The balance', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/credits'}},
@@ -170,7 +174,7 @@ DESCRIPTION = {'connector': {'name': 'pipecorn',
                 'class': 'read',
                 'description': "The Pipecorn account behind this key: the plan, the email of the key's "
                                'owner, and whether its LinkedIn and Sales Navigator sessions are valid. '
-                               'Free.',
+                               'Free. In French: compte pipecorn, abonnement pipecorn.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The account', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/account'}},
@@ -181,7 +185,9 @@ DESCRIPTION = {'connector': {'name': 'pipecorn',
                                'linkedin_url, or first_name, last_name and company_name. No email nor phone: '
                                "every contact field is removed (a contact is submit_enrichment's, and a "
                                "third party's personal email is never served). Pipecorn bills 1 credit when "
-                               'a person is resolved, nothing on a miss (404).',
+                               'a person is resolved, nothing on a miss (404). In French: profil '
+                               "professionnel d'une personne, parcours d'un prospect, poste actuel d'un "
+                               'contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['linkedin_url']},
@@ -236,7 +242,8 @@ DESCRIPTION = {'connector': {'name': 'pipecorn',
                                "web traffic. By domain, name and/or the company's linkedin_url (the more, "
                                'the closer the match); country_code narrows a name. Contact fields are '
                                'removed. Pipecorn bills 1 credit when a company is resolved, nothing on a '
-                               'miss (404).',
+                               "miss (404). In French: données d'une entreprise, effectif d'une société, "
+                               "secteur d'une entreprise.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['domain']},
@@ -282,7 +289,8 @@ DESCRIPTION = {'connector': {'name': 'pipecorn',
                 'description': "The technologies a company uses, from Pipecorn's database: technologies "
                                '(names) and technologies_with_confidence [{name, confidence}]. By domain, '
                                "name and/or the company's linkedin_url. Pipecorn bills 3 credits per "
-                               'request.',
+                               "request. In French: technologies d'une entreprise, stack technique d'une "
+                               'société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['domain']},
@@ -315,7 +323,9 @@ DESCRIPTION = {'connector': {'name': 'pipecorn',
                                "(Pipecorn's default), 60, 90 or 180. Pipecorn bills 1 credit per job "
                                'returned, nothing when none is found: bound it with limit (at most 100). '
                                'job_title_keywords and excluded_job_title_keywords filter titles, '
-                               'job_country_codes places; full_description returns each description in full.',
+                               'job_country_codes places; full_description returns each description in full. '
+                               "In French: offres d'emploi d'une entreprise, recrutements en cours d'une "
+                               'société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['domain']},

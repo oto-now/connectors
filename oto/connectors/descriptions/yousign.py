@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'yousign',
                'label': 'Yousign',
                'namespace': 'yousign',
-               'version': '1.1.1',
+               'version': '1.1.2',
                'api_version': 'v3',
                'base_urls': {'setting': 'environment',
                              'values': {'production': 'https://api.yousign.app/v3',
@@ -58,7 +58,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                'expired, canceled, declined, rejected, deleted. By default only the requests '
                                'created through the API are listed: pass source [public_api, app] to include '
                                'those created in the Yousign app. Dates are YYYY-MM-DD. To get the next '
-                               'page, pass meta.next_cursor as after.',
+                               'page, pass meta.next_cursor as after. In French: demandes de signature, '
+                               'lister les signatures électroniques, documents en attente de signature.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'array',
@@ -147,7 +148,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                'activated_at, completed_at, expiration_date), signers [{id, status}] '
                                '(initiated, notified, verified, processing, consent_given, signed, declined, '
                                'aborted, error), approvers, documents [{id, nature}], sender, workspace_id, '
-                               'external_id. Only status done means every signer signed.',
+                               'external_id. Only status done means every signer signed. In French: détail '
+                               "d'une demande de signature, statut d'une signature, qui a signé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['signature_request_id'],
@@ -165,7 +167,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                 'description': 'List the signature templates of the organization: {meta: {next_cursor}, '
                                'data: [{id, name, description, status, created_at, workspace_id}]}. Only an '
                                'active template can start a signature request. Its id is the template_id of '
-                               'get_template and create_signature_request_from_template.',
+                               'get_template and create_signature_request_from_template. In French: modèles '
+                               'de signature, lister les modèles yousign.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'after': {'type': 'string',
@@ -199,7 +202,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                 'description': 'Get one signature template: name, status, workspace_id, expiration_delay, '
                                'and placeholders: {signers: [{label}], read_only_text_fields: [{label}], '
                                'documents}, the slots a signature request created from it must fill, matched '
-                               'by label.',
+                               "by label. In French: détail d'un modèle de signature, emplacements d'un "
+                               'modèle yousign.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_id'],
@@ -220,7 +224,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                'and fields; nothing is sent until activation. Fill each signer placeholder '
                                "of the template (get_template) by its label, with the signer's identity; "
                                'every signer is notified by email at activation. Returns the request, with '
-                               'its id and status draft.',
+                               'its id and status draft. In French: préparer une signature depuis un modèle, '
+                               "demande de signature à partir d'un modèle.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'template_id'],
@@ -410,7 +415,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                "(add_signer) and their fields (add_field or the signers' fields). With "
                                'ordered_signers, each signer is invited after the previous one signed, in '
                                'the order they were added. Every signer is notified by email at activation. '
-                               'Returns the request, with its id and status draft.',
+                               'Returns the request, with its id and status draft. In French: créer une '
+                               'demande de signature, préparer un document à signer.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -466,7 +472,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                'smart anchor written in the text, {{s1|signature|85|37}} (signer rank, '
                                'width, height in points), becomes a signature field of that signer; anchors '
                                'only make signature fields. Returns the document: id (the document_id of the '
-                               'fields), total_pages, total_anchors.',
+                               'fields), total_pages, total_anchors. In French: ajouter un document à '
+                               'signer, joindre un pdf à une demande de signature.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['signature_request_id', 'file', 'nature'],
@@ -527,7 +534,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                'built from a template, fill the signer placeholders at creation instead. '
                                'Fields placed here are signature, mention, text, checkbox or radio_group, by '
                                'page and coordinates in points from the top left of the page. Returns the '
-                               'signer, with its id and status.',
+                               'signer, with its id and status. In French: ajouter un signataire, désigner '
+                               'un signataire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['signature_request_id', 'info', 'signature_level'],
@@ -1064,7 +1072,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                'type but read_only_text belongs to a signer (signer_id, from add_signer). On '
                                'mention, text and read_only_text, font requires width and height; height is '
                                'lines x font size x 1.5. 500 fields per request at most. Returns the field, '
-                               'with its id.',
+                               'with its id. In French: placer un champ de signature, ajouter une zone de '
+                               'signature.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['signature_request_id', 'document_id', 'type', 'page'],
@@ -1459,7 +1468,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                '{next_cursor}, data: [{id, type, signer_id, document_id, page, x, y, width, '
                                'height, and the values of its type}]}, those from smart anchors included '
                                'once resolved. Filter by type or by signer. To get the next page, pass '
-                               'meta.next_cursor as after.',
+                               "meta.next_cursor as after. In French: champs d'un document à signer, zones "
+                               "de signature d'un document.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['signature_request_id', 'document_id'],
@@ -1529,7 +1539,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                'another signer, or change its values; only the values passed change, and '
                                "each must fit the field's type (as in add_field). The type itself cannot "
                                'change, nor can a signer_name or signer_email field: delete it and add '
-                               'another. Returns the field.',
+                               'another. Returns the field. In French: déplacer un champ de signature, '
+                               'modifier une zone de signature.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['signature_request_id', 'document_id', 'field_id'],
@@ -1788,7 +1799,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                 'class': 'write',
                 'description': 'Delete a field from a document of a draft signature request. A signer left '
                                'without any signature field cannot be activated: add another one first. '
-                               'Returns nothing.',
+                               'Returns nothing. In French: supprimer un champ de signature, retirer une '
+                               'zone de signature.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['signature_request_id', 'document_id', 'field_id'],
@@ -1823,7 +1835,8 @@ DESCRIPTION = {'connector': {'name': 'yousign',
                                'approver) an invitation to sign, and the request becomes ongoing (or '
                                'approval). It cannot be undone here. The request needs at least one document '
                                'and, for each signer, a signature field. Returns the request; signature '
-                               'links are not returned.',
+                               'links are not returned. In French: envoyer en signature, lancer une demande '
+                               'de signature, envoyer un document à signer.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['signature_request_id'],

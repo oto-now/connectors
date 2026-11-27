@@ -6,7 +6,7 @@ export const listCompanies = defineFunction({
   connector: "sivan",
   class: "read",
   act: false,
-  description: "List the activated companies of the group, each with its salaries (and their contracts), localisations and opening hours. The API key is scoped to one company group; this returns every company in it.",
+  description: "List the activated companies of the group, each with its salaries (and their contracts), localisations and opening hours. The API key is scoped to one company group; this returns every company in it. In French: établissements du groupe, lister les sociétés sivan, horaires d'ouverture des établissements.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "All companies of the group", input: {} },
@@ -28,7 +28,7 @@ export const listSalaries = defineFunction({
   connector: "sivan",
   class: "read",
   act: false,
-  description: "List the salaries of the group. with_counter adds each salary's hour counter (in seconds) for the current ISO week/year; with_absences_counter adds the absences counter object. Both default to false.",
+  description: "List the salaries of the group. with_counter adds each salary's hour counter (in seconds) for the current ISO week/year; with_absences_counter adds the absences counter object. Both default to false. In French: lister les salariés, liste du personnel, compteur d'heures des salariés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -62,7 +62,7 @@ export const listEvents = defineFunction({
   connector: "sivan",
   class: "read",
   act: false,
-  description: "List planned calendar events over a window, grouped by company then salary. The period cannot exceed 31 days (inclusive); split a longer range into successive windows. with_absence_type adds absenceType on each event (null when it is not an absence). companies_ids and salaries_ids, when non-empty, restrict the load BEFORE generation — use them on large groups.",
+  description: "List planned calendar events over a window, grouped by company then salary. The period cannot exceed 31 days (inclusive); split a longer range into successive windows. with_absence_type adds absenceType on each event (null when it is not an absence). companies_ids and salaries_ids, when non-empty, restrict the load BEFORE generation — use them on large groups. In French: planning des salariés, plannings de la semaine, créneaux planifiés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -112,7 +112,7 @@ export const listBadgedEvents = defineFunction({
   connector: "sivan",
   class: "read",
   act: false,
-  description: "List time-clock (badged) events over a window, grouped by company then salary. Requires the time-clock module to be enabled on the group (400 otherwise). The period cannot exceed 31 days (inclusive). companies_ids and salaries_ids, when non-empty, restrict the load BEFORE generation.",
+  description: "List time-clock (badged) events over a window, grouped by company then salary. Requires the time-clock module to be enabled on the group (400 otherwise). The period cannot exceed 31 days (inclusive). companies_ids and salaries_ids, when non-empty, restrict the load BEFORE generation. In French: pointages des salariés, badgeages des salariés, heures badgées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -160,7 +160,7 @@ export const listAbsences = defineFunction({
   connector: "sivan",
   class: "read",
   act: false,
-  description: "List absences overlapping the window, as a flat list. By default includes PENDING, ACCEPTED and REFUSED; pass status to restrict to a subset. salaries_ids, when non-empty, restricts to the listed salaries.",
+  description: "List absences overlapping the window, as a flat list. By default includes PENDING, ACCEPTED and REFUSED; pass status to restrict to a subset. salaries_ids, when non-empty, restricts to the listed salaries. In French: absences des salariés, congés posés, demandes d'absence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -207,7 +207,7 @@ export const listTimesheets = defineFunction({
   connector: "sivan",
   class: "read",
   act: false,
-  description: "List timesheet aggregates per salary and contract over a window: weekly totals and daily planned/done events, in seconds. Root and week objects may carry extra numeric aggregates (overtime, paid vacation, night time…), returned as-is. The period cannot exceed 31 days (inclusive). salaries_ids, when non-empty, restricts to the listed salaries.",
+  description: "List timesheet aggregates per salary and contract over a window: weekly totals and daily planned/done events, in seconds. Root and week objects may carry extra numeric aggregates (overtime, paid vacation, night time…), returned as-is. The period cannot exceed 31 days (inclusive). salaries_ids, when non-empty, restricts to the listed salaries. In French: feuilles de temps, heures travaillées par salarié, heures planifiées et réalisées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -250,7 +250,7 @@ export const listTimesheetsSummary = defineFunction({
   connector: "sivan",
   class: "read",
   act: false,
-  description: "Timesheet weekly totals per salary and contract over a window, WITHOUT the per-day breakdown — the shape payroll needs across many contracts (far smaller than list_timesheets). Same data and window rules; only each week's days array (planned/done events) is dropped. Weekly aggregates (contractWorkingTime, accountedWorkingTime, overtime…) are kept as-is; a missing field stays missing. The period cannot exceed 31 days (inclusive). salaries_ids, when non-empty, restricts to the listed salaries.",
+  description: "Timesheet weekly totals per salary and contract over a window, WITHOUT the per-day breakdown — the shape payroll needs across many contracts (far smaller than list_timesheets). Same data and window rules; only each week's days array (planned/done events) is dropped. Weekly aggregates (contractWorkingTime, accountedWorkingTime, overtime…) are kept as-is; a missing field stays missing. The period cannot exceed 31 days (inclusive). salaries_ids, when non-empty, restricts to the listed salaries. In French: totaux d'heures pour la paie, récapitulatif hebdomadaire des heures, préparation de la paie.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -293,7 +293,7 @@ export const connector = defineConnector({
   name: "sivan",
   label: "Sivan",
   namespace: "sivan",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "external-1.0",
   baseUrl: "https://api2.sivan.io",
   auth: {"kind": "api_key", "in": "header", "name": "X-Api-Key", "key": "api_key"},

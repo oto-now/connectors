@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'google_calendar',
                'label': 'Google Calendar',
                'namespace': 'google_calendar',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v3',
                'base_url': 'https://www.googleapis.com/calendar/v3',
                'auth': {'kind': 'oauth2_user',
@@ -53,7 +53,8 @@ DESCRIPTION = {'connector': {'name': 'google_calendar',
                 'class': 'read',
                 'scopes': ['https://www.googleapis.com/auth/calendar.readonly'],
                 'description': 'Get the primary calendar of the signed-in person: its id, which is their '
-                               'email address, its summary and its time zone.',
+                               'email address, its summary and its time zone. In French: mon agenda '
+                               'principal, fuseau horaire de mon agenda.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Whose calendar this is', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/calendars/primary'},
@@ -63,7 +64,7 @@ DESCRIPTION = {'connector': {'name': 'google_calendar',
                 'scopes': ['https://www.googleapis.com/auth/calendar.readonly'],
                 'description': "List the calendars in the signed-in person's calendar list: id, summary, "
                                'whether it is primary, and their access role (owner, writer, reader, '
-                               'freeBusyReader).',
+                               'freeBusyReader). In French: lister mes agendas, agendas partagés avec moi.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'max_results': {'type': 'integer',
@@ -98,7 +99,9 @@ DESCRIPTION = {'connector': {'name': 'google_calendar',
                 'scopes': ['https://www.googleapis.com/auth/calendar.readonly'],
                 'description': 'List the events of a calendar in start order, recurring events expanded into '
                                'their occurrences, optionally between two instants and matching free text. '
-                               "calendar_id primary is the signed-in person's own calendar.",
+                               "calendar_id primary is the signed-in person's own calendar. In French: "
+                               'lister les rendez-vous, mes rendez-vous de la semaine, événements de '
+                               "l'agenda.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['calendar_id'],
@@ -166,7 +169,8 @@ DESCRIPTION = {'connector': {'name': 'google_calendar',
                 'class': 'read',
                 'scopes': ['https://www.googleapis.com/auth/calendar.readonly'],
                 'description': 'Get one event by id: summary, description, location, start, end, guests and '
-                               'their responses, organizer, recurrence, conference link.',
+                               'their responses, organizer, recurrence, conference link. In French: détail '
+                               "d'un rendez-vous, participants d'une réunion.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['calendar_id', 'event_id'],
@@ -190,7 +194,8 @@ DESCRIPTION = {'connector': {'name': 'google_calendar',
                 'description': 'Create an event. start and end are both a date (all-day event, end '
                                'exclusive) or both a dateTime with offset or timeZone. Guests are invited by '
                                'email; send_updates says who Google emails: all, externalOnly (guests '
-                               'outside the organization) or none.',
+                               'outside the organization) or none. In French: créer un rendez-vous, '
+                               "planifier une réunion, ajouter un événement à l'agenda.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['calendar_id', 'summary', 'start', 'end', 'send_updates'],
@@ -288,7 +293,9 @@ DESCRIPTION = {'connector': {'name': 'google_calendar',
                 'scopes': ['https://www.googleapis.com/auth/calendar'],
                 'description': 'Change an event: only the fields given change. attendees replaces the whole '
                                'guest list: pass the full list, current guests included; an empty list '
-                               'removes every guest. send_updates says who Google emails about the change.',
+                               'removes every guest. send_updates says who Google emails about the change. '
+                               'In French: déplacer un rendez-vous, modifier une réunion, ajouter un invité '
+                               'à une réunion.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['calendar_id', 'event_id', 'send_updates'],
@@ -392,7 +399,8 @@ DESCRIPTION = {'connector': {'name': 'google_calendar',
                 'class': 'sensitive',
                 'scopes': ['https://www.googleapis.com/auth/calendar'],
                 'description': 'Delete an event. For the guests it is cancelled; send_updates says who '
-                               'Google emails about it.',
+                               'Google emails about it. In French: annuler un rendez-vous, supprimer un '
+                               "événement de l'agenda.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['calendar_id', 'event_id', 'send_updates'],

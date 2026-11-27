@@ -102,7 +102,7 @@ connector:
     campagnes, emails transactionnels, emails envoyés, modèles, expéditeurs, crédits d'envoi, solde, forfait.
   logo_domain: brevo.com
   namespace: brevo
-  version: 2.0.0
+  version: 2.0.1
   api_version: v3
   base_url: https://api.brevo.com/v3
   auth: { kind: api_key, in: header, name: api-key, key: api_key }
@@ -146,6 +146,8 @@ functions:
       email and SMS credits (plan[].credits, per credit type: crédits, solde,
       forfait), whether transactional email is on (relay.enabled). The login
       of the SMTP relay and the marketing automation key are not given.
+      In French: crédits d'envoi, solde de crédits, forfait brevo, crédits
+      emails restants.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: The account, input: {} }
@@ -166,6 +168,7 @@ functions:
       List the account's verified senders (expéditeurs: id, name, email,
       active). Sending an email or creating a template or campaign takes one
       of them as sender.
+      In French: expéditeurs brevo, adresses d'expédition, expéditeurs vérifiés.
     input:
       type: object
       additionalProperties: false
@@ -191,6 +194,7 @@ functions:
       (list_ids) or to a segment (segment_id), never both; to some ids (20 at
       most); to a change or creation date; or to attribute values with filter,
       equals only: equals(FIRSTNAME,"Alex").
+      In French: contacts brevo, liste des contacts, derniers contacts ajoutés.
     input:
       type: object
       additionalProperties: false
@@ -222,6 +226,7 @@ functions:
       statistics (opens, clicks, bounces, unsubscriptions). identifier is its
       email by default; identifier_type says otherwise. start_date and
       end_date (YYYY-MM-DD, both or none) bound the statistics.
+      In French: fiche d'un contact, attributs d'un contact, contact par email.
     input:
       type: object
       additionalProperties: false
@@ -253,6 +258,8 @@ functions:
       subscribes it to lists, which may start the automations tied to them.
       email_blacklisted / sms_blacklisted true stop every email / SMS to it.
       email is needed unless ext_id or the SMS attribute is given.
+      In French: ajouter un contact, créer un contact, inscrire un contact,
+      nouvel abonné.
     input:
       type: object
       additionalProperties: false
@@ -292,6 +299,8 @@ functions:
       start their automations; unlink_list_ids unsubscribes it from lists.
       email_blacklisted / sms_blacklisted true stop every email / SMS to it,
       false allows them again.
+      In French: modifier un contact, désabonner un contact, mettre à jour un
+      contact, blacklister un contact.
     input:
       type: object
       additionalProperties: false
@@ -326,6 +335,7 @@ functions:
       history go. identifier is its email by default; identifier_type says
       otherwise. Answers {} on success; a 404 when unknown. To stop sending to
       a contact while keeping it, update_contact with email_blacklisted.
+      In French: supprimer un contact, effacer un abonné, supprimer un abonné.
     input:
       type: object
       additionalProperties: false
@@ -350,6 +360,8 @@ functions:
       Get one contact's email campaign statistics: messages sent, opened,
       clicked (links), bounces, unsubscriptions, each with its campaign.
       start_date and end_date (YYYY-MM-DD, both or none) bound them.
+      In French: statistiques d'un contact, ouvertures d'un contact, clics d'un
+      contact.
     input:
       type: object
       additionalProperties: false
@@ -376,6 +388,8 @@ functions:
       the way (new_list: listName, folderId). Existing contacts are updated
       unless update_existing_contacts is false; empty_contacts_attributes
       true erases their attributes left empty.
+      In French: importer des contacts, import de contacts, import csv de
+      contacts.
     input:
       type: object
       additionalProperties: false
@@ -431,6 +445,7 @@ functions:
       subscribed, unsubscribed, unsubscribedPerList) with listId, segmentId,
       modifiedSince or createdSince; or actionForEmailCampaigns with
       emailCampaignId; or actionForSmsCampaigns. To read contacts, list them.
+      In French: exporter des contacts, export de contacts, fichier de contacts.
     input:
       type: object
       additionalProperties: false
@@ -472,6 +487,7 @@ functions:
       (normal, transactional, category, calculated, global), type (text, date,
       float, boolean…), and the choices of a category attribute. Read it
       before writing attributes: an unknown one is refused.
+      In French: attributs des contacts, champs des contacts.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: Every attribute, input: {} }
@@ -483,6 +499,7 @@ functions:
     description: >-
       List the segments, the dynamic lists a filter defines (read-only):
       {segments, count}. A segment's id restricts list_contacts.
+      In French: segments de contacts, listes dynamiques.
     input:
       type: object
       additionalProperties: false
@@ -510,6 +527,7 @@ functions:
       totalBlacklisted are no longer computed here by Brevo and come back 0:
       the subscribers (abonnés) of one list are in get_list. The lists of one
       folder: list_folder_lists.
+      In French: listes de contacts, liste de diffusion, listes newsletter.
     input:
       type: object
       additionalProperties: false
@@ -531,6 +549,7 @@ functions:
       List the contact lists of one folder: {lists, count}, count the total;
       10 per page unless limit says otherwise, next page at offset + limit.
       Subscriber totals come back 0 here: get_list gives them.
+      In French: listes d'un dossier, listes de diffusion d'un dossier.
     input:
       type: object
       additionalProperties: false
@@ -554,6 +573,8 @@ functions:
       Get one list (liste de diffusion): name, folder, number of subscribers
       (abonnés) and of blacklisted contacts, creation date, its campaigns'
       statistics.
+      In French: nombre d'abonnés, abonnés d'une liste, détail d'une liste de
+      diffusion, abonnés newsletter.
     input:
       type: object
       additionalProperties: false
@@ -570,6 +591,8 @@ functions:
     description: >-
       List the contacts of one list: {contacts, count}. Page with limit (50 by
       default, at most 500) and offset.
+      In French: contacts d'une liste, membres d'une liste de diffusion,
+      inscrits d'une liste.
     input:
       type: object
       additionalProperties: false
@@ -593,6 +616,8 @@ functions:
     description: >-
       Create a contact list in a folder (list_folders gives the ids). Answers
       {id}.
+      In French: créer une liste, nouvelle liste de diffusion, nouvelle liste de
+      contacts.
     input:
       type: object
       additionalProperties: false
@@ -613,6 +638,7 @@ functions:
     description: >-
       Rename a list, or move it to another folder; answers {} on success.
       Brevo changes one of the two per call.
+      In French: renommer une liste, déplacer une liste.
     input:
       type: object
       additionalProperties: false
@@ -636,6 +662,8 @@ functions:
       Delete a contact list for good; its contacts stay in the account, only
       their membership of this list goes. Answers {} on success; a 404 when
       the id is unknown.
+      In French: supprimer une liste de contacts, effacer une liste de
+      diffusion, supprimer une liste.
     input:
       type: object
       additionalProperties: false
@@ -656,6 +684,8 @@ functions:
       at most); adding may start the automations tied to the list. Answers
       {contacts: {success, failure}}: read failure, an unknown contact fails
       without failing the call. Past 150, or to create contacts, import them.
+      In French: ajouter à une liste, inscrire à une liste, abonner à la
+      newsletter.
     input:
       type: object
       additionalProperties: false
@@ -686,6 +716,7 @@ functions:
       most), or every contact of the list with all_contacts true; the
       contacts themselves stay. Answers {contacts: {success, failure}}, or a
       processId when the list is emptied.
+      In French: retirer d'une liste, désinscrire d'une liste, vider une liste.
     input:
       type: object
       additionalProperties: false
@@ -717,6 +748,7 @@ functions:
     description: >-
       List the folders of contact lists: {folders, count}. A folder id is
       needed to create a list.
+      In French: dossiers de listes, dossiers de contacts.
     input:
       type: object
       additionalProperties: false
@@ -743,6 +775,8 @@ functions:
       verified sender of the account (list_senders). to holds up to 99
       recipients. scheduled_at (UTC date-time, up to 72 h ahead) sends later.
       A send to a list is a campaign, not this.
+      In French: envoyer un email, envoyer un mail, email transactionnel, mail
+      transactionnel.
     input:
       type: object
       additionalProperties: false
@@ -796,6 +830,8 @@ functions:
       period, whatever the address (emails partis, envoyés sur une période):
       transactional_events with event requests. What became of an email
       (delivered, opened, bounced): transactional_events.
+      In French: emails envoyés à un contact, historique des emails d'un
+      destinataire, emails d'un modèle.
     input:
       type: object
       additionalProperties: false
@@ -826,6 +862,7 @@ functions:
     description: >-
       Get the personalized content of one sent transactional email (its HTML,
       subject, events), by the uuid that list_transactional_emails gives.
+      In French: contenu d'un email envoyé, contenu d'un mail envoyé.
     input:
       type: object
       additionalProperties: false
@@ -846,6 +883,8 @@ functions:
       unsubscribed, deferred… Over days (90 at most) or between two dates
       (YYYY-MM-DD); 30 days by default. No address or template needed: event
       requests over a period lists every email sent. limit at most 100.
+      In French: emails partis, envoyés sur une période, emails envoyés sur une
+      période, emails délivrés, rebonds des emails.
     input:
       type: object
       additionalProperties: false
@@ -881,6 +920,8 @@ functions:
       delivered, opens, clicks, bounces, spam reports, unsubscriptions. Over
       days (90 at most, 90 by default) or between two dates (YYYY-MM-DD); for
       one tag. One row per day: transactional_report_by_day.
+      In French: bilan des emails transactionnels, statistiques des emails
+      transactionnels.
     input:
       type: object
       additionalProperties: false
@@ -903,6 +944,7 @@ functions:
       Get the transactional counters one row per day: requests, delivered,
       opens, clicks, bounces, spam reports. Over days (30 at most) or between
       two dates (YYYY-MM-DD); limit 10 rows by default, at most 30.
+      In French: envois par jour, statistiques quotidiennes des emails.
     input:
       type: object
       additionalProperties: false
@@ -927,6 +969,8 @@ functions:
       List the contacts blocked for transactional email (hard bounce, spam
       complaint, unsubscription, admin block): a blocked contact silently
       receives nothing. limit 50 by default, at most 100.
+      In French: contacts bloqués, adresses bloquées, désinscrits des emails
+      transactionnels.
     input:
       type: object
       additionalProperties: false
@@ -950,6 +994,7 @@ functions:
     description: >-
       List the domains blocked for transactional email on the account (no
       paging).
+      In French: domaines bloqués, domaines bloqués pour l'envoi.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: The blocked domains, input: {} }
@@ -964,6 +1009,7 @@ functions:
       List the transactional email templates: id, name, subject, sender,
       active, with their HTML. active_only true keeps the active ones, false
       the inactive ones. One template: get_template.
+      In French: modèles d'email, templates d'email, gabarits d'email.
     input:
       type: object
       additionalProperties: false
@@ -985,6 +1031,7 @@ functions:
     description: >-
       Get one transactional template with its HTML: name, subject, sender,
       replyTo, tag, active.
+      In French: détail d'un modèle d'email, contenu d'un template.
     input:
       type: object
       additionalProperties: false
@@ -1003,6 +1050,7 @@ functions:
       sender of the account (list_senders). The body is html_content (more
       than 10 characters) or html_url; variables {{params.NAME}} and
       {{contact.FIRSTNAME}}. is_active true makes it usable at once.
+      In French: créer un modèle d'email, nouveau template d'email.
     input:
       type: object
       additionalProperties: false
@@ -1039,6 +1087,7 @@ functions:
     description: >-
       Update a transactional template, the fields given only; answers {} on
       success. An active template changes the emails sent from it next.
+      In French: modifier un modèle d'email, modifier un template.
     input:
       type: object
       additionalProperties: false
@@ -1075,6 +1124,8 @@ functions:
       Brevo). Filter by type (classic, trigger), status (draft, sent, queued,
       suspended, archive, inProcess…), sent dates. limit 50 by default, at
       most 100.
+      In French: campagnes email, campagnes d'emailing, campagnes envoyées,
+      newsletters envoyées.
     input:
       type: object
       additionalProperties: false
@@ -1104,6 +1155,8 @@ functions:
       Get one email campaign (campagne, emailing), with its statistics (globalStats, linksStats,
       statsByDomain, statsByDevice, statsByBrowser). exclude_html_content true
       leaves its HTML out.
+      In French: détail d'une campagne, résultats d'une campagne, statistiques
+      d'une campagne emailing.
     input:
       type: object
       additionalProperties: false
@@ -1130,6 +1183,8 @@ functions:
       is html_content, html_url or template_id (a template's content copied).
       recipients: {listIds, exclusionListIds, segmentIds,
       exclusionSegmentIds}.
+      In French: créer une campagne, brouillon de campagne, préparer une
+      newsletter, nouvelle campagne emailing.
     input:
       type: object
       additionalProperties: false
@@ -1178,6 +1233,7 @@ functions:
       recipients, replyTo, tag, toField, params, header, footer,
       mirrorActive, inlineImageActivation, utmCampaign); answers {} on
       success. Its send is not scheduled here.
+      In French: modifier une campagne, changer l'objet d'une campagne.
     input:
       type: object
       additionalProperties: false
@@ -1219,6 +1275,7 @@ functions:
       Send a test of an email campaign, for real, to the given addresses only
       (not to its recipients). Each address must be a contact of the account,
       otherwise Brevo refuses. Answers {} on success.
+      In French: test de campagne, envoyer un bat, email de test d'une campagne.
     input:
       type: object
       additionalProperties: false
@@ -1241,6 +1298,7 @@ functions:
     description: >-
       Get the result of an A/B test campaign: the winning version, its
       criterion, open and click rates, the clicks of each version.
+      In French: test a/b, résultat du test ab, version gagnante d'une campagne.
     input:
       type: object
       additionalProperties: false
@@ -1256,6 +1314,7 @@ functions:
     class: read
     description: >-
       Get the share link of a campaign (a page other Brevo users can open).
+      In French: lien de partage d'une campagne, partager une campagne.
     input:
       type: object
       additionalProperties: false
@@ -1276,6 +1335,8 @@ functions:
       deal_stage, pipeline, deal_owner, close_date…) and linked contacts and
       companies. Filter by name, owner (an account email), stage or pipeline
       id (pipelines), a linked company or contact. limit 50 by default.
+      In French: affaires du crm, opportunités brevo, deals du crm, pipeline
+      commercial.
     input:
       type: object
       additionalProperties: false
@@ -1307,7 +1368,9 @@ functions:
 
   - name: crm_get_deal
     class: read
-    description: Get one CRM deal by id, its attributes and linked contacts and companies.
+    description: >-
+      Get one CRM deal by id, its attributes and linked contacts and companies.
+      In French: détail d'une affaire, fiche d'une opportunité.
     input:
       type: object
       additionalProperties: false
@@ -1326,6 +1389,7 @@ functions:
       (ids from pipelines), amount, close_date, deal_owner (an account email
       or id), and the custom attributes (crm_attributes deals), a text, a
       number or a boolean each.
+      In French: créer une affaire, nouvelle opportunité.
     input:
       type: object
       additionalProperties: false
@@ -1360,6 +1424,7 @@ functions:
       Update a CRM deal, the keys given only; answers {} on success.
       linkedContactsIds and linkedCompaniesIds replace the linked lists (an id
       left out is unlinked): to add or remove one, crm_link_deal.
+      In French: modifier une affaire, changer l'étape d'une affaire.
     input:
       type: object
       additionalProperties: false
@@ -1388,6 +1453,8 @@ functions:
     description: >-
       Link or unlink contacts (ids) and companies (link_ids, unlink_ids) to a
       CRM deal, the others left as they are.
+      In French: lier un contact à une affaire, rattacher une entreprise à une
+      affaire.
     input:
       type: object
       additionalProperties: false
@@ -1416,6 +1483,7 @@ functions:
       owner…) and linked contacts and deals. Pages by number: page (1 by
       default) and limit (50 by default). Filter by name or owner (an account
       email).
+      In French: entreprises du crm, sociétés brevo, comptes clients du crm.
     input:
       type: object
       additionalProperties: false
@@ -1439,7 +1507,9 @@ functions:
 
   - name: crm_get_company
     class: read
-    description: Get one CRM company by id, its attributes and linked contacts and deals.
+    description: >-
+      Get one CRM company by id, its attributes and linked contacts and deals.
+      In French: fiche d'une entreprise, détail d'une société.
     input:
       type: object
       additionalProperties: false
@@ -1458,6 +1528,7 @@ functions:
       (an account id), phone_number (countryCode then says its country), and
       the custom attributes (crm_attributes companies), a text, a number or a
       boolean each.
+      In French: créer une entreprise, nouvelle société.
     input:
       type: object
       additionalProperties: false
@@ -1487,6 +1558,7 @@ functions:
       Update a CRM company, the keys given only. linkedContactsIds and
       linkedDealsIds replace the linked lists (an id left out is unlinked):
       to add or remove one, crm_link_company.
+      In French: modifier une entreprise, modifier une société.
     input:
       type: object
       additionalProperties: false
@@ -1516,6 +1588,8 @@ functions:
     description: >-
       Link or unlink contacts (ids) and deals (link_ids, unlink_ids) to a CRM
       company, the others left as they are.
+      In French: lier un contact à une entreprise, rattacher une affaire à une
+      société.
     input:
       type: object
       additionalProperties: false
@@ -1544,6 +1618,7 @@ functions:
       status (done, undone), date (overdue, today, tomorrow, week), assignee
       (an account email or id), a linked contact, deal or company. limit 50
       by default.
+      In French: tâches du crm, tâches en retard, relances à faire.
     input:
       type: object
       additionalProperties: false
@@ -1571,7 +1646,9 @@ functions:
 
   - name: crm_get_task
     class: read
-    description: Get one CRM task by id.
+    description: >-
+      Get one CRM task by id.
+      In French: détail d'une tâche, lire une tâche.
     input:
       type: object
       additionalProperties: false
@@ -1589,6 +1666,7 @@ functions:
       Create a CRM task; answers {id}. name, taskTypeId (task_types) and date
       (ISO 8601) are required; assignToId takes an account email or id;
       duration is in milliseconds; reminder {value, unit, types}.
+      In French: créer une tâche, planifier une relance, nouvelle tâche crm.
     input:
       type: object
       additionalProperties: false
@@ -1630,6 +1708,7 @@ functions:
     class: write
     description: >-
       Update a CRM task, the keys given only: done true marks it done.
+      In French: terminer une tâche, modifier une tâche.
     input:
       type: object
       additionalProperties: false
@@ -1657,6 +1736,7 @@ functions:
       List CRM notes, or those of some contacts, deals or companies (entity
       and entity_ids, comma separated), between two dates (timestamps in
       milliseconds). limit 50 by default.
+      In French: notes du crm, notes d'une affaire, notes d'un contact.
     input:
       type: object
       additionalProperties: false
@@ -1679,7 +1759,9 @@ functions:
 
   - name: crm_get_note
     class: read
-    description: Get one CRM note by id.
+    description: >-
+      Get one CRM note by id.
+      In French: détail d'une note, lire une note.
     input:
       type: object
       additionalProperties: false
@@ -1696,6 +1778,7 @@ functions:
     description: >-
       Create a CRM note on contacts, deals or companies; answers {id}. text
       takes simple HTML (p, b, i, u, br, a).
+      In French: ajouter une note, nouvelle note crm.
     input:
       type: object
       additionalProperties: false
@@ -1723,6 +1806,7 @@ functions:
     description: >-
       Update a CRM note; text is required by Brevo, the links given replace
       the note's.
+      In French: modifier une note, corriger une note.
     input:
       type: object
       additionalProperties: false
@@ -1749,6 +1833,7 @@ functions:
     description: >-
       List the deal pipelines and their stages: a deal's pipeline and
       deal_stage are these ids.
+      In French: étapes du pipeline, pipelines de vente.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: Every pipeline, input: {} }
@@ -1760,6 +1845,7 @@ functions:
     description: >-
       List the task types of the account (call, email, meeting…): a task's
       taskTypeId is one of these ids.
+      In French: types de tâches, catégories de tâches.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: Every task type, input: {} }
@@ -1771,6 +1857,7 @@ functions:
     description: >-
       List the attributes of CRM deals or companies: internal name, label,
       type, choices. Read it before writing attributes.
+      In French: attributs des affaires, champs des entreprises du crm.
     input:
       type: object
       additionalProperties: false

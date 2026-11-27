@@ -6,7 +6,7 @@ export const searchWorkspace = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "Search the pages and databases shared with the integration, one page of results at a time (at most 100). The integration sees only what was shared with it in Notion: an empty result with an empty query and no filter means nothing is shared, not that the workspace is empty. Databases come back as data_source objects. Pass next_cursor as start_cursor to read the next page.",
+  description: "Search the pages and databases shared with the integration, one page of results at a time (at most 100). The integration sees only what was shared with it in Notion: an empty result with an empty query and no filter means nothing is shared, not that the workspace is empty. Databases come back as data_source objects. Pass next_cursor as start_cursor to read the next page. In French: chercher une page notion, rechercher dans notion, trouver une base de données notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -60,7 +60,7 @@ export const getPage = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "Get a page's metadata and property values, not its content (see get_page_markdown or list_block_children for the content).",
+  description: "Get a page's metadata and property values, not its content (see get_page_markdown or list_block_children for the content). In French: propriétés d'une page notion, informations d'une page notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -95,7 +95,7 @@ export const listBlockChildren = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "List the blocks directly inside a page or a block, one level only, one page of results at a time. A block with has_children true is read the same way with its own id.",
+  description: "List the blocks directly inside a page or a block, one level only, one page of results at a time. A block with has_children true is read the same way with its own id. In French: blocs d'une page notion, contenu d'un bloc notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -140,7 +140,7 @@ export const queryDataSource = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "Query the rows of a database through its data source, one page at a time. Pass the data source id that search_workspace returns for a database, not the database id.",
+  description: "Query the rows of a database through its data source, one page at a time. Pass the data source id that search_workspace returns for a database, not the database id. In French: lignes d'une base notion, filtrer une base de données notion, interroger une table notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -194,7 +194,7 @@ export const createPage = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Create a page under a page, or a row in a database through its data source. For a row, properties are keyed by column name and must set the title column (whatever its name). children holds at most 100 blocks; add more with append_block_children.",
+  description: "Create a page under a page, or a row in a database through its data source. For a row, properties are keyed by column name and must set the title column (whatever its name). children holds at most 100 blocks; add more with append_block_children. In French: créer une page notion, ajouter une ligne dans une base notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -264,7 +264,7 @@ export const updatePage = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Update a page's property values, icon or cover, or move it to the trash (in_trash true) and back (in_trash false). The trash can be emptied from Notion.",
+  description: "Update a page's property values, icon or cover, or move it to the trash (in_trash true) and back (in_trash false). The trash can be emptied from Notion. In French: modifier les propriétés d'une page notion, mettre une page notion à la corbeille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -306,7 +306,7 @@ export const movePage = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Move a page under another page, or into a database through its data source.",
+  description: "Move a page under another page, or into a database through its data source. In French: déplacer une page notion, ranger une page dans une base notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -369,7 +369,7 @@ export const appendBlockChildren = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Add at most 100 blocks inside a page or a block: at the end (default), at the start, or right after an existing child block.",
+  description: "Add at most 100 blocks inside a page or a block: at the end (default), at the start, or right after an existing child block. In French: ajouter du contenu à une page notion, ajouter des blocs notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -440,7 +440,7 @@ export const deleteBlock = defineFunction({
   connector: "notion",
   class: "sensitive",
   act: true,
-  description: "Move one block to the trash, with its children. It can be restored from Notion until the trash is emptied.",
+  description: "Move one block to the trash, with its children. It can be restored from Notion until the trash is emptied. In French: supprimer un bloc notion, effacer un paragraphe notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -476,7 +476,7 @@ export const getPageMarkdown = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "Get a page's whole content as Notion-flavoured Markdown, lighter than reading blocks. truncated true with unknown_block_ids: some parts were not loaded (very large page, or child pages not shared); each id can be read the same way.",
+  description: "Get a page's whole content as Notion-flavoured Markdown, lighter than reading blocks. truncated true with unknown_block_ids: some parts were not loaded (very large page, or child pages not shared); each id can be read the same way. In French: lire une page notion, contenu d'une page notion en markdown.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -511,7 +511,7 @@ export const editPageMarkdown = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Edit a page's content as Markdown, in exactly one mode named by type: update_content (search and replace, at most 100 replacements, each old_str matching once unless replace_all_matches), replace_content (the whole page) or insert_content (at the start or the end). An edit that would remove child pages or databases is refused unless allow_deleting_content is true.",
+  description: "Edit a page's content as Markdown, in exactly one mode named by type: update_content (search and replace, at most 100 replacements, each old_str matching once unless replace_all_matches), replace_content (the whole page) or insert_content (at the start or the end). An edit that would remove child pages or databases is refused unless allow_deleting_content is true. In French: modifier le contenu d'une page notion, réécrire une page notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -606,7 +606,7 @@ export const listComments = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "List the open (unresolved) comments on a page or a block, one page at a time. Each comment carries its discussion_id, to reply in the thread with add_comment. The integration needs the read comments capability, off by default in Notion.",
+  description: "List the open (unresolved) comments on a page or a block, one page at a time. Each comment carries its discussion_id, to reply in the thread with add_comment. The integration needs the read comments capability, off by default in Notion. In French: commentaires d'une page notion, lister les commentaires notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -653,7 +653,7 @@ export const addComment = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Comment on a page or a block, or reply in an existing discussion: give parent or discussion_id, not both. text is Markdown, inline formatting only. The integration needs the insert comments capability, off by default in Notion.",
+  description: "Comment on a page or a block, or reply in an existing discussion: give parent or discussion_id, not both. text is Markdown, inline formatting only. The integration needs the insert comments capability, off by default in Notion. In French: commenter une page notion, répondre à un commentaire notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -716,7 +716,7 @@ export const updateComment = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Rewrite a comment the integration wrote. text is Markdown, inline formatting only.",
+  description: "Rewrite a comment the integration wrote. text is Markdown, inline formatting only. In French: modifier un commentaire notion, corriger un commentaire notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -752,7 +752,7 @@ export const deleteComment = defineFunction({
   connector: "notion",
   class: "sensitive",
   act: true,
-  description: "Delete a comment the integration wrote.",
+  description: "Delete a comment the integration wrote. In French: supprimer un commentaire notion, effacer un commentaire notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -788,7 +788,7 @@ export const createDatabase = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Create a database inside a page, with its column schema (initial_data_source.properties, which must contain one title column) or with one of Notion's own schemas (database_type), not both.",
+  description: "Create a database inside a page, with its column schema (initial_data_source.properties, which must contain one title column) or with one of Notion's own schemas (database_type), not both. In French: créer une base de données notion, nouvelle table notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -852,7 +852,7 @@ export const listViews = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "List the views (tabs) of a database, by database id or by data source id, not both.",
+  description: "List the views (tabs) of a database, by database id or by data source id, not both. In French: vues d'une base notion, onglets d'une base de données notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -902,7 +902,7 @@ export const getView = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "Get one database view: its type, filter, sorts and configuration.",
+  description: "Get one database view: its type, filter, sorts and configuration. In French: détail d'une vue notion, filtres d'une vue notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -937,7 +937,7 @@ export const createView = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Add a view (tab) to a database, on one of its data sources. filter and sorts take the same format as query_data_source; configuration holds type-specific settings (shown columns, group by) as get_view returns them.",
+  description: "Add a view (tab) to a database, on one of its data sources. filter and sorts take the same format as query_data_source; configuration holds type-specific settings (shown columns, group by) as get_view returns them. In French: créer une vue notion, ajouter un onglet à une base notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -982,7 +982,7 @@ export const updateView = defineFunction({
   connector: "notion",
   class: "write",
   act: true,
-  description: "Change a view's name, filter, sorts or configuration. filter or sorts set to null resets them.",
+  description: "Change a view's name, filter, sorts or configuration. filter or sorts set to null resets them. In French: modifier une vue notion, changer les filtres d'une vue notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1020,7 +1020,7 @@ export const deleteView = defineFunction({
   connector: "notion",
   class: "sensitive",
   act: true,
-  description: "Delete a database view. The data is untouched; the last view of a database cannot be deleted.",
+  description: "Delete a database view. The data is untouched; the last view of a database cannot be deleted. In French: supprimer une vue notion, retirer un onglet d'une base notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1054,7 +1054,7 @@ export const listUsers = defineFunction({
   connector: "notion",
   class: "read",
   act: false,
-  description: "List the workspace members, guests and bots, one page at a time: their ids fill people properties and mentions.",
+  description: "List the workspace members, guests and bots, one page at a time: their ids fill people properties and mentions. In French: membres de l'espace notion, utilisateurs notion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1092,7 +1092,7 @@ export const connector = defineConnector({
   name: "notion",
   label: "Notion",
   namespace: "notion",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "2025-09-03",
   baseUrl: "https://api.notion.com/v1",
   auth: {"kind": "bearer", "token": "token"},

@@ -7,7 +7,7 @@ export const searchSites = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Sites.Read.All"],
-  description: "Search the SharePoint sites whose name or description matches a query. Only the sites the signed-in person can open are returned.",
+  description: "Search the SharePoint sites whose name or description matches a query. Only the sites the signed-in person can open are returned. In French: chercher un site sharepoint, trouver un site d'équipe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -45,7 +45,7 @@ export const getSite = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Sites.Read.All"],
-  description: "Get one SharePoint site by its composite id ({hostname},{site-collection-id},{web-id}), as returned by search_sites.",
+  description: "Get one SharePoint site by its composite id ({hostname},{site-collection-id},{web-id}), as returned by search_sites. In French: détail d'un site sharepoint, lire un site sharepoint.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -81,7 +81,7 @@ export const getSiteByPath = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Sites.Read.All"],
-  description: "Get one SharePoint site by the host name and server-relative path read in its URL: https://acme.sharepoint.com/sites/Marketing gives hostname acme.sharepoint.com and site_path sites/Marketing.",
+  description: "Get one SharePoint site by the host name and server-relative path read in its URL: https://acme.sharepoint.com/sites/Marketing gives hostname acme.sharepoint.com and site_path sites/Marketing. In French: site sharepoint par son adresse, ouvrir un site depuis son lien.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -122,7 +122,7 @@ export const listSiteDrives = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Sites.Read.All"],
-  description: "List the document libraries of a SharePoint site. A library is a drive: its id is the drive_id of the item functions.",
+  description: "List the document libraries of a SharePoint site. A library is a drive: its id is the drive_id of the item functions. In French: bibliothèques de documents d'un site, lister les bibliothèques sharepoint.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -164,7 +164,7 @@ export const getMe = defineFunction({
   class: "read",
   act: false,
   scopes: ["User.Read"],
-  description: "Get the signed-in person: id, displayName, mail and userPrincipalName. Every other function acts on their behalf and sees what they see.",
+  description: "Get the signed-in person: id, displayName, mail and userPrincipalName. Every other function acts on their behalf and sees what they see. In French: mon compte microsoft, utilisateur connecté à microsoft.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who the token acts as", input: {} },
@@ -187,7 +187,7 @@ export const getMyDrive = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Files.Read.All"],
-  description: "Get the OneDrive of the signed-in person. Its id is the drive_id of the item functions.",
+  description: "Get the OneDrive of the signed-in person. Its id is the drive_id of the item functions. In French: mon onedrive, mon espace onedrive.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "My OneDrive", input: {} },
@@ -210,7 +210,7 @@ export const getUserDrive = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Files.Read.All"],
-  description: "Get the OneDrive of a colleague, by user id or userPrincipalName (usually the work email), if they shared it with the signed-in person. Its id is the drive_id of the item functions.",
+  description: "Get the OneDrive of a colleague, by user id or userPrincipalName (usually the work email), if they shared it with the signed-in person. Its id is the drive_id of the item functions. In French: onedrive d'un collègue, fichiers partagés par un collègue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -246,7 +246,7 @@ export const getItem = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Files.Read.All"],
-  description: "Get the metadata of one file or folder of a drive by its item id.",
+  description: "Get the metadata of one file or folder of a drive by its item id. In French: détail d'un fichier, métadonnées d'un dossier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -287,7 +287,7 @@ export const getItemByPath = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Files.Read.All"],
-  description: "Get the metadata of one file or folder of a drive by its path from the drive root, e.g. Contracts/2026/nda.docx.",
+  description: "Get the metadata of one file or folder of a drive by its path from the drive root, e.g. Contracts/2026/nda.docx. In French: fichier par son chemin, trouver un fichier par son chemin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -328,7 +328,7 @@ export const listRootChildren = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Files.Read.All"],
-  description: "List the files and folders at the root of a drive.",
+  description: "List the files and folders at the root of a drive. In French: fichiers à la racine, contenu de la racine du drive.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -370,7 +370,7 @@ export const listChildren = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Files.Read.All"],
-  description: "List the files and folders inside one folder of a drive, by the folder's item id.",
+  description: "List the files and folders inside one folder of a drive, by the folder's item id. In French: contenu d'un dossier, lister les fichiers d'un dossier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -419,7 +419,7 @@ export const listChildrenByPath = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Files.Read.All"],
-  description: "List the files and folders inside one folder of a drive, by the folder's path from the drive root, e.g. Contracts/2026.",
+  description: "List the files and folders inside one folder of a drive, by the folder's path from the drive root, e.g. Contracts/2026. In French: contenu d'un dossier par son chemin, lister un dossier par son chemin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -468,7 +468,7 @@ export const searchItems = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://graph.microsoft.com/Files.Read.All"],
-  description: "Search the files of a whole drive by name, metadata and content. Results come from the SharePoint index, not a live scan: a file added seconds ago may not show yet. The query cannot contain an apostrophe.",
+  description: "Search the files of a whole drive by name, metadata and content. Results come from the SharePoint index, not a live scan: a file added seconds ago may not show yet. The query cannot contain an apostrophe. In French: chercher un fichier, rechercher un document sharepoint, trouver un document onedrive.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -514,7 +514,7 @@ export const connector = defineConnector({
   name: "microsoft",
   label: "Microsoft 365 (SharePoint, OneDrive)",
   namespace: "microsoft",
-  version: "3.2.1",
+  version: "3.2.2",
   apiVersion: "v1.0",
   baseUrl: "https://graph.microsoft.com/v1.0",
   auth: {

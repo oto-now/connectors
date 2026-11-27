@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'granola',
                'label': 'Granola',
                'namespace': 'granola',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1',
                'base_url': 'https://public-api.granola.ai',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -54,7 +54,8 @@ DESCRIPTION = {'connector': {'name': 'granola',
                                'note). Filters: created_before, created_after, updated_after (a date or a '
                                'date-time), folder_id (the folder and its subfolders). The content of a note '
                                '(summary, attendees, transcript) comes with get_note. A page holds page_size '
-                               'notes; hasMore and cursor give the next one.',
+                               'notes; hasMore and cursor give the next one. In French: lister les notes de '
+                               'réunion, comptes rendus de réunion, mes notes granola.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'created_before': {'type': 'string',
@@ -119,7 +120,8 @@ DESCRIPTION = {'connector': {'name': 'granola',
                                'its link in the Granola web app. include=transcript adds the transcript '
                                'inline; a transcript too large to come inline is refused, then read it page '
                                'by page with get_transcript. The download address of a photo attached to the '
-                               'note is never given: anyone holding it sees the photo.',
+                               'note is never given: anyone holding it sees the photo. In French: lire une '
+                               "note de réunion, résumé d'une réunion, compte rendu d'un rendez-vous.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -145,7 +147,8 @@ DESCRIPTION = {'connector': {'name': 'granola',
                 'description': 'The transcript of a meeting note, page by page: each item has its speaker '
                                "(source microphone or speaker; attribution me, the note's owner, or them; a "
                                'name when Granola identified the speaker), its text and its start and end '
-                               'times. A page holds page_size items; hasMore and cursor give the next one.',
+                               'times. A page holds page_size items; hasMore and cursor give the next one. '
+                               "In French: transcription d'une réunion, verbatim d'une réunion.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -189,7 +192,8 @@ DESCRIPTION = {'connector': {'name': 'granola',
                 'description': 'List the folders this key can reach, in alphabetical order: id, name, '
                                'parent_folder_id (null at the top level) and space_id. A folder id filters '
                                'list_notes and restricts a webhook endpoint. A page holds page_size folders; '
-                               'hasMore and cursor give the next one.',
+                               'hasMore and cursor give the next one. In French: dossiers granola, lister '
+                               'les dossiers de notes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',
@@ -223,7 +227,8 @@ DESCRIPTION = {'connector': {'name': 'granola',
                 'class': 'read',
                 'description': "List this key's webhook endpoints: url, events, scopes, folder_ids, enabled, "
                                "creator. The url is cut to its origin when the key's user did not create the "
-                               'endpoint. A signing secret is never given.',
+                               'endpoint. A signing secret is never given. In French: lister les webhooks '
+                               'granola, webhooks configurés.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The webhook endpoints', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v1/webhook-endpoints'},
@@ -238,7 +243,8 @@ DESCRIPTION = {'connector': {'name': 'granola',
                                'API key takes exactly [workspace]. folder_ids restricts the deliveries to '
                                'these folders and their subfolders. The signing secret, which Granola gives '
                                'only in this answer, is never given: the deliveries to this endpoint cannot '
-                               'be verified by their signature from here.',
+                               'be verified by their signature from here. In French: créer un webhook, '
+                               'recevoir les notes par webhook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url', 'scopes'],
@@ -289,7 +295,8 @@ DESCRIPTION = {'connector': {'name': 'granola',
                                'filter); enabled=false pauses the deliveries (events while paused are never '
                                "delivered), true resumes them. Only the endpoint's creator changes more than "
                                'enabled; a workspace-managed endpoint keeps scopes [workspace]. A signing '
-                               'secret is never given.',
+                               'secret is never given. In French: modifier un webhook, mettre en pause un '
+                               'webhook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_endpoint_id'],
@@ -340,7 +347,8 @@ DESCRIPTION = {'connector': {'name': 'granola',
                 'cost': {'per': 'request'}},
                {'name': 'delete_webhook_endpoint',
                 'class': 'sensitive',
-                'description': 'Delete a webhook endpoint; Granola stops delivering to it, for good.',
+                'description': 'Delete a webhook endpoint; Granola stops delivering to it, for good. In '
+                               'French: supprimer un webhook, arrêter un webhook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_endpoint_id'],

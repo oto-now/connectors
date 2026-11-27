@@ -6,7 +6,7 @@ export const listEventTypes = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "List the event types declared in this Amplitude project, with category, description and visibility. Read it before writing a query: a misspelt event name returns zeros, not an error.",
+  description: "List the event types declared in this Amplitude project, with category, description and visibility. Read it before writing a query: a misspelt event name returns zeros, not an error. In French: types d'événements, événements suivis amplitude, liste des événements déclarés.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "All declared event types", input: {} },
@@ -28,7 +28,7 @@ export const listEventProperties = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "List the event properties of this Amplitude project, or only those of one event type.",
+  description: "List the event properties of this Amplitude project, or only those of one event type. In French: propriétés d'un événement, propriétés des événements amplitude.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -55,7 +55,7 @@ export const listUserProperties = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "List the user properties of this Amplitude project. Custom ones come back prefixed gp: — use that exact name in segments and group-bys.",
+  description: "List the user properties of this Amplitude project. Custom ones come back prefixed gp: — use that exact name in segments and group-bys. In French: propriétés utilisateur, attributs des utilisateurs amplitude.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "All user properties", input: {} },
@@ -77,7 +77,7 @@ export const listGroupProperties = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "List the group (account) properties of this Amplitude project, prefixed grp:. Empty when the project has no Accounts add-on.",
+  description: "List the group (account) properties of this Amplitude project, prefixed grp:. Empty when the project has no Accounts add-on. In French: propriétés de groupe, propriétés des comptes amplitude.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "All group properties", input: {} },
@@ -99,7 +99,7 @@ export const listEvents = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "List the event types with their weekly totals and uniques: what actually fires, not only what is declared.",
+  description: "List the event types with their weekly totals and uniques: what actually fires, not only what is declared. In French: volume des événements, événements les plus déclenchés, totaux hebdomadaires des événements.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Event volumes this week", input: {} },
@@ -121,7 +121,7 @@ export const getSegmentation = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Compute one event's metric over time (event segmentation). Each query spends the project's hourly cost budget (days x conditions x query type): keep windows short or use a weekly or monthly interval. Prefer a saved chart (get_chart) when the team already has one.",
+  description: "Compute one event's metric over time (event segmentation). Each query spends the project's hourly cost budget (days x conditions x query type): keep windows short or use a weekly or monthly interval. Prefer a saved chart (get_chart) when the team already has one. In French: évolution d'un événement, nombre d'occurrences d'un événement, segmentation d'événement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -179,7 +179,7 @@ export const getFunnel = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Compute the conversion through ordered steps (funnel). Spends the project's hourly cost budget. Prefer a saved chart (get_chart) when the team already has the funnel: conversion window, step order and exclusions rarely survive being re-specified.",
+  description: "Compute the conversion through ordered steps (funnel). Spends the project's hourly cost budget. Prefer a saved chart (get_chart) when the team already has the funnel: conversion window, step order and exclusions rarely survive being re-specified. In French: taux de conversion, entonnoir de conversion, analyse de funnel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -232,7 +232,7 @@ export const getRetention = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Of the users who did start_event, how many came back to do return_event (use {\"event_type\": \"_active\"} for any event). Spends the project's hourly cost budget.",
+  description: "Of the users who did start_event, how many came back to do return_event (use {\"event_type\": \"_active\"} for any event). Spends the project's hourly cost budget. In French: taux de rétention, rétention des utilisateurs, utilisateurs qui reviennent.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -279,7 +279,7 @@ export const getActiveUsers = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Count active (default) or new users over time. Spends the project's hourly cost budget.",
+  description: "Count active (default) or new users over time. Spends the project's hourly cost budget. In French: utilisateurs actifs, nouveaux utilisateurs, nombre d'utilisateurs par jour.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -316,7 +316,7 @@ export const getSessions = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Session metrics over a window: length (distribution of session lengths), average (average session length) or peruser (sessions per user).",
+  description: "Session metrics over a window: length (distribution of session lengths), average (average session length) or peruser (sessions per user). In French: durée des sessions, sessions par utilisateur, durée moyenne de session.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -346,7 +346,7 @@ export const getChart = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Run a saved Amplitude chart and return its results as JSON, computed by Amplitude with the chart's own definition: the number the team reads in Amplitude. The chart id is the last segment of the chart URL.",
+  description: "Run a saved Amplitude chart and return its results as JSON, computed by Amplitude with the chart's own definition: the number the team reads in Amplitude. The chart id is the last segment of the chart URL. In French: résultat d'un graphique amplitude, lancer un graphique enregistré, chiffres d'un dashboard amplitude.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -374,7 +374,7 @@ export const searchUsers = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Find a user by user id, device id or Amplitude id. Returns the matches with their amplitude_id, needed to read the user's activity. Shares a budget of 360 calls per hour with get_user_activity.",
+  description: "Find a user by user id, device id or Amplitude id. Returns the matches with their amplitude_id, needed to read the user's activity. Shares a budget of 360 calls per hour with get_user_activity. In French: chercher un utilisateur, trouver un utilisateur par identifiant.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -401,7 +401,7 @@ export const getUserActivity = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Read one user's summary and event stream. Takes the amplitude_id returned by search_users, not the user id.",
+  description: "Read one user's summary and event stream. Takes the amplitude_id returned by search_users, not the user id. In French: activité d'un utilisateur, parcours d'un utilisateur, événements d'un utilisateur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -437,7 +437,7 @@ export const listCohorts = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "List the project's behavioral cohorts: id, name, size, last computed.",
+  description: "List the project's behavioral cohorts: id, name, size, last computed. In French: lister les cohortes, cohortes amplitude, segments d'utilisateurs.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "All cohorts", input: {} },
@@ -459,7 +459,7 @@ export const requestCohortDownload = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Start a download job for one cohort and return its request_id. Each request counts against the project's 500 cohort downloads per month. Poll get_cohort_download_status with the request_id until JOB COMPLETED.",
+  description: "Start a download job for one cohort and return its request_id. Each request counts against the project's 500 cohort downloads per month. Poll get_cohort_download_status with the request_id until JOB COMPLETED. In French: télécharger une cohorte, exporter une cohorte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -494,7 +494,7 @@ export const getCohortDownloadStatus = defineFunction({
   connector: "amplitude",
   class: "read",
   act: false,
-  description: "Read the status of a cohort download job: async_status is JOB INPROGRESS while running, JOB COMPLETED when the file is ready.",
+  description: "Read the status of a cohort download job: async_status is JOB INPROGRESS while running, JOB COMPLETED when the file is ready. In French: statut de l'export de cohorte, téléchargement de cohorte prêt.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -521,7 +521,7 @@ export const connector = defineConnector({
   name: "amplitude",
   label: "Amplitude",
   namespace: "amplitude",
-  version: "1.2.0",
+  version: "1.2.1",
   apiVersion: "Dashboard REST and Taxonomy api/2; charts and cohort list api/3; cohort download api/5",
   baseUrls: {"setting": "region", "values": {"us": "https://amplitude.com", "eu": "https://analytics.eu.amplitude.com"}},
   auth: {"kind": "basic", "username": "api_key", "password": "secret_key"},

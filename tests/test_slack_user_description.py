@@ -167,9 +167,9 @@ def _valid(schema: dict, value) -> bool:
     return jsonschema.Draft202012Validator(schema).is_valid(value)
 
 
-def test_the_description_is_version_1_1_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_1_1_and_passes_the_fabrique():
     description = _load(SLACK_USER)
-    assert description["connector"]["version"] == "1.1.0"
+    assert description["connector"]["version"] == "1.1.1"
     check(description, SLACK_USER)
 
 

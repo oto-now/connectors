@@ -6,7 +6,7 @@ export const listRecordings = defineFunction({
   connector: "claap",
   class: "read",
   act: false,
-  description: "List the Claap meeting and call recordings visible to the key, newest first, one page at a time; pass pagination.nextCursor back as cursor for the next page. The key belongs to the workspace, not to a person: without recorder_email or recorder_id it returns every recording visible in Claap's global search, colleagues' meetings included. view_id applies a saved view's filters and sort; other filters narrow within it. Signed URLs in the result (video, transcript files, thumbnail) expire after 24 hours: never store them.",
+  description: "List the Claap meeting and call recordings visible to the key, newest first, one page at a time; pass pagination.nextCursor back as cursor for the next page. The key belongs to the workspace, not to a person: without recorder_email or recorder_id it returns every recording visible in Claap's global search, colleagues' meetings included. view_id applies a saved view's filters and sort; other filters narrow within it. Signed URLs in the result (video, transcript files, thumbnail) expire after 24 hours: never store them. In French: lister les enregistrements claap, enregistrements de réunions, derniers appels enregistrés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -80,7 +80,7 @@ export const getRecording = defineFunction({
   connector: "claap",
   class: "read",
   act: false,
-  description: "Get one Claap recording. Check state: only Ready carries the full payload (AI summary keyTakeaways and outlines, actionItems, aiFields, deal and companies, analytics, transcripts); Empty, Uploaded and Failed return a thin shape (id, title, author, upload). Signed URLs expire after 24 hours. A 404 can also mean the recording is private or hidden from global search.",
+  description: "Get one Claap recording. Check state: only Ready carries the full payload (AI summary keyTakeaways and outlines, actionItems, aiFields, deal and companies, analytics, transcripts); Empty, Uploaded and Failed return a thin shape (id, title, author, upload). Signed URLs expire after 24 hours. A 404 can also mean the recording is private or hidden from global search. In French: détail d'un enregistrement claap, résumé d'une réunion, points clés d'un appel enregistré.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -109,7 +109,7 @@ export const getRecordingTranscript = defineFunction({
   connector: "claap",
   class: "read",
   act: false,
-  description: "Get the transcript of one Claap recording. format text returns plain text lines \"mm:ss speaker: text\", the readable choice; format json (the default) returns timed segments with per-word detail and is very heavy. lang picks a translation; the available languages are in transcripts[].langIso2 of get_recording.",
+  description: "Get the transcript of one Claap recording. format text returns plain text lines \"mm:ss speaker: text\", the readable choice; format json (the default) returns timed segments with per-word detail and is very heavy. lang picks a translation; the available languages are in transcripts[].langIso2 of get_recording. In French: transcription d'une réunion, transcript d'un appel claap, verbatim d'un enregistrement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -147,7 +147,7 @@ export const deleteRecording = defineFunction({
   connector: "claap",
   class: "sensitive",
   act: true,
-  description: "Delete one Claap recording. Permanent: Claap has no trash and no undo. Read it with get_recording first to be sure of what is deleted.",
+  description: "Delete one Claap recording. Permanent: Claap has no trash and no undo. Read it with get_recording first to be sure of what is deleted. In French: supprimer un enregistrement claap, effacer une réunion enregistrée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -177,7 +177,7 @@ export const listRecordingViews = defineFunction({
   connector: "claap",
   class: "read",
   act: false,
-  description: "List the saved Claap recording views: public views first, then the built-in defaults (isDefault true). Private views are invisible to the API. A view filtering on Me matches the whole workspace here, since the key is nobody in particular. Pass a view id as view_id to list_recordings.",
+  description: "List the saved Claap recording views: public views first, then the built-in defaults (isDefault true). Private views are invisible to the API. A view filtering on Me matches the whole workspace here, since the key is nobody in particular. Pass a view id as view_id to list_recordings. In French: vues enregistrées claap, lister les vues d'enregistrements.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "All visible views", input: {} },
@@ -199,7 +199,7 @@ export const getRecordingView = defineFunction({
   connector: "claap",
   class: "read",
   act: false,
-  description: "Get one saved Claap recording view: its columns, filters and sort.",
+  description: "Get one saved Claap recording view: its columns, filters and sort. In French: détail d'une vue claap, filtres d'une vue d'enregistrements.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -227,7 +227,7 @@ export const connector = defineConnector({
   name: "claap",
   label: "Claap",
   namespace: "claap",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v1",
   baseUrl: "https://api.claap.io/v1",
   auth: {"kind": "api_key", "in": "header", "name": "X-Claap-Key", "key": "api_key"},

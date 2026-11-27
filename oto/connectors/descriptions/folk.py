@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'folk',
                'label': 'folk',
                'namespace': 'folk',
-               'version': '1.0.1',
+               'version': '1.0.2',
                'api_version': 'v1 (OpenAPI 2025-06-09)',
                'base_url': 'https://api.folk.app/v1',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -47,7 +47,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                       'read it back before writing again.'}]},
  'functions': [{'name': 'get_current_user',
                 'class': 'read',
-                'description': 'Get the workspace user behind the API key: id, full name, email.',
+                'description': 'Get the workspace user behind the API key: id, full name, email. In French: '
+                               'mon compte folk, utilisateur de la clé api folk.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Who the key belongs to', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/users/me'},
@@ -55,7 +56,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'get_user',
                 'class': 'read',
                 'description': 'Get one workspace user by id (usr_…): full name, email. The id me gives the '
-                               'user behind the API key.',
+                               "user behind the API key. In French: détail d'un utilisateur folk, fiche d'un "
+                               "membre de l'espace folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user_id'],
@@ -71,7 +73,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'read',
                 'description': 'List one page of the workspace users (up to 100): id, full name, email. When '
                                'more remain, the answer gives data.pagination.nextLink: pass the cursor '
-                               'parameter of that link as cursor for the next page.',
+                               'parameter of that link as cursor for the next page. In French: lister les '
+                               "utilisateurs folk, membres de l'espace de travail folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',
@@ -91,7 +94,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'read',
                 'description': 'List one page of the workspace groups (up to 100): id, name. A group holds '
                                'people, companies and its own object types (deals). When more remain, pass '
-                               'the cursor parameter of data.pagination.nextLink as cursor.',
+                               'the cursor parameter of data.pagination.nextLink as cursor. In French: '
+                               'lister les groupes folk, groupes de contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',
@@ -109,7 +113,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'create_group',
                 'class': 'write',
                 'description': 'Create a group in the workspace. A public group is open to every workspace '
-                               'member; a private one to its members only.',
+                               'member; a private one to its members only. In French: créer un groupe folk, '
+                               'nouveau groupe de contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'visibility'],
@@ -124,7 +129,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'update_group',
                 'class': 'write',
                 'description': 'Rename a group or change its visibility (public: every workspace member; '
-                               'private: its members only).',
+                               'private: its members only). In French: renommer un groupe folk, modifier la '
+                               "visibilité d'un groupe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id'],
@@ -145,7 +151,7 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'List one page of the members of a group (up to 100), with their role (admin, '
                                'contributor, reader). Every workspace member is a member of a public group. '
                                'When more remain, pass the cursor parameter of data.pagination.nextLink as '
-                               'cursor.',
+                               "cursor. In French: membres d'un groupe folk, accès à un groupe folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id'],
@@ -168,7 +174,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'add_group_member',
                 'class': 'write',
                 'description': 'Give a workspace user access to a group, with a role: admin, contributor or '
-                               'reader.',
+                               'reader. In French: ajouter un membre à un groupe, donner accès à un groupe '
+                               'folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'user_id', 'role'],
@@ -190,7 +197,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'update_group_member',
                 'class': 'write',
-                'description': 'Change the role of a group member (admin, contributor, reader).',
+                'description': 'Change the role of a group member (admin, contributor, reader). In French: '
+                               "changer le rôle d'un membre du groupe, modifier les droits sur un groupe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'user_id', 'role'],
@@ -212,7 +220,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'remove_group_member',
                 'class': 'sensitive',
-                'description': 'Remove a user from a group; they no longer see it.',
+                'description': 'Remove a user from a group; they no longer see it. In French: retirer un '
+                               "membre d'un groupe, enlever l'accès à un groupe folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'user_id'],
@@ -233,7 +242,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'List one page of the custom fields a group defines for an entity type (up to '
                                '100): name, type, options. entity_type is person, company, or the name of an '
                                'object type of the group (deals). When more remain, pass the cursor '
-                               'parameter of data.pagination.nextLink as cursor.',
+                               'parameter of data.pagination.nextLink as cursor. In French: champs '
+                               "personnalisés d'un groupe, lister les colonnes d'un groupe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'entity_type'],
@@ -261,7 +271,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'get_group_custom_field',
                 'class': 'read',
                 'description': 'Get one custom field of a group by its name (as shown in folk), with its '
-                               'type and options.',
+                               "type and options. In French: détail d'un champ personnalisé, options d'un "
+                               'champ de groupe.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'entity_type', 'custom_field_name'],
@@ -290,7 +301,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                'dateField, userField, contactField (people or companies), objectField '
                                '(person or company only: creates an object type), singleSelect and '
                                'multipleSelect (with options), numericField (with config). An object type '
-                               'cannot have contactField or objectField fields.',
+                               'cannot have contactField or objectField fields. In French: créer un champ '
+                               'personnalisé, ajouter une colonne à un groupe.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'entity_type', 'type', 'name'],
@@ -369,7 +381,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'sensitive',
                 'description': 'Change a custom field of a group: rename it, change a numeric format, add, '
                                'change or remove select options. Removing an option empties it on every '
-                               'record that holds it.',
+                               'record that holds it. In French: modifier un champ personnalisé, ajouter une '
+                               'option de sélection.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'entity_type', 'custom_field_name'],
@@ -477,7 +490,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                'first_name, last_name, job_title, description, emails, phones, addresses, '
                                'urls), groups and companies when the person belongs to that group or company '
                                '(its id). Filters combine with AND. When more remain, pass the cursor '
-                               'parameter of data.pagination.nextLink as cursor.',
+                               'parameter of data.pagination.nextLink as cursor. In French: lister les '
+                               "contacts folk, chercher un contact folk, contacts d'un groupe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'full_name': {'type': 'string',
@@ -554,7 +568,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'read',
                 'description': 'Get one person by id (per_…): names, job title, emails, phones, addresses, '
                                'urls, birthday, companies, groups, and the custom field values of each group '
-                               '(customFieldValues, by group id then field name).',
+                               "(customFieldValues, by group id then field name). In French: fiche d'un "
+                               "contact folk, détail d'une personne folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id'],
@@ -571,7 +586,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                'companies, an existing one by id or one created by name ([{id}] or '
                                '[{name}]); custom_field_values sets the custom fields of a group the person '
                                'is in ({groupId: {fieldName: value}}). folk merges a detected duplicate in '
-                               'the background.',
+                               'the background. In French: créer un contact folk, ajouter une personne dans '
+                               'folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['first_name'],
@@ -677,7 +693,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                'current one (emails, phones, companies, groups…): read the person first to '
                                'keep what stays. Leaving a group out takes the person out of it, with that '
                                "group's custom field values. custom_field_values changes the fields named, "
-                               'by group id then field name.',
+                               'by group id then field name. In French: modifier un contact folk, mettre à '
+                               'jour une personne folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id'],
@@ -775,7 +792,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'delete_person',
                 'class': 'sensitive',
-                'description': 'Delete a person from the workspace, with their notes and field values.',
+                'description': 'Delete a person from the workspace, with their notes and field values. In '
+                               'French: supprimer un contact folk, effacer une personne folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id'],
@@ -794,7 +812,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                'description, emails, phones, addresses, urls, industry, employee_range), '
                                'groups when the company belongs to that group (its id). Filters combine with '
                                'AND. When more remain, pass the cursor parameter of data.pagination.nextLink '
-                               'as cursor.',
+                               'as cursor. In French: lister les entreprises folk, chercher une société '
+                               'folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -854,7 +873,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'read',
                 'description': 'Get one company by id (com_…): name, description, industry, funding, '
                                'foundation year, employee range, emails, phones, addresses, urls, groups, '
-                               'and the custom field values of each group.',
+                               "and the custom field values of each group. In French: fiche d'une entreprise "
+                               "folk, détail d'une société folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -869,7 +889,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'write',
                 'description': 'Create a company. A company named exactly like an existing one (same case) '
                                'UPDATES that company instead. groups puts it in groups ([{id}]); '
-                               'custom_field_values sets the custom fields of a group it is in.',
+                               'custom_field_values sets the custom fields of a group it is in. In French: '
+                               'créer une entreprise folk, ajouter une société dans folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -965,7 +986,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'Change a company: only the fields given change. A list given REPLACES the '
                                'current one (emails, phones, urls, addresses, groups): read the company '
                                'first to keep what stays. Leaving a group out takes the company out of it, '
-                               "with that group's custom field values.",
+                               "with that group's custom field values. In French: modifier une entreprise "
+                               'folk, mettre à jour une société folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -1058,7 +1080,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'delete_company',
                 'class': 'sensitive',
-                'description': 'Delete a company from the workspace.',
+                'description': 'Delete a company from the workspace. In French: supprimer une entreprise '
+                               'folk, effacer une société folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -1075,7 +1098,9 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'List one page of the objects of one type in a group (up to 100): deals, or '
                                'any object type of the group. name matches when it contains the value; '
                                'companies when the object is linked to that company (its id). When more '
-                               'remain, pass the cursor parameter of data.pagination.nextLink as cursor.',
+                               'remain, pass the cursor parameter of data.pagination.nextLink as cursor. In '
+                               'French: lister les affaires folk, pipeline commercial folk, opportunités '
+                               "d'un groupe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'object_type'],
@@ -1113,7 +1138,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'get_deal',
                 'class': 'read',
                 'description': 'Get one object of a group (a deal) by id (obj_…): name, linked people and '
-                               'companies, custom field values (status, amount…).',
+                               "companies, custom field values (status, amount…). In French: détail d'une "
+                               "affaire folk, fiche d'une opportunité folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'object_type', 'deal_id'],
@@ -1138,7 +1164,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'write',
                 'description': 'Create an object of a group (a deal), linked to people and companies '
                                '([{id}], 20 each at most), with custom field values by field name ({Status: '
-                               'Qualified, Amount: 12000}).',
+                               'Qualified, Amount: 12000}). In French: créer une affaire folk, nouvelle '
+                               'opportunité folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'object_type', 'name'],
@@ -1188,7 +1215,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'write',
                 'description': 'Change an object of a group (a deal): only the fields given change. people '
                                'and companies REPLACE the current links; custom_field_values changes the '
-                               'fields named.',
+                               "fields named. In French: modifier une affaire folk, changer le statut d'une "
+                               'opportunité.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'object_type', 'deal_id'],
@@ -1236,7 +1264,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'delete_deal',
                 'class': 'sensitive',
-                'description': 'Delete an object of a group (a deal).',
+                'description': 'Delete an object of a group (a deal). In French: supprimer une affaire folk, '
+                               'effacer une opportunité folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'object_type', 'deal_id'],
@@ -1263,7 +1292,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': "Create up to 100 people in one request, each record as create_person's body "
                                "in folk's names (firstName, emails, groups [{id}]…). Each record is created "
                                'on its own: the answer gives one result per record, in order, succeeded with '
-                               'its data or failed with its error.',
+                               'its data or failed with its error. In French: créer des contacts en masse, '
+                               'importer des contacts folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['records'],
@@ -1403,7 +1433,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                'update_person}. Lists REPLACE, groups included: leaving a group out takes '
                                "the person out of it with that group's custom field values. Several records "
                                'for one person are merged in order, the last value winning. One result per '
-                               'record, in order.',
+                               'record, in order. In French: modifier des contacts en masse, mise à jour '
+                               'groupée de contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['records'],
@@ -1545,7 +1576,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': "Create up to 100 companies in one request, each record as create_company's "
                                'body (name, industry, groups [{id}]…). A record named exactly like an '
                                'existing company UPDATES it; its result says so (operation created or '
-                               'updated). One result per record, in order.',
+                               'updated). One result per record, in order. In French: créer des entreprises '
+                               'en masse, importer des sociétés folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['records'],
@@ -1655,7 +1687,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'sensitive',
                 'description': 'Update up to 100 companies in one request, each record {id, fields of '
                                'update_company}. Lists and groups REPLACE the current ones. One result per '
-                               'record, in order.',
+                               'record, in order. In French: modifier des entreprises en masse, mise à jour '
+                               'groupée de sociétés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['records'],
@@ -1774,7 +1807,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'Create up to 100 objects of one type in a group (deals) in one request, each '
                                'record {name, people [{id}], companies [{id}], customFieldValues by field '
                                'name}. Never matched with existing objects: two records with the same name '
-                               'make two deals. One result per record, in order.',
+                               'make two deals. One result per record, in order. In French: créer des '
+                               'affaires en masse, importer des opportunités folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'object_type', 'records'],
@@ -1831,7 +1865,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'Update up to 100 objects of one type in a group (deals) in one request, each '
                                'record {id, fields of update_deal}. Records of one object are merged in '
                                'order (customFieldValues field by field, the last value winning) and '
-                               'validated as a whole. One result per record, in order.',
+                               'validated as a whole. One result per record, in order. In French: modifier '
+                               "des affaires en masse, mise à jour groupée d'opportunités.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['group_id', 'object_type', 'records'],
@@ -1896,7 +1931,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                'person or company it is on (entity.id). folk ignores a filter by entity: to '
                                'find the notes of one person, page through and keep those whose entity.id '
                                'matches. When more remain, pass the cursor parameter of '
-                               'data.pagination.nextLink as cursor.',
+                               'data.pagination.nextLink as cursor. In French: lister les notes folk, notes '
+                               "d'un contact folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',
@@ -1914,7 +1950,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'create_note',
                 'class': 'write',
                 'description': 'Write a note on a person or a company (entity {id}): public, seen by the '
-                               'workspace, or private to the user behind the key.',
+                               'workspace, or private to the user behind the key. In French: ajouter une '
+                               'note à un contact, écrire une note sur une entreprise.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity', 'content', 'visibility'],
@@ -1939,7 +1976,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'update_note',
                 'class': 'write',
-                'description': 'Change the content or the visibility of a note.',
+                'description': 'Change the content or the visibility of a note. In French: modifier une note '
+                               "folk, changer la visibilité d'une note.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -1960,7 +1998,7 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'delete_note',
                 'class': 'sensitive',
-                'description': 'Delete a note.',
+                'description': 'Delete a note. In French: supprimer une note folk, effacer une note folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -1976,7 +2014,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'write',
                 'description': 'Log an interaction with a person or a company (entity {id}): a call, a '
                                'meeting, a message, a coffee… (type, or an emoji), its title, content and '
-                               'date-time (ISO 8601).',
+                               'date-time (ISO 8601). In French: enregistrer une interaction, noter un appel '
+                               'avec un contact, consigner un rendez-vous.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity', 'type', 'title', 'content', 'date_time'],
@@ -2025,7 +2064,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                                'meetings, messages, logged calls), newest first, 30 per page (beta at folk, '
                                'deprecated since 2026-09-29). An active contact can hold hundreds: read the '
                                'first page, page on only if needed, passing the cursor parameter of '
-                               'data.pagination.nextLink as cursor.',
+                               'data.pagination.nextLink as cursor. In French: historique des échanges avec '
+                               'un contact, interactions passées, derniers emails avec une entreprise.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_id'],
@@ -2050,7 +2090,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'List one page of the upcoming interactions with a person or a company '
                                '(scheduled meetings), 30 per page (beta at folk, deprecated since '
                                '2026-09-29). When more remain, pass the cursor parameter of '
-                               'data.pagination.nextLink as cursor.',
+                               'data.pagination.nextLink as cursor. In French: prochains rendez-vous avec un '
+                               'contact, interactions à venir.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_id'],
@@ -2074,7 +2115,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'read',
                 'description': 'Get one interaction, with the person or company it is on (entity_id, '
                                'required by folk): the full email or calendar body when privacy rules allow '
-                               'it (beta at folk).',
+                               "it (beta at folk). In French: détail d'une interaction, contenu d'un échange "
+                               'avec un contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['interaction_id', 'entity_id'],
@@ -2098,7 +2140,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'write',
                 'description': 'Change a logged interaction (title, content, date_time, activity_type), with '
                                'the person or company it is on (entity {id}, required by folk). An imported '
-                               'interaction (email, calendar, WhatsApp) cannot be changed.',
+                               'interaction (email, calendar, WhatsApp) cannot be changed. In French: '
+                               'modifier une interaction folk, corriger un échange consigné.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['interaction_id', 'entity'],
@@ -2145,7 +2188,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'delete_interaction',
                 'class': 'sensitive',
                 'description': 'Delete a logged interaction, with the person or company it is on. An '
-                               'imported interaction cannot be deleted.',
+                               'imported interaction cannot be deleted. In French: supprimer une interaction '
+                               'folk, effacer un échange consigné.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['interaction_id', 'entity_id'],
@@ -2171,7 +2215,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'List one page of the tasks of the workspace (up to 100): title, due date, '
                                'completion, person or company, assignees. only_assigned_to_me keeps the '
                                'tasks assigned to the user behind the key. When more remain, pass the cursor '
-                               'parameter of data.pagination.nextLink as cursor.',
+                               'parameter of data.pagination.nextLink as cursor. In French: lister les '
+                               'tâches folk, mes tâches à faire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'only_assigned_to_me': {'type': 'boolean'},
@@ -2189,7 +2234,7 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'get_task',
                 'class': 'read',
-                'description': 'Get one task by id.',
+                'description': "Get one task by id. In French: détail d'une tâche folk, lire une tâche folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -2205,7 +2250,7 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'Create a task on a person or a company (entity {id}), due on a date '
                                '(YYYY-MM-DD) and optionally at a time (HH:mm), possibly recurring, assigned '
                                'to users by id or by email (not both in one call). A task completes only by '
-                               'mark_task_done.',
+                               'mark_task_done. In French: créer une tâche folk, programmer une relance.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity', 'title', 'due_at'],
@@ -2274,7 +2319,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'write',
                 'description': 'Change a task: only the fields given change; assigned_users REPLACES the '
                                'assignees (all by id or all by email). Completion is mark_task_done and '
-                               'mark_task_todo, not this.',
+                               'mark_task_todo, not this. In French: modifier une tâche folk, réassigner une '
+                               'tâche.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -2336,7 +2382,7 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'delete_task',
                 'class': 'sensitive',
-                'description': 'Delete a task.',
+                'description': 'Delete a task. In French: supprimer une tâche folk, effacer une tâche folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -2351,7 +2397,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'mark_task_done',
                 'class': 'write',
                 'description': 'Mark a task as done at a date-time (ISO 8601, UTC). Closing a task already '
-                               'closed changes nothing.',
+                               'closed changes nothing. In French: terminer une tâche, marquer une tâche '
+                               'comme faite.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id', 'completed_at'],
@@ -2372,7 +2419,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'mark_task_todo',
                 'class': 'write',
-                'description': 'Reopen a task (its completion date is cleared).',
+                'description': 'Reopen a task (its completion date is cleared). In French: rouvrir une '
+                               'tâche, marquer une tâche à faire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -2388,7 +2436,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': 'List one page of the reminders of the workspace (up to 100). Deprecated at '
                                'folk (removed on 2027-02-13): prefer tasks. folk ignores a filter by entity: '
                                'keep those whose entity.id matches. When more remain, pass the cursor '
-                               'parameter of data.pagination.nextLink as cursor.',
+                               'parameter of data.pagination.nextLink as cursor. In French: lister les '
+                               'rappels folk, rappels sur les contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',
@@ -2407,7 +2456,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'write',
                 'description': 'Create a reminder on a person or a company (entity {id}), with an iCalendar '
                                'recurrence rule. Deprecated at folk (removed on 2027-02-13): prefer '
-                               'create_task.',
+                               'create_task. In French: créer un rappel folk, rappel récurrent sur un '
+                               'contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity', 'name', 'recurrence_rule', 'visibility'],
@@ -2440,7 +2490,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'get_reminder',
                 'class': 'read',
-                'description': 'Get one reminder by id. Deprecated at folk (removed on 2027-02-13).',
+                'description': 'Get one reminder by id. Deprecated at folk (removed on 2027-02-13). In '
+                               "French: détail d'un rappel folk, lire un rappel folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['reminder_id'],
@@ -2454,7 +2505,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'update_reminder',
                 'class': 'write',
                 'description': 'Change a reminder: name, recurrence rule, visibility, assignees (all by id '
-                               'or all by email). Deprecated at folk (removed on 2027-02-13).',
+                               'or all by email). Deprecated at folk (removed on 2027-02-13). In French: '
+                               "modifier un rappel folk, changer la récurrence d'un rappel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['reminder_id'],
@@ -2497,7 +2549,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'delete_reminder',
                 'class': 'sensitive',
-                'description': 'Delete a reminder.',
+                'description': 'Delete a reminder. In French: supprimer un rappel folk, effacer un rappel '
+                               'folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['reminder_id'],
@@ -2513,7 +2566,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'class': 'read',
                 'description': 'List one page of the webhooks of the workspace (up to 100): name, target '
                                'address, subscribed events, status, the signing secret redacted. When more '
-                               'remain, pass the cursor parameter of data.pagination.nextLink as cursor.',
+                               'remain, pass the cursor parameter of data.pagination.nextLink as cursor. In '
+                               "French: lister les webhooks folk, webhooks de l'espace folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',
@@ -2530,7 +2584,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'get_webhook',
                 'class': 'read',
-                'description': 'Get one webhook by id (wbk_…), the signing secret redacted.',
+                'description': 'Get one webhook by id (wbk_…), the signing secret redacted. In French: '
+                               "détail d'un webhook folk, lire un webhook folk.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],
@@ -2546,7 +2601,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'description': "Have folk post the workspace's events to an https address: people, "
                                'companies, objects, notes and reminders created, updated or deleted '
                                '(person.created…), each event optionally filtered (filter: groupId, '
-                               'objectType, path, value). The answer never carries the signing secret.',
+                               'objectType, path, value). The answer never carries the signing secret. In '
+                               'French: créer un webhook folk, recevoir les événements folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'target_url', 'subscribed_events'],
@@ -2607,7 +2663,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                {'name': 'update_webhook',
                 'class': 'sensitive',
                 'description': 'Change a webhook: its name, target address, events, or status (active, '
-                               'inactive). subscribed_events REPLACES the events.',
+                               'inactive). subscribed_events REPLACES the events. In French: modifier un '
+                               'webhook folk, désactiver un webhook folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],
@@ -2668,7 +2725,8 @@ DESCRIPTION = {'connector': {'name': 'folk',
                 'cost': {'per': 'request'}},
                {'name': 'delete_webhook',
                 'class': 'sensitive',
-                'description': 'Delete a webhook; folk stops posting its events.',
+                'description': 'Delete a webhook; folk stops posting its events. In French: supprimer un '
+                               'webhook folk, effacer un webhook folk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],

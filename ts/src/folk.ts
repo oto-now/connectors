@@ -6,7 +6,7 @@ export const getCurrentUser = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get the workspace user behind the API key: id, full name, email.",
+  description: "Get the workspace user behind the API key: id, full name, email. In French: mon compte folk, utilisateur de la clé api folk.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who the key belongs to", input: {} },
@@ -28,7 +28,7 @@ export const getUser = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one workspace user by id (usr_…): full name, email. The id me gives the user behind the API key.",
+  description: "Get one workspace user by id (usr_…): full name, email. The id me gives the user behind the API key. In French: détail d'un utilisateur folk, fiche d'un membre de l'espace folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -56,7 +56,7 @@ export const listUsers = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the workspace users (up to 100): id, full name, email. When more remain, the answer gives data.pagination.nextLink: pass the cursor parameter of that link as cursor for the next page.",
+  description: "List one page of the workspace users (up to 100): id, full name, email. When more remain, the answer gives data.pagination.nextLink: pass the cursor parameter of that link as cursor for the next page. In French: lister les utilisateurs folk, membres de l'espace de travail folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -90,7 +90,7 @@ export const listGroups = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the workspace groups (up to 100): id, name. A group holds people, companies and its own object types (deals). When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the workspace groups (up to 100): id, name. A group holds people, companies and its own object types (deals). When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: lister les groupes folk, groupes de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -123,7 +123,7 @@ export const createGroup = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Create a group in the workspace. A public group is open to every workspace member; a private one to its members only.",
+  description: "Create a group in the workspace. A public group is open to every workspace member; a private one to its members only. In French: créer un groupe folk, nouveau groupe de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -153,7 +153,7 @@ export const updateGroup = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Rename a group or change its visibility (public: every workspace member; private: its members only).",
+  description: "Rename a group or change its visibility (public: every workspace member; private: its members only). In French: renommer un groupe folk, modifier la visibilité d'un groupe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -184,7 +184,7 @@ export const listGroupMembers = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the members of a group (up to 100), with their role (admin, contributor, reader). Every workspace member is a member of a public group. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the members of a group (up to 100), with their role (admin, contributor, reader). Every workspace member is a member of a public group. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: membres d'un groupe folk, accès à un groupe folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -219,7 +219,7 @@ export const addGroupMember = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Give a workspace user access to a group, with a role: admin, contributor or reader.",
+  description: "Give a workspace user access to a group, with a role: admin, contributor or reader. In French: ajouter un membre à un groupe, donner accès à un groupe folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -250,7 +250,7 @@ export const updateGroupMember = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Change the role of a group member (admin, contributor, reader).",
+  description: "Change the role of a group member (admin, contributor, reader). In French: changer le rôle d'un membre du groupe, modifier les droits sur un groupe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -281,7 +281,7 @@ export const removeGroupMember = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Remove a user from a group; they no longer see it.",
+  description: "Remove a user from a group; they no longer see it. In French: retirer un membre d'un groupe, enlever l'accès à un groupe folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -312,7 +312,7 @@ export const getGroupCustomFields = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the custom fields a group defines for an entity type (up to 100): name, type, options. entity_type is person, company, or the name of an object type of the group (deals). When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the custom fields a group defines for an entity type (up to 100): name, type, options. entity_type is person, company, or the name of an object type of the group (deals). When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: champs personnalisés d'un groupe, lister les colonnes d'un groupe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -352,7 +352,7 @@ export const getGroupCustomField = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one custom field of a group by its name (as shown in folk), with its type and options.",
+  description: "Get one custom field of a group by its name (as shown in folk), with its type and options. In French: détail d'un champ personnalisé, options d'un champ de groupe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -387,7 +387,7 @@ export const createGroupCustomField = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Create a custom field in a group for an entity type. type: textField, dateField, userField, contactField (people or companies), objectField (person or company only: creates an object type), singleSelect and multipleSelect (with options), numericField (with config). An object type cannot have contactField or objectField fields.",
+  description: "Create a custom field in a group for an entity type. type: textField, dateField, userField, contactField (people or companies), objectField (person or company only: creates an object type), singleSelect and multipleSelect (with options), numericField (with config). An object type cannot have contactField or objectField fields. In French: créer un champ personnalisé, ajouter une colonne à un groupe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -464,7 +464,7 @@ export const updateGroupCustomField = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Change a custom field of a group: rename it, change a numeric format, add, change or remove select options. Removing an option empties it on every record that holds it.",
+  description: "Change a custom field of a group: rename it, change a numeric format, add, change or remove select options. Removing an option empties it on every record that holds it. In French: modifier un champ personnalisé, ajouter une option de sélection.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -551,7 +551,7 @@ export const listPeople = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the people of the workspace (up to 100), filtered by the fields given: a text field matches when it contains the value (full_name, first_name, last_name, job_title, description, emails, phones, addresses, urls), groups and companies when the person belongs to that group or company (its id). Filters combine with AND. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the people of the workspace (up to 100), filtered by the fields given: a text field matches when it contains the value (full_name, first_name, last_name, job_title, description, emails, phones, addresses, urls), groups and companies when the person belongs to that group or company (its id). Filters combine with AND. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: lister les contacts folk, chercher un contact folk, contacts d'un groupe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -597,7 +597,7 @@ export const getPerson = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one person by id (per_…): names, job title, emails, phones, addresses, urls, birthday, companies, groups, and the custom field values of each group (customFieldValues, by group id then field name).",
+  description: "Get one person by id (per_…): names, job title, emails, phones, addresses, urls, birthday, companies, groups, and the custom field values of each group (customFieldValues, by group id then field name). In French: fiche d'un contact folk, détail d'une personne folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -624,7 +624,7 @@ export const createPerson = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Create a person. groups puts them in groups ([{id}]); companies links companies, an existing one by id or one created by name ([{id}] or [{name}]); custom_field_values sets the custom fields of a group the person is in ({groupId: {fieldName: value}}). folk merges a detected duplicate in the background.",
+  description: "Create a person. groups puts them in groups ([{id}]); companies links companies, an existing one by id or one created by name ([{id}] or [{name}]); custom_field_values sets the custom fields of a group the person is in ({groupId: {fieldName: value}}). folk merges a detected duplicate in the background. In French: créer un contact folk, ajouter une personne dans folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -728,7 +728,7 @@ export const updatePerson = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Change a person: only the fields given change. A list given REPLACES the current one (emails, phones, companies, groups…): read the person first to keep what stays. Leaving a group out takes the person out of it, with that group's custom field values. custom_field_values changes the fields named, by group id then field name.",
+  description: "Change a person: only the fields given change. A list given REPLACES the current one (emails, phones, companies, groups…): read the person first to keep what stays. Leaving a group out takes the person out of it, with that group's custom field values. custom_field_values changes the fields named, by group id then field name. In French: modifier un contact folk, mettre à jour une personne folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -831,7 +831,7 @@ export const deletePerson = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Delete a person from the workspace, with their notes and field values.",
+  description: "Delete a person from the workspace, with their notes and field values. In French: supprimer un contact folk, effacer une personne folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -859,7 +859,7 @@ export const listCompanies = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the companies of the workspace (up to 100), filtered by the fields given: a text field matches when it contains the value (name, description, emails, phones, addresses, urls, industry, employee_range), groups when the company belongs to that group (its id). Filters combine with AND. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the companies of the workspace (up to 100), filtered by the fields given: a text field matches when it contains the value (name, description, emails, phones, addresses, urls, industry, employee_range), groups when the company belongs to that group (its id). Filters combine with AND. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: lister les entreprises folk, chercher une société folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -902,7 +902,7 @@ export const getCompany = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one company by id (com_…): name, description, industry, funding, foundation year, employee range, emails, phones, addresses, urls, groups, and the custom field values of each group.",
+  description: "Get one company by id (com_…): name, description, industry, funding, foundation year, employee range, emails, phones, addresses, urls, groups, and the custom field values of each group. In French: fiche d'une entreprise folk, détail d'une société folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -929,7 +929,7 @@ export const createCompany = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Create a company. A company named exactly like an existing one (same case) UPDATES that company instead. groups puts it in groups ([{id}]); custom_field_values sets the custom fields of a group it is in.",
+  description: "Create a company. A company named exactly like an existing one (same case) UPDATES that company instead. groups puts it in groups ([{id}]); custom_field_values sets the custom fields of a group it is in. In French: créer une entreprise folk, ajouter une société dans folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1014,7 +1014,7 @@ export const updateCompany = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Change a company: only the fields given change. A list given REPLACES the current one (emails, phones, urls, addresses, groups): read the company first to keep what stays. Leaving a group out takes the company out of it, with that group's custom field values.",
+  description: "Change a company: only the fields given change. A list given REPLACES the current one (emails, phones, urls, addresses, groups): read the company first to keep what stays. Leaving a group out takes the company out of it, with that group's custom field values. In French: modifier une entreprise folk, mettre à jour une société folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1099,7 +1099,7 @@ export const deleteCompany = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Delete a company from the workspace.",
+  description: "Delete a company from the workspace. In French: supprimer une entreprise folk, effacer une société folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1127,7 +1127,7 @@ export const listDeals = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the objects of one type in a group (up to 100): deals, or any object type of the group. name matches when it contains the value; companies when the object is linked to that company (its id). When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the objects of one type in a group (up to 100): deals, or any object type of the group. name matches when it contains the value; companies when the object is linked to that company (its id). When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: lister les affaires folk, pipeline commercial folk, opportunités d'un groupe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1169,7 +1169,7 @@ export const getDeal = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one object of a group (a deal) by id (obj_…): name, linked people and companies, custom field values (status, amount…).",
+  description: "Get one object of a group (a deal) by id (obj_…): name, linked people and companies, custom field values (status, amount…). In French: détail d'une affaire folk, fiche d'une opportunité folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1204,7 +1204,7 @@ export const createDeal = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Create an object of a group (a deal), linked to people and companies ([{id}], 20 each at most), with custom field values by field name ({Status: Qualified, Amount: 12000}).",
+  description: "Create an object of a group (a deal), linked to people and companies ([{id}], 20 each at most), with custom field values by field name ({Status: Qualified, Amount: 12000}). In French: créer une affaire folk, nouvelle opportunité folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1266,7 +1266,7 @@ export const updateDeal = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Change an object of a group (a deal): only the fields given change. people and companies REPLACE the current links; custom_field_values changes the fields named.",
+  description: "Change an object of a group (a deal): only the fields given change. people and companies REPLACE the current links; custom_field_values changes the fields named. In French: modifier une affaire folk, changer le statut d'une opportunité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1323,7 +1323,7 @@ export const deleteDeal = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Delete an object of a group (a deal).",
+  description: "Delete an object of a group (a deal). In French: supprimer une affaire folk, effacer une opportunité folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1359,7 +1359,7 @@ export const createPeopleBatch = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Create up to 100 people in one request, each record as create_person's body in folk's names (firstName, emails, groups [{id}]…). Each record is created on its own: the answer gives one result per record, in order, succeeded with its data or failed with its error.",
+  description: "Create up to 100 people in one request, each record as create_person's body in folk's names (firstName, emails, groups [{id}]…). Each record is created on its own: the answer gives one result per record, in order, succeeded with its data or failed with its error. In French: créer des contacts en masse, importer des contacts folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1476,7 +1476,7 @@ export const updatePeopleBatch = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Update up to 100 people in one request, each record {id, fields of update_person}. Lists REPLACE, groups included: leaving a group out takes the person out of it with that group's custom field values. Several records for one person are merged in order, the last value winning. One result per record, in order.",
+  description: "Update up to 100 people in one request, each record {id, fields of update_person}. Lists REPLACE, groups included: leaving a group out takes the person out of it with that group's custom field values. Several records for one person are merged in order, the last value winning. One result per record, in order. In French: modifier des contacts en masse, mise à jour groupée de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1595,7 +1595,7 @@ export const createCompaniesBatch = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Create up to 100 companies in one request, each record as create_company's body (name, industry, groups [{id}]…). A record named exactly like an existing company UPDATES it; its result says so (operation created or updated). One result per record, in order.",
+  description: "Create up to 100 companies in one request, each record as create_company's body (name, industry, groups [{id}]…). A record named exactly like an existing company UPDATES it; its result says so (operation created or updated). One result per record, in order. In French: créer des entreprises en masse, importer des sociétés folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1693,7 +1693,7 @@ export const updateCompaniesBatch = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Update up to 100 companies in one request, each record {id, fields of update_company}. Lists and groups REPLACE the current ones. One result per record, in order.",
+  description: "Update up to 100 companies in one request, each record {id, fields of update_company}. Lists and groups REPLACE the current ones. One result per record, in order. In French: modifier des entreprises en masse, mise à jour groupée de sociétés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1793,7 +1793,7 @@ export const createDealsBatch = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Create up to 100 objects of one type in a group (deals) in one request, each record {name, people [{id}], companies [{id}], customFieldValues by field name}. Never matched with existing objects: two records with the same name make two deals. One result per record, in order.",
+  description: "Create up to 100 objects of one type in a group (deals) in one request, each record {name, people [{id}], companies [{id}], customFieldValues by field name}. Never matched with existing objects: two records with the same name make two deals. One result per record, in order. In French: créer des affaires en masse, importer des opportunités folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1861,7 +1861,7 @@ export const updateDealsBatch = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Update up to 100 objects of one type in a group (deals) in one request, each record {id, fields of update_deal}. Records of one object are merged in order (customFieldValues field by field, the last value winning) and validated as a whole. One result per record, in order.",
+  description: "Update up to 100 objects of one type in a group (deals) in one request, each record {id, fields of update_deal}. Records of one object are merged in order (customFieldValues field by field, the last value winning) and validated as a whole. One result per record, in order. In French: modifier des affaires en masse, mise à jour groupée d'opportunités.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1931,7 +1931,7 @@ export const listNotes = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the notes of the workspace (up to 100), each with the person or company it is on (entity.id). folk ignores a filter by entity: to find the notes of one person, page through and keep those whose entity.id matches. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the notes of the workspace (up to 100), each with the person or company it is on (entity.id). folk ignores a filter by entity: to find the notes of one person, page through and keep those whose entity.id matches. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: lister les notes folk, notes d'un contact folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1964,7 +1964,7 @@ export const createNote = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Write a note on a person or a company (entity {id}): public, seen by the workspace, or private to the user behind the key.",
+  description: "Write a note on a person or a company (entity {id}): public, seen by the workspace, or private to the user behind the key. In French: ajouter une note à un contact, écrire une note sur une entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2001,7 +2001,7 @@ export const updateNote = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Change the content or the visibility of a note.",
+  description: "Change the content or the visibility of a note. In French: modifier une note folk, changer la visibilité d'une note.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2032,7 +2032,7 @@ export const deleteNote = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Delete a note.",
+  description: "Delete a note. In French: supprimer une note folk, effacer une note folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2060,7 +2060,7 @@ export const createInteraction = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Log an interaction with a person or a company (entity {id}): a call, a meeting, a message, a coffee… (type, or an emoji), its title, content and date-time (ISO 8601).",
+  description: "Log an interaction with a person or a company (entity {id}): a call, a meeting, a message, a coffee… (type, or an emoji), its title, content and date-time (ISO 8601). In French: enregistrer une interaction, noter un appel avec un contact, consigner un rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2109,7 +2109,7 @@ export const listPastInteractions = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the past interactions with a person or a company (emails, meetings, messages, logged calls), newest first, 30 per page (beta at folk, deprecated since 2026-09-29). An active contact can hold hundreds: read the first page, page on only if needed, passing the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the past interactions with a person or a company (emails, meetings, messages, logged calls), newest first, 30 per page (beta at folk, deprecated since 2026-09-29). An active contact can hold hundreds: read the first page, page on only if needed, passing the cursor parameter of data.pagination.nextLink as cursor. In French: historique des échanges avec un contact, interactions passées, derniers emails avec une entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2143,7 +2143,7 @@ export const listUpcomingInteractions = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the upcoming interactions with a person or a company (scheduled meetings), 30 per page (beta at folk, deprecated since 2026-09-29). When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the upcoming interactions with a person or a company (scheduled meetings), 30 per page (beta at folk, deprecated since 2026-09-29). When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: prochains rendez-vous avec un contact, interactions à venir.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2177,7 +2177,7 @@ export const getInteraction = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one interaction, with the person or company it is on (entity_id, required by folk): the full email or calendar body when privacy rules allow it (beta at folk).",
+  description: "Get one interaction, with the person or company it is on (entity_id, required by folk): the full email or calendar body when privacy rules allow it (beta at folk). In French: détail d'une interaction, contenu d'un échange avec un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2212,7 +2212,7 @@ export const updateInteraction = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Change a logged interaction (title, content, date_time, activity_type), with the person or company it is on (entity {id}, required by folk). An imported interaction (email, calendar, WhatsApp) cannot be changed.",
+  description: "Change a logged interaction (title, content, date_time, activity_type), with the person or company it is on (entity {id}, required by folk). An imported interaction (email, calendar, WhatsApp) cannot be changed. In French: modifier une interaction folk, corriger un échange consigné.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2267,7 +2267,7 @@ export const deleteInteraction = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Delete a logged interaction, with the person or company it is on. An imported interaction cannot be deleted.",
+  description: "Delete a logged interaction, with the person or company it is on. An imported interaction cannot be deleted. In French: supprimer une interaction folk, effacer un échange consigné.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2303,7 +2303,7 @@ export const listTasks = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the tasks of the workspace (up to 100): title, due date, completion, person or company, assignees. only_assigned_to_me keeps the tasks assigned to the user behind the key. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the tasks of the workspace (up to 100): title, due date, completion, person or company, assignees. only_assigned_to_me keeps the tasks assigned to the user behind the key. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: lister les tâches folk, mes tâches à faire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2337,7 +2337,7 @@ export const getTask = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one task by id.",
+  description: "Get one task by id. In French: détail d'une tâche folk, lire une tâche folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2364,7 +2364,7 @@ export const createTask = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Create a task on a person or a company (entity {id}), due on a date (YYYY-MM-DD) and optionally at a time (HH:mm), possibly recurring, assigned to users by id or by email (not both in one call). A task completes only by mark_task_done.",
+  description: "Create a task on a person or a company (entity {id}), due on a date (YYYY-MM-DD) and optionally at a time (HH:mm), possibly recurring, assigned to users by id or by email (not both in one call). A task completes only by mark_task_done. In French: créer une tâche folk, programmer une relance.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2432,7 +2432,7 @@ export const updateTask = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Change a task: only the fields given change; assigned_users REPLACES the assignees (all by id or all by email). Completion is mark_task_done and mark_task_todo, not this.",
+  description: "Change a task: only the fields given change; assigned_users REPLACES the assignees (all by id or all by email). Completion is mark_task_done and mark_task_todo, not this. In French: modifier une tâche folk, réassigner une tâche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2501,7 +2501,7 @@ export const deleteTask = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Delete a task.",
+  description: "Delete a task. In French: supprimer une tâche folk, effacer une tâche folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2529,7 +2529,7 @@ export const markTaskDone = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Mark a task as done at a date-time (ISO 8601, UTC). Closing a task already closed changes nothing.",
+  description: "Mark a task as done at a date-time (ISO 8601, UTC). Closing a task already closed changes nothing. In French: terminer une tâche, marquer une tâche comme faite.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2564,7 +2564,7 @@ export const markTaskTodo = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Reopen a task (its completion date is cleared).",
+  description: "Reopen a task (its completion date is cleared). In French: rouvrir une tâche, marquer une tâche à faire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2591,7 +2591,7 @@ export const listReminders = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the reminders of the workspace (up to 100). Deprecated at folk (removed on 2027-02-13): prefer tasks. folk ignores a filter by entity: keep those whose entity.id matches. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the reminders of the workspace (up to 100). Deprecated at folk (removed on 2027-02-13): prefer tasks. folk ignores a filter by entity: keep those whose entity.id matches. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: lister les rappels folk, rappels sur les contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2624,7 +2624,7 @@ export const createReminder = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Create a reminder on a person or a company (entity {id}), with an iCalendar recurrence rule. Deprecated at folk (removed on 2027-02-13): prefer create_task.",
+  description: "Create a reminder on a person or a company (entity {id}), with an iCalendar recurrence rule. Deprecated at folk (removed on 2027-02-13): prefer create_task. In French: créer un rappel folk, rappel récurrent sur un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2667,7 +2667,7 @@ export const getReminder = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one reminder by id. Deprecated at folk (removed on 2027-02-13).",
+  description: "Get one reminder by id. Deprecated at folk (removed on 2027-02-13). In French: détail d'un rappel folk, lire un rappel folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2694,7 +2694,7 @@ export const updateReminder = defineFunction({
   connector: "folk",
   class: "write",
   act: true,
-  description: "Change a reminder: name, recurrence rule, visibility, assignees (all by id or all by email). Deprecated at folk (removed on 2027-02-13).",
+  description: "Change a reminder: name, recurrence rule, visibility, assignees (all by id or all by email). Deprecated at folk (removed on 2027-02-13). In French: modifier un rappel folk, changer la récurrence d'un rappel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2755,7 +2755,7 @@ export const deleteReminder = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Delete a reminder.",
+  description: "Delete a reminder. In French: supprimer un rappel folk, effacer un rappel folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2783,7 +2783,7 @@ export const listWebhooks = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "List one page of the webhooks of the workspace (up to 100): name, target address, subscribed events, status, the signing secret redacted. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor.",
+  description: "List one page of the webhooks of the workspace (up to 100): name, target address, subscribed events, status, the signing secret redacted. When more remain, pass the cursor parameter of data.pagination.nextLink as cursor. In French: lister les webhooks folk, webhooks de l'espace folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2816,7 +2816,7 @@ export const getWebhook = defineFunction({
   connector: "folk",
   class: "read",
   act: false,
-  description: "Get one webhook by id (wbk_…), the signing secret redacted.",
+  description: "Get one webhook by id (wbk_…), the signing secret redacted. In French: détail d'un webhook folk, lire un webhook folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2843,7 +2843,7 @@ export const createWebhook = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Have folk post the workspace's events to an https address: people, companies, objects, notes and reminders created, updated or deleted (person.created…), each event optionally filtered (filter: groupId, objectType, path, value). The answer never carries the signing secret.",
+  description: "Have folk post the workspace's events to an https address: people, companies, objects, notes and reminders created, updated or deleted (person.created…), each event optionally filtered (filter: groupId, objectType, path, value). The answer never carries the signing secret. In French: créer un webhook folk, recevoir les événements folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2921,7 +2921,7 @@ export const updateWebhook = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Change a webhook: its name, target address, events, or status (active, inactive). subscribed_events REPLACES the events.",
+  description: "Change a webhook: its name, target address, events, or status (active, inactive). subscribed_events REPLACES the events. In French: modifier un webhook folk, désactiver un webhook folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3000,7 +3000,7 @@ export const deleteWebhook = defineFunction({
   connector: "folk",
   class: "sensitive",
   act: true,
-  description: "Delete a webhook; folk stops posting its events.",
+  description: "Delete a webhook; folk stops posting its events. In French: supprimer un webhook folk, effacer un webhook folk.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3027,7 +3027,7 @@ export const connector = defineConnector({
   name: "folk",
   label: "folk",
   namespace: "folk",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v1 (OpenAPI 2025-06-09)",
   baseUrl: "https://api.folk.app/v1",
   auth: {"kind": "bearer", "token": "api_key"},

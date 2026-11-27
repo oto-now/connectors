@@ -1,4 +1,4 @@
-"""La description `brevo` 2.0.0 : celle du client existant (`oto.tools.brevo`).
+"""La description `brevo` 2.0.1 : celle du client existant (`oto.tools.brevo`).
 
 Une fonction par requête : une méthode du client qui envoie une seule requête à une seule route est la fonction de son
 nom ; une méthode qui choisit sa route par un argument est une fonction par route, l'argument fixé par la fonction
@@ -416,7 +416,7 @@ def _node(function: dict, path: tuple) -> dict:
 
 def test_the_description_is_version_1_0_0_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "2.0.0"
+    assert description["connector"]["version"] == "2.0.1"
     check(description, BREVO)
 
 

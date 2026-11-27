@@ -6,7 +6,7 @@ export const getAccount = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Get the Klaviyo account the private key belongs to: {data: [{type: account, id, attributes: {contact_information: {organization_name, default_sender_name, default_sender_email, website_url, street_address}, industry, timezone, preferred_currency, public_api_key, locale}}]}, always one account. Checks that the key works and which account it reaches. Scope accounts:read; at most 1 call per second and 15 per minute.",
+  description: "Get the Klaviyo account the private key belongs to: {data: [{type: account, id, attributes: {contact_information: {organization_name, default_sender_name, default_sender_email, website_url, street_address}, industry, timezone, preferred_currency, public_api_key, locale}}]}, always one account. Checks that the key works and which account it reaches. Scope accounts:read; at most 1 call per second and 15 per minute. In French: compte klaviyo, informations du compte klaviyo.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The account of the key", input: {} },
@@ -28,7 +28,7 @@ export const listProfiles = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List the profiles of the account: {data: [{type: profile, id, attributes: {email, phone_number, external_id, first_name, last_name, organization, title, locale, location, properties, created, updated, last_event_date}}], links: {self, next, prev}}. The id (26 characters, 01H...) is what get_profile, the list membership functions and filters on profile_id take. To find one person, filter equals(email,\"jane@example.com\") rather than paging. links.next is a full URL: for the next page, pass the value of its page[cursor] parameter as page_cursor; no links.next means the last page. Scope profiles:read.",
+  description: "List the profiles of the account: {data: [{type: profile, id, attributes: {email, phone_number, external_id, first_name, last_name, organization, title, locale, location, properties, created, updated, last_event_date}}], links: {self, next, prev}}. The id (26 characters, 01H...) is what get_profile, the list membership functions and filters on profile_id take. To find one person, filter equals(email,\"jane@example.com\") rather than paging. links.next is a full URL: for the next page, pass the value of its page[cursor] parameter as page_cursor; no links.next means the last page. Scope profiles:read. In French: lister les profils klaviyo, chercher un abonné, chercher un profil par email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -91,7 +91,7 @@ export const getProfile = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Get one profile by its id (from list_profiles or a list or segment): {data: {type: profile, id, attributes: {email, phone_number, external_id, first_name, last_name, organization, title, locale, location, properties, created, updated, last_event_date}}, included}. include: [lists, segments] adds the lists and segments it belongs to in included. Scopes profiles:read, plus lists:read or segments:read for include.",
+  description: "Get one profile by its id (from list_profiles or a list or segment): {data: {type: profile, id, attributes: {email, phone_number, external_id, first_name, last_name, organization, title, locale, location, properties, created, updated, last_event_date}}, included}. include: [lists, segments] adds the lists and segments it belongs to in included. Scopes profiles:read, plus lists:read or segments:read for include. In French: fiche d'un profil klaviyo, détail d'un abonné.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -140,7 +140,7 @@ export const createOrUpdateProfile = defineFunction({
   connector: "klaviyo",
   class: "write",
   act: true,
-  description: "Create a profile, or update the one that matches: data.id when given, else the email, phone_number or external_id in attributes. Returns {data: {type: profile, id, attributes}} with status 201 when created, 200 when updated. A field left out stays unchanged, a field set to null is cleared; properties merges custom properties. meta.patch_properties appends to, removes from or unsets custom properties. This does not change marketing consent. Scope profiles:write.",
+  description: "Create a profile, or update the one that matches: data.id when given, else the email, phone_number or external_id in attributes. Returns {data: {type: profile, id, attributes}} with status 201 when created, 200 when updated. A field left out stays unchanged, a field set to null is cleared; properties merges custom properties. meta.patch_properties appends to, removes from or unsets custom properties. This does not change marketing consent. Scope profiles:write. In French: créer un profil klaviyo, mettre à jour un abonné.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -243,7 +243,7 @@ export const listLists = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List the lists of the account, at most 10 per page: {data: [{type: list, id, attributes: {name, created, updated, opt_in_process}}], links: {next}}. The id (6 characters, e.g. Y6nRLr) is what get_list, list_profiles_in_list and the membership and consent functions take. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope lists:read.",
+  description: "List the lists of the account, at most 10 per page: {data: [{type: list, id, attributes: {name, created, updated, opt_in_process}}], links: {next}}. The id (6 characters, e.g. Y6nRLr) is what get_list, list_profiles_in_list and the membership and consent functions take. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope lists:read. In French: listes klaviyo, listes d'abonnés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -282,7 +282,7 @@ export const getList = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Get one list by its id: {data: {type: list, id, attributes: {name, created, updated, opt_in_process}}}. opt_in_process is double_opt_in when subscribing to it sends a confirmation message. additional_fields: [profile_count] adds the member count, paced by Klaviyo at 1 call per second and 15 per minute. Scope lists:read.",
+  description: "Get one list by its id: {data: {type: list, id, attributes: {name, created, updated, opt_in_process}}}. opt_in_process is double_opt_in when subscribing to it sends a confirmation message. additional_fields: [profile_count] adds the member count, paced by Klaviyo at 1 call per second and 15 per minute. Scope lists:read. In French: détail d'une liste klaviyo, double opt-in d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -318,7 +318,7 @@ export const listProfilesInList = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List the profiles that belong to one list: {data: [{type: profile, id, attributes: {email, phone_number, external_id, first_name, last_name, properties, ...}}], links: {next}}. For the next page, pass the page[cursor] value of links.next as page_cursor. Scopes lists:read and profiles:read.",
+  description: "List the profiles that belong to one list: {data: [{type: profile, id, attributes: {email, phone_number, external_id, first_name, last_name, properties, ...}}], links: {next}}. For the next page, pass the page[cursor] value of links.next as page_cursor. Scopes lists:read and profiles:read. In French: abonnés d'une liste, profils d'une liste klaviyo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -365,7 +365,7 @@ export const addProfilesToList = defineFunction({
   connector: "klaviyo",
   class: "sensitive",
   act: true,
-  description: "Add existing profiles to a list, up to 1000 per call, by profile id (create_or_update_profile returns it). Answers 204 without a body. This does not give marketing consent: subscribe_profiles does. Flows triggered by this list (Added to List) start for the added profiles and may send them messages. Scopes lists:write and profiles:write.",
+  description: "Add existing profiles to a list, up to 1000 per call, by profile id (create_or_update_profile returns it). Answers 204 without a body. This does not give marketing consent: subscribe_profiles does. Flows triggered by this list (Added to List) start for the added profiles and may send them messages. Scopes lists:write and profiles:write. In French: ajouter des abonnés à une liste, inscrire des profils dans une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -413,7 +413,7 @@ export const removeProfilesFromList = defineFunction({
   connector: "klaviyo",
   class: "write",
   act: true,
-  description: "Remove profiles from a list, up to 1000 per call, by profile id. Answers 204 without a body. Their consent is unchanged: they only stop receiving what targets this list (unsubscribe_profiles changes consent). Scopes lists:write and profiles:write.",
+  description: "Remove profiles from a list, up to 1000 per call, by profile id. Answers 204 without a body. Their consent is unchanged: they only stop receiving what targets this list (unsubscribe_profiles changes consent). Scopes lists:write and profiles:write. In French: retirer des abonnés d'une liste, enlever des profils d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -460,7 +460,7 @@ export const listSegments = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List the segments of the account, at most 10 per page: {data: [{type: segment, id, attributes: {name, created, updated, is_active, is_processing, is_starred}}], links: {next}}. A segment is computed from its definition: its members cannot be added or removed directly. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope segments:read.",
+  description: "List the segments of the account, at most 10 per page: {data: [{type: segment, id, attributes: {name, created, updated, is_active, is_processing, is_starred}}], links: {next}}. A segment is computed from its definition: its members cannot be added or removed directly. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope segments:read. In French: segments klaviyo, lister les segments d'audience.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -499,7 +499,7 @@ export const getSegment = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Get one segment by its id: {data: {type: segment, id, attributes: {name, definition, created, updated, is_active, is_processing, is_starred}}}. additional_fields: [profile_count] adds the member count, paced by Klaviyo at 1 call per second and 15 per minute. Scope segments:read.",
+  description: "Get one segment by its id: {data: {type: segment, id, attributes: {name, definition, created, updated, is_active, is_processing, is_starred}}}. additional_fields: [profile_count] adds the member count, paced by Klaviyo at 1 call per second and 15 per minute. Scope segments:read. In French: détail d'un segment klaviyo, critères d'un segment.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -535,7 +535,7 @@ export const listProfilesInSegment = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List the profiles that belong to one segment: {data: [{type: profile, id, attributes: {email, phone_number, external_id, first_name, last_name, properties, ...}}], links: {next}}. For the next page, pass the page[cursor] value of links.next as page_cursor. Scopes segments:read and profiles:read.",
+  description: "List the profiles that belong to one segment: {data: [{type: profile, id, attributes: {email, phone_number, external_id, first_name, last_name, properties, ...}}], links: {next}}. For the next page, pass the page[cursor] value of links.next as page_cursor. Scopes segments:read and profiles:read. In French: profils d'un segment, abonnés d'un segment.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -582,7 +582,7 @@ export const listCampaigns = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List the campaigns of one channel: {data: [{type: campaign, id, attributes: {name, status, archived, audiences: {included, excluded}, send_options, tracking_options, send_strategy, created_at, scheduled_at, updated_at, send_time}}], links: {next}}. Klaviyo requires the channel in the filter: equals(messages.channel,'email'), 'sms' or 'mobile_push'. The id goes to get_campaign and to the campaign_id grouping of query_campaign_values. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope campaigns:read.",
+  description: "List the campaigns of one channel: {data: [{type: campaign, id, attributes: {name, status, archived, audiences: {included, excluded}, send_options, tracking_options, send_strategy, created_at, scheduled_at, updated_at, send_time}}], links: {next}}. Klaviyo requires the channel in the filter: equals(messages.channel,'email'), 'sms' or 'mobile_push'. The id goes to get_campaign and to the campaign_id grouping of query_campaign_values. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope campaigns:read. In French: campagnes klaviyo, campagnes emailing, campagnes sms.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -642,7 +642,7 @@ export const getCampaign = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Get one campaign by its id: {data: {type: campaign, id, attributes: {name, status, archived, audiences, send_options, tracking_options, send_strategy, created_at, scheduled_at, updated_at, send_time}, relationships: {campaign-messages, tags}}, included}. Read only: this connector neither sends nor edits a campaign. Scope campaigns:read.",
+  description: "Get one campaign by its id: {data: {type: campaign, id, attributes: {name, status, archived, audiences, send_options, tracking_options, send_strategy, created_at, scheduled_at, updated_at, send_time}, relationships: {campaign-messages, tags}}, included}. Read only: this connector neither sends nor edits a campaign. Scope campaigns:read. In French: détail d'une campagne klaviyo, audience d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -684,7 +684,7 @@ export const listFlows = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List the flows (automations) of the account, at most 50 per page: {data: [{type: flow, id, attributes: {name, status (draft, manual, live), archived, trigger_type, created, updated}}], links: {next}}. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope flows:read; Klaviyo allows 3 calls per second and 60 per minute.",
+  description: "List the flows (automations) of the account, at most 50 per page: {data: [{type: flow, id, attributes: {name, status (draft, manual, live), archived, trigger_type, created, updated}}], links: {next}}. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope flows:read; Klaviyo allows 3 calls per second and 60 per minute. In French: flux klaviyo, automatisations klaviyo, scénarios automatiques.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -738,7 +738,7 @@ export const getFlow = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Get one flow by its id: {data: {type: flow, id, attributes: {name, status, archived, trigger_type, created, updated}}}. additional_fields: [definition] adds its full definition (triggers, actions, branches). Read only: this connector neither creates nor edits a flow. Scope flows:read.",
+  description: "Get one flow by its id: {data: {type: flow, id, attributes: {name, status, archived, trigger_type, created, updated}}}. additional_fields: [definition] adds its full definition (triggers, actions, branches). Read only: this connector neither creates nor edits a flow. Scope flows:read. In French: détail d'un flux klaviyo, détail d'une automatisation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -770,7 +770,7 @@ export const listMetrics = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List the metrics (event types) of the account: {data: [{type: metric, id, attributes: {name (Placed Order, Opened Email, Clicked Email...), created, updated, integration: {name, category}}}], links: {next}}. The id goes to get_metric, to the metric_id filter of list_events, to query_metric_aggregates, and to conversion_metric_id of the values reports (usually the Placed Order metric). For the next page, pass the page[cursor] value of links.next as page_cursor. Scope metrics:read.",
+  description: "List the metrics (event types) of the account: {data: [{type: metric, id, attributes: {name (Placed Order, Opened Email, Clicked Email...), created, updated, integration: {name, category}}}], links: {next}}. The id goes to get_metric, to the metric_id filter of list_events, to query_metric_aggregates, and to conversion_metric_id of the values reports (usually the Placed Order metric). For the next page, pass the page[cursor] value of links.next as page_cursor. Scope metrics:read. In French: métriques klaviyo, types d'événements suivis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -807,7 +807,7 @@ export const getMetric = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Get one metric by its id: {data: {type: metric, id, attributes: {name, created, updated, integration}}}. Scope metrics:read.",
+  description: "Get one metric by its id: {data: {type: metric, id, attributes: {name, created, updated, integration}}}. Scope metrics:read. In French: détail d'une métrique klaviyo, lire une métrique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -842,7 +842,7 @@ export const listEvents = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "List events (a profile did something at a time): {data: [{type: event, id, attributes: {timestamp, datetime, uuid, event_properties}, relationships: {profile, metric}}], included, links: {next}}. include: [metric, profile] returns the metric name and the profile in included. Filter by metric_id or profile_id and a datetime range rather than paging the whole account. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope events:read.",
+  description: "List events (a profile did something at a time): {data: [{type: event, id, attributes: {timestamp, datetime, uuid, event_properties}, relationships: {profile, metric}}], included, links: {next}}. include: [metric, profile] returns the metric name and the profile in included. Filter by metric_id or profile_id and a datetime range rather than paging the whole account. For the next page, pass the page[cursor] value of links.next as page_cursor. Scope events:read. In French: événements d'un profil, activité d'un abonné, commandes passées par un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -882,7 +882,7 @@ export const createEvent = defineFunction({
   connector: "klaviyo",
   class: "sensitive",
   act: true,
-  description: "Record an event for a profile: the metric by name (created when new) and the profile by id, email, phone_number or external_id (created or updated with the attributes given). Answers 202 without a body: the event is queued, not yet visible. A unique_id makes a retry idempotent. Flows triggered by this metric start for the profile and may send messages, unless backfill is true. Scope events:write.",
+  description: "Record an event for a profile: the metric by name (created when new) and the profile by id, email, phone_number or external_id (created or updated with the attributes given). Answers 202 without a body: the event is queued, not yet visible. A unique_id makes a retry idempotent. Flows triggered by this metric start for the profile and may send messages, unless backfill is true. Scope events:write. In French: enregistrer un événement klaviyo, suivre une action client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1037,7 +1037,7 @@ export const queryMetricAggregates = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Aggregate the events of one metric over a time range (a POST that only reads): {data: {type: metric-aggregate, id, attributes: {dates: [...], data: [{dimensions: [...], measurements: {count: [...], unique: [...], sum_value: [...]}}]}}}, one value per date bucket and per grouping of by. filter must bound datetime with greater-or-equal and less-than. For the figures shown in Klaviyo's campaign and flow reports, prefer query_campaign_values and query_flow_values. Scope metrics:read; 3 calls per second and 60 per minute.",
+  description: "Aggregate the events of one metric over a time range (a POST that only reads): {data: {type: metric-aggregate, id, attributes: {dates: [...], data: [{dimensions: [...], measurements: {count: [...], unique: [...], sum_value: [...]}}]}}}, one value per date bucket and per grouping of by. filter must bound datetime with greater-or-equal and less-than. For the figures shown in Klaviyo's campaign and flow reports, prefer query_campaign_values and query_flow_values. Scope metrics:read; 3 calls per second and 60 per minute. In French: total d'une métrique sur une période, nombre de commandes par jour, chiffre d'affaires par période.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1162,7 +1162,7 @@ export const queryCampaignValues = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Campaign performance as shown in Klaviyo's reports (a POST that only reads): {data: {type: campaign-values-report, attributes: {results: [{groupings: {campaign_id, campaign_message_id, send_channel}, statistics: {opens, open_rate, clicks, click_rate, conversions, conversion_value, recipients, unsubscribes, ...}}]}}, links: {next}}. Rates are fractions between 0 and 1. conversion_metric_id is required even without conversion statistics: the id of the Placed Order metric, from list_metrics. The time frame spans at most one year. For the next page, pass the page_cursor value of links.next as page_cursor. Scope campaigns:read; Klaviyo allows 1 call per second, 2 per minute and 225 per day: ask for every statistic needed in one call.",
+  description: "Campaign performance as shown in Klaviyo's reports (a POST that only reads): {data: {type: campaign-values-report, attributes: {results: [{groupings: {campaign_id, campaign_message_id, send_channel}, statistics: {opens, open_rate, clicks, click_rate, conversions, conversion_value, recipients, unsubscribes, ...}}]}}, links: {next}}. Rates are fractions between 0 and 1. conversion_metric_id is required even without conversion statistics: the id of the Placed Order metric, from list_metrics. The time frame spans at most one year. For the next page, pass the page_cursor value of links.next as page_cursor. Scope campaigns:read; Klaviyo allows 1 call per second, 2 per minute and 225 per day: ask for every statistic needed in one call. In French: performance des campagnes, taux d'ouverture des campagnes, revenus des campagnes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1320,7 +1320,7 @@ export const queryFlowValues = defineFunction({
   connector: "klaviyo",
   class: "read",
   act: false,
-  description: "Flow performance as shown in Klaviyo's reports (a POST that only reads): {data: {type: flow-values-report, attributes: {results: [{groupings: {flow_id, flow_message_id, send_channel}, statistics: {...}}]}}, links: {next}}. Same statistics, time frame and conversion_metric_id as query_campaign_values. For the next page, pass the page_cursor value of links.next as page_cursor. Scope flows:read; Klaviyo allows 1 call per second, 2 per minute and 225 per day.",
+  description: "Flow performance as shown in Klaviyo's reports (a POST that only reads): {data: {type: flow-values-report, attributes: {results: [{groupings: {flow_id, flow_message_id, send_channel}, statistics: {...}}]}}, links: {next}}. Same statistics, time frame and conversion_metric_id as query_campaign_values. For the next page, pass the page_cursor value of links.next as page_cursor. Scope flows:read; Klaviyo allows 1 call per second, 2 per minute and 225 per day. In French: performance des flux, résultats des automatisations.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1477,7 +1477,7 @@ export const subscribeProfiles = defineFunction({
   connector: "klaviyo",
   class: "sensitive",
   act: true,
-  description: "Give email or SMS marketing consent to up to 1000 profiles, matched by email or phone_number (created when unknown), and add them to the list given in relationships. Answers 202: the job runs asynchronously. If the list uses double opt-in, Klaviyo sends each profile a confirmation message and subscribes it only once confirmed. Clears unsubscribe, spam report and manual suppressions. historical_import: true records consent gathered earlier (consented_at required on each channel), without confirmation message and without starting the list's flows. Only for people who did consent. Scopes subscriptions:write, profiles:write, lists:write.",
+  description: "Give email or SMS marketing consent to up to 1000 profiles, matched by email or phone_number (created when unknown), and add them to the list given in relationships. Answers 202: the job runs asynchronously. If the list uses double opt-in, Klaviyo sends each profile a confirmation message and subscribes it only once confirmed. Clears unsubscribe, spam report and manual suppressions. historical_import: true records consent gathered earlier (consented_at required on each channel), without confirmation message and without starting the list's flows. Only for people who did consent. Scopes subscriptions:write, profiles:write, lists:write. In French: abonner des profils, inscrire à la newsletter, consentement marketing.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1632,7 +1632,7 @@ export const unsubscribeProfiles = defineFunction({
   connector: "klaviyo",
   class: "sensitive",
   act: true,
-  description: "Withdraw email or SMS marketing consent from up to 100 profiles, matched by email or phone_number. Answers 202: the job runs asynchronously. With a list in relationships, profiles in that list are removed from it and unsubscribed; a profile NOT in that list, or any profile when no list is given, is unsubscribed globally, from all marketing. Check membership with list_profiles_in_list first. To only leave a list, use remove_profiles_from_list. Scopes subscriptions:write, profiles:write, lists:write.",
+  description: "Withdraw email or SMS marketing consent from up to 100 profiles, matched by email or phone_number. Answers 202: the job runs asynchronously. With a list in relationships, profiles in that list are removed from it and unsubscribed; a profile NOT in that list, or any profile when no list is given, is unsubscribed globally, from all marketing. Check membership with list_profiles_in_list first. To only leave a list, use remove_profiles_from_list. Scopes subscriptions:write, profiles:write, lists:write. In French: désabonner des profils, désinscrire de la newsletter, retirer le consentement marketing.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1765,7 +1765,7 @@ export const connector = defineConnector({
   name: "klaviyo",
   label: "Klaviyo",
   namespace: "klaviyo",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "2026-07-15",
   baseUrl: "https://a.klaviyo.com/api",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "prefix": "Klaviyo-API-Key ", "key": "api_key"},

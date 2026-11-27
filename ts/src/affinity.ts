@@ -6,7 +6,7 @@ export const getCurrentUser = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get the tenant, the user and the grant (type, scopes) of the API key, through API v2. The key acts as this user: what it writes is attributed to them and their sharing rules decide what it sees. Free of the monthly account quota.",
+  description: "Get the tenant, the user and the grant (type, scopes) of the API key, through API v2. The key acts as this user: what it writes is attributed to them and their sharing rules decide what it sees. Free of the monthly account quota. In French: utilisateur de la clé affinity, compte affinity connecté, droits de la clé api.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who the key acts as", input: {} },
@@ -27,7 +27,7 @@ export const getCurrentUserV1 = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get the same identity through API v1, which most writes use: proves the key is accepted by v1 too. Free of the monthly account quota.",
+  description: "Get the same identity through API v1, which most writes use: proves the key is accepted by v1 too. Free of the monthly account quota. In French: tester la clé api v1, identité de la clé affinity.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who the key acts as, through v1", input: {} },
@@ -48,7 +48,7 @@ export const searchPersons = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Search persons whose name or email contains term (API v1). Paged by page_size and page_token; the answer carries next_page_token. With with_interaction_dates, persons without any interaction are left out.",
+  description: "Search persons whose name or email contains term (API v1). Paged by page_size and page_token; the answer carries next_page_token. With with_interaction_dates, persons without any interaction are left out. In French: chercher une personne, trouver un contact par email, rechercher un contact par nom.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -78,7 +78,7 @@ export const searchOrganizations = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Search organizations (companies) whose name or domain contains term (API v1). Paged by page_size and page_token; the answer carries next_page_token.",
+  description: "Search organizations (companies) whose name or domain contains term (API v1). Paged by page_size and page_token; the answer carries next_page_token. In French: chercher une entreprise, trouver une société par domaine, rechercher une organisation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -111,7 +111,7 @@ export const getPerson = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get one person by id (API v2). No field data comes back unless field_ids or field_types is given; list-specific fields are readable only through list entries.",
+  description: "Get one person by id (API v2). No field data comes back unless field_ids or field_types is given; list-specific fields are readable only through list entries. In French: fiche d'une personne, détail d'un contact, champs d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -151,7 +151,7 @@ export const getCompany = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get one company by id (API v2). No field data comes back unless field_ids or field_types is given.",
+  description: "Get one company by id (API v2). No field data comes back unless field_ids or field_types is given. In French: fiche d'une entreprise, détail d'une société, champs d'une organisation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -191,7 +191,7 @@ export const getOpportunity = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get one opportunity by id (API v2): name and list. Opportunities have no global fields: their field values live on their list entry.",
+  description: "Get one opportunity by id (API v2): name and list. Opportunities have no global fields: their field values live on their list entry. In French: fiche d'une opportunité, détail d'un deal.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -219,7 +219,7 @@ export const getEntityV1 = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get a person, organization or opportunity through API v1: the record with its association ids (organization_ids, person_ids), which v2 does not return. Read it before a v1 update, since v1 updates REPLACE those arrays.",
+  description: "Get a person, organization or opportunity through API v1: the record with its association ids (organization_ids, person_ids), which v2 does not return. Read it before a v1 update, since v1 updates REPLACE those arrays. In French: associations d'un contact, sociétés liées à une personne, contacts liés à une opportunité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -248,7 +248,7 @@ export const listEntityListEntries = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List every list a person or company is on, with ALL its field values (list fields included), through API v2. Paged by limit and cursor; the next cursor is in the query string of pagination.nextUrl. An opportunity has a single list entry: read it from its list.",
+  description: "List every list a person or company is on, with ALL its field values (list fields included), through API v2. Paged by limit and cursor; the next cursor is in the query string of pagination.nextUrl. An opportunity has a single list entry: read it from its list. In French: listes d'un contact, listes où figure une entreprise, champs de liste d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -279,7 +279,7 @@ export const listRelationships = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the connections of a person or company with their interactionScore (0 to 1, 0.7 and above is regular contact), strongest first, through API v2. Persons and companies only. Paged by limit and cursor.",
+  description: "List the connections of a person or company with their interactionScore (0 to 1, 0.7 and above is regular contact), strongest first, through API v2. Persons and companies only. Paged by limit and cursor. In French: relations d'un contact, force des relations, qui connaît cette personne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -310,7 +310,7 @@ export const listGlobalFields = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the global and enriched fields of persons or companies with their valueType, through API v2. Opportunities have no global fields: read the fields of their list. Paged by limit and cursor.",
+  description: "List the global and enriched fields of persons or companies with their valueType, through API v2. Opportunities have no global fields: read the fields of their list. Paged by limit and cursor. In French: champs globaux affinity, champs des contacts, champs des entreprises.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -340,7 +340,7 @@ export const listGlobalFieldDropdownOptions = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the options of a dropdown global field of persons or companies, through API v2. A dropdown is written with an option id, never the option text.",
+  description: "List the options of a dropdown global field of persons or companies, through API v2. A dropdown is written with an option id, never the option text. In French: options d'un menu déroulant, valeurs possibles d'un champ global.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -371,7 +371,7 @@ export const createPerson = defineFunction({
   connector: "affinity",
   class: "write",
   act: true,
-  description: "Create a person (API v1). Fails if one of the emails already belongs to another person: search first.",
+  description: "Create a person (API v1). Fails if one of the emails already belongs to another person: search first. In French: créer un contact, ajouter une personne, nouveau contact affinity.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -402,7 +402,7 @@ export const updatePerson = defineFunction({
   connector: "affinity",
   class: "write",
   act: true,
-  description: "Change a person's name, emails or organizations (API v1). emails and organization_ids REPLACE the current sets: send the existing values too to add one (get_entity_v1 returns them).",
+  description: "Change a person's name, emails or organizations (API v1). emails and organization_ids REPLACE the current sets: send the existing values too to add one (get_entity_v1 returns them). In French: modifier un contact, changer l'email d'un contact, rattacher un contact à une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -441,7 +441,7 @@ export const createOrganization = defineFunction({
   connector: "affinity",
   class: "write",
   act: true,
-  description: "Create an organization (company) through API v1. Affinity does NOT refuse a duplicate domain: search first.",
+  description: "Create an organization (company) through API v1. Affinity does NOT refuse a duplicate domain: search first. In French: créer une entreprise, ajouter une société, nouvelle organisation affinity.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -471,7 +471,7 @@ export const updateOrganization = defineFunction({
   connector: "affinity",
   class: "write",
   act: true,
-  description: "Change an organization's name, domain or persons (API v1). person_ids REPLACES the current set. Global organizations cannot be changed.",
+  description: "Change an organization's name, domain or persons (API v1). person_ids REPLACES the current set. Global organizations cannot be changed. In French: modifier une entreprise, renommer une société, rattacher des contacts à une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -509,7 +509,7 @@ export const createOpportunity = defineFunction({
   connector: "affinity",
   class: "write",
   act: true,
-  description: "Create an opportunity in an opportunity-type list (API v1): the only way an opportunity joins its list.",
+  description: "Create an opportunity in an opportunity-type list (API v1): the only way an opportunity joins its list. In French: créer une opportunité, nouveau deal, ajouter une affaire au pipeline.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -540,7 +540,7 @@ export const updateOpportunity = defineFunction({
   connector: "affinity",
   class: "write",
   act: true,
-  description: "Change an opportunity's name, persons or organizations (API v1). The association arrays REPLACE the current sets.",
+  description: "Change an opportunity's name, persons or organizations (API v1). The association arrays REPLACE the current sets. In French: modifier une opportunité, renommer un deal, rattacher un contact à une affaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -582,7 +582,7 @@ export const listLists = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the lists the key's user can see (API v2), optionally by name. Paged by limit and cursor.",
+  description: "List the lists the key's user can see (API v2), optionally by name. Paged by limit and cursor. In French: lister les listes affinity, voir mes listes, listes de deals.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -611,7 +611,7 @@ export const getList = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get one list (API v2): name, type (person, company or opportunity), owner.",
+  description: "Get one list (API v2): name, type (person, company or opportunity), owner. In French: détail d'une liste, type d'une liste affinity.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -639,7 +639,7 @@ export const listListFields = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List every field shown on a list (list, global, enriched…) with its valueType and isRequired (API v2). Paged by limit and cursor.",
+  description: "List every field shown on a list (list, global, enriched…) with its valueType and isRequired (API v2). Paged by limit and cursor. In French: colonnes d'une liste, champs d'une liste affinity.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -669,7 +669,7 @@ export const listListFieldDropdownOptions = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the options of a dropdown field of a list (API v2). A dropdown is written with an option id, never the option text.",
+  description: "List the options of a dropdown field of a list (API v2). A dropdown is written with an option id, never the option text. In French: options d'une colonne de liste, valeurs possibles d'un statut de liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -700,7 +700,7 @@ export const listSavedViews = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the saved views of a list (API v2). Paged by limit and cursor.",
+  description: "List the saved views of a list (API v2). Paged by limit and cursor. In French: vues enregistrées d'une liste, vues sauvegardées affinity.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -730,7 +730,7 @@ export const listListEntries = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the rows (entries) of a list with their entity (API v2). Needs the Export data from Lists permission. No field data comes back unless field_ids or field_types is given. Paged by limit and cursor; the next cursor is in the query string of pagination.nextUrl. A list entry id is not an entity id.",
+  description: "List the rows (entries) of a list with their entity (API v2). Needs the Export data from Lists permission. No field data comes back unless field_ids or field_types is given. Paged by limit and cursor; the next cursor is in the query string of pagination.nextUrl. A list entry id is not an entity id. In French: lignes d'une liste, contenu d'une liste, deals du pipeline, exporter une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -770,7 +770,7 @@ export const listSavedViewEntries = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the rows of a saved view, with the filters and columns saved in the app (API v2). Paged by limit and cursor.",
+  description: "List the rows of a saved view, with the filters and columns saved in the app (API v2). Paged by limit and cursor. In French: lignes d'une vue enregistrée, contenu d'une vue sauvegardée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -801,7 +801,7 @@ export const getListEntry = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get one row of a list with its entity (API v2). No field data comes back unless field_ids or field_types is given.",
+  description: "Get one row of a list with its entity (API v2). No field data comes back unless field_ids or field_types is given. In French: ligne d'une liste, détail d'une entrée de liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -834,7 +834,7 @@ export const addListEntry = defineFunction({
   connector: "affinity",
   class: "write",
   act: true,
-  description: "Add a person or organization to a list (API v1). Opportunities cannot be added: create them with create_opportunity. The same entity can be added twice: check its list entries first.",
+  description: "Add a person or organization to a list (API v1). Opportunities cannot be added: create them with create_opportunity. The same entity can be added twice: check its list entries first. In French: ajouter un contact à une liste, ajouter une société à une liste, inscrire dans une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -864,7 +864,7 @@ export const removeListEntry = defineFunction({
   connector: "affinity",
   class: "sensitive",
   act: true,
-  description: "Remove a row from a list (API v1). Also deletes the entry's list-field values; on an OPPORTUNITY list, deletes the opportunity itself. Irreversible.",
+  description: "Remove a row from a list (API v1). Also deletes the entry's list-field values; on an OPPORTUNITY list, deletes the opportunity itself. Irreversible. In French: retirer d'une liste, supprimer une ligne de liste, enlever un contact d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -896,7 +896,7 @@ export const listNotes = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the notes visible to the key's user (API v2). filter supports creator.id=, createdAt>… and updatedAt<…. Paged by limit and cursor.",
+  description: "List the notes visible to the key's user (API v2). filter supports creator.id=, createdAt>… and updatedAt<…. Paged by limit and cursor. In French: lister les notes, notes récentes affinity, notes d'un collègue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -925,7 +925,7 @@ export const listEntityNotes = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the notes of one person, company or opportunity (API v2): direct notes, notes on its meetings, mentions. Same filter as list_notes. Paged by limit and cursor.",
+  description: "List the notes of one person, company or opportunity (API v2): direct notes, notes on its meetings, mentions. Same filter as list_notes. Paged by limit and cursor. In French: notes d'un contact, notes d'une entreprise, notes d'une opportunité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -957,7 +957,7 @@ export const getNote = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "Get one note by id (API v2).",
+  description: "Get one note by id (API v2). In French: lire une note, détail d'une note affinity.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -985,7 +985,7 @@ export const deleteNote = defineFunction({
   connector: "affinity",
   class: "sensitive",
   act: true,
-  description: "Delete one note by id (API v2). Irreversible.",
+  description: "Delete one note by id (API v2). Irreversible. In French: supprimer une note, effacer une note affinity.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1014,7 +1014,7 @@ export const listInteractions = defineFunction({
   connector: "affinity",
   class: "read",
   act: false,
-  description: "List the emails, meetings, calls or chat messages with ONE external person, organization or opportunity (API v1), within a window of at most one year. The answer is keyed by type (emails, events…) and paged by page_size and page_token.",
+  description: "List the emails, meetings, calls or chat messages with ONE external person, organization or opportunity (API v1), within a window of at most one year. The answer is keyed by type (emails, events…) and paged by page_size and page_token. In French: échanges avec un contact, historique des emails, réunions avec une entreprise, derniers appels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1050,7 +1050,7 @@ export const connector = defineConnector({
   name: "affinity",
   label: "Affinity",
   namespace: "affinity",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v1 and v2 (2026-09-17)",
   baseUrl: "https://api.affinity.co",
   auth: {"kind": "bearer", "token": "api_key"},

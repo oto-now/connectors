@@ -6,7 +6,7 @@ export const listCampaigns = defineFunction({
   connector: "meta_ads",
   class: "read",
   act: false,
-  description: "List the campaigns of one ad account, one page at a time. Default fields: id, name, status, effective_status, objective, budgets and dates. To get the next page, pass paging.cursors.after as after, only when paging.next is present.",
+  description: "List the campaigns of one ad account, one page at a time. Default fields: id, name, status, effective_status, objective, budgets and dates. To get the next page, pass paging.cursors.after as after, only when paging.next is present. In French: lister les campagnes publicitaires, campagnes facebook ads, campagnes meta.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -54,7 +54,7 @@ export const listAdsets = defineFunction({
   connector: "meta_ads",
   class: "read",
   act: false,
-  description: "List the ad sets of one ad account, one page at a time. Default fields: id, name, status, effective_status, campaign_id, budgets, optimization goal, billing event and dates. To get the next page, pass paging.cursors.after as after, only when paging.next is present.",
+  description: "List the ad sets of one ad account, one page at a time. Default fields: id, name, status, effective_status, campaign_id, budgets, optimization goal, billing event and dates. To get the next page, pass paging.cursors.after as after, only when paging.next is present. In French: lister les ensembles de publicités, ensembles de pubs d'un compte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -102,7 +102,7 @@ export const listAds = defineFunction({
   connector: "meta_ads",
   class: "read",
   act: false,
-  description: "List the ads of one ad account, one page at a time. Default fields: id, name, status, effective_status, campaign_id, adset_id, creative and created_time. To get the next page, pass paging.cursors.after as after, only when paging.next is present.",
+  description: "List the ads of one ad account, one page at a time. Default fields: id, name, status, effective_status, campaign_id, adset_id, creative and created_time. To get the next page, pass paging.cursors.after as after, only when paging.next is present. In French: lister les publicités, annonces d'un compte publicitaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -150,7 +150,7 @@ export const getObject = defineFunction({
   connector: "meta_ads",
   class: "read",
   act: false,
-  description: "Read one object of the ad tree by its id: a campaign, an ad set, an ad, or an ad account (act_ followed by digits).",
+  description: "Read one object of the ad tree by its id: a campaign, an ad set, an ad, or an ad account (act_ followed by digits). In French: détail d'une campagne publicitaire, lire un compte publicitaire, détail d'une publicité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -185,7 +185,7 @@ export const getInsights = defineFunction({
   connector: "meta_ads",
   class: "read",
   act: false,
-  description: "Read performance insights (spend, reach, clicks, conversions) of an ad account, campaign, ad set or ad, synchronously, one page at a time. For long ranges, many breakdowns or ad level over a whole account, start an asynchronous report instead. Pass date_preset or time_range, not both. To get the next page, pass paging.cursors.after as after, only when paging.next is present.",
+  description: "Read performance insights (spend, reach, clicks, conversions) of an ad account, campaign, ad set or ad, synchronously, one page at a time. For long ranges, many breakdowns or ad level over a whole account, start an asynchronous report instead. Pass date_preset or time_range, not both. To get the next page, pass paging.cursors.after as after, only when paging.next is present. In French: performances des publicités, dépenses publicitaires, statistiques d'une campagne meta.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -272,7 +272,7 @@ export const startInsightsReport = defineFunction({
   connector: "meta_ads",
   class: "read",
   act: false,
-  description: "Start an asynchronous insights report on Meta's side and return its report_run_id (valid 30 days). Then poll get_report_status until async_status is Job Completed, and read the rows with get_report_insights. Same parameters as get_insights; the attribution windows default to those of the synchronous call (7d_click, 1d_view), so both modes give the same figures.",
+  description: "Start an asynchronous insights report on Meta's side and return its report_run_id (valid 30 days). Then poll get_report_status until async_status is Job Completed, and read the rows with get_report_insights. Same parameters as get_insights; the attribution windows default to those of the synchronous call (7d_click, 1d_view), so both modes give the same figures. In French: lancer un rapport de performances, rapport publicitaire sur une longue période.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -353,7 +353,7 @@ export const getReportStatus = defineFunction({
   connector: "meta_ads",
   class: "read",
   act: false,
-  description: "Read the status of an asynchronous insights report: async_status (Job Completed, Job Failed, or still running) and async_percent_completion.",
+  description: "Read the status of an asynchronous insights report: async_status (Job Completed, Job Failed, or still running) and async_percent_completion. In French: état d'un rapport de performances, avancement d'un rapport publicitaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -388,7 +388,7 @@ export const getReportInsights = defineFunction({
   connector: "meta_ads",
   class: "read",
   act: false,
-  description: "Read the rows of a completed asynchronous insights report, one page at a time. To get the next page, pass paging.cursors.after as after, only when paging.next is present.",
+  description: "Read the rows of a completed asynchronous insights report, one page at a time. To get the next page, pass paging.cursors.after as after, only when paging.next is present. In French: résultats d'un rapport de performances, lignes d'un rapport publicitaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -420,7 +420,7 @@ export const connector = defineConnector({
   name: "meta_ads",
   label: "Meta Ads",
   namespace: "meta_ads",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "v25.0",
   baseUrl: "https://graph.facebook.com/v25.0",
   auth: {"kind": "bearer", "token": "access_token"},

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'heyreach',
                'label': 'HeyReach',
                'namespace': 'heyreach',
-               'version': '1.0.1',
+               'version': '1.0.2',
                'api_version': 'public API (Postman collection, 2026-11)',
                'base_url': 'https://api.heyreach.io/api/public',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'X-API-KEY', 'key': 'api_key'},
@@ -44,7 +44,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
  'functions': [{'name': 'check_api_key',
                 'class': 'read',
                 'description': 'Whether the API key works: an empty answer when it does, a 401 when it is '
-                               'unknown, deleted or deactivated. Nothing else is returned.',
+                               'unknown, deleted or deactivated. Nothing else is returned. In French: '
+                               'vérifier la clé heyreach, tester la connexion heyreach.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Test the key', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/auth/CheckApiKey'}},
@@ -56,7 +57,9 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'lead list it draws from), campaignAccountIds (its sender accounts), '
                                'progressStats {totalUsers, totalUsersInProgress, totalUsersPending, '
                                'totalUsersFinished, totalUsersFailed}}; get_campaign has its exclusion '
-                               'settings. Next page: offset + limit, while a page returns limit items.',
+                               'settings. Next page: offset + limit, while a page returns limit items. In '
+                               'French: campagnes heyreach, lister les campagnes linkedin, campagnes de '
+                               'prospection linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['limit'],
@@ -111,7 +114,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'description': 'One campaign: id, name, status, creationTime, linkedInUserListId and '
                                'linkedInUserListName, campaignAccountIds, progressStats (totals of leads in '
                                'progress, pending, finished, failed, manually stopped, excluded) and its '
-                               'exclusion settings.',
+                               "exclusion settings. In French: détail d'une campagne linkedin, avancement "
+                               "d'une campagne heyreach.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -135,7 +139,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'linkedInSenderId, linkedInSenderFullName}. Only the pending leads already '
                                'scheduled appear, not those the campaign will draw later from its list. '
                                'time_filter picks which date time_from and time_to bound. Next page: offset '
-                               '+ limit.',
+                               "+ limit. In French: leads d'une campagne, prospects d'une campagne linkedin, "
+                               "statut des leads d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id', 'limit'],
@@ -189,7 +194,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                '(linkedin_id in other answers) or its email: items {campaignId, '
                                'campaignName, campaignStatus, creationTime, leadStatus (Pending, InSequence, '
                                'Finished, Paused, Failed, Excluded)}. Next page: offset + limit, while a '
-                               'page returns limit items.',
+                               "page returns limit items. In French: campagnes d'un lead, dans quelles "
+                               'campagnes est un prospect.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['limit'],
@@ -235,7 +241,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'description': "The workspace's lead and company lists, one page: items {id, name, "
                                'totalItemsCount, listType (USER_LIST for leads, COMPANY_LIST), creationTime, '
                                'campaignIds (campaigns that use it)}. Next page: offset + limit, while a '
-                               'page returns limit items.',
+                               'page returns limit items. In French: listes de leads heyreach, listes '
+                               "d'entreprises heyreach.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['limit'],
@@ -274,7 +281,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                {'name': 'get_list',
                 'class': 'read',
                 'description': 'One lead or company list: id, name, totalItemsCount, listType, creationTime, '
-                               'campaignIds.',
+                               "campaignIds. In French: détail d'une liste heyreach, taille d'une liste de "
+                               'leads.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -289,7 +297,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                '{linkedin_id, profileUrl, firstName, lastName, headline, location, '
                                'companyName, companyUrl, position, about, tags, emailAddress, customFields '
                                '[{name, value}]}. Narrow by keyword (name), one lead (lead_profile_url or '
-                               'lead_linkedin_id) or creation date. Next page: offset + limit.',
+                               'lead_linkedin_id) or creation date. Next page: offset + limit. In French: '
+                               "leads d'une liste, prospects d'une liste heyreach.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'limit'],
@@ -348,7 +357,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'class': 'read',
                 'description': 'The lists a lead is in, found by its profile URL, its LinkedIn id or its '
                                'email: items {listId, listName}. Next page: offset + limit, while a page '
-                               'returns limit items.',
+                               "returns limit items. In French: listes d'un lead, dans quelles listes est un "
+                               'prospect.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['limit'],
@@ -389,7 +399,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'fullName, headline, location, summary, about, companyName, companyUrl, '
                                'position, industry, username, connections, followers, experiences and '
                                'education (JSON in a string), emailAddress, enrichedEmailAddress, '
-                               'emailEnrichments. Personal data: read only what the task needs.',
+                               'emailEnrichments. Personal data: read only what the task needs. In French: '
+                               "profil linkedin d'un lead, fiche d'un prospect heyreach.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['profile_url'],
@@ -405,7 +416,7 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                {'name': 'get_lead_tags',
                 'class': 'read',
                 'description': 'The tags of a lead, by its LinkedIn profile URL: {tags}, sorted '
-                               'alphabetically.',
+                               "alphabetically. In French: tags d'un lead, étiquettes d'un prospect.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['profile_url'],
@@ -425,7 +436,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'connectionAcceptanceRate, messagesSent, totalMessageStarted, '
                                'totalMessageReplies, messageReplyRate, inmailMessagesSent, '
                                'totalInmailStarted, totalInmailReplies, inMailReplyRate. Rates are fractions '
-                               '(0.22 = 22 %).',
+                               '(0.22 = 22 %). In French: statistiques de prospection linkedin, taux '
+                               "d'acceptation des invitations, taux de réponse linkedin.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['start_date', 'end_date'],
@@ -462,7 +474,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'class': 'read',
                 'description': 'The same statistics as get_overall_stats, broken down per campaign: '
                                'overallStats is a list and byDayStats gives a list per day, each entry '
-                               'carrying campaignId, campaignName and isCampaignDeleted with the counters.',
+                               'carrying campaignId, campaignName and isCampaignDeleted with the counters. '
+                               'In French: statistiques par campagne, performance des campagnes linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['start_date', 'end_date'],
@@ -505,7 +518,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'linkedInAccount, messages [{createdAt, body, subject, isInMail, sender}]}. '
                                'seen false gives the unread ones. One lead by lead_profile_url or '
                                'lead_linkedin_id, never both; every tag must exist. Next page: cursor = '
-                               'nextCursor while hasNextPage.',
+                               'nextCursor while hasNextPage. In French: conversations linkedin, messages '
+                               'linkedin reçus, boîte de réception heyreach.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'not': {'required': ['lead_profile_url', 'lead_linkedin_id']},
@@ -609,7 +623,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'lastMessageAt, totalMessages, correspondentProfile (profileUrl, names, '
                                'headline, companyName, position, tags, emailAddress, customFields), '
                                'linkedInAccount, messages [{createdAt, body, subject, postLink, isInMail, '
-                               'sender}].',
+                               "sender}]. In French: lire une conversation linkedin, messages d'une "
+                               'conversation linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['linkedin_account_id', 'conversation_id'],
@@ -635,7 +650,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'session must be reconnected in HeyReach), isValidNavigator, '
                                'isValidRecruiter, activeCampaigns}; get_linkedin_account has its cooldown '
                                'flags and daily limits. Next page: offset + limit, while a page returns '
-                               'limit items.',
+                               'limit items. In French: comptes linkedin expéditeurs, lister les comptes '
+                               'linkedin connectés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['limit'],
@@ -669,7 +685,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'class': 'read',
                 'description': 'One LinkedIn sender account: the fields of list_linkedin_accounts, its '
                                'session state (authIsValid), its cooldown flags and its daily limits '
-                               '(accountLimits).',
+                               "(accountLimits). In French: détail d'un compte linkedin expéditeur, limites "
+                               "quotidiennes d'un compte linkedin.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['account_id'],
@@ -684,7 +701,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                {'name': 'check_connection',
                 'class': 'read',
                 'description': 'Whether a lead is a first-degree connection of a sender: {isConnection}. The '
-                               'lead by lead_profile_url or lead_linkedin_id, exactly one.',
+                               'lead by lead_profile_url or lead_linkedin_id, exactly one. In French: '
+                               'vérifier une relation linkedin, connexion de premier niveau.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sender_account_id'],
@@ -716,7 +734,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'class': 'read',
                 'description': "The workspace's webhooks, one page: totalCount and items {id, webhookName, "
                                'webhookUrl, eventType, campaignIds (empty: every campaign), isActive}. Their '
-                               'custom headers are never returned. Next page: offset + limit.',
+                               'custom headers are never returned. Next page: offset + limit. In French: '
+                               'webhooks heyreach, lister les webhooks heyreach.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['limit'],
@@ -736,7 +755,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                {'name': 'get_webhook',
                 'class': 'read',
                 'description': 'One webhook: id, webhookName, webhookUrl, eventType, campaignIds, isActive. '
-                               'Its custom headers are never returned.',
+                               "Its custom headers are never returned. In French: détail d'un webhook "
+                               "heyreach, configuration d'un webhook heyreach.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],
@@ -760,7 +780,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'its senders). An IN_PROGRESS campaign starts LinkedIn actions on them. '
                                'resume_paused_campaign / resume_finished_campaign restart a paused or '
                                'finished campaign. Answers addedLeadsCount, updatedLeadsCount, '
-                               'failedLeadsCount.',
+                               'failedLeadsCount. In French: ajouter des leads à une campagne, inscrire des '
+                               'prospects dans une campagne linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id', 'account_lead_pairs'],
@@ -852,7 +873,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'effect': 'destroy',
                 'description': "Stop a lead's progression in a campaign: no further step runs for it. The "
                                'lead by its LinkedIn member id (linkedin_id in list_campaign_leads) or its '
-                               'profile URL. Nothing here starts it again.',
+                               'profile URL. Nothing here starts it again. In French: arrêter un lead dans '
+                               "une campagne, sortir un prospect d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -882,7 +904,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                        'runs for it, and nothing here starts it again.'}},
                {'name': 'pause_campaign',
                 'class': 'write',
-                'description': 'Pause a campaign: its senders stop acting on its leads until it is resumed.',
+                'description': 'Pause a campaign: its senders stop acting on its leads until it is resumed. '
+                               'In French: mettre en pause une campagne, suspendre une campagne linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -898,7 +921,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'class': 'sensitive',
                 'effect': 'send',
                 'description': 'Resume a paused campaign: its senders start connecting with and messaging '
-                               'its leads again.',
+                               'its leads again. In French: relancer une campagne en pause, reprendre une '
+                               'campagne linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -920,7 +944,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                'position, about, emailAddress, customUserFields [{name, value}]). A running '
                                'campaign that uses the list may pick them up; a finished one does not '
                                '(add_leads_to_campaign targets a campaign). Answers addedLeadsCount, '
-                               'updatedLeadsCount, failedLeadsCount.',
+                               'updatedLeadsCount, failedLeadsCount. In French: ajouter des leads à une '
+                               'liste, importer des prospects dans une liste heyreach.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'leads'],
@@ -978,7 +1003,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                {'name': 'create_empty_list',
                 'class': 'write',
                 'description': 'Create an empty list: a lead list (USER_LIST, the default) or a company '
-                               'list. Answers the list, with its id.',
+                               'list. Answers the list, with its id. In French: créer une liste de leads, '
+                               'nouvelle liste heyreach.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -994,7 +1020,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'effect': 'send',
                 'description': 'Send a message in an existing LinkedIn conversation, from the sender that '
                                'holds it (linkedInAccountId and id from list_conversations). It reaches the '
-                               'person at once and cannot be unsent. subject applies to an InMail thread.',
+                               'person at once and cannot be unsent. subject applies to an InMail thread. In '
+                               'French: envoyer un message linkedin, répondre sur linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['linkedin_account_id', 'conversation_id', 'message'],
@@ -1024,7 +1051,9 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                        'sender {linkedin_account_id}: "{message}". It cannot be unsent.'}},
                {'name': 'set_seen_status',
                 'class': 'write',
-                'description': 'Mark a LinkedIn conversation read (seen true) or unread (seen false).',
+                'description': 'Mark a LinkedIn conversation read (seen true) or unread (seen false). In '
+                               'French: marquer une conversation comme lue, marquer un message linkedin non '
+                               'lu.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['linkedin_account_id', 'conversation_id', 'seen'],
@@ -1052,7 +1081,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'class': 'write',
                 'description': 'Add tags to a lead, its other tags kept; the lead by lead_profile_url or '
                                'lead_linkedin_id. A tag that does not exist is refused (400) unless '
-                               'create_tag_if_not_existing is true. Answers newAssignedTags.',
+                               'create_tag_if_not_existing is true. Answers newAssignedTags. In French: '
+                               'ajouter un tag à un lead, étiqueter un prospect.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['tags'],
@@ -1090,7 +1120,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                 'description': 'Replace every tag of a lead with these: the tags it had are removed. The '
                                'lead by lead_profile_url or lead_linkedin_id; a tag that does not exist is '
                                'refused (400) unless create_tag_if_not_existing is true. Answers '
-                               'newAssignedTags.',
+                               "newAssignedTags. In French: remplacer les tags d'un lead, changer les "
+                               "étiquettes d'un prospect.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['tags'],
@@ -1131,7 +1162,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                                '(every reply, messages and InMails), INMAIL_SENT, FOLLOW_SENT, LIKED_POST, '
                                'VIEWED_PROFILE, CAMPAIGN_COMPLETED, LEAD_TAG_UPDATED. One event type per '
                                'webhook; campaign_ids narrows it to these campaigns (empty: every campaign). '
-                               "The event carries the lead's data.",
+                               "The event carries the lead's data. In French: créer un webhook heyreach, "
+                               'être notifié des réponses linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_name', 'webhook_url', 'event_type'],
@@ -1171,7 +1203,8 @@ DESCRIPTION = {'connector': {'name': 'heyreach',
                {'name': 'delete_webhook',
                 'class': 'sensitive',
                 'effect': 'destroy',
-                'description': 'Delete a webhook: its events stop being sent.',
+                'description': 'Delete a webhook: its events stop being sent. In French: supprimer un '
+                               'webhook heyreach, arrêter les notifications heyreach.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],

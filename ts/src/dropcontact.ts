@@ -6,7 +6,7 @@ export const submit = defineFunction({
   connector: "dropcontact",
   class: "write",
   act: true,
-  description: "Submit a Dropcontact enrichment batch of 1 to 250 contacts and return at once {request_id, credits_left, data}: data echoes each contact with its own errors or warnings. Each contact gives an email, a linkedin URL, first_name, last_name and company, or full_name and company. The job runs at Dropcontact, about 30 seconds: read it with fetch and the request_id. It finds the professional email (qualified), phones, job, company website and LinkedIn; with siren, French company data (SIREN, SIRET, VAT, NAF, address, leader). Pay on success: 1 credit per contact whose verified email is returned, or whose email sent in is verified.",
+  description: "Submit a Dropcontact enrichment batch of 1 to 250 contacts and return at once {request_id, credits_left, data}: data echoes each contact with its own errors or warnings. Each contact gives an email, a linkedin URL, first_name, last_name and company, or full_name and company. The job runs at Dropcontact, about 30 seconds: read it with fetch and the request_id. It finds the professional email (qualified), phones, job, company website and LinkedIn; with siren, French company data (SIREN, SIRET, VAT, NAF, address, leader). Pay on success: 1 credit per contact whose verified email is returned, or whose email sent in is verified. In French: enrichir des contacts, trouver l'email d'un contact, lancer un enrichissement dropcontact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -87,7 +87,7 @@ export const fetch = defineFunction({
   connector: "dropcontact",
   class: "read",
   act: false,
-  description: "Read a Dropcontact batch by its request_id, from submit. While it runs: {success: false, reason}, the reason \"Request not ready yet, try again in 30 seconds\"; read again then. Another reason is not a pending job: check the request_id. Once done: {success: true, credits_left, data}, one entry per contact: civility, names, email (a list of {email, qualification}, such as nominative@pro, catch_all@pro, invalid@invalid), phone, mobile_phone, job, job_level, job_function, company, website, linkedin, company_linkedin, country, with siren the company's siren, siret, address, vat, naf5_code, nb_employees, and custom_fields. A contact with nothing found comes back as sent. force_results returns the partial result now, unprocessed contacts as sent. Free.",
+  description: "Read a Dropcontact batch by its request_id, from submit. While it runs: {success: false, reason}, the reason \"Request not ready yet, try again in 30 seconds\"; read again then. Another reason is not a pending job: check the request_id. Once done: {success: true, credits_left, data}, one entry per contact: civility, names, email (a list of {email, qualification}, such as nominative@pro, catch_all@pro, invalid@invalid), phone, mobile_phone, job, job_level, job_function, company, website, linkedin, company_linkedin, country, with siren the company's siren, siret, address, vat, naf5_code, nb_employees, and custom_fields. A contact with nothing found comes back as sent. force_results returns the partial result now, unprocessed contacts as sent. Free. In French: résultat d'un enrichissement, récupérer les contacts enrichis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -123,7 +123,7 @@ export const checkCredits = defineFunction({
   connector: "dropcontact",
   class: "read",
   act: false,
-  description: "The credits left on the Dropcontact account behind this key: {credits_left}. Sends one empty contact, which Dropcontact does not bill. Free.",
+  description: "The credits left on the Dropcontact account behind this key: {credits_left}. Sends one empty contact, which Dropcontact does not bill. Free. In French: crédits restants dropcontact, solde de crédits dropcontact.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The credits left", input: {} },
@@ -144,7 +144,7 @@ export const connector = defineConnector({
   name: "dropcontact",
   label: "Dropcontact",
   namespace: "dropcontact",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v1",
   baseUrl: "https://api.dropcontact.com/v1",
   auth: {"kind": "api_key", "in": "header", "name": "X-Access-Token", "key": "api_key"},

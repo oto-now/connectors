@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'fullenrich',
                'label': 'FullEnrich',
                'namespace': 'fullenrich',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v2',
                'base_url': 'https://app.fullenrich.com/api/v2',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -58,7 +58,8 @@ DESCRIPTION = {'connector': {'name': 'fullenrich',
                                'found: 1 for a work email, 3 for a personal email, 10 for a phone; the same '
                                'contact with the same input, enriched again within three months, costs '
                                'nothing. With silent_fail, a contact with invalid input is skipped instead '
-                               'of failing the whole job.',
+                               "of failing the whole job. In French: enrichir des contacts, trouver l'email "
+                               "d'un contact, trouver le téléphone d'un prospect, lancer un enrichissement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'contacts'],
@@ -187,7 +188,8 @@ DESCRIPTION = {'connector': {'name': 'fullenrich',
                                'status is CREATED or IN_PROGRESS while the job runs (the refusal '
                                'enrichment_in_progress says the same), FINISHED when data is complete, or '
                                'CANCELED, RATE_LIMIT, UNKNOWN. cost.credits is what FullEnrich deducted for '
-                               'the whole job. Results are kept three months.',
+                               "the whole job. Results are kept three months. In French: résultat d'un "
+                               'enrichissement, emails trouvés, téléphones trouvés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['enrichment_id'],

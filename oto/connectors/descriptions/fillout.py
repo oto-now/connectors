@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'fillout',
                'label': 'Fillout',
                'namespace': 'fillout',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1',
                'base_urls': {'setting': 'region',
                              'values': {'us': 'https://api.fillout.com/v1/api',
@@ -52,7 +52,8 @@ DESCRIPTION = {'connector': {'name': 'fillout',
                 'class': 'read',
                 'description': 'List every form of the Fillout organization: [{name, formId}]. The formId is '
                                "the last segment of the form's public URL and is what every other function "
-                               'takes. No filter and no pagination.',
+                               'takes. No filter and no pagination. In French: lister les formulaires '
+                               'fillout, mes formulaires fillout.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'All forms', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/forms'},
@@ -62,7 +63,8 @@ DESCRIPTION = {'connector': {'name': 'fillout',
                 'description': "Get one Fillout form's structure: {id, name, questions: [{id, name, type}], "
                                "calculations, urlParameters, scheduling, payments, quiz}. A submission's "
                                'questions[].id points to these questions; create_submissions needs these '
-                               'ids. The question options and logic are not returned.',
+                               'ids. The question options and logic are not returned. In French: structure '
+                               "d'un formulaire, questions d'un formulaire fillout.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id'],
@@ -84,7 +86,8 @@ DESCRIPTION = {'connector': {'name': 'fillout',
                                'name, type, value}], calculations, urlParameters, scheduling, payments, '
                                'quiz, login: {email}}], totalResponses, pageCount}. Only finished '
                                'submissions unless status is in_progress. Page with limit and offset; '
-                               'totalResponses says how many match.',
+                               "totalResponses says how many match. In French: réponses d'un formulaire, "
+                               'lister les soumissions, réponses reçues au formulaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id'],
@@ -146,7 +149,8 @@ DESCRIPTION = {'connector': {'name': 'fillout',
                 'class': 'read',
                 'description': 'Get one submission of a Fillout form: {submission: {submissionId, '
                                'submissionTime, lastUpdatedAt, questions: [{id, name, type, value}], '
-                               'calculations, urlParameters, scheduling, payments, quiz, login}}.',
+                               'calculations, urlParameters, scheduling, payments, quiz, login}}. In French: '
+                               "détail d'une réponse au formulaire, lire une soumission.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'submission_id'],
@@ -174,7 +178,8 @@ DESCRIPTION = {'connector': {'name': 'fillout',
                                'value}]} with the question ids from get_form, plus optional urlParameters '
                                '[{id, name, value}], submissionTime, scheduling, payments and login {email}. '
                                "The form's integrations and notifications may run as for a real submission. "
-                               'Limited to 10 calls per minute.',
+                               'Limited to 10 calls per minute. In French: enregistrer des réponses au '
+                               'formulaire, créer une soumission.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'submissions'],
@@ -237,7 +242,8 @@ DESCRIPTION = {'connector': {'name': 'fillout',
                {'name': 'delete_submission',
                 'class': 'sensitive',
                 'description': 'Delete one submission of a Fillout form and its answers, irreversibly. '
-                               'Limited to 10 calls per minute.',
+                               'Limited to 10 calls per minute. In French: supprimer une réponse au '
+                               'formulaire, supprimer une soumission.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'submission_id'],
@@ -262,7 +268,8 @@ DESCRIPTION = {'connector': {'name': 'fillout',
                 'class': 'sensitive',
                 'description': 'Have Fillout post every new submission of one form, with all its answers, to '
                                'url, and return {id}, the webhook id that delete_webhook takes: keep it, the '
-                               'API cannot list webhooks.',
+                               'API cannot list webhooks. In French: créer un webhook fillout, recevoir les '
+                               'nouvelles réponses au formulaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['form_id', 'url'],
@@ -291,7 +298,8 @@ DESCRIPTION = {'connector': {'name': 'fillout',
                {'name': 'delete_webhook',
                 'class': 'sensitive',
                 'description': 'Remove one Fillout webhook by the id create_webhook returned: its endpoint '
-                               'stops receiving submissions.',
+                               'stops receiving submissions. In French: supprimer un webhook fillout, '
+                               'arrêter un webhook de formulaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],

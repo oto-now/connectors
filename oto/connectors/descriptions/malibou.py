@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'malibou',
                'label': 'Malibou',
                'namespace': 'malibou',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': '1.11.0',
                'base_url': 'https://app.malibou.com/api/public/v1/organizations/{organization_id}',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -53,7 +53,8 @@ DESCRIPTION = {'connector': {'name': 'malibou',
                                "key holds the details scope. contract_status narrows on today's employment: "
                                'active (at least one active contract), past (all contracts ended) or future '
                                '(only an upcoming contract). Pages are numbered from 1; the last page holds '
-                               'fewer than limit items.',
+                               'fewer than limit items. In French: lister les salariés, liste des '
+                               "collaborateurs, effectif de l'entreprise.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'establishment_id': {'type': 'string',
@@ -85,7 +86,9 @@ DESCRIPTION = {'connector': {'name': 'malibou',
                 'description': 'Get one employee by id, unwrapped (no data envelope): identity, contact, '
                                'seniority, team, manager, current contract, and every contract {contractId, '
                                'startDate, endDate}. Personal fields (socialSecurityNumber, address, phone, '
-                               'bankAccount, countryOfBirth) come only when the key holds the details scope.',
+                               'bankAccount, countryOfBirth) come only when the key holds the details scope. '
+                               "In French: fiche d'un salarié, détail d'un collaborateur, contrat d'un "
+                               'salarié.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['collaborator_id'],
@@ -108,7 +111,8 @@ DESCRIPTION = {'connector': {'name': 'malibou',
                                'YYYY-MM-DD), ordered by start date: {data: [{id, collaboratorId, startDate, '
                                'endDate, startHalfDay, endHalfDay, status, type, createdAt}], total, page, '
                                'limit}. type (the leave code) needs the absence-type scope. status narrows '
-                               'to approved, pending or rejected.',
+                               'to approved, pending or rejected. In French: absences des salariés, congés '
+                               "de l'équipe, qui est absent.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['start_date', 'end_date'],
@@ -150,7 +154,8 @@ DESCRIPTION = {'connector': {'name': 'malibou',
                                'date window (both bounds required, YYYY-MM-DD), ordered by start date: '
                                '{data: [{id, collaboratorId, isRemoteWork, location, startDate, endDate, '
                                'startHalfDay, endHalfDay, status, createdAt}], total, page, limit}. status '
-                               'narrows to approved, pending or rejected.',
+                               'narrows to approved, pending or rejected. In French: télétravail des '
+                               'salariés, qui est en télétravail, lieux de travail déclarés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['start_date', 'end_date'],

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'google_sheets',
                'label': 'Google Sheets',
                'namespace': 'google_sheets',
-               'version': '1.0.1',
+               'version': '1.0.2',
                'api_version': 'v4',
                'base_url': 'https://sheets.googleapis.com/v4',
                'auth': {'kind': 'oauth2_user',
@@ -61,7 +61,8 @@ DESCRIPTION = {'connector': {'name': 'google_sheets',
                 'scopes': ['https://www.googleapis.com/auth/spreadsheets.readonly'],
                 'description': 'Get the metadata of a spreadsheet: title, locale, time zone, link, and each '
                                'sheet with its id, title, position and size. No cell values: read them with '
-                               'read_ranges.',
+                               "read_ranges. In French: onglets d'un tableur, informations d'une feuille de "
+                               "calcul, structure d'un google sheet.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['spreadsheet_id'],
@@ -83,7 +84,8 @@ DESCRIPTION = {'connector': {'name': 'google_sheets',
                 'scopes': ['https://www.googleapis.com/auth/spreadsheets.readonly'],
                 'description': 'Read the values of one or more ranges of a spreadsheet. Each range comes '
                                'back in valueRanges, as rows of cells; trailing empty rows and cells are '
-                               'left out.',
+                               "left out. In French: lire un tableur, lire des cellules, contenu d'une "
+                               'feuille de calcul.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['spreadsheet_id', 'ranges'],
@@ -126,7 +128,8 @@ DESCRIPTION = {'connector': {'name': 'google_sheets',
                 'scopes': ['https://www.googleapis.com/auth/spreadsheets'],
                 'description': 'Write values into one or more ranges, replacing what the cells held. '
                                'USER_ENTERED parses each value as if typed in Google Sheets (numbers, dates, '
-                               'formulas starting with =); RAW stores it as given.',
+                               'formulas starting with =); RAW stores it as given. In French: écrire dans un '
+                               'tableur, modifier des cellules, remplir une feuille de calcul.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['spreadsheet_id', 'value_input', 'data'],
@@ -179,7 +182,8 @@ DESCRIPTION = {'connector': {'name': 'google_sheets',
                 'description': 'Append rows after the last row of a table, inserting new rows. Give only the '
                                'first column of the table, e.g. Sheet1!A:A: Google appends after the table '
                                "it finds in the range, starting at that table's first column, so a wider "
-                               'range can send the rows to another column.',
+                               'range can send the rows to another column. In French: ajouter des lignes, '
+                               'ajouter une ligne dans un tableur, compléter un tableau google sheets.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['spreadsheet_id', 'range', 'value_input', 'values'],
@@ -221,7 +225,8 @@ DESCRIPTION = {'connector': {'name': 'google_sheets',
                 'class': 'sensitive',
                 'scopes': ['https://www.googleapis.com/auth/spreadsheets'],
                 'description': 'Clear the values of one or more ranges; formatting stays. The version '
-                               'history of the spreadsheet keeps what was there.',
+                               'history of the spreadsheet keeps what was there. In French: effacer des '
+                               "cellules, vider une plage de cellules, effacer le contenu d'un tableur.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['spreadsheet_id', 'ranges'],
