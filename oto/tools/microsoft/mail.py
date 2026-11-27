@@ -23,7 +23,7 @@ a draft first.
   The id is written without the angle brackets of the MIME `Content-ID`
   header.
 - **Every request asks for IMMUTABLE ids** (`Prefer: IdType="ImmutableId"`,
-  set once in `MailClient._request`, alongside a call's own preference): an
+  set once in `MailClient._send`, alongside a call's own preference): an
   id given back survives a move to another folder — `move` returns the SAME
   id — and the move of a sent draft to Sent Items, so the sent copy is read
   back by the draft's id (`sent_message`). It changes only if the message
@@ -50,9 +50,11 @@ from __future__ import annotations
 
 import base64
 import html
+import json
 import re
 import time
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional
 from urllib.parse import quote
 
@@ -68,6 +70,10 @@ _LIST_FIELDS = ("id,subject,from,toRecipients,ccRecipients,receivedDateTime,sent
                 "isRead,isDraft,hasAttachments,importance,bodyPreview,conversationId,"
                 "parentFolderId,webLink")
 _ATTACHMENT_FIELDS = "id,name,contentType,size,isInline,lastModifiedDateTime"
+_FILE_ATTACHMENT = "#microsoft.graph.fileAttachment"
+_CHUNK = 64 * 1024
+#: The most read of an error body, to take Graph's code and message from it.
+_ERROR_BODY_MAX = 16 * 1024
 _BODY_TAG = re.compile(r"<body[^>]*>", re.IGNORECASE)
 #: Every request of the mailbox asks for immutable ids (see the module doc).
 _IMMUTABLE_IDS = 'IdType="ImmutableId"'
@@ -93,6 +99,67 @@ class MailboxAccessError(UpstreamHTTPError):
                      f"{error.status_code} {self.graph_code or '(no code)'}: {graph_message}. "
                      "Reading it needs the signed-in person to have access to this mailbox "
                      "in Exchange and the delegated permission Mail.Read.Shared.",)
+
+
+class AttachmentTooLarge(ValueError):
+    """An attachment above the `max_bytes` its reader accepts. `size` is the size
+    Graph declared, or `None` when the content was cut off while read."""
+
+    def __init__(self, name: str, max_bytes: int, *, size: Optional[int] = None):
+        self.name = name
+        self.max_bytes = max_bytes
+        self.size = size
+        found = f"is {size} bytes" if size is not None else "goes beyond it"
+        super().__init__(f"attachment {name!r} {found}: the limit is {max_bytes} bytes")
+
+
+class UnsupportedAttachment(ValueError):
+    """An attachment that is not a file: an attached Outlook item
+    (`#microsoft.graph.itemAttachment`) or a link to a cloud file
+    (`#microsoft.graph.referenceAttachment`). `kind` is Graph's `@odata.type`."""
+
+    def __init__(self, attachment_id: str, kind: str):
+        self.attachment_id = attachment_id
+        self.kind = kind
+        super().__init__(f"attachment is a {kind}, not a file attachment: it has no "
+                         "file content to read")
+
+
+@dataclass(frozen=True)
+class AttachmentContent:
+    """The content of a file attachment: its `name`, its `content_type` (as Graph
+    serves it, else as declared on the attachment) and its raw bytes."""
+    name: str
+    content_type: str
+    content: bytes
+
+
+def _read_bounded(resp: Any, name: str, max_bytes: int) -> bytes:
+    """A streamed body, refused as soon as it goes beyond `max_bytes`."""
+    declared = resp.headers.get("Content-Length")
+    if declared and declared.isdigit() and int(declared) > max_bytes:
+        raise AttachmentTooLarge(name, max_bytes, size=int(declared))
+    data = bytearray()
+    for chunk in resp.iter_content(_CHUNK):
+        data += chunk
+        if len(data) > max_bytes:
+            raise AttachmentTooLarge(name, max_bytes)
+    return bytes(data)
+
+
+def _upstream_error(resp: Any) -> UpstreamHTTPError:
+    """Graph's refusal of a streamed request: its error code and message only (a
+    bounded read of the body), never the body as received."""
+    detail: Dict[str, Any] = {}
+    try:
+        raw = next(resp.iter_content(_ERROR_BODY_MAX), b"")
+        error = json.loads(raw).get("error") if raw else None
+        if isinstance(error, dict):
+            detail = {k: error[k] for k in ("code", "message") if isinstance(error.get(k), str)}
+    except (ValueError, AttributeError, StopIteration):
+        pass
+    return UpstreamHTTPError.from_response(resp, service="microsoft",
+                                           body={"error": detail} if detail else None)
 
 
 def _recipients(addresses: Iterable[str], name: str) -> List[Dict[str, Any]]:
@@ -162,12 +229,12 @@ class MailClient(GraphBase):
     """The signed-in person's Outlook mailbox; read only, the shared or delegated
     mailboxes she was given access to (`mailbox`)."""
 
-    def _request(self, method: str, path_or_url: str, **kwargs: Any) -> Any:
+    def _send(self, method: str, path_or_url: str, **kwargs: Any) -> Any:
         """Every request asks for immutable ids, alongside the call's own `Prefer`."""
         headers = dict(kwargs.pop("headers", None) or {})
         headers["Prefer"] = ", ".join(
             p for p in (_IMMUTABLE_IDS, headers.get("Prefer")) if p)
-        return super()._request(method, path_or_url, headers=headers, **kwargs)
+        return super()._send(method, path_or_url, headers=headers, **kwargs)
 
     @staticmethod
     def _root(mailbox: Optional[str]) -> str:
@@ -259,6 +326,68 @@ class MailClient(GraphBase):
         with self._reading(mailbox):
             return self._json("GET", f"{self._message(message_id, mailbox)}/attachments/"
                                      f"{segment(attachment_id, 'attachment_id')}")
+
+    def get_attachment_content(self, message_id: str, attachment_id: str, *,
+                               max_bytes: int, mailbox: Optional[str] = None
+                               ) -> AttachmentContent:
+        """The bytes of a file attachment, read as a stream and bounded by
+        `max_bytes` — for a file to hand on (a scan, a PDF), never base64 in JSON.
+
+        Two requests: GET …/attachments/{id}?$select=name,contentType,size (its
+        name, type and size), then GET …/attachments/{id}/$value, read in chunks.
+
+        Args:
+            max_bytes: the largest content accepted, required (> 0). An attachment
+                whose declared size is above it is refused before its content is
+                asked for; a content found larger while read is cut off there.
+            mailbox: a shared or delegated mailbox, as for `get_attachment`.
+
+        Raises:
+            AttachmentTooLarge: above `max_bytes` (declared, or read).
+            UnsupportedAttachment: not a file (an attached Outlook item, or a link
+                to a cloud file), which has no content of its own to read.
+            UpstreamHTTPError: Graph refused (its error code and message only,
+                never the body as received).
+        """
+        if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes < 1:
+            raise ValueError("max_bytes must be a positive integer")
+        path = (f"{self._message(message_id, mailbox)}/attachments/"
+                f"{segment(attachment_id, 'attachment_id')}")
+        with self._reading(mailbox):
+            meta = self._attachment_meta(path)
+            kind = meta.get("@odata.type")
+            if kind != _FILE_ATTACHMENT:
+                raise UnsupportedAttachment(attachment_id, kind or "(no @odata.type)")
+            name = meta.get("name") or ""
+            size = meta.get("size")
+            if isinstance(size, int) and size > max_bytes:
+                raise AttachmentTooLarge(name, max_bytes, size=size)
+            resp = self._send("GET", f"{path}/$value", stream=True,
+                              headers={"Accept": "*/*"})
+            try:
+                if resp.status_code >= 400:
+                    raise _upstream_error(resp)
+                content = _read_bounded(resp, name, max_bytes)
+                content_type = (resp.headers.get("Content-Type") or meta.get("contentType")
+                                or "application/octet-stream")
+            finally:
+                resp.close()
+        return AttachmentContent(name=name, content_type=content_type, content=content)
+
+    def _attachment_meta(self, path: str) -> Dict[str, Any]:
+        """Name, type and size of an attachment; a refusal carries Graph's code and
+        message only."""
+        resp = self._send("GET", path, params={"$select": "name,contentType,size"},
+                          stream=True)
+        try:
+            if resp.status_code >= 400:
+                raise _upstream_error(resp)
+            meta = resp.json()
+        finally:
+            resp.close()
+        if not isinstance(meta, dict):
+            raise ValueError("Microsoft Graph answered an attachment that is not an object")
+        return meta
 
     # ================================================================
     # Writing — drafts first, sending is a separate step
