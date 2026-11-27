@@ -151,9 +151,9 @@ def _client_view(sent: tuple[str, str, dict, dict]) -> tuple[str, str, dict, dic
     return method, url, {k: (_in_query(v) if isinstance(v, (bool, list)) else v) for k, v in params.items()}, body
 
 
-def test_the_description_is_version_1_0_2_and_passes_the_fabrique():
+def test_the_description_is_version_1_0_3_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.2"
+    assert description["connector"]["version"] == "1.0.3"
     check(description, HUBSPOT)
 
 

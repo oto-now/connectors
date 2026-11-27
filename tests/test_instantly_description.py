@@ -181,9 +181,9 @@ def _cases():
             yield pytest.param(name, arguments, id=f"{name}: every argument #{i}")
 
 
-def test_the_description_is_version_1_0_1_and_passes_the_fabrique():
+def test_the_description_is_version_1_0_2_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.1"
+    assert description["connector"]["version"] == "1.0.2"
     module = connector_module(check(description, INSTANTLY))
     assert module.generated and module.skipped == []
 

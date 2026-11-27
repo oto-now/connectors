@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'gmail',
                'label': 'Gmail',
                'namespace': 'gmail',
-               'version': '1.1.1',
+               'version': '1.1.2',
                'api_version': 'v1',
                'base_url': 'https://gmail.googleapis.com/gmail/v1',
                'auth': {'kind': 'oauth2_user',
@@ -53,7 +53,9 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'class': 'read',
                 'scopes': ['https://www.googleapis.com/auth/gmail.readonly'],
                 'description': 'Get the mailbox of the signed-in person: emailAddress, messagesTotal, '
-                               'threadsTotal and historyId. Every other function acts on this mailbox.',
+                               'threadsTotal and historyId. Every other function acts on this mailbox. In '
+                               'French: adresse de ma boîte mail, profil gmail, nombre de messages de la '
+                               'boîte.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Whose mailbox this is', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/users/me/profile'},
@@ -64,7 +66,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'description': 'List the messages of the mailbox, newest first, optionally filtered by a '
                                'Gmail search query and by labels. Returns ids and thread ids only: read a '
                                'message with get_message. Spam and trash are left out unless '
-                               'include_spam_trash is true.',
+                               'include_spam_trash is true. In French: lister mes emails, chercher un email, '
+                               'derniers mails reçus.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -126,7 +129,7 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                                'an attachment is a part with a filename and a body.attachmentId, to read '
                                'with get_attachment right away (Gmail issues a new attachment id at each '
                                'read). format metadata returns the headers only, restricted to '
-                               'metadata_headers when given.',
+                               "metadata_headers when given. In French: lire un email, contenu d'un mail.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -161,7 +164,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'class': 'read',
                 'scopes': ['https://www.googleapis.com/auth/gmail.readonly'],
                 'description': 'Get one conversation by thread id, with every message in it, oldest first. '
-                               'Same formats as get_message.',
+                               'Same formats as get_message. In French: lire une conversation email, fil de '
+                               'discussion gmail.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['thread_id'],
@@ -196,7 +200,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'scopes': ['https://www.googleapis.com/auth/gmail.readonly'],
                 'description': 'Get the content of one attachment of a message: size and data, '
                                'base64url-encoded. The attachment id comes from a get_message or get_thread '
-                               'read just before: Gmail issues a new one at each read.',
+                               'read just before: Gmail issues a new one at each read. In French: pièce '
+                               "jointe d'un email, télécharger une pièce jointe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id', 'attachment_id'],
@@ -223,7 +228,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'class': 'read',
                 'scopes': ['https://www.googleapis.com/auth/gmail.readonly'],
                 'description': 'List the labels of the mailbox, system (INBOX, UNREAD, SENT, STARRED…) and '
-                               'user-created, with their ids.',
+                               'user-created, with their ids. In French: libellés gmail, lister les dossiers '
+                               'de la boîte mail.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every label', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/users/me/labels'},
@@ -233,7 +239,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'class': 'read',
                 'scopes': ['https://www.googleapis.com/auth/gmail.readonly'],
                 'description': 'List the drafts of the mailbox, optionally filtered by a Gmail search query. '
-                               'Returns draft ids with their message id: read one with get_draft.',
+                               'Returns draft ids with their message id: read one with get_draft. In French: '
+                               'lister mes brouillons, brouillons gmail.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -278,7 +285,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                {'name': 'get_draft',
                 'class': 'read',
                 'scopes': ['https://www.googleapis.com/auth/gmail.readonly'],
-                'description': 'Get one draft by id, with its message. Same formats as get_message.',
+                'description': 'Get one draft by id, with its message. Same formats as get_message. In '
+                               "French: lire un brouillon, contenu d'un brouillon.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['draft_id'],
@@ -303,7 +311,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'scopes': ['https://www.googleapis.com/auth/gmail.modify'],
                 'description': 'Add labels to a message, remove labels from it, or both. Archive by removing '
                                'INBOX, mark as read by removing UNREAD, star by adding STARRED. Returns the '
-                               'message id and its labels.',
+                               'message id and its labels. In French: archiver un email, marquer un mail '
+                               'comme lu, ajouter un libellé à un email.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -341,7 +350,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'class': 'sensitive',
                 'scopes': ['https://www.googleapis.com/auth/gmail.modify'],
                 'description': 'Move a message to the trash. Gmail deletes it for good after 30 days; until '
-                               'then untrash_message brings it back.',
+                               'then untrash_message brings it back. In French: mettre un email à la '
+                               'corbeille, supprimer un mail.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -359,7 +369,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                {'name': 'untrash_message',
                 'class': 'write',
                 'scopes': ['https://www.googleapis.com/auth/gmail.modify'],
-                'description': 'Take a message out of the trash, back to where it was.',
+                'description': 'Take a message out of the trash, back to where it was. In French: restaurer '
+                               'un email de la corbeille, récupérer un mail supprimé.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -376,7 +387,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                {'name': 'delete_draft',
                 'class': 'sensitive',
                 'scopes': ['https://www.googleapis.com/auth/gmail.modify'],
-                'description': 'Delete a draft for good. It does not go to the trash and cannot be restored.',
+                'description': 'Delete a draft for good. It does not go to the trash and cannot be restored. '
+                               'In French: supprimer un brouillon, effacer un brouillon gmail.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['draft_id'],
@@ -396,7 +408,8 @@ DESCRIPTION = {'connector': {'name': 'gmail',
                 'description': 'Send an existing draft as it stands, to the recipients written in it. The '
                                'draft leaves the drafts list and the message lands in SENT. Read it with '
                                'get_draft first to check its recipients and content. Returns the sent '
-                               'message id and its thread id.',
+                               'message id and its thread id. In French: envoyer un brouillon, expédier un '
+                               'brouillon gmail.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['draft_id'],

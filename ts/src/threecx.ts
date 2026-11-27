@@ -6,7 +6,7 @@ export const listCalls = defineFunction({
   connector: "threecx",
   class: "read",
   act: false,
-  description: "One page of the 3CX call log over a period, every extension and direction: one row per call segment (caller, callee, start time, ringing and talking durations as ISO 8601 durations, status, reason). A recorded segment carries SrcRecId or DstRecId, the id to pass to download_recording, which returns the audio as a file; a recording is never a link. date_from and date_to are UTC instants (2026-10-01T00:00:00Z). top is the number of rows per page, 1 to 500; continue with skip increased by top while a page holds top rows: a page with fewer rows is the last. What the API client sees bounds the rows.",
+  description: "One page of the 3CX call log over a period, every extension and direction: one row per call segment (caller, callee, start time, ringing and talking durations as ISO 8601 durations, status, reason). A recorded segment carries SrcRecId or DstRecId, the id to pass to download_recording, which returns the audio as a file; a recording is never a link. date_from and date_to are UTC instants (2026-10-01T00:00:00Z). top is the number of rows per page, 1 to 500; continue with skip increased by top while a page holds top rows: a page with fewer rows is the last. What the API client sees bounds the rows. In French: journal des appels, historique des appels, appels manqués, appels d'un poste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -52,7 +52,7 @@ export const downloadRecording = defineFunction({
   connector: "threecx",
   class: "read",
   act: false,
-  description: "Get the audio of one 3CX call recording as a file of yours, kept 24 hours: the answer gives its file id, to pass as is to a function that takes a file (a transcription). Never a link. rec_id is the SrcRecId or DstRecId of a list_calls row. The audio is WAV; a recording over 50 MB is refused. The API client needs a role that sees the recordings of that call.",
+  description: "Get the audio of one 3CX call recording as a file of yours, kept 24 hours: the answer gives its file id, to pass as is to a function that takes a file (a transcription). Never a link. rec_id is the SrcRecId or DstRecId of a list_calls row. The audio is WAV; a recording over 50 MB is refused. The API client needs a role that sees the recordings of that call. In French: enregistrement d'un appel, télécharger l'audio d'un appel, écouter un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -83,7 +83,7 @@ export const connector = defineConnector({
   name: "threecx",
   label: "3CX",
   namespace: "threecx",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "XAPI v1 (3CX V20)",
   baseUrl: "{base_url}/xapi/v1",
   auth: {

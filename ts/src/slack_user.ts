@@ -6,7 +6,7 @@ export const searchMessages = defineFunction({
   connector: "slack_user",
   class: "read",
   act: false,
-  description: "Search the messages the person can see, across channels and DMs, with Slack's search syntax: words, \"exact phrase\", in:#channel, in:@person, from:@person, before:2026-10-01, after:, has:link. Answers messages.matches (text, user, channel, ts, permalink) and messages.total; one page only, up to count matches.",
+  description: "Search the messages the person can see, across channels and DMs, with Slack's search syntax: words, \"exact phrase\", in:#channel, in:@person, from:@person, before:2026-10-01, after:, has:link. Answers messages.matches (text, user, channel, ts, permalink) and messages.total; one page only, up to count matches. In French: chercher un message slack, retrouver une conversation slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -42,7 +42,7 @@ export const listChannels = defineFunction({
   connector: "slack_user",
   class: "read",
   act: false,
-  description: "List the person's direct conversations: im (one-to-one DMs: id D…, user) and mpim (group DMs). One page only (Slack's default size). The workspace channels are listed on the bot side (connectors/slack).",
+  description: "List the person's direct conversations: im (one-to-one DMs: id D…, user) and mpim (group DMs). One page only (Slack's default size). The workspace channels are listed on the bot side (connectors/slack). In French: lister mes messages privés, mes conversations privées slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -77,7 +77,7 @@ export const history = defineFunction({
   connector: "slack_user",
   class: "read",
   act: false,
-  description: "Read one of the person's direct-message conversations (a DM id, D…, from list_channels or open_dm), newest first: TOP-LEVEL messages only; a thread's replies are read with replies. oldest and latest are exclusive bounds (a message ts), inclusive includes the messages sitting on them. When more remain, pass the cursor given back.",
+  description: "Read one of the person's direct-message conversations (a DM id, D…, from list_channels or open_dm), newest first: TOP-LEVEL messages only; a thread's replies are read with replies. oldest and latest are exclusive bounds (a message ts), inclusive includes the messages sitting on them. When more remain, pass the cursor given back. In French: lire une conversation privée, historique des messages privés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -138,7 +138,7 @@ export const replies = defineFunction({
   connector: "slack_user",
   class: "read",
   act: false,
-  description: "Read the replies of a thread in one of the person's DMs (D…). thread_ts is the ts of the PARENT message. The parent comes first, as messages[0], on every page; limit counts the replies only. Called with the ts of a reply, Slack returns that one message alone: call again with its thread_ts. When has_more, pass response_metadata.next_cursor as cursor.",
+  description: "Read the replies of a thread in one of the person's DMs (D…). thread_ts is the ts of the PARENT message. The parent comes first, as messages[0], on every page; limit counts the replies only. Called with the ts of a reply, Slack returns that one message alone: call again with its thread_ts. When has_more, pass response_metadata.next_cursor as cursor. In French: réponses d'un fil, lire un fil de discussion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -189,7 +189,7 @@ export const openDm = defineFunction({
   connector: "slack_user",
   class: "write",
   act: false,
-  description: "Open the person's direct conversation with another user, or get it if it exists: the answer's channel.id is the DM id to read (history) or to post to (post_message). Nothing is sent and no one is told.",
+  description: "Open the person's direct conversation with another user, or get it if it exists: the answer's channel.id is the DM id to read (history) or to post to (post_message). Nothing is sent and no one is told. In French: ouvrir une conversation privée, ouvrir un message privé avec un collègue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -216,7 +216,7 @@ export const postMessage = defineFunction({
   connector: "slack_user",
   class: "sensitive",
   act: true,
-  description: "Post a message under the PERSON's own name, to a channel they are in or a DM, or reply in a thread (thread_ts, the parent's ts). text is Slack mrkdwn, 4,000 characters at most: split a longer text yourself, the later parts as replies under the first. Slack reads a number between two colons (20:51:, 12:30:00) as an emoji code and swallows it: such a text is refused, write the time without seconds and with no colon right after it. blocks go as given. unfurl_links and unfurl_media false post it without link previews. The answer gives ts, the anchor of a reply.",
+  description: "Post a message under the PERSON's own name, to a channel they are in or a DM, or reply in a thread (thread_ts, the parent's ts). text is Slack mrkdwn, 4,000 characters at most: split a longer text yourself, the later parts as replies under the first. Slack reads a number between two colons (20:51:, 12:30:00) as an emoji code and swallows it: such a text is refused, write the time without seconds and with no colon right after it. blocks go as given. unfurl_links and unfurl_media false post it without link previews. The answer gives ts, the anchor of a reply. In French: envoyer un message slack, poster dans un canal, répondre dans un fil.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -277,7 +277,7 @@ export const updateMessage = defineFunction({
   connector: "slack_user",
   class: "sensitive",
   act: true,
-  description: "Replace the text or blocks of a message the person posted (channel and its ts); it stays under their name, marked edited. The text goes as given: a number between two colons (20:51:) is read by Slack as an emoji code.",
+  description: "Replace the text or blocks of a message the person posted (channel and its ts); it stays under their name, marked edited. The text goes as given: a number between two colons (20:51:) is read by Slack as an emoji code. In French: modifier un message slack, corriger un message slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -317,7 +317,7 @@ export const deleteMessage = defineFunction({
   connector: "slack_user",
   class: "sensitive",
   act: true,
-  description: "Delete a message the person posted (channel and its ts). It cannot be restored.",
+  description: "Delete a message the person posted (channel and its ts). It cannot be restored. In French: supprimer un message slack, effacer un message slack.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -348,7 +348,7 @@ export const addReaction = defineFunction({
   connector: "slack_user",
   class: "write",
   act: true,
-  description: "Add an emoji reaction to a message (channel and its ts), under the person's own name. name is the emoji's name without colons (white_check_mark).",
+  description: "Add an emoji reaction to a message (channel and its ts), under the person's own name. name is the emoji's name without colons (white_check_mark). In French: ajouter une réaction, réagir à un message avec un emoji.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -379,7 +379,7 @@ export const fileInfo = defineFunction({
   connector: "slack_user",
   class: "read",
   act: false,
-  description: "Get the metadata of a file the person can see, DMs included, by its id (F…, from a message's files[].id): name, title, mimetype, size, the conversations it was shared in. Its content is not returned.",
+  description: "Get the metadata of a file the person can see, DMs included, by its id (F…, from a message's files[].id): name, title, mimetype, size, the conversations it was shared in. Its content is not returned. In French: détail d'un fichier slack, informations sur un fichier partagé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -405,7 +405,7 @@ export const connector = defineConnector({
   name: "slack_user",
   label: "Slack (personal token)",
   namespace: "slack_user",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "Web API",
   baseUrl: "https://slack.com/api",
   auth: {"kind": "bearer", "token": "user_token"},

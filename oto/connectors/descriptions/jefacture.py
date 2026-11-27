@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'jefacture',
                'label': 'jefacture.com',
                'namespace': 'jefacture',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': '2026-10',
                'base_url': 'https://api.btx.fr.banqup.com',
                'auth': {'kind': 'oauth2_user',
@@ -48,7 +48,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
  'functions': [{'name': 'get_me',
                 'class': 'read',
                 'description': 'Get the person the authorization acts as: {email, firstName, lastName, '
-                               'status, subject, partnerIds}. Every other read acts on their behalf.',
+                               'status, subject, partnerIds}. Every other read acts on their behalf. In '
+                               'French: mon compte jefacture, utilisateur connecté à jefacture.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Who the token acts as', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/workspace/user/business/v1/users/me'},
@@ -59,7 +60,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                                '(BUSINESS, PARTNER...), status, entityId, accessType (DIRECT, or PARTNER for '
                                'a client space reached through an accounting firm)}], totalElements, '
                                'currentPage, pageSize}. A space is the workspace of one company; its id is '
-                               'the space_id of every other read.',
+                               'the space_id of every other read. In French: lister les espaces jefacture, '
+                               'mes entreprises sur jefacture.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -86,7 +88,9 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                                "status_query filters on the statuses in the platform's query language, e.g. "
                                '"pay=UNPAID OR pay=PARTIALLY_PAID" (pay: UNPAID, PARTIALLY_PAID, FULLY_PAID, '
                                'WONT_BE_PAID, IN_TRANSIT; document: AWAITING_VALIDATION, VALIDATED, '
-                               'FULLY_APPROVED, REFUSED, DISPUTED...). Date bounds are inclusive.',
+                               'FULLY_APPROVED, REFUSED, DISPUTED...). Date bounds are inclusive. In French: '
+                               'lister les factures, factures fournisseurs, factures clients, lister les '
+                               'avoirs.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id'],
@@ -189,7 +193,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                 'description': 'Get one invoice or credit note with its lines, counterparts and matched '
                                'payments: id, folder, category, status {document, pay, delivery}, metadata '
                                '(number, dates, supplier, customer, totals with openBalance, VAT details, '
-                               'payment means), lines, connections, balanceOffsets.',
+                               "payment means), lines, connections, balanceOffsets. In French: détail d'une "
+                               "facture, lignes d'une facture, détail d'un avoir.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id', 'document_id'],
@@ -213,7 +218,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                                'amount {value, currency}, offsetType (FULL, PARTIAL, DISCOUNT, REFUND, '
                                'OVERPAYMENT, UNDERPAYMENT, FEE...), aggregationStatus (PROPOSED, '
                                'AUTO_CONFIRMED, USER_CONFIRMED, REJECTED)}]}. Only confirmed offsets count '
-                               'as paid.',
+                               "as paid. In French: paiements d'une facture, règlements imputés à une "
+                               'facture.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id', 'document_id'],
@@ -233,7 +239,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                {'name': 'get_payment',
                 'class': 'read',
                 'description': 'Get one payment of a space: amount, date, counterparty and the documents it '
-                               'settles. Its id comes from a balance offset (paymentId).',
+                               'settles. Its id comes from a balance offset (paymentId). In French: détail '
+                               "d'un paiement, règlement d'une facture.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id', 'payment_id'],
@@ -258,7 +265,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                                '[{balanceOffset, aggregationStatus, modifier (the payment: paymentDate, '
                                'amount...)}]}], totalElements, totalMatchedElements, totalProposedElements, '
                                'totalUnmatchedElements}. matching_status narrows to MATCHED, PROPOSED or '
-                               'UNMATCHED documents.',
+                               'UNMATCHED documents. In French: rapprochement des factures et paiements, '
+                               'lettrage des factures, factures payées.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id'],
@@ -289,7 +297,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                 'description': 'List the customers and suppliers of a space, by name: {connections: [{id, '
                                'displayName, relationTypes, globalIdentifiers (SIREN, VAT number...), '
                                'connectionStatus, addresses, metadata}], totalElements, currentPage, '
-                               'pageSize}. identifier is a key:value pair such as "FR:SIREN:123456789".',
+                               'pageSize}. identifier is a key:value pair such as "FR:SIREN:123456789". In '
+                               'French: lister les clients et fournisseurs, annuaire des tiers.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id'],
@@ -327,7 +336,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                {'name': 'get_connection',
                 'class': 'read',
                 'description': 'Get one customer or supplier: name, relation types, legal identifiers, '
-                               'addresses, status and metadata.',
+                               "addresses, status and metadata. In French: fiche d'un client, fiche d'un "
+                               'fournisseur.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id', 'connection_id'],
@@ -351,7 +361,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                                'currency, status, balances [{amount, balanceType (CURRENT_AVAILABLE, '
                                'CURRENT_BOOKED, CLOSING_BOOKED...)}], consent {status, expirationDate}, '
                                'availableOperations}]}. An external bank account shows balances and '
-                               'movements only while its consent is valid.',
+                               'movements only while its consent is valid. In French: comptes bancaires, '
+                               'soldes des comptes bancaires.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id'],
@@ -369,7 +380,8 @@ DESCRIPTION = {'connector': {'name': 'jefacture',
                                'bookingDate, bookingType, counterparty, endToEndId, paymentId, '
                                'balancesAfterOperation}], currentPage, nextPage, pageSize, totalElements}. '
                                'booking_type BOOKED (default view), PLANNED or RESERVED. Date bounds are '
-                               'inclusive, YYYY-MM-DD. At most 100 per page.',
+                               'inclusive, YYYY-MM-DD. At most 100 per page. In French: mouvements '
+                               "bancaires, relevé de compte, opérations d'un compte bancaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['space_id', 'payment_account_id'],

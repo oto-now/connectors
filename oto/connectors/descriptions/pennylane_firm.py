@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                'label': 'Pennylane (firm)',
                'namespace': 'pennylane_firm',
-               'version': '1.1.1',
+               'version': '1.1.2',
                'api_version': 'v1',
                'base_url': 'https://app.pennylane.com/api/external/firm/v1',
                'auth': {'kind': 'bearer', 'token': 'token'},
@@ -56,7 +56,9 @@ DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                                'the company_id every other function takes; it is the firm-side id and means '
                                'nothing to the Company API. Paged by page number: the response carries '
                                'current_page, total_pages, total_items and per_page; ask for page + 1 while '
-                               'it is below total_pages. Scope companies:readonly.',
+                               'it is below total_pages. Scope companies:readonly. In French: dossiers du '
+                               'cabinet, lister les sociétés clientes du cabinet, entreprises du cabinet '
+                               'comptable.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -106,7 +108,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                 'class': 'read',
                 'description': 'Get one company of the firm by its firm-side id (from list_companies): name, '
                                'billing_company_name, siren, address, activity codes, external_id, '
-                               'client_code. Scope companies:readonly.',
+                               "client_code. Scope companies:readonly. In French: fiche d'un dossier client, "
+                               "détail d'une société du cabinet.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -127,7 +130,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                 'description': 'List the fiscal years of one company: id, start, finish (YYYY-MM-DD) and '
                                'status (open, reopen, closed, frozen). Paged by page number, up to 100 per '
                                'page: the response carries current_page and total_pages. Scope '
-                               'fiscal_years:readonly.',
+                               "fiscal_years:readonly. In French: exercices d'un dossier client, exercices "
+                               "comptables d'une société cliente.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -157,7 +161,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                                'files.url, created_at, updated_at. The tree is rebuilt from parent_folder or '
                                'path. Paged by limit and cursor: pass next_cursor as cursor for the next '
                                'page. Folders cannot be renamed, moved or deleted through the API. Scope '
-                               'dms_files:readonly.',
+                               'dms_files:readonly. In French: dossiers de la ged, arborescence documentaire '
+                               "d'un client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -228,7 +233,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                                'file), created_at, updated_at. Filter on parent_folder_id to list one '
                                'folder. There is no single-file read: filter on id instead. Files cannot be '
                                'renamed, moved or deleted through the API. Paged by limit and cursor: pass '
-                               'next_cursor as cursor for the next page. Scope dms_files:readonly.',
+                               'next_cursor as cursor for the next page. Scope dms_files:readonly. In '
+                               "French: fichiers de la ged, documents d'un dossier client.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -303,7 +309,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                 'description': "Create a folder in one company's DMS, at the root or under parent_folder_id. "
                                'Returns the folder with its id and full path. A folder cannot be renamed, '
                                'moved or deleted through the API afterwards: list the folders first and '
-                               'reuse an existing one rather than creating a duplicate. Scope dms_files:all.',
+                               'reuse an existing one rather than creating a duplicate. Scope dms_files:all. '
+                               'In French: créer un dossier dans la ged, nouveau dossier documentaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id', 'name'],
@@ -340,7 +347,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                                "stays. name is the name shown in the DMS, the file's own name without it. "
                                'parent_folder_id is required: list the folders first. The DMS has no delete '
                                'through the API: an upload cannot be undone. Returns the file with its id, '
-                               'name and full path. Scope dms_files:all.',
+                               'name and full path. Scope dms_files:all. In French: déposer un document dans '
+                               'la ged, téléverser un fichier pour un client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id', 'parent_folder_id', 'file'],
@@ -394,7 +402,8 @@ DESCRIPTION = {'connector': {'name': 'pennylane_firm',
                                'Start from start_date (RFC 3339), or from the oldest change kept without it; '
                                'changes are kept four weeks, and an older start_date is refused. Then pass '
                                'next_cursor as cursor, without start_date, while has_more is true. Up to '
-                               '1000 changes per page. Scope dms_files:readonly.',
+                               '1000 changes per page. Scope dms_files:readonly. In French: modifications '
+                               'des documents de la ged, nouveaux fichiers déposés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],

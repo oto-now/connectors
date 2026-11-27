@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'apollo',
                'label': 'Apollo.io',
                'namespace': 'apollo',
-               'version': '1.1.1',
+               'version': '1.1.2',
                'api_version': 'v1',
                'base_url': 'https://api.apollo.io/api/v1',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'X-Api-Key', 'key': 'api_key'},
@@ -81,7 +81,9 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                                'their firmographics, without the exact headcount (that is '
                                'enrich_organization), and pagination (page, total_entries, total_pages). '
                                'Costs 1 Apollo credit per page. An unknown filter value is not refused: '
-                               'check that the results match the filters.',
+                               'check that the results match the filters. In French: chercher des '
+                               'entreprises dans apollo, rechercher des sociétés par secteur, trouver des '
+                               'entreprises cibles.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -141,7 +143,9 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'write',
                 'description': 'Enrich one company from its domain: full firmographics from the shared '
                                'Apollo database, among them estimated_num_employees, departmental '
-                               'headcounts, growth and revenue. Costs 1 Apollo credit.',
+                               'headcounts, growth and revenue. Costs 1 Apollo credit. In French: enrichir '
+                               "une entreprise, fiche d'une société par son domaine, effectif d'une "
+                               'entreprise.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['domain'],
@@ -156,7 +160,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'write',
                 'description': 'Enrich up to 10 companies in one call, from their domains, with the same '
                                'firmographics as enrich_organization. Costs 1 Apollo credit per '
-                               'organization, as in single mode: the batch saves calls, not credits.',
+                               'organization, as in single mode: the batch saves calls, not credits. In '
+                               'French: enrichir plusieurs entreprises, enrichissement en masse de sociétés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['domains'],
@@ -177,7 +182,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                {'name': 'get_job_postings',
                 'class': 'read',
                 'description': 'List the job postings Apollo knows for one organization, by its Apollo id '
-                               '(from search_organizations or enrich_organization).',
+                               '(from search_organizations or enrich_organization). In French: offres '
+                               "d'emploi d'une entreprise, annonces de recrutement d'une société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['org_id'],
@@ -195,7 +201,9 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                                'people without email or phone, last names obfuscated (Vi***l), each with an '
                                'id to pass to match_person or bulk_match_people, and pagination. Costs no '
                                'credit. There is no department filter: target by titles and seniorities; on '
-                               'a global group, person_locations isolates a country.',
+                               'a global group, person_locations isolates a country. In French: chercher des '
+                               'prospects, trouver des décideurs dans une entreprise, rechercher des '
+                               'personnes par poste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'domains': {'type': 'array',
@@ -270,7 +278,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                                'and last) with domain or org_name. On too weak an identifier Apollo creates '
                                'an empty person and bills it: a person without last_name, title, email, '
                                'linkedin_url nor organization_id is such a shell, not a result. The phone '
-                               'reveal is not served here.',
+                               "reveal is not served here. In French: enrichir un contact, trouver l'email "
+                               "d'une personne, trouver le téléphone d'un prospect.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['person_id']},
@@ -342,7 +351,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                                'Apollo credit per person, more with reveal_personal_emails: the batch saves '
                                'calls, not credits. An entry without last_name, title, email, linkedin_url '
                                'nor organization_id is an empty shell Apollo created and billed. The phone '
-                               'reveal is not served here.',
+                               'reveal is not served here. In French: enrichir plusieurs contacts, '
+                               'enrichissement en masse de prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['details'],
@@ -425,7 +435,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                {'name': 'list_email_accounts',
                 'class': 'read',
                 'description': 'List the mailboxes connected to this Apollo team, each with the id that '
-                               "sends a sequence's emails. Costs no credit.",
+                               "sends a sequence's emails. Costs no credit. In French: lister les boîtes "
+                               "mail connectées, boîtes d'envoi apollo.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The connected mailboxes', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/email_accounts'},
@@ -433,7 +444,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                {'name': 'list_email_schedules',
                 'class': 'read',
                 'description': 'List the send schedules of this Apollo team, each with the id that '
-                               'create_sequence requires (emailer_schedule_id). Costs no credit.',
+                               'create_sequence requires (emailer_schedule_id). Costs no credit. In French: '
+                               "lister les plannings d'envoi, horaires d'envoi des séquences.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The send schedules', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/emailer_schedules'},
@@ -442,7 +454,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'read',
                 'description': "Search this team's sequences by a part of their name. Returns "
                                'emailer_campaigns (each with its id, name, active and archived state) and '
-                               'pagination. Costs no credit.',
+                               'pagination. Costs no credit. In French: chercher une séquence, lister les '
+                               'séquences apollo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -465,7 +478,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'description': 'Create a sequence, always inactive: nothing is sent until activate_sequence. '
                                'emailer_schedule_id comes from list_email_schedules. emailer_steps defines '
                                "the steps (Apollo's structure, not checked here); label_names are created if "
-                               'absent. Costs no credit.',
+                               'absent. Costs no credit. In French: créer une séquence, nouvelle séquence de '
+                               'prospection.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'emailer_schedule_id'],
@@ -509,7 +523,7 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                                'modified, steps without one are created. cc_emails and bcc_emails are copied '
                                'on every email the sequence sends, and changed steps reach the contacts '
                                'still in it. Activating or deactivating has its own function. Costs no '
-                               'credit.',
+                               "credit. In French: modifier une séquence, changer les étapes d'une séquence.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sequence_id'],
@@ -562,7 +576,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'sensitive',
                 'description': 'Activate a sequence: Apollo starts sending its emails to the contacts in it, '
                                'on its schedule. Refused (422) if it is already active or has no step. Costs '
-                               'no credit at the call; sends and reveals cost as they go.',
+                               'no credit at the call; sends and reveals cost as they go. In French: activer '
+                               "une séquence, lancer une séquence d'emails.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sequence_id'],
@@ -578,7 +593,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                {'name': 'deactivate_sequence',
                 'class': 'write',
                 'description': 'Deactivate a sequence: its sending stops until it is activated again. '
-                               'Refused (422) if it is already inactive. Costs no credit.',
+                               'Refused (422) if it is already inactive. Costs no credit. In French: '
+                               'désactiver une séquence, mettre en pause une séquence.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sequence_id'],
@@ -593,7 +609,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                {'name': 'archive_sequence',
                 'class': 'sensitive',
                 'description': 'Archive a sequence: it stops and leaves the active lists. Needs to own it or '
-                               'have full access to it. Costs no credit.',
+                               'have full access to it. Costs no credit. In French: archiver une séquence, '
+                               'ranger une séquence terminée.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sequence_id'],
@@ -611,7 +628,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'description': 'Change the status of contacts in one or more sequences: mark_as_finished '
                                'ends their sequence, remove takes them out of it, stop halts their '
                                'progression. Returns an asynchronous job (entity_progress_job), without its '
-                               'final state. Costs no credit.',
+                               "final state. Costs no credit. In French: retirer un contact d'une séquence, "
+                               "terminer la séquence d'un contact, arrêter un contact dans une séquence.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['emailer_campaign_ids', 'contact_ids', 'mode'],
@@ -646,7 +664,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'read',
                 'description': 'Read the sequence activity of one contact of this team, most recent first: '
                                'at most per_page events, not a pagination. sequence_id keeps one sequence. '
-                               'Costs no credit.',
+                               "Costs no credit. In French: activité d'un contact dans les séquences, "
+                               "historique de séquence d'un contact.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_id'],
@@ -676,7 +695,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'description': 'Write an email draft, which does not go out: send_email_now sends it. '
                                'contact_id is the recipient (from search_contacts), unless the draft answers '
                                'a thread (in_response_to_emailer_message_id). Apollo cleans the HTML. Costs '
-                               'no credit.',
+                               "no credit. In French: rédiger un brouillon d'email, préparer un email de "
+                               'prospection.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['contact_id']},
@@ -747,7 +767,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'sensitive',
                 'description': 'Send an existing draft now, from create_email_draft: it reaches a real '
                                'person and cannot be recalled. check_email_send_status follows it. Costs no '
-                               'credit.',
+                               "credit. In French: envoyer un brouillon d'email, envoyer un email "
+                               'maintenant.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -769,7 +790,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'read',
                 'description': 'Read the send status of one message: completed_at once sent, a failure or '
                                'not-sent reason, or retry_after_seconds while it is pending. Costs no '
-                               'credit.',
+                               "credit. In French: statut d'envoi d'un email, vérifier si un email est "
+                               'parti.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -785,7 +807,9 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'read',
                 'description': "Search this team's outreach emails by status, reply class, sequence, "
                                'keywords and date range. Returns emailer_messages and emailer_steps. Apollo '
-                               'shows at most 50,000 results (500 pages of 100). Costs no credit.',
+                               'shows at most 50,000 results (500 pages of 100). Costs no credit. In French: '
+                               'chercher des emails envoyés, retrouver les réponses des prospects, emails de '
+                               "prospection d'une séquence.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'stats': {'type': 'array',
@@ -862,7 +886,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                {'name': 'get_email_content',
                 'class': 'read',
                 'description': 'Read the body of up to 10 sent emails, in the order asked; an id that '
-                               'matches no sent email is left out without error. Costs no credit.',
+                               'matches no sent email is left out without error. Costs no credit. In French: '
+                               "lire le contenu d'un email envoyé, corps des emails envoyés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ids'],
@@ -883,7 +908,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                {'name': 'get_email_stats',
                 'class': 'read',
                 'description': 'Read the opens and clicks of one sent email (num_opens, num_clicks, '
-                               'activities). Needs a master API key. Costs no credit.',
+                               'activities). Needs a master API key. Costs no credit. In French: ouvertures '
+                               "d'un email, clics d'un email envoyé, statistiques d'un email.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['message_id'],
@@ -899,7 +925,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'description': "Search this team's recorded calls and video meetings by type, account, "
                                'contacts, organizations, tags, trackers and date range. Returns '
                                'conversations and pagination. Costs no credit; reading one with '
-                               'get_conversation may cost one.',
+                               'get_conversation may cost one. In French: chercher des appels enregistrés, '
+                               'lister les réunions enregistrées.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'conversation_type': {'enum': ['video_conference', 'phone_call']},
@@ -954,7 +981,9 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'read',
                 'description': 'Read one recorded conversation: transcript, participants, opportunities. '
                                'Costs 1 Apollo credit when the conversation has AI insights, none otherwise, '
-                               'which nothing says before the call. The recording links are not returned.',
+                               'which nothing says before the call. The recording links are not returned. In '
+                               "French: transcription d'un appel, lire une conversation enregistrée, compte "
+                               "rendu d'une réunion enregistrée.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['conversation_id'],
@@ -972,7 +1001,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'description': "List this team's custom fields: id (the key update_contact expects in "
                                'typed_custom_fields), name, modality (contact, account, opportunity), type '
                                'and, for a picklist, its values with their ids (send the id, not the label). '
-                               'Needs a master API key. Costs no credit.',
+                               'Needs a master API key. Costs no credit. In French: lister les champs '
+                               'personnalisés, champs personnalisés des contacts.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The custom fields', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/typed_custom_fields'},
@@ -982,7 +1012,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'description': 'Declare a new custom field on this team. Apollo does not deduplicate on the '
                                'label: creating it twice makes two fields, so read list_typed_custom_fields '
                                'first. A string field is bounded (120 characters by default) and silently '
-                               'truncated: use textarea for long text. Costs no credit.',
+                               'truncated: use textarea for long text. Costs no credit. In French: créer un '
+                               'champ personnalisé, ajouter un champ personnalisé.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['label', 'modality', 'field_type'],
@@ -1007,7 +1038,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'description': 'Search the contacts saved by this team (not the shared database, which is '
                                'search_people): the only source of contact ids for sequences and emails. '
                                'Returns contacts, breadcrumbs and pagination; Apollo shows at most 500 '
-                               'pages. Costs no credit.',
+                               'pages. Costs no credit. In French: chercher un contact enregistré, lister '
+                               "les contacts de l'équipe, contacts apollo de l'équipe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'dependentRequired': {'sort_ascending': ['sort_by_field']},
@@ -1053,7 +1085,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                 'class': 'read',
                 'description': 'Read one contact of this team by its id: the values the team wrote (stage, '
                                'owner, labels, custom fields, phones). Costs no credit, unlike match_person. '
-                               'Needs a master API key.',
+                               "Needs a master API key. In French: fiche d'un contact, lire un contact "
+                               'enregistré.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_id'],
@@ -1076,7 +1109,8 @@ DESCRIPTION = {'connector': {'name': 'apollo',
                                "label_names, which replaces the contact's lists (one list given takes it out "
                                'of all the others). typed_custom_fields is keyed by field id, from '
                                'list_typed_custom_fields, and a picklist takes the id of its value. Needs a '
-                               'master API key. Costs no credit.',
+                               'master API key. Costs no credit. In French: modifier un contact, mettre à '
+                               "jour un contact, changer l'étape d'un contact.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_id'],

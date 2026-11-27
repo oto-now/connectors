@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'meta_ads',
                'label': 'Meta Ads',
                'namespace': 'meta_ads',
-               'version': '1.1.0',
+               'version': '1.1.1',
                'api_version': 'v25.0',
                'base_url': 'https://graph.facebook.com/v25.0',
                'auth': {'kind': 'bearer', 'token': 'access_token'},
@@ -36,7 +36,8 @@ DESCRIPTION = {'connector': {'name': 'meta_ads',
                 'description': 'List the campaigns of one ad account, one page at a time. Default fields: '
                                'id, name, status, effective_status, objective, budgets and dates. To get the '
                                'next page, pass paging.cursors.after as after, only when paging.next is '
-                               'present.',
+                               'present. In French: lister les campagnes publicitaires, campagnes facebook '
+                               'ads, campagnes meta.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ad_account_id'],
@@ -83,7 +84,8 @@ DESCRIPTION = {'connector': {'name': 'meta_ads',
                 'description': 'List the ad sets of one ad account, one page at a time. Default fields: id, '
                                'name, status, effective_status, campaign_id, budgets, optimization goal, '
                                'billing event and dates. To get the next page, pass paging.cursors.after as '
-                               'after, only when paging.next is present.',
+                               'after, only when paging.next is present. In French: lister les ensembles de '
+                               "publicités, ensembles de pubs d'un compte.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ad_account_id'],
@@ -130,7 +132,8 @@ DESCRIPTION = {'connector': {'name': 'meta_ads',
                 'description': 'List the ads of one ad account, one page at a time. Default fields: id, '
                                'name, status, effective_status, campaign_id, adset_id, creative and '
                                'created_time. To get the next page, pass paging.cursors.after as after, only '
-                               'when paging.next is present.',
+                               "when paging.next is present. In French: lister les publicités, annonces d'un "
+                               'compte publicitaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ad_account_id'],
@@ -176,7 +179,8 @@ DESCRIPTION = {'connector': {'name': 'meta_ads',
                {'name': 'get_object',
                 'class': 'read',
                 'description': 'Read one object of the ad tree by its id: a campaign, an ad set, an ad, or '
-                               'an ad account (act_ followed by digits).',
+                               "an ad account (act_ followed by digits). In French: détail d'une campagne "
+                               "publicitaire, lire un compte publicitaire, détail d'une publicité.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -202,7 +206,8 @@ DESCRIPTION = {'connector': {'name': 'meta_ads',
                                'ranges, many breakdowns or ad level over a whole account, start an '
                                'asynchronous report instead. Pass date_preset or time_range, not both. To '
                                'get the next page, pass paging.cursors.after as after, only when paging.next '
-                               'is present.',
+                               'is present. In French: performances des publicités, dépenses publicitaires, '
+                               "statistiques d'une campagne meta.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -296,7 +301,8 @@ DESCRIPTION = {'connector': {'name': 'meta_ads',
                                'async_status is Job Completed, and read the rows with get_report_insights. '
                                'Same parameters as get_insights; the attribution windows default to those of '
                                'the synchronous call (7d_click, 1d_view), so both modes give the same '
-                               'figures.',
+                               'figures. In French: lancer un rapport de performances, rapport publicitaire '
+                               'sur une longue période.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id'],
@@ -377,7 +383,9 @@ DESCRIPTION = {'connector': {'name': 'meta_ads',
                {'name': 'get_report_status',
                 'class': 'read',
                 'description': 'Read the status of an asynchronous insights report: async_status (Job '
-                               'Completed, Job Failed, or still running) and async_percent_completion.',
+                               'Completed, Job Failed, or still running) and async_percent_completion. In '
+                               "French: état d'un rapport de performances, avancement d'un rapport "
+                               'publicitaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['report_run_id'],
@@ -396,7 +404,8 @@ DESCRIPTION = {'connector': {'name': 'meta_ads',
                 'class': 'read',
                 'description': 'Read the rows of a completed asynchronous insights report, one page at a '
                                'time. To get the next page, pass paging.cursors.after as after, only when '
-                               'paging.next is present.',
+                               "paging.next is present. In French: résultats d'un rapport de performances, "
+                               "lignes d'un rapport publicitaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['report_run_id'],

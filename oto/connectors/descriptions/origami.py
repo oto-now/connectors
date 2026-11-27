@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'origami',
                'label': 'Origami',
                'namespace': 'origami',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v2',
                'base_url': 'https://origami.chat/api/v2',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -68,7 +68,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
  'functions': [{'name': 'list_workspaces',
                 'class': 'read',
                 'description': "List the organization's workspaces, the containers of tables, documents and "
-                               'campaigns: id, name, url, createdAt. search keeps the names that contain it.',
+                               'campaigns: id, name, url, createdAt. search keeps the names that contain it. '
+                               'In French: lister les espaces de travail, espaces origami.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',
@@ -103,7 +104,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                {'name': 'create_workspace',
                 'class': 'write',
                 'description': 'Create a workspace (a session container) to put tables and documents in. '
-                               'Answers the workspace, with its id.',
+                               'Answers the workspace, with its id. In French: créer un espace de travail, '
+                               'nouvel espace origami.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -118,7 +120,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                {'name': 'list_tables',
                 'class': 'read',
                 'description': "List the organization's lead tables, or a workspace's: id, workspaceId, "
-                               'name, leadCount, columns, credits used, url.',
+                               'name, leadCount, columns, credits used, url. In French: lister les tables de '
+                               'leads, tables de prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'workspace_id': {'type': 'string',
@@ -155,7 +158,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'class': 'read',
                 'description': 'Get one table: name, leadCount, columns, credits used (credits.lifetimeUsed, '
                                'final once its runs are over). include stats adds the economics: '
-                               'creditsPerLead, qualification, funnel, lead sources.',
+                               "creditsPerLead, qualification, funnel, lead sources. In French: détail d'une "
+                               "table de leads, crédits consommés d'une table.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['table_id'],
@@ -174,7 +178,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'class': 'read',
                 'description': "List a table's columns: id, name, slug, kind, autoTrigger. Read it before "
                                'any upsert_rows: row keys and match columns are the slugs (with dashes, '
-                               'first-name) of the columns whose kind is input, never the displayed names.',
+                               'first-name) of the columns whose kind is input, never the displayed names. '
+                               "In French: colonnes d'une table, lister les colonnes.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['table_id'],
@@ -192,7 +197,7 @@ DESCRIPTION = {'connector': {'name': 'origami',
                                'without it, Origami returns typed cells. limit goes up to 200. filters '
                                "({column, operator, value}, column a slug) replace the table's saved "
                                'filters; sort is {column, direction}. The total row count is in get_table '
-                               '(leadCount).',
+                               "(leadCount). In French: lignes d'une table, lister les leads d'une table.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['table_id'],
@@ -294,7 +299,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                                'non-empty value for every match column. enrich true enriches the inserted '
                                'rows and spends Origami credits; reenrich_updated also re-enriches the '
                                'updated ones. batch_id makes a retry idempotent. Answers an enrichment run '
-                               '{id, counts: inserted, updated, skipped}.',
+                               '{id, counts: inserted, updated, skipped}. In French: ajouter des leads à une '
+                               'table, mettre à jour des lignes, importer des prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['table_id', 'rows', 'match_columns', 'enrich'],
@@ -356,7 +362,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'class': 'read',
                 'description': 'List the campaigns that send from a table: id, slug, name, status, '
                                'peopleCount. There is no list of all campaigns: list_sequences on a '
-                               'workspace sees every campaign through its sequences.',
+                               'workspace sees every campaign through its sequences. In French: campagnes '
+                               "d'une table, lister les campagnes.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['table_id'],
@@ -373,7 +380,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'description': 'Get one campaign: name, status (draft, active, paused), workspaceId, '
                                'tableId, channels (email, linkedin), settings (blockPriorContacts, '
                                'blockActiveDuplicates…), brief. After a delete, a 404 here is the only proof '
-                               'that the campaign is gone.',
+                               "that the campaign is gone. In French: détail d'une campagne, statut d'une "
+                               'campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -388,7 +396,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'class': 'read',
                 'description': "Get a campaign's figures: found, contacted, connectSent, connectAccepted, "
                                'connectionRate, replied, replyRate, hasEmail, hasLinkedin. found rising '
-                               'while contacted does not means sequences without a recipient.',
+                               'while contacted does not means sequences without a recipient. In French: '
+                               "statistiques d'une campagne, taux de réponse d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -404,7 +413,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'description': 'List the people enrolled in a campaign, one sequence each: sequenceId, '
                                'rowId, recipient, sendStatus, stopReason, fitScore, fitExplanation, profile, '
                                'addedAt. status keeps some send statuses (comma-separated); search matches '
-                               'the recipient or identity.',
+                               "the recipient or identity. In French: personnes d'une campagne, prospects "
+                               'inscrits dans une campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -461,7 +471,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                                'Answers 202 {agent: {id}, run: {id}, table}: poll get_run until status is '
                                'not running, then list_campaigns. If the brief enrols people into an '
                                "existing campaign, that campaign's settings apply. settings are requested, "
-                               'not guaranteed: read them back with get_campaign.',
+                               'not guaranteed: read them back with get_campaign. In French: créer une '
+                               'campagne, rédiger une campagne de prospection.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['table_id', 'instructions'],
@@ -513,7 +524,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                                'steps, actions, response (tables touched). include adds stats or transcript '
                                '(stats,transcript). Poll until status is not running. A finished run whose '
                                'actions list is empty created nothing, whatever its text says: check '
-                               'list_campaigns before reporting anything.',
+                               "list_campaigns before reporting anything. In French: suivi de l'agent "
+                               "origami, état d'une exécution d'agent.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['agent_id', 'run_id'],
@@ -544,7 +556,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                                'and LinkedIn messages to every enrolled person. Idempotent on an active '
                                'campaign. dry_run true previews ({wouldLaunch}) and writes nothing. A result '
                                'with launch.blocked.missingChannels sent nothing: no sending account for '
-                               'those channels.',
+                               "those channels. In French: lancer une campagne, démarrer les envois d'une "
+                               'campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -570,7 +583,7 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'class': 'write',
                 'description': 'Pause a campaign: no further sends (idempotent). Messages already handed to '
                                'a provider still go out (pause.inFlightSending). dry_run true previews and '
-                               'writes nothing.',
+                               'writes nothing. In French: mettre en pause une campagne, arrêter les envois.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -591,7 +604,7 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'description': 'Resume a paused campaign where its sequences stopped: it sends again '
                                '(idempotent). resume.missingChannels lists the channels without a sending '
                                'account, whose sequences did not resume. dry_run true previews and writes '
-                               'nothing.',
+                               'nothing. In French: reprendre une campagne, relancer une campagne en pause.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -615,7 +628,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                                'impact preview {id, name, confirmationRequired, status}, nothing removed. '
                                'With confirm: soft-delete and cancellation of its pending sequences, '
                                '{deleted: true}. Origami may answer that without deleting: only a 404 from '
-                               'get_campaign afterwards proves it is gone.',
+                               'get_campaign afterwards proves it is gone. In French: supprimer une '
+                               'campagne, effacer une campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -645,7 +659,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                 'description': 'List every sequence of a workspace, one per enrolled person, each with its '
                                'campaignId, status, sendStatus, stopReason, tableId and rowId: the only view '
                                'of all the campaigns of a workspace. Filters: status, channel (email or '
-                               'linkedin), recipient.',
+                               "linkedin), recipient. In French: séquences d'un espace, lister les séquences "
+                               'des prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['workspace_id'],
@@ -700,7 +715,8 @@ DESCRIPTION = {'connector': {'name': 'origami',
                {'name': 'get_sequence',
                 'class': 'read',
                 'description': 'Get one sequence with its steps inline (the message of each step); provider '
-                               'internals are redacted.',
+                               "internals are redacted. In French: détail d'une séquence, messages d'une "
+                               'séquence.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sequence_id'],

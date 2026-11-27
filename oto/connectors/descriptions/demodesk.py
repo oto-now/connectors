@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'demodesk',
                'label': 'Demodesk',
                'namespace': 'demodesk',
-               'version': '1.0.1',
+               'version': '1.0.2',
                'api_version': 'v2',
                'base_url': 'https://demodesk.com/api/v2',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -49,7 +49,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                 'description': 'Who the API key belongs to: id, firstName, lastName, email, role, locale, '
                                'timeZone and groups. Every list answers what this user sees in Demodesk, so '
                                'this says whose meetings "my meetings" are, and whether the key can see the '
-                               'whole company (an admin in every restricted group) or only part of it.',
+                               'whole company (an admin in every restricted group) or only part of it. In '
+                               'French: utilisateur de la clé demodesk, mon compte demodesk.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Whose key is this', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/me'}},
@@ -60,7 +61,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                                'part of a name or an email, case-insensitive. Use it to resolve a teammate '
                                'before filtering meetings or recordings by host; those filters also take an '
                                'email directly. Next page: pass next_cursor back as cursor (null on the last '
-                               'page).',
+                               'page). In French: lister les utilisateurs demodesk, trouver un collègue, '
+                               'équipe commerciale demodesk.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string',
@@ -105,7 +107,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                                'get_recording, get_transcript and list_summaries ([] = not recorded, or not '
                                'visible). Zoom, Teams and Meet calls stay scheduled while they run; ended '
                                'does not mean the attendees came. Next page: pass next_cursor back as '
-                               'cursor.',
+                               'cursor. In French: lister les rendez-vous, réunions demodesk, démos '
+                               'planifiées, rendez-vous de la semaine.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'starts_from': {'type': 'string',
@@ -184,7 +187,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                                'and summaries are ready. To find the calls with a company, filter by its '
                                "attendees' email domains (all of them), not by title. hosts and attendees "
                                'take emails or me. The video link is never given. Next page: pass '
-                               'next_cursor back as cursor.',
+                               "next_cursor back as cursor. In French: enregistrements d'appels, appels "
+                               'enregistrés, démos enregistrées.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'meeting_from': {'type': 'string',
@@ -317,7 +321,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                                'external meeting), participants [{displayName, email, permission, attended, '
                                'crmLinks}] and statistics {engagementScore, feedbackScore}. The transcript, '
                                'the AI summaries and the scorecards are read with get_transcript, '
-                               'list_summaries and list_scorecards. The video link is never given.',
+                               'list_summaries and list_scorecards. The video link is never given. In '
+                               "French: détail d'un enregistrement, infos d'un appel enregistré.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['token'],
@@ -337,7 +342,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                                'en-US). An answer holding error instead of data means the transcript is '
                                'still being processed: retry later. An empty answer means it exists but is '
                                'empty or too short. Heavy for a long call: list_summaries is shorter, and '
-                               'get_transcripts gives plain text.',
+                               "get_transcripts gives plain text. In French: transcription d'un appel, "
+                               "verbatim d'une démo, ce qui a été dit en rendez-vous.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['token'],
@@ -365,7 +371,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                                'transcript {language, text} with speaker-prefixed lines; json gives '
                                'paragraphs and sentences as get_transcript. lang translates them. A token '
                                "that is not visible to the key's user comes back not_found, the others still "
-                               'answer.',
+                               'answer. In French: transcriptions de plusieurs appels, transcriptions en '
+                               'lot.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['tokens'],
@@ -400,7 +407,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                                '(the summary template), languageCode, content, createdAt, updatedAt}], one '
                                'per template the company runs (recap, next steps, CRM notes...). Shorter '
                                'than the transcript: read it first for what was decided. [] while '
-                               'post-processing is not done.',
+                               "post-processing is not done. In French: compte rendu d'un appel, résumé "
+                               "d'une démo, prochaines étapes d'un rendez-vous.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['token'],
@@ -417,7 +425,8 @@ DESCRIPTION = {'connector': {'name': 'demodesk',
                 'description': 'The coaching scorecards of one recorded call (deleted ones left out): data '
                                '[{scorecardId, templateName, score, comment, giverUserId, receiverUserId, '
                                'questions [{name, text, criteria, weight, score, comment}], createdAt}]. [] '
-                               'when nobody scored the call.',
+                               "when nobody scored the call. In French: grilles d'évaluation d'un appel, "
+                               "notes de coaching, scorecard d'un commercial.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['token'],

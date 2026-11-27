@@ -6,7 +6,7 @@ export const submit = defineFunction({
   connector: "fullenrich",
   class: "write",
   act: true,
-  description: "Start a FullEnrich waterfall enrichment of up to 100 contacts and return {enrichment_id}. Each contact gives first_name, last_name, a domain (the company website) or a linkedin_url, and the fields to find: contact.work_emails, contact.personal_emails, contact.phones. The job runs at FullEnrich, typically 30 to 90 seconds per contact; read it with fetch and the enrichment_id, a few minutes apart. Credits are spent per value found: 1 for a work email, 3 for a personal email, 10 for a phone; the same contact with the same input, enriched again within three months, costs nothing. With silent_fail, a contact with invalid input is skipped instead of failing the whole job.",
+  description: "Start a FullEnrich waterfall enrichment of up to 100 contacts and return {enrichment_id}. Each contact gives first_name, last_name, a domain (the company website) or a linkedin_url, and the fields to find: contact.work_emails, contact.personal_emails, contact.phones. The job runs at FullEnrich, typically 30 to 90 seconds per contact; read it with fetch and the enrichment_id, a few minutes apart. Credits are spent per value found: 1 for a work email, 3 for a personal email, 10 for a phone; the same contact with the same input, enriched again within three months, costs nothing. With silent_fail, a contact with invalid input is skipped instead of failing the whole job. In French: enrichir des contacts, trouver l'email d'un contact, trouver le téléphone d'un prospect, lancer un enrichissement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -92,7 +92,7 @@ export const fetch = defineFunction({
   connector: "fullenrich",
   class: "read",
   act: false,
-  description: "Read a FullEnrich enrichment by its enrichment_id, from submit: {id, name, status, cost: {credits}, data: [{input, custom, contact_info: {most_probable_work_email, most_probable_personal_email, most_probable_phone, work_emails, personal_emails, phones}, profile}]}. status is CREATED or IN_PROGRESS while the job runs (the refusal enrichment_in_progress says the same), FINISHED when data is complete, or CANCELED, RATE_LIMIT, UNKNOWN. cost.credits is what FullEnrich deducted for the whole job. Results are kept three months.",
+  description: "Read a FullEnrich enrichment by its enrichment_id, from submit: {id, name, status, cost: {credits}, data: [{input, custom, contact_info: {most_probable_work_email, most_probable_personal_email, most_probable_phone, work_emails, personal_emails, phones}, profile}]}. status is CREATED or IN_PROGRESS while the job runs (the refusal enrichment_in_progress says the same), FINISHED when data is complete, or CANCELED, RATE_LIMIT, UNKNOWN. cost.credits is what FullEnrich deducted for the whole job. Results are kept three months. In French: résultat d'un enrichissement, emails trouvés, téléphones trouvés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -119,7 +119,7 @@ export const connector = defineConnector({
   name: "fullenrich",
   label: "FullEnrich",
   namespace: "fullenrich",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v2",
   baseUrl: "https://app.fullenrich.com/api/v2",
   auth: {"kind": "bearer", "token": "api_key"},

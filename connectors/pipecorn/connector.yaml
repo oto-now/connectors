@@ -60,7 +60,7 @@ connector:
   name: pipecorn
   label: Pipecorn
   namespace: pipecorn
-  version: 1.0.0
+  version: 1.0.1
   api_version: v2
   base_url: https://app.pipecorn.com/api/v2
   auth: { kind: api_key, in: header, name: X-API-KEY, key: api_key }
@@ -107,7 +107,8 @@ functions:
       phone, and a phone only when a mobile is found; nothing on a miss. A
       third party's personal email is never looked up. A retry with the same
       idempotency_key and body returns the stored answer instead of spending
-      again (24 hours).
+      again (24 hours). In French: enrichir un contact, trouver l'email d'un
+      prospect, trouver le téléphone d'un contact.
     input:
       type: object
       additionalProperties: false
@@ -171,7 +172,8 @@ functions:
       [{number, type}], phone_status. A number the workspace suppressed reads
       "Contacts not shared". failed: the credits ran out while it ran (code
       insufficient_credits or workspace_limit_exceeded), nothing found nor
-      billed. Free, and exempt from the rate limit.
+      billed. Free, and exempt from the rate limit. In French: résultat d'un
+      enrichissement, suivi d'un enrichissement pipecorn.
     input:
       type: object
       additionalProperties: false
@@ -190,7 +192,8 @@ functions:
     description: >-
       The balance of the Pipecorn account behind this key: credits.enrichment
       is what lookups spend; the other credits.* are the plan's remaining
-      extraction quotas, limits.* their ceilings. Free.
+      extraction quotas, limits.* their ceilings. Free. In French: crédits
+      pipecorn restants, solde de crédits d'enrichissement.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: The balance, input: {} }
@@ -201,7 +204,7 @@ functions:
     description: >-
       The Pipecorn account behind this key: the plan, the email of the key's
       owner, and whether its LinkedIn and Sales Navigator sessions are valid.
-      Free.
+      Free. In French: compte pipecorn, abonnement pipecorn.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: The account, input: {} }
@@ -217,7 +220,9 @@ functions:
       linkedin_url, or first_name, last_name and company_name. No email nor
       phone: every contact field is removed (a contact is submit_enrichment's,
       and a third party's personal email is never served). Pipecorn bills 1
-      credit when a person is resolved, nothing on a miss (404).
+      credit when a person is resolved, nothing on a miss (404). In French:
+      profil professionnel d'une personne, parcours d'un prospect, poste actuel
+      d'un contact.
     input:
       type: object
       additionalProperties: false
@@ -256,7 +261,8 @@ functions:
       headquarters, funding, web traffic. By domain, name and/or the
       company's linkedin_url (the more, the closer the match); country_code
       narrows a name. Contact fields are removed. Pipecorn bills 1 credit when
-      a company is resolved, nothing on a miss (404).
+      a company is resolved, nothing on a miss (404). In French: données d'une
+      entreprise, effectif d'une société, secteur d'une entreprise.
     input:
       type: object
       additionalProperties: false
@@ -289,7 +295,8 @@ functions:
       The technologies a company uses, from Pipecorn's database: technologies
       (names) and technologies_with_confidence [{name, confidence}]. By domain,
       name and/or the company's linkedin_url. Pipecorn bills 3 credits per
-      request.
+      request. In French: technologies d'une entreprise, stack technique d'une
+      société.
     input:
       type: object
       additionalProperties: false
@@ -323,7 +330,8 @@ functions:
       returned, nothing when none is found: bound it with limit (at most 100).
       job_title_keywords and excluded_job_title_keywords filter titles,
       job_country_codes places; full_description returns each description in
-      full.
+      full. In French: offres d'emploi d'une entreprise, recrutements en cours
+      d'une société.
     input:
       type: object
       additionalProperties: false

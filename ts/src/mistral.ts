@@ -6,7 +6,7 @@ export const transcribe = defineFunction({
   connector: "mistral",
   class: "read",
   act: false,
-  description: "Transcribe an audio file of yours with Mistral Voxtral, speakers separated and timestamped per segment. file is the id of a transit file of yours (a call recording from another function, an upload) or of a file on a page you can read, sent as is: a transit file is consumed once Mistral accepts it, a page file stays. language (ISO 639-1, fr) is optional: without it, Mistral detects the language. context_bias is the vocabulary to favor (names, jargon): terms of 3 characters or more, without spaces, joined by commas, 100 at most (Acme,Durand,Voxtral); split a name of several words into its words yourself. Up to 3 hours of audio per request; the answer comes within 300 seconds (measured up to 2 h 35 of audio). The answer is a JSON file of yours, Mistral's raw answer: text, language, segments (start, end, text, speaker_id) and usage.prompt_audio_seconds, the billed seconds of audio.",
+  description: "Transcribe an audio file of yours with Mistral Voxtral, speakers separated and timestamped per segment. file is the id of a transit file of yours (a call recording from another function, an upload) or of a file on a page you can read, sent as is: a transit file is consumed once Mistral accepts it, a page file stays. language (ISO 639-1, fr) is optional: without it, Mistral detects the language. context_bias is the vocabulary to favor (names, jargon): terms of 3 characters or more, without spaces, joined by commas, 100 at most (Acme,Durand,Voxtral); split a name of several words into its words yourself. Up to 3 hours of audio per request; the answer comes within 300 seconds (measured up to 2 h 35 of audio). The answer is a JSON file of yours, Mistral's raw answer: text, language, segments (start, end, text, speaker_id) and usage.prompt_audio_seconds, the billed seconds of audio. In French: transcrire un fichier audio, transcription d'un enregistrement, convertir un audio en texte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -55,7 +55,7 @@ export const connector = defineConnector({
   name: "mistral",
   label: "Mistral AI",
   namespace: "mistral",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v1",
   baseUrl: "https://api.mistral.ai/v1",
   auth: {"kind": "bearer", "token": "api_key"},

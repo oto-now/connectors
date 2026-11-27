@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'instantly',
                'label': 'Instantly',
                'namespace': 'instantly',
-               'version': '1.0.1',
+               'version': '1.0.2',
                'api_version': 'v2',
                'base_url': 'https://api.instantly.ai/api/v2',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -62,7 +62,7 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'class': 'read',
                 'description': 'The Instantly workspace this API key reaches: id, name, owner, plan ids, '
                                'timestamps. Free; needs workspaces:read (or all:read). Use it to check the '
-                               'connection.',
+                               'connection. In French: espace de travail instantly, compte instantly.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The workspace', 'input': {}}],
                 'refusals': [{'code': 'scope_missing',
@@ -79,7 +79,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'copy) are left out: get_campaign returns them. status: 0 draft, 1 active, 2 '
                                'paused, 3 completed, 4 running subsequences, -1 accounts unhealthy, -2 '
                                'bounce protect, -99 account suspended. search matches the name; tag_ids is a '
-                               'comma-separated list of tag ids. Needs campaigns:read.',
+                               'comma-separated list of tag ids. Needs campaigns:read. In French: lister les '
+                               "campagnes instantly, campagnes de prospection, campagnes d'emailing.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string',
@@ -135,7 +136,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'class': 'read',
                 'description': 'One Instantly campaign by id, in full: status, schedule, sequences (steps, '
                                "delays and the variants' subject and body), sending accounts (email_list), "
-                               'limits and tracking settings. Needs campaigns:read.',
+                               "limits and tracking settings. Needs campaigns:read. In French: détail d'une "
+                               "campagne instantly, séquence d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -156,7 +158,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'class': 'read',
                 'description': "The campaigns a lead is in, by the lead's email: items [{id, name, status, "
                                '…}], sequences left out. Use it to find where a person is being emailed '
-                               'before adding them again. Needs campaigns:read.',
+                               "before adding them again. Needs campaigns:read. In French: campagnes d'un "
+                               'prospect, dans quelle campagne est ce lead.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['search'],
@@ -188,7 +191,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'total_opportunity_value}. One campaign by campaign_id, several by '
                                'campaign_ids, all without either; start_date and end_date bound the counts. '
                                'exclude_total_leads_count answers much faster. Scope: unstated by Instantly '
-                               '(campaigns:read or all:read expected).',
+                               '(campaigns:read or all:read expected). In French: statistiques des '
+                               'campagnes, taux de réponse des campagnes, résultats de campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'not': {'required': ['campaign_id', 'campaign_ids']},
@@ -236,7 +240,9 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'total_interested, total_meeting_booked, total_meeting_completed, '
                                'total_closed. campaign_status narrows to campaigns in that status. Interest '
                                "totals count each lead's first event; expand_crm_events counts every event. "
-                               'Scope: unstated by Instantly (campaigns:read or all:read expected).',
+                               'Scope: unstated by Instantly (campaigns:read or all:read expected). In '
+                               "French: bilan global des campagnes, taux d'ouverture total, total des "
+                               'réponses.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'not': {'required': ['campaign_id', 'campaign_ids']},
@@ -286,7 +292,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'unique_opened, replies, unique_replies, replies_automatic, clicks, '
                                'unique_clicks, opportunities, unique_opportunities}, for one campaign '
                                '(campaign_id) or all, between start_date and end_date. Scope: unstated by '
-                               'Instantly (campaigns:read or all:read expected).',
+                               'Instantly (campaigns:read or all:read expected). In French: statistiques '
+                               "jour par jour, envois quotidiens d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'campaign_id': {'type': 'string',
@@ -330,7 +337,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'replies_automatic, clicks, unique_clicks}, for one campaign (campaign_id) or '
                                'all. include_opportunities_count adds opportunities, unique_opportunities, '
                                'meetings_booked and won. Use it to compare A/B variants. Scope: unstated by '
-                               'Instantly (campaigns:read or all:read expected).',
+                               'Instantly (campaigns:read or all:read expected). In French: statistiques par '
+                               'étape de séquence, résultats par variante, performance des variantes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'campaign_id': {'type': 'string',
@@ -371,7 +379,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                '(payload). campaign or list_id narrows to one; search matches whole words of '
                                'the email, names, company and title; contacts lists emails; ids lead ids; '
                                'filter a state (FILTER_LEAD_INTERESTED, FILTER_VAL_REPLIED…). A read, sent '
-                               'as a POST. Needs leads:read.',
+                               'as a POST. Needs leads:read. In French: lister les prospects, chercher un '
+                               "lead, prospects d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'campaign': {'type': 'string',
@@ -506,7 +515,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'interested, 2 meeting booked, 3 meeting completed, 4 won, 0 out of office, '
                                "-1 not interested, -2 wrong person, -3 lost, -4 no show, or a custom label's "
                                'value), payload (custom variables), open, reply and click counts and their '
-                               'last timestamps. Needs leads:read.',
+                               "last timestamps. Needs leads:read. In French: fiche d'un prospect, détail "
+                               "d'un lead.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lead_id'],
@@ -527,7 +537,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'class': 'read',
                 'description': "The workspace's lead lists (leads kept outside any campaign): items [{id, "
                                'name, has_enrichment_task, owned_by, timestamp_created}] and '
-                               'next_starting_after. search matches the name. Needs lead_lists:read.',
+                               'next_starting_after. search matches the name. Needs lead_lists:read. In '
+                               'French: listes de prospects, lister les listes de leads.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string', 'minLength': 1},
@@ -572,7 +583,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                           'timestamp_created']}},
                {'name': 'get_lead_list',
                 'class': 'read',
-                'description': 'One lead list by id. Needs lead_lists:read.',
+                'description': "One lead list by id. Needs lead_lists:read. In French: détail d'une liste de "
+                               'prospects, lire une liste de leads.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -594,7 +606,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'description': "The workspace's custom lead labels (interest statuses beyond the built-in "
                                'ones): items [{id, label, interest_status (the number to set or filter '
                                'with), interest_status_label (positive, neutral, negative), description}] '
-                               'and next_starting_after. Needs lead-labels:read.',
+                               'and next_starting_after. Needs lead-labels:read. In French: statuts '
+                               "d'intérêt des prospects, étiquettes de leads.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string', 'minLength': 1},
@@ -645,7 +658,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'in-progress, success, failed…), progress (0 to 100), data (for a move: '
                                'moved_leads, moved_lead_emails, skipped_duplicate_emails…). data_fields '
                                'keeps only the listed keys of data (comma-separated). Read it again until '
-                               'status is success or failed. Needs background-jobs:read.',
+                               'status is success or failed. Needs background-jobs:read. In French: état '
+                               "d'une tâche de fond, suivi d'un déplacement de leads.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['job_id'],
@@ -675,7 +689,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'next_starting_after; body.html is left out (get_email has it). email_type '
                                "received for replies; is_unread; lead, an email; search, a lead's email or "
                                'thread:<thread_id>; latest_of_thread one per thread. Limited to 20 requests '
-                               'per minute. Needs emails:read.',
+                               'per minute. Needs emails:read. In French: boîte de réception unibox, '
+                               'réponses des prospects, emails reçus des prospects.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'campaign_id': {'type': 'string',
@@ -779,7 +794,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'description': 'One email by id, in full: subject, from, to, cc, body {text, html}, '
                                'thread_id, lead, eaccount, campaign_id, step, ue_type, is_unread, i_status, '
                                'attachment names and sizes (no download address). Reply to it with '
-                               'reply_to_email and this id. Needs emails:read.',
+                               'reply_to_email and this id. Needs emails:read. In French: lire un email '
+                               "unibox, contenu d'une réponse de prospect.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['email_id'],
@@ -799,7 +815,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'output': {'strip': ['attachment_json.files.url']}},
                {'name': 'count_unread_emails',
                 'class': 'read',
-                'description': 'The number of unread emails in the Unibox, {count}. Needs emails:read.',
+                'description': 'The number of unread emails in the Unibox, {count}. Needs emails:read. In '
+                               "French: nombre d'emails non lus, réponses non lues.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Unread count', 'input': {}}],
                 'refusals': [{'code': 'scope_missing',
@@ -816,7 +833,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'provider_code (1 IMAP/SMTP, 2 Google, 3 Microsoft, 4 AWS), status_message, '
                                'setup_pending, timestamps of creation, update and warmup start}] and '
                                'next_starting_after; get_account has its warmup settings. No credential is '
-                               'returned. search matches the email. Needs accounts:read.',
+                               'returned. search matches the email. Needs accounts:read. In French: comptes '
+                               "d'envoi, boîtes mail d'envoi, état du warmup des boîtes.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string', 'minLength': 1, 'personal': True},
@@ -878,7 +896,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'class': 'read',
                 'description': 'One sending account by its email: status and status_message (the last SMTP '
                                'or IMAP error), warmup settings and score, daily_limit, sending_gap, '
-                               'signature, tracking domain. No credential is returned. Needs accounts:read.',
+                               'signature, tracking domain. No credential is returned. Needs accounts:read. '
+                               "In French: détail d'un compte d'envoi, erreur d'une boîte d'envoi.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['email'],
@@ -901,7 +920,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'campaign (null = every campaign), custom_interest_value, status (1 active, '
                                '-1 disabled after delivery failures), timestamp_error}] and '
                                'next_starting_after. Delivery headers are never returned. Scope: unstated by '
-                               'Instantly (webhooks:read or all:read expected).',
+                               'Instantly (webhooks:read or all:read expected). In French: lister les '
+                               "webhooks instantly, webhooks de l'espace instantly.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'campaign': {'type': 'string',
@@ -957,7 +977,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'class': 'read',
                 'description': 'The events a webhook can listen to, custom lead labels included: event_types '
                                '[{id, label, type}]. Scope: unstated by Instantly (webhooks:read or all:read '
-                               'expected).',
+                               "expected). In French: événements de webhook instantly, types d'événements "
+                               'instantly.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Event types', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/webhooks/event-types'}},
@@ -972,7 +993,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                "the sequence's {{variables}} (text, number, true/false). Answers counts: "
                                'leads_uploaded, duplicated_leads, in_blocklist, invalid_email_count, '
                                'skipped_count, remaining_in_plan, and created_leads [{index, id, email}]. '
-                               'Needs leads:create.',
+                               'Needs leads:create. In French: ajouter des prospects à une campagne, '
+                               'importer des leads.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['leads'],
@@ -1060,7 +1082,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'job_title, phone, website, personalization, custom_variables (sequence '
                                'variables: text, number, true/false). skip_if_in_workspace / _in_campaign / '
                                '_in_list skip a lead already there. Answers the lead. For many leads, '
-                               'add_leads. Needs leads:create.',
+                               'add_leads. Needs leads:create. In French: créer un prospect, ajouter un '
+                               'lead.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['email'],
@@ -1128,7 +1151,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'website, personalization, pl_value_lead, custom_variables (sequence '
                                "variables, added to the lead's payload). A field not given is kept; the "
                                'email cannot change. The interest status changes with '
-                               'update_lead_interest_status. Answers the lead. Needs leads:update.',
+                               'update_lead_interest_status. Answers the lead. Needs leads:update. In '
+                               'French: modifier un prospect, mettre à jour un lead.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lead_id'],
@@ -1184,7 +1208,9 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'or list_id says where the lead is. Instantly may then complete the lead in '
                                'its campaign, create or update an opportunity, and start a subsequence tied '
                                'to that status, which sends. Accepted at once (202), applied shortly after. '
-                               'Scope: unstated by Instantly (leads:update or all:update expected).',
+                               'Scope: unstated by Instantly (leads:update or all:update expected). In '
+                               "French: statut d'intérêt d'un prospect, marquer un lead intéressé, "
+                               'rendez-vous pris avec un prospect.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lead_email', 'interest_value'],
@@ -1223,7 +1249,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                'check_duplicates_in_campaigns those in any campaign; skip_invalid_emails '
                                'leaves behind invalid and risky emails. Runs in the background: answers a '
                                'job {id, status, progress}; read it with get_background_job. Needs '
-                               'leads:update.',
+                               'leads:update. In French: déplacer des prospects, copier des leads vers une '
+                               'campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'allOf': [{'oneOf': [{'required': ['campaign']}, {'required': ['list_id']}]},
@@ -1322,7 +1349,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                {'name': 'create_lead_list',
                 'class': 'write',
                 'description': 'Create an empty lead list by name; answers it with its id, for add_leads. No '
-                               'enrichment is attached (it spends credits). Needs lead_lists:create.',
+                               'enrichment is attached (it spends credits). Needs lead_lists:create. In '
+                               'French: créer une liste de prospects, nouvelle liste de leads.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -1337,7 +1365,9 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                {'name': 'add_block_list_entry',
                 'class': 'write',
                 'description': 'Block an email or a whole domain in the workspace: no campaign emails it any '
-                               'more. Answers {id, bl_value, is_domain}. Needs block_list_entries:create.',
+                               'more. Answers {id, bl_value, is_domain}. Needs block_list_entries:create. In '
+                               'French: bloquer un email, liste de blocage, exclure un domaine des '
+                               'campagnes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['bl_value'],
@@ -1361,7 +1391,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'effect': 'send',
                 'description': 'Start (or resume) a campaign: it emails its leads on its schedule from its '
                                'sending accounts. Answers the campaign. Refused (400) when it cannot run: no '
-                               'lead, no sending account, no sequence. Needs campaigns:update.',
+                               'lead, no sending account, no sequence. Needs campaigns:update. In French: '
+                               'lancer une campagne, reprendre une campagne, activer une campagne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -1383,7 +1414,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                {'name': 'pause_campaign',
                 'class': 'write',
                 'description': 'Pause a campaign: it stops sending until it is activated again. Answers the '
-                               'campaign. Needs campaigns:update.',
+                               'campaign. Needs campaigns:update. In French: mettre en pause une campagne, '
+                               "arrêter les envois d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -1408,7 +1440,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                '(usually "Re: " and the original subject), optional cc and bcc '
                                '(comma-separated emails). The reply goes to the sender of that email and '
                                'leaves at once: it cannot be recalled. Answers the email sent. Needs '
-                               'emails:create.',
+                               'emails:create. In French: répondre à un prospect, répondre à un email '
+                               'unibox.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['reply_to_uuid', 'eaccount', 'subject'],
@@ -1458,7 +1491,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                {'name': 'mark_thread_as_read',
                 'class': 'write',
                 'description': 'Mark every email of a thread (thread_id, from list_emails or get_email) as '
-                               'read in the Unibox. Answers {success}. Needs emails:update.',
+                               'read in the Unibox. Answers {success}. Needs emails:update. In French: '
+                               'marquer une conversation comme lue, marquer comme lu dans unibox.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['thread_id'],
@@ -1480,7 +1514,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                                "campaign or all (campaign absent), or a custom label's events "
                                "(custom_interest_value, event_type absent). Each delivery carries the lead's "
                                "email and the event's data: the address must be one the workspace trusts. "
-                               'Answers the webhook with its id. Needs webhooks:create.',
+                               'Answers the webhook with its id. Needs webhooks:create. In French: créer un '
+                               'webhook instantly, recevoir les réponses des prospects par webhook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target_hook_url'],
@@ -1537,7 +1572,8 @@ DESCRIPTION = {'connector': {'name': 'instantly',
                 'class': 'sensitive',
                 'effect': 'destroy',
                 'description': 'Delete a webhook by id: Instantly stops posting its events. Answers the '
-                               'deleted webhook. Needs webhooks:delete.',
+                               'deleted webhook. Needs webhooks:delete. In French: supprimer un webhook '
+                               'instantly, effacer un webhook instantly.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],

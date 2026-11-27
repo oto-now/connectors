@@ -6,7 +6,7 @@ export const describe = defineFunction({
   connector: "salesforce",
   class: "read",
   act: false,
-  description: "Describe an sObject type of the org (Account, Contact, Lead, Opportunity, or a custom Foo__c): its flags (createable, updateable, deletable, queryable, searchable, keyPrefix) and its fields, each with its name, label, type, length, nillable, createable, updateable, referenceTo and picklistValues. The field names are those to use in SOQL, SOSL and get_record.",
+  description: "Describe an sObject type of the org (Account, Contact, Lead, Opportunity, or a custom Foo__c): its flags (createable, updateable, deletable, queryable, searchable, keyPrefix) and its fields, each with its name, label, type, length, nillable, createable, updateable, referenceTo and picklistValues. The field names are those to use in SOQL, SOSL and get_record. In French: champs d'un objet salesforce, structure d'un objet, décrire un objet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -41,7 +41,7 @@ export const getRecord = defineFunction({
   connector: "salesforce",
   class: "read",
   act: false,
-  description: "Get one record of an sObject type by its id, with every field the person can read, or only those listed in fields (comma-separated API names).",
+  description: "Get one record of an sObject type by its id, with every field the person can read, or only those listed in fields (comma-separated API names). In French: fiche d'un enregistrement, détail d'un compte salesforce, détail d'une opportunité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -84,7 +84,7 @@ export const deleteRecord = defineFunction({
   connector: "salesforce",
   class: "sensitive",
   act: true,
-  description: "Delete one record of an sObject type by its id. The record goes to the Recycle Bin, with the records that cascade from it (an account's contacts and opportunities), where an admin can restore it for a limited time. Salesforce answers with no content.",
+  description: "Delete one record of an sObject type by its id. The record goes to the Recycle Bin, with the records that cascade from it (an account's contacts and opportunities), where an admin can restore it for a limited time. Salesforce answers with no content. In French: supprimer un enregistrement, supprimer un contact salesforce.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -123,7 +123,7 @@ export const query = defineFunction({
   connector: "salesforce",
   class: "read",
   act: false,
-  description: "Run a SOQL query: {totalSize, done, records, nextRecordsUrl}. Example: SELECT Id, Name FROM Account WHERE Industry = 'Technology'. At most 2,000 records per answer: while done is false, pass the last segment of nextRecordsUrl (after /query/) to query_more. Field and sObject names come from describe.",
+  description: "Run a SOQL query: {totalSize, done, records, nextRecordsUrl}. Example: SELECT Id, Name FROM Account WHERE Industry = 'Technology'. At most 2,000 records per answer: while done is false, pass the last segment of nextRecordsUrl (after /query/) to query_more. Field and sObject names come from describe. In French: requête soql, lister les opportunités, chercher des comptes salesforce.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -158,7 +158,7 @@ export const queryMore = defineFunction({
   connector: "salesforce",
   class: "read",
   act: false,
-  description: "The next records of a SOQL query: query_locator is the last segment of the nextRecordsUrl of the previous answer (01gD0000002HU6KIAW-2000). Same answer as query; continue while done is false.",
+  description: "The next records of a SOQL query: query_locator is the last segment of the nextRecordsUrl of the previous answer (01gD0000002HU6KIAW-2000). Same answer as query; continue while done is false. In French: suite d'une requête soql, page suivante des résultats.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -191,7 +191,7 @@ export const search = defineFunction({
   connector: "salesforce",
   class: "read",
   act: false,
-  description: "Run a SOSL search across objects: FIND {Acme} IN ALL FIELDS RETURNING Account(Id, Name), Contact(Id, Name, Email). Answers {searchRecords}. A SOSL statement starts with FIND; a SELECT goes to query.",
+  description: "Run a SOSL search across objects: FIND {Acme} IN ALL FIELDS RETURNING Account(Id, Name), Contact(Id, Name, Email). Answers {searchRecords}. A SOSL statement starts with FIND; a SELECT goes to query. In French: recherche sosl, chercher dans salesforce, trouver un contact salesforce.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -224,7 +224,7 @@ export const connector = defineConnector({
   name: "salesforce",
   label: "Salesforce",
   namespace: "salesforce",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v60.0",
   baseUrl: "{instance_url}/services/data/v60.0",
   auth: {

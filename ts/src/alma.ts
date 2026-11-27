@@ -6,7 +6,7 @@ export const listPayments = defineFunction({
   connector: "alma",
   class: "read",
   act: false,
-  description: "List the payments of the merchant account, newest first: id, merchant_name, state, created, updated, purchase_amount (cents, without Alma fees), kind (P1X, P3X, P4X, P10X, P1X_D+30…), payment_plan (each installment: due_date, date_paid, state, amounts), orders (merchant_reference), origin, deferred_months, deferred_days, refunds. Filters: created_after, created_before (POSIX seconds, inclusive), state. Up to limit payments per page (100 at most); when has_more is true, pass the id of the last payment as starting_after. Customer identity, addresses, the seller and the merchant's free-form data are never given.",
+  description: "List the payments of the merchant account, newest first: id, merchant_name, state, created, updated, purchase_amount (cents, without Alma fees), kind (P1X, P3X, P4X, P10X, P1X_D+30…), payment_plan (each installment: due_date, date_paid, state, amounts), orders (merchant_reference), origin, deferred_months, deferred_days, refunds. Filters: created_after, created_before (POSIX seconds, inclusive), state. Up to limit payments per page (100 at most); when has_more is true, pass the id of the last payment as starting_after. Customer identity, addresses, the seller and the merchant's free-form data are never given. In French: lister les paiements alma, paiements en plusieurs fois, paiements fractionnés des clients.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -62,7 +62,7 @@ export const getPayment = defineFunction({
   connector: "alma",
   class: "read",
   act: false,
-  description: "One payment of the merchant account: amounts (purchase_amount, fees.merchant, customer_fee, customer_interest, annual_interest_rate, cents), kind and installments_count, processing_status and cancelation_reason, created, expired_at, the installment plan (payment_plan: due_date, date_paid, state pending, paid or covered, amounts), deferred capture, orders (merchant_reference), refunds (amount_already_refunded, is_completely_refunded), payout. Customer identity, addresses, the seller, the merchant's free-form data (custom_data, cart) and the payment page address are never given.",
+  description: "One payment of the merchant account: amounts (purchase_amount, fees.merchant, customer_fee, customer_interest, annual_interest_rate, cents), kind and installments_count, processing_status and cancelation_reason, created, expired_at, the installment plan (payment_plan: due_date, date_paid, state pending, paid or covered, amounts), deferred capture, orders (merchant_reference), refunds (amount_already_refunded, is_completely_refunded), payout. Customer identity, addresses, the seller, the merchant's free-form data (custom_data, cart) and the payment page address are never given. In French: détail d'un paiement alma, échéancier d'un paiement, échéances d'un paiement en plusieurs fois.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -96,7 +96,7 @@ export const listBalanceTransactions = defineFunction({
   connector: "alma",
   class: "read",
   act: false,
-  description: "List the balance transactions of the merchant account, newest first: what a payment, a refund, an adjustment, a fee waiver or a payout moved on the balance. Each has amount, net_amount, merchant_fee (cents), kind, payment_id, refund_id, payout_id, included_in_payout_id (the payout that settled it), available_on, created. merchant: a merchant id, or all to include the child accounts the key reaches (the key's own account by default). kind filters by type. Up to limit per page (100 at most); when has_more is true, pass the id of the last transaction as starting_after.",
+  description: "List the balance transactions of the merchant account, newest first: what a payment, a refund, an adjustment, a fee waiver or a payout moved on the balance. Each has amount, net_amount, merchant_fee (cents), kind, payment_id, refund_id, payout_id, included_in_payout_id (the payout that settled it), available_on, created. merchant: a merchant id, or all to include the child accounts the key reaches (the key's own account by default). kind filters by type. Up to limit per page (100 at most); when has_more is true, pass the id of the last transaction as starting_after. In French: mouvements du solde alma, virements alma reçus, frais alma prélevés, transactions du solde marchand.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -152,7 +152,7 @@ export const connector = defineConnector({
   name: "alma",
   label: "Alma",
   namespace: "alma",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v1",
   description: "Alma, buy now pay later (split, deferred and credit payments) for merchants: read the payments of a merchant account with their installment plans, fees and refunds, and the balance transactions that settle them into payouts. Read only; customer identity and addresses never reach the agent.",
   logoDomain: "almapay.com",

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'aircall',
                'label': 'Aircall',
                'namespace': 'aircall',
-               'version': '1.1.0',
+               'version': '1.1.1',
                'api_version': 'v1 (users on v2)',
                'base_url': 'https://api.aircall.io',
                'auth': {'kind': 'basic', 'username': 'api_id', 'password': 'api_token'},
@@ -43,7 +43,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                                'desc. duration includes ringing; talk time is ended_at - answered_at. Times '
                                'are UNIX seconds, UTC. meta.next_page_link is null on the last page. The '
                                'audio of a call is never a link: get it as a file with get_call_recording or '
-                               'get_call_voicemail.',
+                               'get_call_voicemail. In French: lister les appels, historique des appels '
+                               'aircall, appels passés et reçus.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'date_from': {'type': 'integer',
@@ -90,7 +91,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                                'external phone number, bounded on their creation date. A call transferred '
                                'from line A to line B is found by B only. Same history and limits as '
                                'list_calls; the audio of a call is never a link (get_call_recording, '
-                               'get_call_voicemail).',
+                               "get_call_voicemail). In French: chercher un appel, appels d'un numéro de "
+                               "téléphone, appels d'un agent, appels entrants ou sortants.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'direction': {'type': 'string', 'enum': ['inbound', 'outbound']},
@@ -149,7 +151,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'class': 'read',
                 'description': 'Get one Aircall call by its id: who called whom, when, how long, the line, '
                                'the agent, tags and comments. The audio of the call is never a link: get it '
-                               'as a file with get_call_recording or get_call_voicemail.',
+                               'as a file with get_call_recording or get_call_voicemail. In French: détail '
+                               "d'un appel, fiche d'un appel aircall.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -177,7 +180,9 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'description': 'Get the audio recording of one Aircall call as a file of yours, kept 24 '
                                'hours: the answer gives its file id, to pass as is to a function that takes '
                                'a file (a transcription). Never a link. Only calls on a line with live '
-                               'recording enabled have one; a call without it is refused as having no file.',
+                               'recording enabled have one; a call without it is refused as having no file. '
+                               "In French: enregistrement d'un appel, écouter un appel, fichier audio d'un "
+                               'appel.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -201,7 +206,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'description': 'Get the voicemail a caller left on one inbound Aircall call as a file of '
                                'yours, kept 24 hours: the answer gives its file id, to pass as is to a '
                                'function that takes a file (a transcription). Never a link. A call without a '
-                               'voicemail is refused as having no file.',
+                               "voicemail is refused as having no file. In French: message vocal d'un appel, "
+                               'messagerie vocale aircall, écouter un message vocal.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -226,7 +232,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                                'participant_type (internal = agent with user_id, external = caller with '
                                'phone_number) and start/end offsets in seconds; content.language gives the '
                                'language. Served only to companies on the Aircall AI package (AI Assist or '
-                               'AI Assist Pro); mode realtime needs AI Assist Pro.',
+                               'AI Assist Pro); mode realtime needs AI Assist Pro. In French: transcription '
+                               "d'un appel, retranscrire un appel, texte d'un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -249,7 +256,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                {'name': 'get_call_summary',
                 'class': 'read',
                 'description': 'Get the AI summary of one Aircall call. Served only to companies on the '
-                               'Aircall AI package, for calls that were analysed.',
+                               "Aircall AI package, for calls that were analysed. In French: résumé d'un "
+                               "appel, compte rendu d'un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -264,7 +272,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                {'name': 'get_call_topics',
                 'class': 'read',
                 'description': 'Get the key topics of one Aircall call, as a list of strings. Served only to '
-                               'companies on the Aircall AI package, for calls that were analysed.',
+                               'companies on the Aircall AI package, for calls that were analysed. In '
+                               "French: sujets d'un appel, thèmes abordés dans un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -280,7 +289,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'class': 'read',
                 'description': 'Get the sentiment (POSITIVE, NEUTRAL, NEGATIVE) of each participant of one '
                                'Aircall call. Served only to companies on the Aircall AI package, for calls '
-                               'that were analysed.',
+                               "that were analysed. In French: sentiment d'un appel, ton du client pendant "
+                               "l'appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -296,7 +306,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'class': 'read',
                 'description': 'Get the action items of one Aircall call; ai_generated false means written '
                                'by an agent. Served only to companies on the Aircall AI package, for calls '
-                               'that were analysed.',
+                               "that were analysed. In French: actions à suivre d'un appel, tâches issues "
+                               "d'un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -312,7 +323,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'class': 'read',
                 'description': 'List the users (agents) of the Aircall company, bounded on their creation '
                                'date: id, name, email, availability, time zone, extension. The id is the '
-                               'user_id of search_calls.',
+                               'user_id of search_calls. In French: lister les agents aircall, utilisateurs '
+                               'aircall, liste des standardistes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'date_from': {'type': 'integer',
@@ -345,7 +357,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'cost': {'per': 'request'}},
                {'name': 'get_user',
                 'class': 'read',
-                'description': 'Get one Aircall user by numeric id or by email address.',
+                'description': 'Get one Aircall user by numeric id or by email address. In French: fiche '
+                               "d'un agent aircall, trouver un utilisateur aircall par email.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user'],
@@ -362,7 +375,7 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                {'name': 'list_teams',
                 'class': 'read',
                 'description': 'List the Aircall teams (groups of users that route inbound calls), each with '
-                               'its users.',
+                               "its users. In French: équipes aircall, lister les équipes d'agents.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'order': {'type': 'string',
@@ -383,7 +396,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'cost': {'per': 'request'}},
                {'name': 'get_team',
                 'class': 'read',
-                'description': 'Get one Aircall team with its users.',
+                'description': "Get one Aircall team with its users. In French: détail d'une équipe aircall, "
+                               "membres d'une équipe aircall.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['team_id'],
@@ -398,7 +412,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'class': 'read',
                 'description': 'List the phone numbers (lines) of the Aircall company, bounded on their '
                                'creation date: digits, name, country, time zone, live recording, and the '
-                               'users on the line.',
+                               'users on the line. In French: lignes téléphoniques aircall, lister les '
+                               'numéros de téléphone.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'date_from': {'type': 'integer',
@@ -431,7 +446,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'cost': {'per': 'request'}},
                {'name': 'get_number',
                 'class': 'read',
-                'description': 'Get one Aircall phone number (line) with its users.',
+                'description': "Get one Aircall phone number (line) with its users. In French: détail d'une "
+                               "ligne téléphonique, agents d'un numéro aircall.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number_id'],
@@ -447,7 +463,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'description': 'List the shared contacts of the Aircall company: name, company, phone '
                                'numbers, emails. Contacts synced from third-party integrations (CRM) are not '
                                'served by the API. At most 10,000 contacts through pagination: narrow with '
-                               'date_from beyond that.',
+                               'date_from beyond that. In French: contacts aircall, lister les contacts '
+                               'partagés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'date_from': {'type': 'integer',
@@ -486,7 +503,9 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                {'name': 'search_contacts',
                 'class': 'read',
                 'description': 'Search the shared contacts of the Aircall company by phone number and/or '
-                               'email. Contacts synced from third-party integrations are not served.',
+                               'email. Contacts synced from third-party integrations are not served. In '
+                               'French: chercher un contact aircall, contact par numéro de téléphone, '
+                               'contact aircall par email.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['phone_number']}, {'required': ['email']}],
@@ -532,7 +551,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                 'cost': {'per': 'request'}},
                {'name': 'get_contact',
                 'class': 'read',
-                'description': 'Get one shared Aircall contact by its id.',
+                'description': "Get one shared Aircall contact by its id. In French: fiche d'un contact "
+                               "aircall, détail d'un contact partagé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_id'],
@@ -546,7 +566,8 @@ DESCRIPTION = {'connector': {'name': 'aircall',
                {'name': 'get_company',
                 'class': 'read',
                 'description': 'Get the Aircall company behind the API key: its name, number of users and '
-                               'number of phone numbers.',
+                               'number of phone numbers. In French: compte aircall, société aircall, nombre '
+                               'de lignes aircall.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The connected company', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v1/company'},

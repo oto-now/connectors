@@ -7,7 +7,7 @@ export const getProfile = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-  description: "Get the mailbox of the signed-in person: emailAddress, messagesTotal, threadsTotal and historyId. Every other function acts on this mailbox.",
+  description: "Get the mailbox of the signed-in person: emailAddress, messagesTotal, threadsTotal and historyId. Every other function acts on this mailbox. In French: adresse de ma boîte mail, profil gmail, nombre de messages de la boîte.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Whose mailbox this is", input: {} },
@@ -30,7 +30,7 @@ export const listMessages = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-  description: "List the messages of the mailbox, newest first, optionally filtered by a Gmail search query and by labels. Returns ids and thread ids only: read a message with get_message. Spam and trash are left out unless include_spam_trash is true.",
+  description: "List the messages of the mailbox, newest first, optionally filtered by a Gmail search query and by labels. Returns ids and thread ids only: read a message with get_message. Spam and trash are left out unless include_spam_trash is true. In French: lister mes emails, chercher un email, derniers mails reçus.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -90,7 +90,7 @@ export const getMessage = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-  description: "Get one message by id. format full (default) returns the headers and the MIME parts, whose bodies are base64url-encoded in payload.parts[].body.data; an attachment is a part with a filename and a body.attachmentId, to read with get_attachment right away (Gmail issues a new attachment id at each read). format metadata returns the headers only, restricted to metadata_headers when given.",
+  description: "Get one message by id. format full (default) returns the headers and the MIME parts, whose bodies are base64url-encoded in payload.parts[].body.data; an attachment is a part with a filename and a body.attachmentId, to read with get_attachment right away (Gmail issues a new attachment id at each read). format metadata returns the headers only, restricted to metadata_headers when given. In French: lire un email, contenu d'un mail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -138,7 +138,7 @@ export const getThread = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-  description: "Get one conversation by thread id, with every message in it, oldest first. Same formats as get_message.",
+  description: "Get one conversation by thread id, with every message in it, oldest first. Same formats as get_message. In French: lire une conversation email, fil de discussion gmail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -185,7 +185,7 @@ export const getAttachment = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-  description: "Get the content of one attachment of a message: size and data, base64url-encoded. The attachment id comes from a get_message or get_thread read just before: Gmail issues a new one at each read.",
+  description: "Get the content of one attachment of a message: size and data, base64url-encoded. The attachment id comes from a get_message or get_thread read just before: Gmail issues a new one at each read. In French: pièce jointe d'un email, télécharger une pièce jointe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -226,7 +226,7 @@ export const listLabels = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-  description: "List the labels of the mailbox, system (INBOX, UNREAD, SENT, STARRED…) and user-created, with their ids.",
+  description: "List the labels of the mailbox, system (INBOX, UNREAD, SENT, STARRED…) and user-created, with their ids. In French: libellés gmail, lister les dossiers de la boîte mail.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every label", input: {} },
@@ -250,7 +250,7 @@ export const listDrafts = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-  description: "List the drafts of the mailbox, optionally filtered by a Gmail search query. Returns draft ids with their message id: read one with get_draft.",
+  description: "List the drafts of the mailbox, optionally filtered by a Gmail search query. Returns draft ids with their message id: read one with get_draft. In French: lister mes brouillons, brouillons gmail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -302,7 +302,7 @@ export const getDraft = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-  description: "Get one draft by id, with its message. Same formats as get_message.",
+  description: "Get one draft by id, with its message. Same formats as get_message. In French: lire un brouillon, contenu d'un brouillon.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -339,7 +339,7 @@ export const modifyMessageLabels = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/gmail.modify"],
-  description: "Add labels to a message, remove labels from it, or both. Archive by removing INBOX, mark as read by removing UNREAD, star by adding STARRED. Returns the message id and its labels.",
+  description: "Add labels to a message, remove labels from it, or both. Archive by removing INBOX, mark as read by removing UNREAD, star by adding STARRED. Returns the message id and its labels. In French: archiver un email, marquer un mail comme lu, ajouter un libellé à un email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -391,7 +391,7 @@ export const trashMessage = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/gmail.modify"],
-  description: "Move a message to the trash. Gmail deletes it for good after 30 days; until then untrash_message brings it back.",
+  description: "Move a message to the trash. Gmail deletes it for good after 30 days; until then untrash_message brings it back. In French: mettre un email à la corbeille, supprimer un mail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -428,7 +428,7 @@ export const untrashMessage = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/gmail.modify"],
-  description: "Take a message out of the trash, back to where it was.",
+  description: "Take a message out of the trash, back to where it was. In French: restaurer un email de la corbeille, récupérer un mail supprimé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -464,7 +464,7 @@ export const deleteDraft = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/gmail.modify"],
-  description: "Delete a draft for good. It does not go to the trash and cannot be restored.",
+  description: "Delete a draft for good. It does not go to the trash and cannot be restored. In French: supprimer un brouillon, effacer un brouillon gmail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -497,7 +497,7 @@ export const sendDraft = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/gmail.modify"],
-  description: "Send an existing draft as it stands, to the recipients written in it. The draft leaves the drafts list and the message lands in SENT. Read it with get_draft first to check its recipients and content. Returns the sent message id and its thread id.",
+  description: "Send an existing draft as it stands, to the recipients written in it. The draft leaves the drafts list and the message lands in SENT. Read it with get_draft first to check its recipients and content. Returns the sent message id and its thread id. In French: envoyer un brouillon, expédier un brouillon gmail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -528,7 +528,7 @@ export const connector = defineConnector({
   name: "gmail",
   label: "Gmail",
   namespace: "gmail",
-  version: "1.1.1",
+  version: "1.1.2",
   apiVersion: "v1",
   baseUrl: "https://gmail.googleapis.com/gmail/v1",
   auth: {

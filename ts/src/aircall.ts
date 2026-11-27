@@ -6,7 +6,7 @@ export const listCalls = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "List the calls of the Aircall company, bounded on their creation date: who called whom, when, how long, the line, the agent, tags and comments. Six months of history only, and at most 10,000 calls through pagination: narrow with date_from to reach further. Ascending by creation date unless order is desc. duration includes ringing; talk time is ended_at - answered_at. Times are UNIX seconds, UTC. meta.next_page_link is null on the last page. The audio of a call is never a link: get it as a file with get_call_recording or get_call_voicemail.",
+  description: "List the calls of the Aircall company, bounded on their creation date: who called whom, when, how long, the line, the agent, tags and comments. Six months of history only, and at most 10,000 calls through pagination: narrow with date_from to reach further. Ascending by creation date unless order is desc. duration includes ringing; talk time is ended_at - answered_at. Times are UNIX seconds, UTC. meta.next_page_link is null on the last page. The audio of a call is never a link: get it as a file with get_call_recording or get_call_voicemail. In French: lister les appels, historique des appels aircall, appels passés et reçus.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -52,7 +52,7 @@ export const searchCalls = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Search the calls of the Aircall company by direction, agent (user_id) or external phone number, bounded on their creation date. A call transferred from line A to line B is found by B only. Same history and limits as list_calls; the audio of a call is never a link (get_call_recording, get_call_voicemail).",
+  description: "Search the calls of the Aircall company by direction, agent (user_id) or external phone number, bounded on their creation date. A call transferred from line A to line B is found by B only. Same history and limits as list_calls; the audio of a call is never a link (get_call_recording, get_call_voicemail). In French: chercher un appel, appels d'un numéro de téléphone, appels d'un agent, appels entrants ou sortants.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -106,7 +106,7 @@ export const getCall = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get one Aircall call by its id: who called whom, when, how long, the line, the agent, tags and comments. The audio of the call is never a link: get it as a file with get_call_recording or get_call_voicemail.",
+  description: "Get one Aircall call by its id: who called whom, when, how long, the line, the agent, tags and comments. The audio of the call is never a link: get it as a file with get_call_recording or get_call_voicemail. In French: détail d'un appel, fiche d'un appel aircall.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -139,7 +139,7 @@ export const getCallRecording = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get the audio recording of one Aircall call as a file of yours, kept 24 hours: the answer gives its file id, to pass as is to a function that takes a file (a transcription). Never a link. Only calls on a line with live recording enabled have one; a call without it is refused as having no file.",
+  description: "Get the audio recording of one Aircall call as a file of yours, kept 24 hours: the answer gives its file id, to pass as is to a function that takes a file (a transcription). Never a link. Only calls on a line with live recording enabled have one; a call without it is refused as having no file. In French: enregistrement d'un appel, écouter un appel, fichier audio d'un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -170,7 +170,7 @@ export const getCallVoicemail = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get the voicemail a caller left on one inbound Aircall call as a file of yours, kept 24 hours: the answer gives its file id, to pass as is to a function that takes a file (a transcription). Never a link. A call without a voicemail is refused as having no file.",
+  description: "Get the voicemail a caller left on one inbound Aircall call as a file of yours, kept 24 hours: the answer gives its file id, to pass as is to a function that takes a file (a transcription). Never a link. A call without a voicemail is refused as having no file. In French: message vocal d'un appel, messagerie vocale aircall, écouter un message vocal.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -201,7 +201,7 @@ export const getCallTranscription = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get the transcription of one Aircall call: utterances in order, each with participant_type (internal = agent with user_id, external = caller with phone_number) and start/end offsets in seconds; content.language gives the language. Served only to companies on the Aircall AI package (AI Assist or AI Assist Pro); mode realtime needs AI Assist Pro.",
+  description: "Get the transcription of one Aircall call: utterances in order, each with participant_type (internal = agent with user_id, external = caller with phone_number) and start/end offsets in seconds; content.language gives the language. Served only to companies on the Aircall AI package (AI Assist or AI Assist Pro); mode realtime needs AI Assist Pro. In French: transcription d'un appel, retranscrire un appel, texte d'un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -237,7 +237,7 @@ export const getCallSummary = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get the AI summary of one Aircall call. Served only to companies on the Aircall AI package, for calls that were analysed.",
+  description: "Get the AI summary of one Aircall call. Served only to companies on the Aircall AI package, for calls that were analysed. In French: résumé d'un appel, compte rendu d'un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -266,7 +266,7 @@ export const getCallTopics = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get the key topics of one Aircall call, as a list of strings. Served only to companies on the Aircall AI package, for calls that were analysed.",
+  description: "Get the key topics of one Aircall call, as a list of strings. Served only to companies on the Aircall AI package, for calls that were analysed. In French: sujets d'un appel, thèmes abordés dans un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -295,7 +295,7 @@ export const getCallSentiments = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get the sentiment (POSITIVE, NEUTRAL, NEGATIVE) of each participant of one Aircall call. Served only to companies on the Aircall AI package, for calls that were analysed.",
+  description: "Get the sentiment (POSITIVE, NEUTRAL, NEGATIVE) of each participant of one Aircall call. Served only to companies on the Aircall AI package, for calls that were analysed. In French: sentiment d'un appel, ton du client pendant l'appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -324,7 +324,7 @@ export const getCallActionItems = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get the action items of one Aircall call; ai_generated false means written by an agent. Served only to companies on the Aircall AI package, for calls that were analysed.",
+  description: "Get the action items of one Aircall call; ai_generated false means written by an agent. Served only to companies on the Aircall AI package, for calls that were analysed. In French: actions à suivre d'un appel, tâches issues d'un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -353,7 +353,7 @@ export const listUsers = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "List the users (agents) of the Aircall company, bounded on their creation date: id, name, email, availability, time zone, extension. The id is the user_id of search_calls.",
+  description: "List the users (agents) of the Aircall company, bounded on their creation date: id, name, email, availability, time zone, extension. The id is the user_id of search_calls. In French: lister les agents aircall, utilisateurs aircall, liste des standardistes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -397,7 +397,7 @@ export const getUser = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get one Aircall user by numeric id or by email address.",
+  description: "Get one Aircall user by numeric id or by email address. In French: fiche d'un agent aircall, trouver un utilisateur aircall par email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -433,7 +433,7 @@ export const listTeams = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "List the Aircall teams (groups of users that route inbound calls), each with its users.",
+  description: "List the Aircall teams (groups of users that route inbound calls), each with its users. In French: équipes aircall, lister les équipes d'agents.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -467,7 +467,7 @@ export const getTeam = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get one Aircall team with its users.",
+  description: "Get one Aircall team with its users. In French: détail d'une équipe aircall, membres d'une équipe aircall.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -496,7 +496,7 @@ export const listNumbers = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "List the phone numbers (lines) of the Aircall company, bounded on their creation date: digits, name, country, time zone, live recording, and the users on the line.",
+  description: "List the phone numbers (lines) of the Aircall company, bounded on their creation date: digits, name, country, time zone, live recording, and the users on the line. In French: lignes téléphoniques aircall, lister les numéros de téléphone.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -540,7 +540,7 @@ export const getNumber = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get one Aircall phone number (line) with its users.",
+  description: "Get one Aircall phone number (line) with its users. In French: détail d'une ligne téléphonique, agents d'un numéro aircall.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -569,7 +569,7 @@ export const listContacts = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "List the shared contacts of the Aircall company: name, company, phone numbers, emails. Contacts synced from third-party integrations (CRM) are not served by the API. At most 10,000 contacts through pagination: narrow with date_from beyond that.",
+  description: "List the shared contacts of the Aircall company: name, company, phone numbers, emails. Contacts synced from third-party integrations (CRM) are not served by the API. At most 10,000 contacts through pagination: narrow with date_from beyond that. In French: contacts aircall, lister les contacts partagés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -618,7 +618,7 @@ export const searchContacts = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Search the shared contacts of the Aircall company by phone number and/or email. Contacts synced from third-party integrations are not served.",
+  description: "Search the shared contacts of the Aircall company by phone number and/or email. Contacts synced from third-party integrations are not served. In French: chercher un contact aircall, contact par numéro de téléphone, contact aircall par email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -670,7 +670,7 @@ export const getContact = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get one shared Aircall contact by its id.",
+  description: "Get one shared Aircall contact by its id. In French: fiche d'un contact aircall, détail d'un contact partagé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -699,7 +699,7 @@ export const getCompany = defineFunction({
   connector: "aircall",
   class: "read",
   act: false,
-  description: "Get the Aircall company behind the API key: its name, number of users and number of phone numbers.",
+  description: "Get the Aircall company behind the API key: its name, number of users and number of phone numbers. In French: compte aircall, société aircall, nombre de lignes aircall.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The connected company", input: {} },
@@ -720,7 +720,7 @@ export const connector = defineConnector({
   name: "aircall",
   label: "Aircall",
   namespace: "aircall",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "v1 (users on v2)",
   baseUrl: "https://api.aircall.io",
   auth: {"kind": "basic", "username": "api_id", "password": "api_token"},

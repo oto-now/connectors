@@ -6,7 +6,7 @@ export const listForms = defineFunction({
   connector: "fillout",
   class: "read",
   act: false,
-  description: "List every form of the Fillout organization: [{name, formId}]. The formId is the last segment of the form's public URL and is what every other function takes. No filter and no pagination.",
+  description: "List every form of the Fillout organization: [{name, formId}]. The formId is the last segment of the form's public URL and is what every other function takes. No filter and no pagination. In French: lister les formulaires fillout, mes formulaires fillout.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "All forms", input: {} },
@@ -28,7 +28,7 @@ export const getForm = defineFunction({
   connector: "fillout",
   class: "read",
   act: false,
-  description: "Get one Fillout form's structure: {id, name, questions: [{id, name, type}], calculations, urlParameters, scheduling, payments, quiz}. A submission's questions[].id points to these questions; create_submissions needs these ids. The question options and logic are not returned.",
+  description: "Get one Fillout form's structure: {id, name, questions: [{id, name, type}], calculations, urlParameters, scheduling, payments, quiz}. A submission's questions[].id points to these questions; create_submissions needs these ids. The question options and logic are not returned. In French: structure d'un formulaire, questions d'un formulaire fillout.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -64,7 +64,7 @@ export const listSubmissions = defineFunction({
   connector: "fillout",
   class: "read",
   act: false,
-  description: "List the submissions of one Fillout form, oldest first by default: {responses: [{submissionId, submissionTime, lastUpdatedAt, questions: [{id, name, type, value}], calculations, urlParameters, scheduling, payments, quiz, login: {email}}], totalResponses, pageCount}. Only finished submissions unless status is in_progress. Page with limit and offset; totalResponses says how many match.",
+  description: "List the submissions of one Fillout form, oldest first by default: {responses: [{submissionId, submissionTime, lastUpdatedAt, questions: [{id, name, type, value}], calculations, urlParameters, scheduling, payments, quiz, login: {email}}], totalResponses, pageCount}. Only finished submissions unless status is in_progress. Page with limit and offset; totalResponses says how many match. In French: réponses d'un formulaire, lister les soumissions, réponses reçues au formulaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -120,7 +120,7 @@ export const getSubmission = defineFunction({
   connector: "fillout",
   class: "read",
   act: false,
-  description: "Get one submission of a Fillout form: {submission: {submissionId, submissionTime, lastUpdatedAt, questions: [{id, name, type, value}], calculations, urlParameters, scheduling, payments, quiz, login}}.",
+  description: "Get one submission of a Fillout form: {submission: {submissionId, submissionTime, lastUpdatedAt, questions: [{id, name, type, value}], calculations, urlParameters, scheduling, payments, quiz, login}}. In French: détail d'une réponse au formulaire, lire une soumission.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -158,7 +158,7 @@ export const createSubmissions = defineFunction({
   connector: "fillout",
   class: "write",
   act: true,
-  description: "Record up to 10 submissions on one Fillout form, as if respondents had sent them, and return them: {submissions: [...]}. Each one is {questions: [{id, value}]} with the question ids from get_form, plus optional urlParameters [{id, name, value}], submissionTime, scheduling, payments and login {email}. The form's integrations and notifications may run as for a real submission. Limited to 10 calls per minute.",
+  description: "Record up to 10 submissions on one Fillout form, as if respondents had sent them, and return them: {submissions: [...]}. Each one is {questions: [{id, value}]} with the question ids from get_form, plus optional urlParameters [{id, name, value}], submissionTime, scheduling, payments and login {email}. The form's integrations and notifications may run as for a real submission. Limited to 10 calls per minute. In French: enregistrer des réponses au formulaire, créer une soumission.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -228,7 +228,7 @@ export const deleteSubmission = defineFunction({
   connector: "fillout",
   class: "sensitive",
   act: true,
-  description: "Delete one submission of a Fillout form and its answers, irreversibly. Limited to 10 calls per minute.",
+  description: "Delete one submission of a Fillout form and its answers, irreversibly. Limited to 10 calls per minute. In French: supprimer une réponse au formulaire, supprimer une soumission.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -266,7 +266,7 @@ export const createWebhook = defineFunction({
   connector: "fillout",
   class: "sensitive",
   act: true,
-  description: "Have Fillout post every new submission of one form, with all its answers, to url, and return {id}, the webhook id that delete_webhook takes: keep it, the API cannot list webhooks.",
+  description: "Have Fillout post every new submission of one form, with all its answers, to url, and return {id}, the webhook id that delete_webhook takes: keep it, the API cannot list webhooks. In French: créer un webhook fillout, recevoir les nouvelles réponses au formulaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -309,7 +309,7 @@ export const deleteWebhook = defineFunction({
   connector: "fillout",
   class: "sensitive",
   act: true,
-  description: "Remove one Fillout webhook by the id create_webhook returned: its endpoint stops receiving submissions.",
+  description: "Remove one Fillout webhook by the id create_webhook returned: its endpoint stops receiving submissions. In French: supprimer un webhook fillout, arrêter un webhook de formulaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -336,7 +336,7 @@ export const connector = defineConnector({
   name: "fillout",
   label: "Fillout",
   namespace: "fillout",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v1",
   baseUrls: {"setting": "region", "values": {"us": "https://api.fillout.com/v1/api", "eu": "https://eu-api.fillout.com/v1/api"}},
   auth: {"kind": "bearer", "token": "api_key"},

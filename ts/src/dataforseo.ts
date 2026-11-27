@@ -6,7 +6,7 @@ export const userData = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The DataForSEO account: login, timezone, balance (money.balance, in USD), total deposited (money.total) and subscription expiry dates. Free.",
+  description: "The DataForSEO account: login, timezone, balance (money.balance, in USD), total deposited (money.total) and subscription expiry dates. Free. In French: solde dataforseo, crédit dataforseo restant.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The account and its balance", input: {} },
@@ -28,7 +28,7 @@ export const labsLocationsAndLanguages = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Every location (location_code, location_name, country) with its languages (language_code, language_name) that the Labs functions accept. The whole list, long: read the code once and reuse it. Free.",
+  description: "Every location (location_code, location_name, country) with its languages (language_code, language_name) that the Labs functions accept. The whole list, long: read the code once and reuse it. Free. In French: pays et langues disponibles, codes de localisation dataforseo.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The locations and languages of Labs", input: {} },
@@ -50,7 +50,7 @@ export const keywordOverview = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Search volume, CPC, competition, search intent, keyword difficulty and the monthly trend of up to 700 keywords, in one location and language (Google, DataForSEO Labs). Billed 0.012 USD plus 0.00012 a keyword.",
+  description: "Search volume, CPC, competition, search intent, keyword difficulty and the monthly trend of up to 700 keywords, in one location and language (Google, DataForSEO Labs). Billed 0.012 USD plus 0.00012 a keyword. In French: volume de recherche d'un mot-clé, difficulté d'un mot-clé, cpc d'un mot-clé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -111,7 +111,7 @@ export const keywordIdeas = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Keywords of the same category as up to 200 seed keywords, with their volume, CPC and difficulty (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost. filters and order_by use the DataForSEO syntax: [[\"keyword_info.search_volume\", \">\", 100]], [\"keyword_info.search_volume,desc\"].",
+  description: "Keywords of the same category as up to 200 seed keywords, with their volume, CPC and difficulty (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost. filters and order_by use the DataForSEO syntax: [[\"keyword_info.search_volume\", \">\", 100]], [\"keyword_info.search_volume,desc\"]. In French: idées de mots-clés, trouver des mots-clés proches.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -188,7 +188,7 @@ export const keywordSuggestions = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Long-tail queries that contain the seed keyword, with their volume, CPC and difficulty (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost.",
+  description: "Long-tail queries that contain the seed keyword, with their volume, CPC and difficulty (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost. In French: suggestions de mots-clés, mots-clés longue traîne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -258,7 +258,7 @@ export const relatedKeywords = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Google's \"searches related to\" a keyword, expanded depth levels (0 to 4), with their volume, CPC and difficulty (DataForSEO Labs). Billed per keyword returned: limit bounds the cost.",
+  description: "Google's \"searches related to\" a keyword, expanded depth levels (0 to 4), with their volume, CPC and difficulty (DataForSEO Labs). Billed per keyword returned: limit bounds the cost. In French: recherches associées, mots-clés associés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -338,7 +338,7 @@ export const bulkKeywordDifficulty = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Ranking difficulty, 0 to 100, of up to 1000 keywords in one location and language (Google, DataForSEO Labs). Billed per keyword.",
+  description: "Ranking difficulty, 0 to 100, of up to 1000 keywords in one location and language (Google, DataForSEO Labs). Billed per keyword. In French: difficulté des mots-clés, difficulté de positionnement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -399,7 +399,7 @@ export const searchIntent = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Search intent of up to 1000 keywords (informational, navigational, commercial, transactional) with its probability (DataForSEO Labs). Billed per keyword.",
+  description: "Search intent of up to 1000 keywords (informational, navigational, commercial, transactional) with its probability (DataForSEO Labs). Billed per keyword. In French: intention de recherche, intention d'un mot-clé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -446,7 +446,7 @@ export const googleAdsSearchVolume = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Google Ads (Keyword Planner) search volume, CPC, competition and monthly searches of up to 1000 keywords. No location: worldwide. Dates as yyyy-mm-dd. Billed 0.09 USD a call.",
+  description: "Google Ads (Keyword Planner) search volume, CPC, competition and monthly searches of up to 1000 keywords. No location: worldwide. Dates as yyyy-mm-dd. Billed 0.09 USD a call. In French: volume google ads, planificateur de mots-clés, volume de recherche mensuel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -505,7 +505,7 @@ export const googleTrendsExplore = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Google Trends interest over time, 0 to 100, of up to 5 keywords compared. No location: worldwide. time_range or date_from and date_to bound the period; type picks the Google property.",
+  description: "Google Trends interest over time, 0 to 100, of up to 5 keywords compared. No location: worldwide. time_range or date_from and date_to bound the period; type picks the Google property. In French: tendances google, google trends d'un mot-clé, évolution de l'intérêt.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -583,7 +583,7 @@ export const domainRankOverview = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A domain's organic and paid footprint: ranking keywords per position bucket, estimated traffic (etv) and its value (Google, DataForSEO Labs). No location: every location, one row each.",
+  description: "A domain's organic and paid footprint: ranking keywords per position bucket, estimated traffic (etv) and its value (Google, DataForSEO Labs). No location: every location, one row each. In French: visibilité d'un domaine, trafic seo d'un site, positionnement d'un domaine.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -634,7 +634,7 @@ export const rankedKeywords = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The keywords a domain or a page ranks for, with position, URL, volume and traffic (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost.",
+  description: "The keywords a domain or a page ranks for, with position, URL, volume and traffic (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost. In French: mots-clés positionnés d'un site, sur quels mots-clés se positionne un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -708,7 +708,7 @@ export const competitorsDomain = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The domains that rank for the same keywords as a domain, with the overlap and their metrics (Google, DataForSEO Labs). Billed per domain returned: limit bounds the cost.",
+  description: "The domains that rank for the same keywords as a domain, with the overlap and their metrics (Google, DataForSEO Labs). Billed per domain returned: limit bounds the cost. In French: concurrents seo d'un site, sites concurrents sur google.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -782,7 +782,7 @@ export const domainIntersection = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Keywords both domains rank for (intersections true, DataForSEO's default), or that target1 ranks for and target2 does not (false) (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost.",
+  description: "Keywords both domains rank for (intersections true, DataForSEO's default), or that target1 ranks for and target2 does not (false) (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost. In French: mots-clés communs à deux sites, mots-clés du concurrent absents de mon site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -858,7 +858,7 @@ export const relevantPages = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A domain's pages with their ranking keywords and estimated traffic (Google, DataForSEO Labs). Billed per page returned: limit bounds the cost.",
+  description: "A domain's pages with their ranking keywords and estimated traffic (Google, DataForSEO Labs). Billed per page returned: limit bounds the cost. In French: meilleures pages d'un site, pages qui génèrent du trafic.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -928,7 +928,7 @@ export const keywordsForSite = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Keywords relevant to a site's content, whether it ranks for them or not, with their volume and difficulty (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost.",
+  description: "Keywords relevant to a site's content, whether it ranks for them or not, with their volume and difficulty (Google, DataForSEO Labs). Billed per keyword returned: limit bounds the cost. In French: mots-clés pertinents pour un site, opportunités de mots-clés d'un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -999,7 +999,7 @@ export const bulkTrafficEstimation = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Estimated monthly organic and paid traffic of up to 1000 domains, subdomains or pages in one call (Google, DataForSEO Labs). Billed per target.",
+  description: "Estimated monthly organic and paid traffic of up to 1000 domains, subdomains or pages in one call (Google, DataForSEO Labs). Billed per target. In French: estimation de trafic, trafic de plusieurs sites.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1060,7 +1060,7 @@ export const historicalRankOverview = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A domain's ranking keyword counts and estimated traffic, month by month (Google, DataForSEO Labs). Dates as yyyy-mm-dd. Billed 0.12 USD plus 0.0012 a month.",
+  description: "A domain's ranking keyword counts and estimated traffic, month by month (Google, DataForSEO Labs). Dates as yyyy-mm-dd. Billed 0.12 USD plus 0.0012 a month. In French: historique du trafic seo, évolution des positions d'un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1117,7 +1117,7 @@ export const serpCompetitors = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The domains that rank for a set of up to 200 keywords, with their average position and visibility (Google, DataForSEO Labs). Billed per domain returned: limit bounds the cost.",
+  description: "The domains that rank for a set of up to 200 keywords, with their average position and visibility (Google, DataForSEO Labs). Billed per domain returned: limit bounds the cost. In French: concurrents sur des mots-clés, sites qui se positionnent sur mes mots-clés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1197,7 +1197,7 @@ export const subdomains = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A domain's subdomains with their ranking keywords and estimated traffic (Google, DataForSEO Labs). Billed per subdomain returned: limit bounds the cost.",
+  description: "A domain's subdomains with their ranking keywords and estimated traffic (Google, DataForSEO Labs). Billed per subdomain returned: limit bounds the cost. In French: sous-domaines d'un site, trafic des sous-domaines.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1267,7 +1267,7 @@ export const backlinksSummary = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A link profile's totals: backlinks, referring domains, IPs and subnets, rank, spam score, top TLDs and link types.",
+  description: "A link profile's totals: backlinks, referring domains, IPs and subnets, rank, spam score, top TLDs and link types. In French: profil de liens, nombre de backlinks, domaines référents d'un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1302,7 +1302,7 @@ export const backlinksList = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The backlinks of a target: source URL, anchor, dofollow, rank, first and last seen. mode: as_is (DataForSEO's default), one_per_domain or one_per_anchor. Billed per backlink returned: limit bounds the cost.",
+  description: "The backlinks of a target: source URL, anchor, dofollow, rank, first and last seen. mode: as_is (DataForSEO's default), one_per_domain or one_per_anchor. Billed per backlink returned: limit bounds the cost. In French: liste des backlinks, liens entrants d'un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1361,7 +1361,7 @@ export const referringDomains = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The domains linking to a target, with their backlink count and rank. Billed per domain returned: limit bounds the cost.",
+  description: "The domains linking to a target, with their backlink count and rank. Billed per domain returned: limit bounds the cost. In French: domaines référents, sites qui font un lien.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1415,7 +1415,7 @@ export const anchors = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The anchor texts pointing to a target, with backlink and referring-domain counts. Billed per anchor returned: limit bounds the cost.",
+  description: "The anchor texts pointing to a target, with backlink and referring-domain counts. Billed per anchor returned: limit bounds the cost. In French: ancres des backlinks, textes d'ancre.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1469,7 +1469,7 @@ export const bulkRanks = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The backlink rank of up to 1000 domains, subdomains or pages in one call.",
+  description: "The backlink rank of up to 1000 domains, subdomains or pages in one call. In French: autorité de plusieurs domaines, rang backlinks en masse.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1510,7 +1510,7 @@ export const backlinksCompetitors = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The domains sharing the most backlinks with a target. Billed per domain returned: limit bounds the cost.",
+  description: "The domains sharing the most backlinks with a target. Billed per domain returned: limit bounds the cost. In French: concurrents en backlinks, sites aux backlinks communs.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1564,7 +1564,7 @@ export const backlinksIntersection = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The referring domains that link to every target (up to 20) and to none of exclude_targets (up to 10): competitors as targets and one's own site excluded give link prospects. targets is keyed by rank, from \"1\": {\"1\": \"example.org\", \"2\": \"example.net\"}. Billed per domain returned: limit bounds the cost.",
+  description: "The referring domains that link to every target (up to 20) and to none of exclude_targets (up to 10): competitors as targets and one's own site excluded give link prospects. targets is keyed by rank, from \"1\": {\"1\": \"example.org\", \"2\": \"example.net\"}. Billed per domain returned: limit bounds the cost. In French: opportunités de netlinking, liens des concurrents absents chez moi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1636,7 +1636,7 @@ export const backlinksHistory = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A domain's link profile month by month, from 2019-01-01: backlinks, referring domains, rank, new and lost. Dates as yyyy-mm-dd.",
+  description: "A domain's link profile month by month, from 2019-01-01: backlinks, referring domains, rank, new and lost. Dates as yyyy-mm-dd. In French: historique des backlinks, évolution du profil de liens.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1669,7 +1669,7 @@ export const backlinksNewLost = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "New and lost backlinks and referring domains of a target, per day, week, month or year (group_range). Dates as yyyy-mm-dd.",
+  description: "New and lost backlinks and referring domains of a target, per day, week, month or year (group_range). Dates as yyyy-mm-dd. In French: backlinks gagnés et perdus, nouveaux backlinks, liens perdus.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1711,7 +1711,7 @@ export const backlinksDomainPages = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A domain's pages with their own backlink and referring-domain counts: its most linked pages. Billed per page returned: limit bounds the cost.",
+  description: "A domain's pages with their own backlink and referring-domain counts: its most linked pages. Billed per page returned: limit bounds the cost. In French: pages les plus liées, backlinks par page.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1765,7 +1765,7 @@ export const llmMentionsSearch = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The AI answers (question, answer, sources) that mention the targets: a domain or a keyword each. platform: google (AI Overviews) or chat_gpt (United States, English only); none, both. Billed 0.1 USD plus 0.001 an answer returned: limit bounds the cost.",
+  description: "The AI answers (question, answer, sources) that mention the targets: a domain or a keyword each. platform: google (AI Overviews) or chat_gpt (United States, English only); none, both. Billed 0.1 USD plus 0.001 an answer returned: limit bounds the cost. In French: mentions dans les réponses ia, présence dans chatgpt, marque citée par l'ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1881,7 +1881,7 @@ export const llmMentionsMetrics = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Mention count, AI search volume and impressions of the targets, by platform and by source. Billed 0.1 USD plus 0.001 a row.",
+  description: "Mention count, AI search volume and impressions of the targets, by platform and by source. Billed 0.1 USD plus 0.001 a row. In French: visibilité dans les ia, nombre de mentions ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1978,7 +1978,7 @@ export const llmMentionsTopDomains = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The domains AI answers cite most for the targets. Billed 0.1 USD plus 0.001 a domain returned: limit bounds the cost.",
+  description: "The domains AI answers cite most for the targets. Billed 0.1 USD plus 0.001 a domain returned: limit bounds the cost. In French: domaines cités par l'ia, sources citées par chatgpt.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2081,7 +2081,7 @@ export const llmMentionsTopPages = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The pages AI answers cite most for the targets. Billed 0.1 USD plus 0.001 a page returned: limit bounds the cost.",
+  description: "The pages AI answers cite most for the targets. Billed 0.1 USD plus 0.001 a page returned: limit bounds the cost. In French: pages citées par l'ia, pages sources des réponses ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2184,7 +2184,7 @@ export const llmMentionsHistory = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The targets' mention metrics month by month, from 2025-08-01. Dates as yyyy-mm-dd. Billed 0.1 USD plus 0.001 a month.",
+  description: "The targets' mention metrics month by month, from 2025-08-01. Dates as yyyy-mm-dd. Billed 0.1 USD plus 0.001 a month. In French: historique des mentions ia, évolution de la visibilité ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2283,7 +2283,7 @@ export const llmResponse = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Ask an AI model a question and get its answer, with the sources it cites. engine: chat_gpt, claude, gemini or perplexity; model_name from llm_models. Billed 0.0006 USD plus the model's tokens.",
+  description: "Ask an AI model a question and get its answer, with the sources it cites. engine: chat_gpt, claude, gemini or perplexity; model_name from llm_models. Billed 0.0006 USD plus the model's tokens. In French: poser une question à chatgpt, réponse d'un modèle d'ia, sources citées par une ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2337,7 +2337,7 @@ export const llmModels = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The model names llm_response accepts for an engine. Free.",
+  description: "The model names llm_response accepts for an engine. Free. In French: modèles d'ia disponibles, liste des modèles llm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2370,7 +2370,7 @@ export const googleAiMode = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Google's AI Mode answer to a query, with the sources it cites, in one location and language.",
+  description: "Google's AI Mode answer to a query, with the sources it cites, in one location and language. In French: réponse du mode ia de google, google ai mode.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2430,7 +2430,7 @@ export const aiKeywordSearchVolume = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "How often up to 1000 keywords are asked to AI assistants, with a monthly trend. Billed 0.01 USD plus 0.0001 a keyword.",
+  description: "How often up to 1000 keywords are asked to AI assistants, with a monthly trend. Billed 0.01 USD plus 0.0001 a keyword. In French: volume de recherche ia, mots-clés demandés aux assistants ia.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2491,7 +2491,7 @@ export const contentSearch = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Web pages that mention a keyword or a brand: URL, domain, snippet, date and sentiment. page_type narrows the sources. At most 100 per call.",
+  description: "Web pages that mention a keyword or a brand: URL, domain, snippet, date and sentiment. page_type narrows the sources. At most 100 per call. In French: pages qui mentionnent une marque, citations d'une marque sur le web.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2548,7 +2548,7 @@ export const contentSummary = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Totals of a keyword's citations on the web: count, sentiment and connotations, top domains, countries and page types.",
+  description: "Totals of a keyword's citations on the web: count, sentiment and connotations, top domains, countries and page types. In French: synthèse des mentions d'une marque, sentiment des citations.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2586,7 +2586,7 @@ export const onpageInstant = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Audit one page now: meta tags, headings, content, links, load time and the failed checks. Billed 0.00015 USD.",
+  description: "Audit one page now: meta tags, headings, content, links, load time and the failed checks. Billed 0.00015 USD. In French: audit seo d'une page, analyser une page.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2617,7 +2617,7 @@ export const onpageContent = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A page's content, structured: title, headings, text blocks and tables. Billed 0.00015 USD.",
+  description: "A page's content, structured: title, headings, text blocks and tables. Billed 0.00015 USD. In French: contenu d'une page, titres et textes d'une page.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2648,7 +2648,7 @@ export const lighthouse = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A Lighthouse run of a page: performance, accessibility, best practices and SEO scores, with the audits. Billed 0.005 USD.",
+  description: "A Lighthouse run of a page: performance, accessibility, best practices and SEO scores, with the audits. Billed 0.005 USD. In French: score lighthouse, performance d'une page, vitesse de chargement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2687,7 +2687,7 @@ export const onpageCrawlStart = defineFunction({
   connector: "dataforseo",
   class: "write",
   act: false,
-  description: "Start crawling a site, up to max_crawl_pages pages. Returns the task id (tasks.0.id), read with onpage_summary until crawl_progress is finished, then with the onpage reports. Billed 0.00015 USD a page at posting.",
+  description: "Start crawling a site, up to max_crawl_pages pages. Returns the task id (tasks.0.id), read with onpage_summary until crawl_progress is finished, then with the onpage reports. Billed 0.00015 USD a page at posting. In French: lancer un audit de site, crawler un site, audit seo complet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2724,7 +2724,7 @@ export const onpageSummary = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A crawl's progress (crawl_progress: in_progress or finished) and its site-wide findings. Free.",
+  description: "A crawl's progress (crawl_progress: in_progress or finished) and its site-wide findings. Free. In French: avancement du crawl, résultats de l'audit du site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2753,7 +2753,7 @@ export const onpagePages = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The crawled pages with their checks. Free.",
+  description: "The crawled pages with their checks. Free. In French: pages crawlées, pages de l'audit.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2802,7 +2802,7 @@ export const onpageNonIndexable = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The crawled pages search engines cannot index, and why. Free.",
+  description: "The crawled pages search engines cannot index, and why. Free. In French: pages non indexables, pages bloquées à l'indexation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2844,7 +2844,7 @@ export const onpageDuplicateTags = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The crawled pages sharing a title (duplicate_title) or a description (duplicate_description). Free.",
+  description: "The crawled pages sharing a title (duplicate_title) or a description (duplicate_description). Free. In French: titres en double, meta descriptions dupliquées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2886,7 +2886,7 @@ export const onpageLinks = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The links found on the crawled pages; filters [\"is_broken\", \"=\", true] keeps the broken ones. Free.",
+  description: "The links found on the crawled pages; filters [\"is_broken\", \"=\", true] keeps the broken ones. Free. In French: liens cassés, liens du site crawlé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2928,7 +2928,7 @@ export const onpageRedirectChains = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The redirect chains found by the crawl, loops flagged. Free.",
+  description: "The redirect chains found by the crawl, loops flagged. Free. In French: chaînes de redirection, boucles de redirection.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2965,7 +2965,7 @@ export const domainTechnologies = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "What a site is built with (CMS, analytics, e-commerce, payment…), by group and category, with its country, language and the contact details found on it. Billed 0.012 USD.",
+  description: "What a site is built with (CMS, analytics, e-commerce, payment…), by group and category, with its country, language and the contact details found on it. Billed 0.012 USD. In French: technologies d'un site, cms d'un site, outils utilisés par un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2996,7 +2996,7 @@ export const domainsByTechnology = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The domains using technologies (Shopify, HubSpot) or matching keywords in their title and meta, filterable: [\"country_iso_code\", \"=\", \"FR\"], [\"domain_rank\", \">\", 300]. Billed 0.012 USD plus 0.0012 a domain returned: limit bounds the cost.",
+  description: "The domains using technologies (Shopify, HubSpot) or matching keywords in their title and meta, filterable: [\"country_iso_code\", \"=\", \"FR\"], [\"domain_rank\", \">\", 300]. Billed 0.012 USD plus 0.0012 a domain returned: limit bounds the cost. In French: sites qui utilisent une technologie, sites sous shopify.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3058,7 +3058,7 @@ export const technologiesSummary = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "How many domains use technologies, or match keywords, by country, language and co-used technology.",
+  description: "How many domains use technologies, or match keywords, by country, language and co-used technology. In French: part de marché d'une technologie, nombre de sites par technologie.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3105,7 +3105,7 @@ export const serpOrganic = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Google organic results of a keyword, as Google shows them in one place: position (rank_group, rank_absolute), title, URL, domain, and the other result types (local pack, featured snippet), without their snippet. depth bounds the results, ten a page, each page billed 0.002 USD. location_coordinate places the search at a point: \"latitude,longitude,radius\". When Google serves a URL as a google.com/goto redirect (domain google.com), breadcrumb and website_name name the site, goto_url_resolve resolves it, and serp_organic_post queues the search with every URL resolved.",
+  description: "Google organic results of a keyword, as Google shows them in one place: position (rank_group, rank_absolute), title, URL, domain, and the other result types (local pack, featured snippet), without their snippet. depth bounds the results, ten a page, each page billed 0.002 USD. location_coordinate places the search at a point: \"latitude,longitude,radius\". When Google serves a URL as a google.com/goto redirect (domain google.com), breadcrumb and website_name name the site, goto_url_resolve resolves it, and serp_organic_post queues the search with every URL resolved. In French: résultats google d'un mot-clé, positions sur google, page de résultats google.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3187,7 +3187,7 @@ export const serpOrganicPost = defineFunction({
   connector: "dataforseo",
   class: "write",
   act: false,
-  description: "Ask DataForSEO for the Google organic results of a keyword in its standard queue: every URL resolved to its site, where serp_organic, in live mode, may leave google.com/goto redirects. Returns the task id (tasks.0.id): read the results with serp_organic_get once ready (under a minute, at times longer). depth bounds the results, ten a page, each page billed 0.0006 USD. location_coordinate places the search at a point: \"latitude,longitude,radius\".",
+  description: "Ask DataForSEO for the Google organic results of a keyword in its standard queue: every URL resolved to its site, where serp_organic, in live mode, may leave google.com/goto redirects. Returns the task id (tasks.0.id): read the results with serp_organic_get once ready (under a minute, at times longer). depth bounds the results, ten a page, each page billed 0.0006 USD. location_coordinate places the search at a point: \"latitude,longitude,radius\". In French: lancer une collecte des résultats google, tâche serp en file.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3269,7 +3269,7 @@ export const serpOrganicGet = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The Google organic results a serp_organic_post task collected, as serp_organic returns them. While the task runs, refused as task_not_ready: read again later. Free.",
+  description: "The Google organic results a serp_organic_post task collected, as serp_organic returns them. While the task runs, refused as task_not_ready: read again later. Free. In French: lire les résultats de la tâche serp, résultats google collectés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3298,7 +3298,7 @@ export const gotoUrlResolve = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The site URL behind Google redirects (https://google.com/goto?url=...) that serp_organic could not resolve: each goto URL with its url. Free.",
+  description: "The site URL behind Google redirects (https://google.com/goto?url=...) that serp_organic could not resolve: each goto URL with its url. Free. In French: résoudre une redirection google, url réelle derrière google goto.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3334,7 +3334,7 @@ export const serpMaps = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "Google Maps results of a keyword at a place: rank, title, domain, URL, rating, address, phone, category, place_id, cid, latitude and longitude. location_coordinate places the search at a point with a zoom: \"latitude,longitude,zoom\", such as \"45.764,4.835,15z\"; a grid of points around a business gives its local visibility. depth bounds the results, a hundred a page, each page billed 0.002 USD.",
+  description: "Google Maps results of a keyword at a place: rank, title, domain, URL, rating, address, phone, category, place_id, cid, latitude and longitude. location_coordinate places the search at a point with a zoom: \"latitude,longitude,zoom\", such as \"45.764,4.835,15z\"; a grid of points around a business gives its local visibility. depth bounds the results, a hundred a page, each page billed 0.002 USD. In French: résultats google maps, classement local sur maps.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3421,7 +3421,7 @@ export const myBusinessInfo = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "A Google Business Profile: name, category, address, phone, URL, rating and its distribution, hours, attributes, place_id and cid. keyword names the business, or gives its id: \"cid:1234567890\" or \"place_id:ChIJ...\". Billed 0.0054 USD.",
+  description: "A Google Business Profile: name, category, address, phone, URL, rating and its distribution, hours, attributes, place_id and cid. keyword names the business, or gives its id: \"cid:1234567890\" or \"place_id:ChIJ...\". Billed 0.0054 USD. In French: fiche google business, fiche google d'un établissement, note google d'un commerce.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3492,7 +3492,7 @@ export const googleReviewsPost = defineFunction({
   connector: "dataforseo",
   class: "write",
   act: false,
-  description: "Ask DataForSEO for the Google reviews of a business, given by name (keyword), cid or place_id. Returns the task id (tasks.0.id): read the reviews with google_reviews_get, once ready (a few seconds to minutes). depth bounds the reviews, billed 0.00075 USD a ten.",
+  description: "Ask DataForSEO for the Google reviews of a business, given by name (keyword), cid or place_id. Returns the task id (tasks.0.id): read the reviews with google_reviews_get, once ready (a few seconds to minutes). depth bounds the reviews, billed 0.00075 USD a ten. In French: collecter les avis google, demander les avis d'un établissement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3576,7 +3576,7 @@ export const googleReviewsGet = defineFunction({
   connector: "dataforseo",
   class: "read",
   act: false,
-  description: "The Google reviews a google_reviews_post task collected: rating, text, date, author, owner's answer. While the task runs, refused as task_not_ready: read again later. Free.",
+  description: "The Google reviews a google_reviews_post task collected: rating, text, date, author, owner's answer. While the task runs, refused as task_not_ready: read again later. Free. In French: lire les avis google, avis clients d'un établissement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3604,7 +3604,7 @@ export const connector = defineConnector({
   name: "dataforseo",
   label: "DataForSEO",
   namespace: "dataforseo",
-  version: "1.0.4",
+  version: "1.0.5",
   apiVersion: "v3",
   baseUrl: "https://api.dataforseo.com/v3",
   auth: {"kind": "basic", "username": "login", "password": "password"},

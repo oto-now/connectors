@@ -6,7 +6,7 @@ export const listAssets = defineFunction({
   connector: "mux",
   class: "read",
   act: false,
-  description: "The videos (assets) of the token's environment, newest first: id, status (preparing, ready, errored), duration in seconds, resolution, playback ids, passthrough and title. next_cursor pages on. upload_id finds the asset a direct upload made. A public playback id plays at https://stream.mux.com/<playback_id>.m3u8.",
+  description: "The videos (assets) of the token's environment, newest first: id, status (preparing, ready, errored), duration in seconds, resolution, playback ids, passthrough and title. next_cursor pages on. upload_id finds the asset a direct upload made. A public playback id plays at https://stream.mux.com/<playback_id>.m3u8. In French: lister les vidéos, vidéos mux.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -36,7 +36,7 @@ export const getAsset = defineFunction({
   connector: "mux",
   class: "read",
   act: false,
-  description: "One video: status (preparing until Mux has processed it, then ready or errored, with errors), duration, resolution and max stored resolution, aspect ratio, playback ids with their policy, tracks, passthrough and title.",
+  description: "One video: status (preparing until Mux has processed it, then ready or errored, with errors), duration, resolution and max stored resolution, aspect ratio, playback ids with their policy, tracks, passthrough and title. In French: détail d'une vidéo, statut d'une vidéo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -63,7 +63,7 @@ export const getUpload = defineFunction({
   connector: "mux",
   class: "read",
   act: false,
-  description: "One direct upload: status (waiting until the file is sent, then asset_created, or errored, cancelled, timed_out) and, once the file has arrived, the asset_id of the video it made.",
+  description: "One direct upload: status (waiting until the file is sent, then asset_created, or errored, cancelled, timed_out) and, once the file has arrived, the asset_id of the video it made. In French: statut d'un envoi de vidéo, suivi d'un téléversement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -90,7 +90,7 @@ export const createUpload = defineFunction({
   connector: "mux",
   class: "write",
   act: true,
-  description: "A direct upload address: the answer's data.url takes the video file in ONE HTTP PUT, from wherever the file is, with no credential (the address is the authorisation). Mux then makes the video: read get_upload for its asset_id, then get_asset until it is ready. The address expires after timeout seconds (3600 by default). Playback is public unless new_asset_settings says signed. test makes a free 10-second watermarked video deleted after a day.",
+  description: "A direct upload address: the answer's data.url takes the video file in ONE HTTP PUT, from wherever the file is, with no credential (the address is the authorisation). Mux then makes the video: read get_upload for its asset_id, then get_asset until it is ready. The address expires after timeout seconds (3600 by default). Playback is public unless new_asset_settings says signed. test makes a free 10-second watermarked video deleted after a day. In French: téléverser une vidéo, envoyer une vidéo, adresse d'envoi de vidéo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -135,7 +135,7 @@ export const createAsset = defineFunction({
   connector: "mux",
   class: "write",
   act: true,
-  description: "A video from a file Mux fetches itself at an https address (public or pre-signed), instead of an upload. The answer's data.id is the asset: read get_asset until it is ready. Playback is public unless playback_policy says signed.",
+  description: "A video from a file Mux fetches itself at an https address (public or pre-signed), instead of an upload. The answer's data.id is the asset: read get_asset until it is ready. Playback is public unless playback_policy says signed. In French: importer une vidéo depuis une adresse, créer une vidéo depuis un lien.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -183,7 +183,7 @@ export const connector = defineConnector({
   name: "mux",
   label: "Mux",
   namespace: "mux",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "video v1",
   baseUrl: "https://api.mux.com",
   auth: {"kind": "basic", "username": "token_id", "password": "token_secret"},

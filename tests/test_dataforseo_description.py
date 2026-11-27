@@ -148,7 +148,7 @@ def _request_parts(parts: dict) -> dict:
 
 def test_the_description_is_version_1_0_2_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.4"
+    assert description["connector"]["version"] == "1.0.5"
     check(description, DATAFORSEO)
 
 

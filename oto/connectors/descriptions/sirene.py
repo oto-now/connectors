@@ -7,7 +7,7 @@ DESCRIPTION = {'connector': {'name': 'sirene',
                               'activity code (NAF), headcount band, state and address.',
                'logo_domain': 'insee.fr',
                'namespace': 'sirene',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': '3.11',
                'base_url': 'https://api.insee.fr/api-sirene/3.11',
                'auth': {'kind': 'api_key',
@@ -69,7 +69,8 @@ DESCRIPTION = {'connector': {'name': 'sirene',
                                'closed), activitePrincipaleEtablissement, enseigne1..., ...}]}}; the current '
                                'period has dateFin null. Free; 30 calls per minute per key. A unit under '
                                'partial diffusion (statut P) comes back with fields masked: its data must '
-                               'not be redistributed whole nor used for prospecting.',
+                               "not be redistributed whole nor used for prospecting. In French: fiche d'un "
+                               "établissement, chercher un siret, adresse d'un établissement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siret'],
@@ -92,7 +93,8 @@ DESCRIPTION = {'connector': {'name': 'sirene',
                                'nicSiegeUniteLegale of the current period: fetch it by SIRET for its '
                                'address. Free; 30 calls per minute per key. A unit under partial diffusion '
                                '(statut P) comes back with fields masked: its data must not be redistributed '
-                               'whole nor used for prospecting.',
+                               "whole nor used for prospecting. In French: fiche d'une entreprise par son "
+                               "siren, chercher un siren, forme juridique d'une société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren'],
@@ -105,7 +107,8 @@ DESCRIPTION = {'connector': {'name': 'sirene',
                 'class': 'read',
                 'description': 'Read the state of the INSEE Sirene API and the dates of the last updates of '
                                'its data (GET /informations): whether the service is up, and how fresh the '
-                               'register it answers from is. Free. Not needed before a lookup.',
+                               'register it answers from is. Free. Not needed before a lookup. In French: '
+                               "état de l'api sirene, fraîcheur du répertoire sirene.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'State of the service', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/informations'}}]}

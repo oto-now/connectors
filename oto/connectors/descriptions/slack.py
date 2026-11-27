@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'slack',
                'label': 'Slack',
                'namespace': 'slack',
-               'version': '1.1.0',
+               'version': '1.1.1',
                'api_version': 'Web API',
                'base_url': 'https://slack.com/api',
                'auth': {'kind': 'bearer', 'token': 'bot_token'},
@@ -131,7 +131,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                                "is_private, is_member, topic, purpose, member count. One page only (Slack's "
                                'default size). types filters the kinds, comma-separated: public_channel '
                                "(Slack's default), private_channel (those the app is in), mpim, im (the "
-                               "app's own conversations, not a person's).",
+                               "app's own conversations, not a person's). In French: lister les canaux "
+                               'slack, chaînes slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'types': {'type': 'string',
@@ -150,7 +151,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'description': "Get one channel's metadata: name, is_private, is_member (is the app in it), "
                                'is_archived, is_im, is_ext_shared (people of another company read it), '
                                'topic. Answers on a public channel the app is not in; on a private channel '
-                               'the app is not in, Slack answers channel_not_found, as for a wrong id.',
+                               'the app is not in, Slack answers channel_not_found, as for a wrong id. In '
+                               "French: détail d'un canal slack, sujet d'un canal slack.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel'],
@@ -165,7 +167,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'description': 'Make the Slack app join a public channel, so that it can read and post there '
                                '(otherwise Slack answers not_in_channel). A private channel cannot be joined '
                                'through any API: a member must invite the app with /invite. Check with '
-                               'channel_info first (is_private, is_member, is_archived).',
+                               'channel_info first (is_private, is_member, is_archived). In French: '
+                               "rejoindre un canal slack, ajouter l'app à un canal.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel'],
@@ -181,7 +184,9 @@ DESCRIPTION = {'connector': {'name': 'slack',
                                "parent carries reply_count and latest_reply but never a reply's text: read "
                                'the replies with replies. oldest and latest are exclusive bounds (a message '
                                'ts), inclusive includes the messages sitting on them. A DM is read only when '
-                               'the app is part of it. When more remain, pass the cursor given back.',
+                               'the app is part of it. When more remain, pass the cursor given back. In '
+                               "French: messages d'un canal slack, lire un canal slack, derniers messages "
+                               'slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel'],
@@ -246,7 +251,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                                'limit counts the replies only. Called with the ts of a reply, Slack returns '
                                'that one message alone (its thread_ts differs from its ts): call again with '
                                'its thread_ts. oldest and latest are exclusive bounds. When has_more, pass '
-                               'response_metadata.next_cursor as cursor; pages go from newest to oldest.',
+                               'response_metadata.next_cursor as cursor; pages go from newest to oldest. In '
+                               "French: réponses d'un fil slack, lire un fil de discussion slack.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'thread_ts'],
@@ -298,7 +304,9 @@ DESCRIPTION = {'connector': {'name': 'slack',
                                'emoji code and swallows it: such a text is refused, write the time without '
                                'seconds and with no colon right after it. blocks (Block Kit) go as given, '
                                'text then being their fallback. unfurl_links and unfurl_media false post it '
-                               'without link previews. The answer gives ts, the anchor of a reply.',
+                               'without link previews. The answer gives ts, the anchor of a reply. In '
+                               'French: envoyer un message slack, poster dans un canal, répondre dans un fil '
+                               'slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel'],
@@ -356,7 +364,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'class': 'sensitive',
                 'description': 'Replace the text or blocks of a message the Slack app posted (channel and '
                                'its ts). The text goes as given: a number between two colons (20:51:) is '
-                               'read by Slack as an emoji code.',
+                               'read by Slack as an emoji code. In French: modifier un message slack, '
+                               'corriger un message slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'ts'],
@@ -389,7 +398,7 @@ DESCRIPTION = {'connector': {'name': 'slack',
                {'name': 'delete_message',
                 'class': 'sensitive',
                 'description': 'Delete a message the Slack app posted (channel and its ts). It cannot be '
-                               'restored.',
+                               'restored. In French: supprimer un message slack, effacer un message slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'ts'],
@@ -411,7 +420,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'class': 'sensitive',
                 'description': "Show a message to one member of a channel only, under the Slack app's name "
                                "(an ephemeral message: not kept in the channel's history). user is the "
-                               "member's id (U…). The text goes as given.",
+                               "member's id (U…). The text goes as given. In French: message éphémère slack, "
+                               'message visible par un seul membre.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'user'],
@@ -445,7 +455,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                {'name': 'add_reaction',
                 'class': 'write',
                 'description': 'Add an emoji reaction to a message (channel and its ts), under the Slack '
-                               "app's name. name is the emoji's name without colons (white_check_mark).",
+                               "app's name. name is the emoji's name without colons (white_check_mark). In "
+                               'French: ajouter une réaction slack, réagir avec un emoji.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'ts', 'name'],
@@ -469,7 +480,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                {'name': 'get_user_info',
                 'class': 'read',
                 'description': 'Get one Slack user by id (U…): name, real name, title, time zone, is_bot, '
-                               'deleted, and the email when the app has users:read.email.',
+                               'deleted, and the email when the app has users:read.email. In French: profil '
+                               "d'un utilisateur slack, détail d'un membre slack.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user_id'],
@@ -484,7 +496,9 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'class': 'read',
                 'description': 'Find a Slack user by email (needs users:read.email). Slack matches the '
                                'address the person signed up to Slack with, which may differ from their work '
-                               'address: users_not_found then means that, not that they are absent.',
+                               'address: users_not_found then means that, not that they are absent. In '
+                               'French: trouver un utilisateur slack par email, membre slack par adresse '
+                               'email.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['email'],
@@ -500,7 +514,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'act': False,
                 'description': "Open the Slack app's direct conversation with a user, or get it if it "
                                "exists: the answer's channel.id is the DM id to pass to post_message. "
-                               'Nothing is sent and the person is not told.',
+                               'Nothing is sent and the person is not told. In French: ouvrir un message '
+                               'privé slack, conversation directe avec un membre.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user'],
@@ -515,7 +530,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'class': 'read',
                 'description': "Get the metadata of a file shared in Slack, by its id (F…, from a message's "
                                'files[].id): name, title, mimetype, size, the channels it was shared in. Its '
-                               'content is not returned.',
+                               "content is not returned. In French: détail d'un fichier slack, fichier "
+                               'partagé dans slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['file_id'],
@@ -530,7 +546,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'description': 'List the user groups of the workspace (the @team handles): id, name, handle, '
                                'description, default channels (prefs.channels). A disabled group has '
                                'date_delete other than 0 and only comes with include_disabled. User groups '
-                               'need a paid plan (plan_required otherwise).',
+                               'need a paid plan (plan_required otherwise). In French: groupes '
+                               "d'utilisateurs slack, lister les groupes slack.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'include_users': {'const': True,
@@ -553,7 +570,8 @@ DESCRIPTION = {'connector': {'name': 'slack',
                 'cost': {'per': 'request'}},
                {'name': 'usergroup_users',
                 'class': 'read',
-                'description': 'List the member ids (U…) of one user group (S…).',
+                'description': "List the member ids (U…) of one user group (S…). In French: membres d'un "
+                               "groupe slack, personnes d'un groupe d'utilisateurs.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['usergroup'],

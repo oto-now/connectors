@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'hunter',
                'label': 'Hunter.io',
                'namespace': 'hunter',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v2',
                'base_url': 'https://api.hunter.io/v2',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -71,7 +71,8 @@ DESCRIPTION = {'connector': {'name': 'hunter',
                                "pages where it was seen and its verification; with the domain's email "
                                'pattern (such as first.last) and organization. Spends Hunter credits: 1 per '
                                '1 to 10 emails returned, none when nothing is found. limit caps the emails '
-                               'returned, at most 10.',
+                               "returned, at most 10. In French: emails d'une entreprise, adresses email "
+                               "d'un domaine, contacts d'une société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['domain'],
@@ -97,7 +98,9 @@ DESCRIPTION = {'connector': {'name': 'hunter',
                                "Answers the email, a confidence score, the person's position, LinkedIn and "
                                'Twitter when known, the pages where it was seen and its verification. Spends '
                                '1 Hunter credit when an email is found, none otherwise. 451 claimed_email: '
-                               'the person asked Hunter to stop processing their data.',
+                               'the person asked Hunter to stop processing their data. In French: trouver '
+                               "l'email d'une personne, deviner une adresse email, email professionnel d'un "
+                               'contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['domain'],
@@ -140,7 +143,8 @@ DESCRIPTION = {'connector': {'name': 'hunter',
                                'Hunter verification (0.5 credit on a single credits pool). A 202 answer '
                                'means the verification is still running: call again later, a repeated call '
                                'is billed once. 451 claimed_email: the person asked Hunter to stop '
-                               'processing their data.',
+                               'processing their data. In French: vérifier un email, adresse email valide, '
+                               'tester une adresse email.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['email'],
@@ -155,7 +159,8 @@ DESCRIPTION = {'connector': {'name': 'hunter',
                 'class': 'read',
                 'description': 'The Hunter account behind this key: plan, reset date of its quotas, and the '
                                "period's requests: searches and verifications (used, available, remaining), "
-                               'and credits on a single credits pool. Free.',
+                               'and credits on a single credits pool. Free. In French: crédits hunter '
+                               'restants, quota hunter, compte hunter.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The account and its remaining credits', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/account'}}]}

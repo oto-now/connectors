@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'linear',
                'label': 'Linear',
                'namespace': 'linear',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'GraphQL (unversioned)',
                'base_url': 'https://api.linear.app',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'Authorization', 'key': 'api_key'},
@@ -56,7 +56,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'description': 'One Linear issue, by its id or its identifier (ENG-123), under data.issue: '
                                'identifier, title, description (markdown), priority (0 none, 1 urgent, 2 '
                                'high, 3 normal, 4 low), estimate, due date, url, dates, state, assignee, '
-                               'team, project, cycle, labels, parent issue.',
+                               'team, project, cycle, labels, parent issue. In French: lire un ticket, '
+                               "détail d'une issue, fiche d'un ticket linear.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['issue_id'],
@@ -86,7 +87,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'description': 'Create a Linear issue in a team; the answer is under data.issueCreate: '
                                'success and the issue (its fields as get_issue). priority: 0 none, 1 urgent, '
                                '2 high, 3 normal, 4 low. state_id comes from list_workflow_states; parent_id '
-                               'makes it a sub-issue.',
+                               'makes it a sub-issue. In French: créer un ticket, ouvrir une issue, signaler '
+                               'un bug.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['title', 'team_id'],
@@ -163,7 +165,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'class': 'write',
                 'description': 'Change a Linear issue: only the fields given change; label_ids replaces all '
                                'its labels. The answer is under data.issueUpdate: success and the issue (its '
-                               'fields as get_issue). At least one change.',
+                               'fields as get_issue). At least one change. In French: modifier un ticket, '
+                               "changer le statut d'un ticket, assigner un ticket.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['issue_id'],
@@ -232,7 +235,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'archive_issue',
                 'class': 'sensitive',
                 'description': 'Archive a Linear issue: it leaves the lists, and can be restored from '
-                               'Linear. The answer is data.issueArchive.success.',
+                               'Linear. The answer is data.issueArchive.success. In French: archiver un '
+                               'ticket, archiver une issue.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['issue_id'],
@@ -256,7 +260,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'delete_issue',
                 'class': 'sensitive',
                 'description': 'Delete a Linear issue: it moves to the trash, where Linear keeps it for a '
-                               'while before deleting it for good. The answer is data.issueDelete.success.',
+                               'while before deleting it for good. The answer is data.issueDelete.success. '
+                               'In French: supprimer un ticket, mettre une issue à la corbeille.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['issue_id'],
@@ -280,7 +285,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'get_comment',
                 'class': 'read',
                 'description': 'One comment on a Linear issue, under data.comment: body (markdown), dates, '
-                               'author, issue, parent comment.',
+                               "author, issue, parent comment. In French: lire un commentaire, détail d'un "
+                               'commentaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['comment_id'],
@@ -302,7 +308,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'class': 'read',
                 'description': 'The comments of a Linear issue, a page at a time, under data.comments.nodes '
                                '(each as get_comment); data.comments.pageInfo.endCursor is the after of the '
-                               'next page while hasNextPage is true.',
+                               "next page while hasNextPage is true. In French: commentaires d'un ticket, "
+                               "lister les commentaires d'une issue.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['issue_id'],
@@ -353,7 +360,7 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'class': 'write',
                 'description': 'Comment on a Linear issue, in markdown; parent_id answers another comment, '
                                'in its thread. The answer is under data.commentCreate: success and the '
-                               'comment.',
+                               'comment. In French: commenter un ticket, répondre à un commentaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['issue_id', 'body'],
@@ -389,7 +396,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'update_comment',
                 'class': 'write',
                 'description': 'Replace the text of a comment on a Linear issue. The answer is under '
-                               'data.commentUpdate: success and the comment.',
+                               'data.commentUpdate: success and the comment. In French: modifier un '
+                               'commentaire, corriger un commentaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['comment_id', 'body'],
@@ -416,7 +424,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'delete_comment',
                 'class': 'sensitive',
                 'description': 'Delete a comment on a Linear issue. The answer is '
-                               'data.commentDelete.success.',
+                               'data.commentDelete.success. In French: supprimer un commentaire, effacer un '
+                               'commentaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['comment_id'],
@@ -437,7 +446,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'get_project',
                 'class': 'read',
                 'description': 'One Linear project, under data.project: name, description, status (id, name, '
-                               'type), url, target date, dates, lead, teams.',
+                               "type), url, target date, dates, lead, teams. In French: détail d'un projet, "
+                               'lire un projet linear.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['project_id'],
@@ -461,7 +471,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'description': 'Create a Linear project in one or more teams. status_id is one of the '
                                "workspace's project statuses (read one from an existing project with "
                                'get_project), not a free text. The answer is under data.projectCreate: '
-                               'success and the project (as get_project).',
+                               'success and the project (as get_project). In French: créer un projet, '
+                               'nouveau projet linear.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'team_ids'],
@@ -515,7 +526,7 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'class': 'write',
                 'description': 'Change a Linear project: only the fields given change. The answer is under '
                                'data.projectUpdate: success and the project (as get_project). At least one '
-                               'change.',
+                               "change. In French: modifier un projet, changer la date cible d'un projet.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['project_id'],
@@ -560,7 +571,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'delete_project',
                 'class': 'sensitive',
                 'description': 'Delete a Linear project: it moves to the trash. Its issues stay, out of the '
-                               'project. The answer is data.projectDelete.success.',
+                               'project. The answer is data.projectDelete.success. In French: supprimer un '
+                               'projet, mettre un projet à la corbeille.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['project_id'],
@@ -581,7 +593,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'get_team',
                 'class': 'read',
                 'description': 'One Linear team, under data.team - name, key (the prefix of its issue '
-                               'identifiers), description, private.',
+                               "identifiers), description, private. In French: détail d'une équipe, lire une "
+                               'équipe linear.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['team_id'],
@@ -604,7 +617,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'class': 'read',
                 'description': "The Linear teams the key's holder sees, a page at a time, under "
                                'data.teams.nodes (each as get_team); data.teams.pageInfo.endCursor is the '
-                               'after of the next page while hasNextPage is true.',
+                               'after of the next page while hasNextPage is true. In French: lister les '
+                               'équipes, équipes linear.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'first': {'type': 'integer',
@@ -648,7 +662,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'description': 'The workflow states of a Linear team (Backlog, Todo, In Progress, Done, '
                                "Canceled and the team's own), a page at a time, under "
                                'data.workflowStates.nodes: id, name, type, position, color. Read here the '
-                               'state_id of create_issue and update_issue.',
+                               "state_id of create_issue and update_issue. In French: statuts d'une équipe, "
+                               'colonnes du workflow, états des tickets.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['team_id'],
@@ -695,7 +710,7 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'get_cycle',
                 'class': 'read',
                 'description': 'One Linear cycle (a sprint), under data.cycle - number, name, start, end, '
-                               'completion date, team.',
+                               "completion date, team. In French: détail d'un cycle, lire un sprint.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['cycle_id'],
@@ -716,7 +731,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'get_label',
                 'class': 'read',
                 'description': 'One Linear issue label, under data.issueLabel - name, color, description, '
-                               'team (none for a workspace label).',
+                               "team (none for a workspace label). In French: détail d'une étiquette, lire "
+                               'un label.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['label_id'],
@@ -737,7 +753,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'create_label',
                 'class': 'write',
                 'description': 'Create a Linear issue label, in a team, or for the whole workspace without '
-                               'team_id. The answer is under data.issueLabelCreate: success and the label.',
+                               'team_id. The answer is under data.issueLabelCreate: success and the label. '
+                               'In French: créer une étiquette, ajouter un label.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -770,7 +787,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'delete_label',
                 'class': 'sensitive',
                 'description': 'Delete a Linear issue label; the issues that carry it lose it. The answer is '
-                               'data.issueLabelDelete.success.',
+                               'data.issueLabelDelete.success. In French: supprimer une étiquette, supprimer '
+                               'un label.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['label_id'],
@@ -792,7 +810,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'class': 'read',
                 'description': 'The Linear user who holds the API key, under data.viewer: id, name, email, '
                                'display name, whether active and admin, creation date. Use it to know on '
-                               'whose behalf the key acts.',
+                               'whose behalf the key acts. In French: mon compte linear, utilisateur de la '
+                               'clé linear.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Who holds the key', 'input': {}}],
                 'refusals': [{'code': 'no_result',
@@ -808,7 +827,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'get_user',
                 'class': 'read',
                 'description': 'One member of the Linear workspace, under data.user: name, email, display '
-                               'name, whether active and admin, creation date.',
+                               "name, whether active and admin, creation date. In French: fiche d'un membre, "
+                               'lire un utilisateur linear.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user_id'],
@@ -829,7 +849,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'class': 'read',
                 'description': 'The members of the Linear workspace, a page at a time, under '
                                'data.users.nodes (each as get_user); data.users.pageInfo.endCursor is the '
-                               'after of the next page while hasNextPage is true.',
+                               'after of the next page while hasNextPage is true. In French: lister les '
+                               "membres, utilisateurs de l'espace linear.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'first': {'type': 'integer',
@@ -875,7 +896,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                                'Reaction…), from one team (team_id) or every public team (all_public_teams). '
                                'Disabled from the start with enabled false. Linear makes the signing secret, '
                                'readable in its settings only. The answer is under data.webhookCreate: '
-                               'success and the webhook (url, enabled, resource types, team, date).',
+                               'success and the webhook (url, enabled, resource types, team, date). In '
+                               "French: créer un webhook, s'abonner aux événements linear.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url', 'resource_types'],
@@ -926,7 +948,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                 'class': 'write',
                 'description': 'Change a Linear webhook: its address, its resource types, or enable or '
                                'disable it; only what is given changes. The answer is under '
-                               'data.webhookUpdate: success and the webhook. At least one change.',
+                               'data.webhookUpdate: success and the webhook. At least one change. In French: '
+                               'modifier un webhook, désactiver un webhook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],
@@ -963,7 +986,8 @@ DESCRIPTION = {'connector': {'name': 'linear',
                {'name': 'delete_webhook',
                 'class': 'sensitive',
                 'description': 'Delete a Linear webhook; Linear stops posting to its address. The answer is '
-                               'data.webhookDelete.success.',
+                               'data.webhookDelete.success. In French: supprimer un webhook, arrêter un '
+                               'webhook.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],

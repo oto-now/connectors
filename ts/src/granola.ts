@@ -6,7 +6,7 @@ export const listNotes = defineFunction({
   connector: "granola",
   class: "read",
   act: false,
-  description: "List the meeting notes this key can reach: id, title, owner, created_at, updated_at (and deleted_at, seen only by keys that reach every workspace note). Filters: created_before, created_after, updated_after (a date or a date-time), folder_id (the folder and its subfolders). The content of a note (summary, attendees, transcript) comes with get_note. A page holds page_size notes; hasMore and cursor give the next one.",
+  description: "List the meeting notes this key can reach: id, title, owner, created_at, updated_at (and deleted_at, seen only by keys that reach every workspace note). Filters: created_before, created_after, updated_after (a date or a date-time), folder_id (the folder and its subfolders). The content of a note (summary, attendees, transcript) comes with get_note. A page holds page_size notes; hasMore and cursor give the next one. In French: lister les notes de réunion, comptes rendus de réunion, mes notes granola.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -66,7 +66,7 @@ export const getNote = defineFunction({
   connector: "granola",
   class: "read",
   act: false,
-  description: "One meeting note: title, owner, calendar event and its invitees, attendees, folders and spaces, the AI summary (text and markdown), private notes, and its link in the Granola web app. include=transcript adds the transcript inline; a transcript too large to come inline is refused, then read it page by page with get_transcript. The download address of a photo attached to the note is never given: anyone holding it sees the photo.",
+  description: "One meeting note: title, owner, calendar event and its invitees, attendees, folders and spaces, the AI summary (text and markdown), private notes, and its link in the Granola web app. include=transcript adds the transcript inline; a transcript too large to come inline is refused, then read it page by page with get_transcript. The download address of a photo attached to the note is never given: anyone holding it sees the photo. In French: lire une note de réunion, résumé d'une réunion, compte rendu d'un rendez-vous.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -104,7 +104,7 @@ export const getTranscript = defineFunction({
   connector: "granola",
   class: "read",
   act: false,
-  description: "The transcript of a meeting note, page by page: each item has its speaker (source microphone or speaker; attribution me, the note's owner, or them; a name when Granola identified the speaker), its text and its start and end times. A page holds page_size items; hasMore and cursor give the next one.",
+  description: "The transcript of a meeting note, page by page: each item has its speaker (source microphone or speaker; attribution me, the note's owner, or them; a name when Granola identified the speaker), its text and its start and end times. A page holds page_size items; hasMore and cursor give the next one. In French: transcription d'une réunion, verbatim d'une réunion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -155,7 +155,7 @@ export const listFolders = defineFunction({
   connector: "granola",
   class: "read",
   act: false,
-  description: "List the folders this key can reach, in alphabetical order: id, name, parent_folder_id (null at the top level) and space_id. A folder id filters list_notes and restricts a webhook endpoint. A page holds page_size folders; hasMore and cursor give the next one.",
+  description: "List the folders this key can reach, in alphabetical order: id, name, parent_folder_id (null at the top level) and space_id. A folder id filters list_notes and restricts a webhook endpoint. A page holds page_size folders; hasMore and cursor give the next one. In French: dossiers granola, lister les dossiers de notes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -194,7 +194,7 @@ export const listWebhookEndpoints = defineFunction({
   connector: "granola",
   class: "read",
   act: false,
-  description: "List this key's webhook endpoints: url, events, scopes, folder_ids, enabled, creator. The url is cut to its origin when the key's user did not create the endpoint. A signing secret is never given.",
+  description: "List this key's webhook endpoints: url, events, scopes, folder_ids, enabled, creator. The url is cut to its origin when the key's user did not create the endpoint. A signing secret is never given. In French: lister les webhooks granola, webhooks configurés.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The webhook endpoints", input: {} },
@@ -217,7 +217,7 @@ export const createWebhookEndpoint = defineFunction({
   connector: "granola",
   class: "write",
   act: true,
-  description: "Register an https address that Granola posts note events to: note.generated, note.edited, note.access_granted (all three when events is omitted), for the notes of scopes: personal (notes the key's user owns or that are shared with them), public (notes visible to the whole workspace), or both; a workspace API key takes exactly [workspace]. folder_ids restricts the deliveries to these folders and their subfolders. The signing secret, which Granola gives only in this answer, is never given: the deliveries to this endpoint cannot be verified by their signature from here.",
+  description: "Register an https address that Granola posts note events to: note.generated, note.edited, note.access_granted (all three when events is omitted), for the notes of scopes: personal (notes the key's user owns or that are shared with them), public (notes visible to the whole workspace), or both; a workspace API key takes exactly [workspace]. folder_ids restricts the deliveries to these folders and their subfolders. The signing secret, which Granola gives only in this answer, is never given: the deliveries to this endpoint cannot be verified by their signature from here. In French: créer un webhook, recevoir les notes par webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -275,7 +275,7 @@ export const updateWebhookEndpoint = defineFunction({
   connector: "granola",
   class: "write",
   act: true,
-  description: "Change a webhook endpoint: only the fields given change; scopes, events and folder_ids replace the current ones (folder_ids [] removes the folder filter); enabled=false pauses the deliveries (events while paused are never delivered), true resumes them. Only the endpoint's creator changes more than enabled; a workspace-managed endpoint keeps scopes [workspace]. A signing secret is never given.",
+  description: "Change a webhook endpoint: only the fields given change; scopes, events and folder_ids replace the current ones (folder_ids [] removes the folder filter); enabled=false pauses the deliveries (events while paused are never delivered), true resumes them. Only the endpoint's creator changes more than enabled; a workspace-managed endpoint keeps scopes [workspace]. A signing secret is never given. In French: modifier un webhook, mettre en pause un webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -339,7 +339,7 @@ export const deleteWebhookEndpoint = defineFunction({
   connector: "granola",
   class: "sensitive",
   act: true,
-  description: "Delete a webhook endpoint; Granola stops delivering to it, for good.",
+  description: "Delete a webhook endpoint; Granola stops delivering to it, for good. In French: supprimer un webhook, arrêter un webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -372,7 +372,7 @@ export const connector = defineConnector({
   name: "granola",
   label: "Granola",
   namespace: "granola",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v1",
   baseUrl: "https://public-api.granola.ai",
   auth: {"kind": "bearer", "token": "api_key"},

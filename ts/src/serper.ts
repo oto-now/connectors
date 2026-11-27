@@ -6,7 +6,7 @@ export const search = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google web search: organic results (title, link, snippet, position, sitelinks), with answerBox, knowledgeGraph, peopleAlsoAsk and relatedSearches when Google shows them, and credits, what Serper billed for the call. Google operators work in the query: restrict to a site or a path with site: (site:example.test/jobs), an exact phrase with quotes. country and language localize the results; location biases them toward a place; tbs bounds their date. One page per call: page reads further.",
+  description: "Google web search: organic results (title, link, snippet, position, sitelinks), with answerBox, knowledgeGraph, peopleAlsoAsk and relatedSearches when Google shows them, and credits, what Serper billed for the call. Google operators work in the query: restrict to a site or a path with site: (site:example.test/jobs), an exact phrase with quotes. country and language localize the results; location biases them toward a place; tbs bounds their date. One page per call: page reads further. In French: recherche google, chercher sur le web, résultats google.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -72,7 +72,7 @@ export const searchImages = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google Images: images, a list of {title, imageUrl, source, link}, for a query. country and language localize the results; tbs bounds their date.",
+  description: "Google Images: images, a list of {title, imageUrl, source, link}, for a query. country and language localize the results; tbs bounds their date. In French: recherche d'images google, chercher des images.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -133,7 +133,7 @@ export const searchVideos = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google Videos: videos, a list of {title, link, source, duration}, for a query. country and language localize the results; tbs bounds their date.",
+  description: "Google Videos: videos, a list of {title, link, source, duration}, for a query. country and language localize the results; tbs bounds their date. In French: recherche de vidéos google, chercher des vidéos.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -194,7 +194,7 @@ export const searchNews = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google News: news, a list of {title, link, snippet, date, source}, for a query. Useful to watch a company's signals: press releases, hires, fundraising. tbs bounds the date (qdr:w, the past week); country and language localize the results.",
+  description: "Google News: news, a list of {title, link, snippet, date, source}, for a query. Useful to watch a company's signals: press releases, hires, fundraising. tbs bounds the date (qdr:w, the past week); country and language localize the results. In French: actualités google, chercher des articles de presse, actualité d'une entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -255,7 +255,7 @@ export const searchPlaces = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google Local: the businesses for a query, places, a list of {title, address, phoneNumber, website, rating, ratingCount, category, cid}. The cid of a place is what search_reviews takes. location biases the results toward a place; country and language localize them.",
+  description: "Google Local: the businesses for a query, places, a list of {title, address, phoneNumber, website, rating, ratingCount, category, cid}. The cid of a place is what search_reviews takes. location biases the results toward a place; country and language localize them. In French: chercher des commerces, entreprises locales google, trouver des établissements.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -311,7 +311,7 @@ export const searchMaps = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google Maps: places around an anchor, rich records (title, address, latitude, longitude, rating, ratingCount, type, website, phoneNumber, openingHours, cid, fid, placeId). A sample, not an inventory: a call returns about 20 places at most and leans toward its ll anchor, without saying so; for a count over an area, call it on several anchors and pages and deduplicate by cid. Look one place up by place_id or cid. A Maps page costs 3 credits.",
+  description: "Google Maps: places around an anchor, rich records (title, address, latitude, longitude, rating, ratingCount, type, website, phoneNumber, openingHours, cid, fid, placeId). A sample, not an inventory: a call returns about 20 places at most and leans toward its ll anchor, without saying so; for a count over an area, call it on several anchors and pages and deduplicate by cid. Look one place up by place_id or cid. A Maps page costs 3 credits. In French: recherche google maps, commerces autour d'une adresse, lieux sur la carte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -378,7 +378,7 @@ export const searchReviews = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google reviews of one place: reviews, one page of about ten, and nextPageToken when there are more; pass it back as next_page_token for the next page. Identify the place by cid, fid or place_id (from search_places or search_maps), or by a free-text query. One page under-represents a place with many reviews: ratingCount on the place says how many there are; read the pages you need before concluding.",
+  description: "Google reviews of one place: reviews, one page of about ten, and nextPageToken when there are more; pass it back as next_page_token for the next page. Identify the place by cid, fid or place_id (from search_places or search_maps), or by a free-text query. One page under-represents a place with many reviews: ratingCount on the place says how many there are; read the pages you need before concluding. In French: avis google, avis clients d'un établissement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -440,7 +440,7 @@ export const searchShopping = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google Shopping: shopping, a list of {title, price, source, rating, delivery, link}, for a query. location biases the results toward a place; country and language localize them.",
+  description: "Google Shopping: shopping, a list of {title, price, source, rating, delivery, link}, for a query. location biases the results toward a place; country and language localize them. In French: google shopping, comparer des prix, chercher un produit en vente.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -496,7 +496,7 @@ export const searchScholar = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google Scholar: academic publications, organic, a list of {title, link, publicationInfo, year, citedBy, pdfUrl}, for a query.",
+  description: "Google Scholar: academic publications, organic, a list of {title, link, publicationInfo, year, citedBy, pdfUrl}, for a query. In French: google scholar, publications scientifiques, articles académiques.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -547,7 +547,7 @@ export const searchPatents = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google Patents: patents, organic, a list of {title, link, snippet, inventor, assignee, publicationNumber, priorityDate, publicationDate}, for a query.",
+  description: "Google Patents: patents, organic, a list of {title, link, snippet, inventor, assignee, publicationNumber, priorityDate, publicationDate}, for a query. In French: recherche de brevets, google patents.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -598,7 +598,7 @@ export const searchLens = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google Lens: reverse image search from the public address of an image; organic, the visual matches (title, link, source, thumbnail). The image must be reachable without a login.",
+  description: "Google Lens: reverse image search from the public address of an image; organic, the visual matches (title, link, source, thumbnail). The image must be reachable without a login. In French: recherche par image, recherche inversée d'image, google lens.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -637,7 +637,7 @@ export const autocomplete = defineFunction({
   connector: "serper",
   class: "read",
   act: false,
-  description: "Google autocomplete for a query: suggestions, a list of {value}. Widens a lexical field or finds keyword ideas.",
+  description: "Google autocomplete for a query: suggestions, a list of {value}. Widens a lexical field or finds keyword ideas. In French: suggestions google, idées de mots-clés, saisie semi-automatique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -679,7 +679,7 @@ export const connector = defineConnector({
   name: "serper",
   label: "Serper",
   namespace: "serper",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "v1",
   baseUrl: "https://google.serper.dev",
   auth: {"kind": "api_key", "in": "header", "name": "X-API-KEY", "key": "api_key"},

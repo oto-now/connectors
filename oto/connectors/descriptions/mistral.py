@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'mistral',
                'label': 'Mistral AI',
                'namespace': 'mistral',
-               'version': '1.0.1',
+               'version': '1.0.2',
                'api_version': 'v1',
                'base_url': 'https://api.mistral.ai/v1',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -64,7 +64,9 @@ DESCRIPTION = {'connector': {'name': 'mistral',
                                'words yourself. Up to 3 hours of audio per request; the answer comes within '
                                '300 seconds (measured up to 2 h 35 of audio). The answer is a JSON file of '
                                "yours, Mistral's raw answer: text, language, segments (start, end, text, "
-                               'speaker_id) and usage.prompt_audio_seconds, the billed seconds of audio.',
+                               'speaker_id) and usage.prompt_audio_seconds, the billed seconds of audio. In '
+                               "French: transcrire un fichier audio, transcription d'un enregistrement, "
+                               'convertir un audio en texte.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['file'],

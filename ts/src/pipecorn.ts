@@ -6,7 +6,7 @@ export const submitEnrichment = defineFunction({
   connector: "pipecorn",
   class: "write",
   act: true,
-  description: "Submit a Pipecorn waterfall enrichment of ONE person and return at once {enrichment_id, first_name, last_name, status: pending, status_url}: read the result with get_enrichment and the enrichment_id. enrichment_type lists what to find: email (professional), phone. A phone needs linkedin_url; an email takes linkedin_url, or firstname, lastname and a domain or a company_name. phone_country_codes keeps phones to countries. Pipecorn bills per result found: 3 credits a professional email, 30 a phone, and a phone only when a mobile is found; nothing on a miss. A third party's personal email is never looked up. A retry with the same idempotency_key and body returns the stored answer instead of spending again (24 hours).",
+  description: "Submit a Pipecorn waterfall enrichment of ONE person and return at once {enrichment_id, first_name, last_name, status: pending, status_url}: read the result with get_enrichment and the enrichment_id. enrichment_type lists what to find: email (professional), phone. A phone needs linkedin_url; an email takes linkedin_url, or firstname, lastname and a domain or a company_name. phone_country_codes keeps phones to countries. Pipecorn bills per result found: 3 credits a professional email, 30 a phone, and a phone only when a mobile is found; nothing on a miss. A third party's personal email is never looked up. A retry with the same idempotency_key and body returns the stored answer instead of spending again (24 hours). In French: enrichir un contact, trouver l'email d'un prospect, trouver le téléphone d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -75,7 +75,7 @@ export const getEnrichment = defineFunction({
   connector: "pipecorn",
   class: "read",
   act: false,
-  description: "Read a Pipecorn enrichment by its enrichment_id, from submit_enrichment. status is pending while Pipecorn looks; read again a few seconds later (2 s, backing off to 30 s). finished: every asked kind is done, found or not: email, email_status, phone (a list of numbers), phone_details [{number, type}], phone_status. A number the workspace suppressed reads \"Contacts not shared\". failed: the credits ran out while it ran (code insufficient_credits or workspace_limit_exceeded), nothing found nor billed. Free, and exempt from the rate limit.",
+  description: "Read a Pipecorn enrichment by its enrichment_id, from submit_enrichment. status is pending while Pipecorn looks; read again a few seconds later (2 s, backing off to 30 s). finished: every asked kind is done, found or not: email, email_status, phone (a list of numbers), phone_details [{number, type}], phone_status. A number the workspace suppressed reads \"Contacts not shared\". failed: the credits ran out while it ran (code insufficient_credits or workspace_limit_exceeded), nothing found nor billed. Free, and exempt from the rate limit. In French: résultat d'un enrichissement, suivi d'un enrichissement pipecorn.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -105,7 +105,7 @@ export const getCredits = defineFunction({
   connector: "pipecorn",
   class: "read",
   act: false,
-  description: "The balance of the Pipecorn account behind this key: credits.enrichment is what lookups spend; the other credits.* are the plan's remaining extraction quotas, limits.* their ceilings. Free.",
+  description: "The balance of the Pipecorn account behind this key: credits.enrichment is what lookups spend; the other credits.* are the plan's remaining extraction quotas, limits.* their ceilings. Free. In French: crédits pipecorn restants, solde de crédits d'enrichissement.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The balance", input: {} },
@@ -126,7 +126,7 @@ export const getAccountInfo = defineFunction({
   connector: "pipecorn",
   class: "read",
   act: false,
-  description: "The Pipecorn account behind this key: the plan, the email of the key's owner, and whether its LinkedIn and Sales Navigator sessions are valid. Free.",
+  description: "The Pipecorn account behind this key: the plan, the email of the key's owner, and whether its LinkedIn and Sales Navigator sessions are valid. Free. In French: compte pipecorn, abonnement pipecorn.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The account", input: {} },
@@ -147,7 +147,7 @@ export const enrichPerson = defineFunction({
   connector: "pipecorn",
   class: "write",
   act: true,
-  description: "One person's profile from Pipecorn's database: title, current and past positions with each company's domain, headline, location, tenure. By linkedin_url, or first_name, last_name and company_name. No email nor phone: every contact field is removed (a contact is submit_enrichment's, and a third party's personal email is never served). Pipecorn bills 1 credit when a person is resolved, nothing on a miss (404).",
+  description: "One person's profile from Pipecorn's database: title, current and past positions with each company's domain, headline, location, tenure. By linkedin_url, or first_name, last_name and company_name. No email nor phone: every contact field is removed (a contact is submit_enrichment's, and a third party's personal email is never served). Pipecorn bills 1 credit when a person is resolved, nothing on a miss (404). In French: profil professionnel d'une personne, parcours d'un prospect, poste actuel d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -195,7 +195,7 @@ export const enrichAccount = defineFunction({
   connector: "pipecorn",
   class: "write",
   act: true,
-  description: "One company's firmographics from Pipecorn's database: industry, headcount and its growth, department headcount, revenue range, headquarters, funding, web traffic. By domain, name and/or the company's linkedin_url (the more, the closer the match); country_code narrows a name. Contact fields are removed. Pipecorn bills 1 credit when a company is resolved, nothing on a miss (404).",
+  description: "One company's firmographics from Pipecorn's database: industry, headcount and its growth, department headcount, revenue range, headquarters, funding, web traffic. By domain, name and/or the company's linkedin_url (the more, the closer the match); country_code narrows a name. Contact fields are removed. Pipecorn bills 1 credit when a company is resolved, nothing on a miss (404). In French: données d'une entreprise, effectif d'une société, secteur d'une entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -239,7 +239,7 @@ export const companyStack = defineFunction({
   connector: "pipecorn",
   class: "write",
   act: true,
-  description: "The technologies a company uses, from Pipecorn's database: technologies (names) and technologies_with_confidence [{name, confidence}]. By domain, name and/or the company's linkedin_url. Pipecorn bills 3 credits per request.",
+  description: "The technologies a company uses, from Pipecorn's database: technologies (names) and technologies_with_confidence [{name, confidence}]. By domain, name and/or the company's linkedin_url. Pipecorn bills 3 credits per request. In French: technologies d'une entreprise, stack technique d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -280,7 +280,7 @@ export const companyHiring = defineFunction({
   connector: "pipecorn",
   class: "write",
   act: true,
-  description: "A company's open job postings: total_jobs, truncated, company, jobs [{job_title, job_url, job_location, employment_statuses, date_posted, description, hiring_team}], the hiring team without contact fields. By domain, name and/or the company's linkedin_url. posted_within_days: 7, 30 (Pipecorn's default), 60, 90 or 180. Pipecorn bills 1 credit per job returned, nothing when none is found: bound it with limit (at most 100). job_title_keywords and excluded_job_title_keywords filter titles, job_country_codes places; full_description returns each description in full.",
+  description: "A company's open job postings: total_jobs, truncated, company, jobs [{job_title, job_url, job_location, employment_statuses, date_posted, description, hiring_team}], the hiring team without contact fields. By domain, name and/or the company's linkedin_url. posted_within_days: 7, 30 (Pipecorn's default), 60, 90 or 180. Pipecorn bills 1 credit per job returned, nothing when none is found: bound it with limit (at most 100). job_title_keywords and excluded_job_title_keywords filter titles, job_country_codes places; full_description returns each description in full. In French: offres d'emploi d'une entreprise, recrutements en cours d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -348,7 +348,7 @@ export const connector = defineConnector({
   name: "pipecorn",
   label: "Pipecorn",
   namespace: "pipecorn",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v2",
   baseUrl: "https://app.pipecorn.com/api/v2",
   auth: {"kind": "api_key", "in": "header", "name": "X-API-KEY", "key": "api_key"},

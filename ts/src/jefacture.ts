@@ -6,7 +6,7 @@ export const getMe = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "Get the person the authorization acts as: {email, firstName, lastName, status, subject, partnerIds}. Every other read acts on their behalf.",
+  description: "Get the person the authorization acts as: {email, firstName, lastName, status, subject, partnerIds}. Every other read acts on their behalf. In French: mon compte jefacture, utilisateur connecté à jefacture.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who the token acts as", input: {} },
@@ -28,7 +28,7 @@ export const listSpaces = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "List the spaces the person reaches, by name: {spaces: [{id, name, type (BUSINESS, PARTNER...), status, entityId, accessType (DIRECT, or PARTNER for a client space reached through an accounting firm)}], totalElements, currentPage, pageSize}. A space is the workspace of one company; its id is the space_id of every other read.",
+  description: "List the spaces the person reaches, by name: {spaces: [{id, name, type (BUSINESS, PARTNER...), status, entityId, accessType (DIRECT, or PARTNER for a client space reached through an accounting firm)}], totalElements, currentPage, pageSize}. A space is the workspace of one company; its id is the space_id of every other read. In French: lister les espaces jefacture, mes entreprises sur jefacture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -58,7 +58,7 @@ export const listDocuments = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "List the invoices and credit notes of a space, with their counterparts and matched payments: {documents: [{id, folder, category, status {document, pay, delivery}, metadata {documentNumber, issueDate, dueDate, currencyCode, supplier, customer, documentTotals {netAmount, vatAmount, grossAmount, payableAmount, openBalance}}, connections, balanceOffsets}], totalElements, currentPage, pageSize}. folder SALES = issued, PURCHASES = received. status_query filters on the statuses in the platform's query language, e.g. \"pay=UNPAID OR pay=PARTIALLY_PAID\" (pay: UNPAID, PARTIALLY_PAID, FULLY_PAID, WONT_BE_PAID, IN_TRANSIT; document: AWAITING_VALIDATION, VALIDATED, FULLY_APPROVED, REFUSED, DISPUTED...). Date bounds are inclusive.",
+  description: "List the invoices and credit notes of a space, with their counterparts and matched payments: {documents: [{id, folder, category, status {document, pay, delivery}, metadata {documentNumber, issueDate, dueDate, currencyCode, supplier, customer, documentTotals {netAmount, vatAmount, grossAmount, payableAmount, openBalance}}, connections, balanceOffsets}], totalElements, currentPage, pageSize}. folder SALES = issued, PURCHASES = received. status_query filters on the statuses in the platform's query language, e.g. \"pay=UNPAID OR pay=PARTIALLY_PAID\" (pay: UNPAID, PARTIALLY_PAID, FULLY_PAID, WONT_BE_PAID, IN_TRANSIT; document: AWAITING_VALIDATION, VALIDATED, FULLY_APPROVED, REFUSED, DISPUTED...). Date bounds are inclusive. In French: lister les factures, factures fournisseurs, factures clients, lister les avoirs.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -157,7 +157,7 @@ export const getDocument = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "Get one invoice or credit note with its lines, counterparts and matched payments: id, folder, category, status {document, pay, delivery}, metadata (number, dates, supplier, customer, totals with openBalance, VAT details, payment means), lines, connections, balanceOffsets.",
+  description: "Get one invoice or credit note with its lines, counterparts and matched payments: id, folder, category, status {document, pay, delivery}, metadata (number, dates, supplier, customer, totals with openBalance, VAT details, payment means), lines, connections, balanceOffsets. In French: détail d'une facture, lignes d'une facture, détail d'un avoir.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -188,7 +188,7 @@ export const listBalanceOffsets = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "List the payments imputed to one document: {balanceOffsets: [{paymentId, amount {value, currency}, offsetType (FULL, PARTIAL, DISCOUNT, REFUND, OVERPAYMENT, UNDERPAYMENT, FEE...), aggregationStatus (PROPOSED, AUTO_CONFIRMED, USER_CONFIRMED, REJECTED)}]}. Only confirmed offsets count as paid.",
+  description: "List the payments imputed to one document: {balanceOffsets: [{paymentId, amount {value, currency}, offsetType (FULL, PARTIAL, DISCOUNT, REFUND, OVERPAYMENT, UNDERPAYMENT, FEE...), aggregationStatus (PROPOSED, AUTO_CONFIRMED, USER_CONFIRMED, REJECTED)}]}. Only confirmed offsets count as paid. In French: paiements d'une facture, règlements imputés à une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -218,7 +218,7 @@ export const getPayment = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "Get one payment of a space: amount, date, counterparty and the documents it settles. Its id comes from a balance offset (paymentId).",
+  description: "Get one payment of a space: amount, date, counterparty and the documents it settles. Its id comes from a balance offset (paymentId). In French: détail d'un paiement, règlement d'une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -248,7 +248,7 @@ export const listReconciliations = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "List the documents of a space with the payments matched or proposed for them: {documentAggregations: [{document metadata with documentTotals {payableAmount, totalAmount, projectedOpenBalance}, aggregations [{balanceOffset, aggregationStatus, modifier (the payment: paymentDate, amount...)}]}], totalElements, totalMatchedElements, totalProposedElements, totalUnmatchedElements}. matching_status narrows to MATCHED, PROPOSED or UNMATCHED documents.",
+  description: "List the documents of a space with the payments matched or proposed for them: {documentAggregations: [{document metadata with documentTotals {payableAmount, totalAmount, projectedOpenBalance}, aggregations [{balanceOffset, aggregationStatus, modifier (the payment: paymentDate, amount...)}]}], totalElements, totalMatchedElements, totalProposedElements, totalUnmatchedElements}. matching_status narrows to MATCHED, PROPOSED or UNMATCHED documents. In French: rapprochement des factures et paiements, lettrage des factures, factures payées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -284,7 +284,7 @@ export const listConnections = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "List the customers and suppliers of a space, by name: {connections: [{id, displayName, relationTypes, globalIdentifiers (SIREN, VAT number...), connectionStatus, addresses, metadata}], totalElements, currentPage, pageSize}. identifier is a key:value pair such as \"FR:SIREN:123456789\".",
+  description: "List the customers and suppliers of a space, by name: {connections: [{id, displayName, relationTypes, globalIdentifiers (SIREN, VAT number...), connectionStatus, addresses, metadata}], totalElements, currentPage, pageSize}. identifier is a key:value pair such as \"FR:SIREN:123456789\". In French: lister les clients et fournisseurs, annuaire des tiers.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -319,7 +319,7 @@ export const getConnection = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "Get one customer or supplier: name, relation types, legal identifiers, addresses, status and metadata.",
+  description: "Get one customer or supplier: name, relation types, legal identifiers, addresses, status and metadata. In French: fiche d'un client, fiche d'un fournisseur.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -349,7 +349,7 @@ export const listPaymentAccounts = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "List the active or requested payment accounts of a space, with their last known balances: {paymentAccounts: [{id, alias, identifier (IBAN), bank, currency, status, balances [{amount, balanceType (CURRENT_AVAILABLE, CURRENT_BOOKED, CLOSING_BOOKED...)}], consent {status, expirationDate}, availableOperations}]}. An external bank account shows balances and movements only while its consent is valid.",
+  description: "List the active or requested payment accounts of a space, with their last known balances: {paymentAccounts: [{id, alias, identifier (IBAN), bank, currency, status, balances [{amount, balanceType (CURRENT_AVAILABLE, CURRENT_BOOKED, CLOSING_BOOKED...)}], consent {status, expirationDate}, availableOperations}]}. An external bank account shows balances and movements only while its consent is valid. In French: comptes bancaires, soldes des comptes bancaires.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -376,7 +376,7 @@ export const listAccountMovements = defineFunction({
   connector: "jefacture",
   class: "read",
   act: false,
-  description: "List the movements of one payment account: {movements: [{id, amount, bookingDate, bookingType, counterparty, endToEndId, paymentId, balancesAfterOperation}], currentPage, nextPage, pageSize, totalElements}. booking_type BOOKED (default view), PLANNED or RESERVED. Date bounds are inclusive, YYYY-MM-DD. At most 100 per page.",
+  description: "List the movements of one payment account: {movements: [{id, amount, bookingDate, bookingType, counterparty, endToEndId, paymentId, balancesAfterOperation}], currentPage, nextPage, pageSize, totalElements}. booking_type BOOKED (default view), PLANNED or RESERVED. Date bounds are inclusive, YYYY-MM-DD. At most 100 per page. In French: mouvements bancaires, relevé de compte, opérations d'un compte bancaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -426,7 +426,7 @@ export const connector = defineConnector({
   name: "jefacture",
   label: "jefacture.com",
   namespace: "jefacture",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "2026-10",
   baseUrl: "https://api.btx.fr.banqup.com",
   auth: {

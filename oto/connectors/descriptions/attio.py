@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'attio',
                'label': 'Attio',
                'namespace': 'attio',
-               'version': '1.3.0',
+               'version': '1.3.1',
                'api_version': 'v2',
                'base_url': 'https://api.attio.com/v2',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -56,7 +56,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'direction asc or desc} (field picks a part of a composite value: last_name '
                                'of a name). A page holds limit records (500 by default at Attio); advance '
                                'offset for the next page, until a page is shorter than limit. To filter, use '
-                               'search_records.',
+                               'search_records. In French: lister les entreprises du crm, lister les '
+                               'personnes du crm, lister les deals.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object'],
@@ -121,7 +122,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'get_record',
                 'class': 'read',
                 'description': 'One record of an object, with every attribute value and its web_url in the '
-                               'Attio app.',
+                               "Attio app. In French: fiche d'un enregistrement, lire une fiche entreprise, "
+                               'lire une fiche contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object', 'record_id'],
@@ -144,7 +146,9 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'equality ({"email_addresses": "ada@acme.example"}, the check before creating '
                                'a person; {"domains": "acme.example"}), or with an operator ({"name": '
                                '{"$contains": "acme"}}, $eq, $starts_with, $lt, $gte…), combined with $and, '
-                               '$or, $not. A page holds limit records (500 by default at Attio).',
+                               '$or, $not. A page holds limit records (500 by default at Attio). In French: '
+                               'chercher une entreprise dans le crm, chercher un contact par email, filtrer '
+                               'les deals.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object', 'filters'],
@@ -177,7 +181,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'list_attributes) to its value, a list for a multiselect: {"name": "Acme", '
                                '"domains": ["acme.example"]} for a company, {"email_addresses": '
                                '["ada@acme.example"]} for a person. Search before creating: a unique value '
-                               'already taken is refused.',
+                               'already taken is refused. In French: créer une entreprise dans le crm, '
+                               'ajouter un contact au crm, créer un deal.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object', 'values'],
@@ -205,7 +210,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'list_attributes) to its value: a single value replaces the one there; for a '
                                'multiselect (domains, email_addresses), the values given are added to those '
                                'already there, and [] changes nothing. Attributes not given stay. To replace '
-                               'or empty a multiselect, replace_record_values.',
+                               'or empty a multiselect, replace_record_values. In French: modifier une '
+                               'fiche, mettre à jour un contact, ajouter un email à un contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object', 'record_id', 'values'],
@@ -240,7 +246,9 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'empties it. A single value replaces the one there, as with update_record; '
                                'attributes not given stay. The way to free a unique value (a domain, an '
                                'email address) left on a record to be merged: replace that attribute without '
-                               'it, then another record can take it. To add to a multiselect, update_record.',
+                               'it, then another record can take it. To add to a multiselect, update_record. '
+                               "In French: remplacer les valeurs d'une fiche, écraser les emails d'un "
+                               "contact, vider un champ d'une fiche.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object', 'record_id', 'values'],
@@ -276,7 +284,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'neither can be read again, and creates a third record whose id is '
                                "data.new_record_id; where both carry a value, the primary's wins. A 202 "
                                'answer says the merge goes on in the background (404 merge_in_progress until '
-                               'it ends); replaying it fails (404).',
+                               'it ends); replaying it fails (404). In French: fusionner deux fiches, '
+                               'fusionner des doublons.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object', 'primary_record_id', 'secondary_record_id'],
@@ -305,7 +314,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'delete_record',
                 'class': 'sensitive',
-                'description': 'Delete a record of an object, for good, with its entries in lists.',
+                'description': 'Delete a record of an object, for good, with its entries in lists. In '
+                               'French: supprimer une fiche, supprimer un contact du crm.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object', 'record_id'],
@@ -329,7 +339,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'parent_object and parent_record_id together restrict to the notes of one '
                                'record, the cheaper way to the recent ones. A page holds limit notes, 10 by '
                                'default, at most 50; advance offset until a page is shorter than limit. The '
-                               'content of a note comes with get_note.',
+                               'content of a note comes with get_note. In French: lister les notes, notes '
+                               "d'une fiche.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'dependentRequired': {'parent_object': ['parent_record_id'],
@@ -365,7 +376,7 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'get_note',
                 'class': 'read',
                 'description': 'One note, with its title, its content in plain text and markdown, its parent '
-                               'record and its creator.',
+                               "record and its creator. In French: lire une note, contenu d'une note.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -379,7 +390,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'create_note',
                 'class': 'write',
                 'description': 'Add a note to a record: a title and a content in markdown. Attio does not '
-                               'edit a note afterwards; delete_note removes it.',
+                               'edit a note afterwards; delete_note removes it. In French: ajouter une note, '
+                               'créer une note sur une fiche.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['parent_object', 'parent_record_id', 'title', 'content'],
@@ -410,7 +422,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'delete_note',
                 'class': 'sensitive',
-                'description': "Delete a note, for good. Attio does not edit a note's content.",
+                'description': "Delete a note, for good. Attio does not edit a note's content. In French: "
+                               'supprimer une note, effacer une note.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -429,7 +442,7 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'oldest first), created_at:desc (newest first, the way to read recent tasks: '
                                'there is no date filter), completed_at:asc or completed_at:desc. A page '
                                'holds limit tasks, 500 by default, at most 1000; advance offset for the next '
-                               'page.',
+                               'page. In French: lister les tâches, tâches à faire, tâches non terminées.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'completed': {'type': 'boolean',
@@ -460,7 +473,7 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'get_task',
                 'class': 'read',
                 'description': 'One task, with its content, deadline, completion, assignees and linked '
-                               'records.',
+                               "records. In French: lire une tâche, détail d'une tâche.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -473,7 +486,7 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'delete_task',
                 'class': 'sensitive',
-                'description': 'Delete a task, for good.',
+                'description': 'Delete a task, for good. In French: supprimer une tâche, effacer une tâche.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['task_id'],
@@ -488,14 +501,16 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'list_lists',
                 'class': 'read',
                 'description': 'List the lists this token can reach (saved collections of records of one '
-                               'object, a pipeline), with their id, api_slug and parent object.',
+                               'object, a pipeline), with their id, api_slug and parent object. In French: '
+                               'lister les listes, lister les pipelines.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The lists', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/lists'},
                 'cost': {'per': 'request'}},
                {'name': 'get_list',
                 'class': 'read',
-                'description': 'One list, by id or api_slug, with its parent object and its access settings.',
+                'description': 'One list, by id or api_slug, with its parent object and its access settings. '
+                               "In French: détail d'une liste, lire un pipeline.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug'],
@@ -508,7 +523,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'list_list_views',
                 'class': 'read',
-                'description': 'The saved views of a list (a table or a kanban, and their filters).',
+                'description': 'The saved views of a list (a table or a kanban, and their filters). In '
+                               "French: vues d'une liste, vues kanban d'un pipeline.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug'],
@@ -525,7 +541,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'description': 'Create a list of records of one object (a pipeline). api_slug is its key in '
                                'the API, in snake case. workspace_access is the level of every workspace '
                                'member: full-access, read-and-write, read-only, or null for none; '
-                               'workspace_member_access gives members their own level, [] for none.',
+                               'workspace_member_access gives members their own level, [] for none. In '
+                               'French: créer une liste, créer un pipeline.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name',
@@ -574,7 +591,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'update_list',
                 'class': 'write',
                 'description': "Change a list's name, api_slug or access levels (as create_list says them); "
-                               'only what is given changes.',
+                               'only what is given changes. In French: renommer une liste, modifier les '
+                               "accès d'une liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug'],
@@ -621,7 +639,9 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'attribute values (a stage, an owner). filter is an Attio filter on the '
                                'entry\'s attributes ({"stage": "Won"}), or on its parent record through '
                                'path. sorts is a list of {attribute, direction asc or desc}. A page holds '
-                               'limit entries (500 by default at Attio); advance offset for the next page.',
+                               'limit entries (500 by default at Attio); advance offset for the next page. '
+                               "In French: entrées d'une liste, deals d'un pipeline par étape, filtrer les "
+                               "entrées d'une liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug'],
@@ -692,7 +712,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'get_entry',
                 'class': 'read',
-                'description': "One entry of a list, with its parent record and the list's attribute values.",
+                'description': "One entry of a list, with its parent record and the list's attribute values. "
+                               "In French: lire une entrée de liste, détail d'une entrée de pipeline.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug', 'entry_id'],
@@ -713,7 +734,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'class': 'write',
                 'description': "Add a record to a list, as a new entry. entry_values maps the list's own "
                                'attributes (api_slug from list_attributes, target lists) to their values, {} '
-                               'for none: {"stage": "Lead"}.',
+                               'for none: {"stage": "Lead"}. In French: ajouter une fiche à une liste, '
+                               'mettre un deal dans un pipeline.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug',
@@ -753,7 +775,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'value replaces the one there ({"stage": "Won"}); for a multiselect, the '
                                'values given are added to those already there, and [] changes nothing. '
                                'Attributes not given stay. To replace or empty a multiselect, '
-                               'replace_entry_values.',
+                               "replace_entry_values. In French: changer l'étape d'un deal, modifier une "
+                               'entrée de liste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug', 'entry_id', 'entry_values'],
@@ -783,7 +806,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'description': 'Replace values of a list entry. For each multiselect attribute of the list '
                                'given, the values given replace those there, which are lost; [] empties it. '
                                'A single value replaces the one there, as with update_entry; attributes not '
-                               'given stay. To add to a multiselect, update_entry.',
+                               'given stay. To add to a multiselect, update_entry. In French: remplacer les '
+                               "valeurs d'une entrée, écraser les valeurs d'une entrée de liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug', 'entry_id', 'entry_values'],
@@ -813,7 +837,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'delete_entry',
                 'class': 'sensitive',
                 'description': "Remove an entry from its list, with the list's values on it; the record "
-                               'itself stays.',
+                               "itself stays. In French: retirer une fiche d'une liste, sortir un deal d'un "
+                               'pipeline.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id_or_slug', 'entry_id'],
@@ -836,7 +861,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'class': 'read',
                 'description': 'List the people with access to the workspace: id, name, email, access level. '
                                "An id is what a task's assignee and a comment's author take. The address of "
-                               'an avatar picture is never given.',
+                               "an avatar picture is never given. In French: lister les membres de l'espace, "
+                               'lister les utilisateurs attio.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The workspace members', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/workspace_members'},
@@ -845,7 +871,7 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'get_workspace_member',
                 'class': 'read',
                 'description': 'One workspace member, by id. The address of an avatar picture is never '
-                               'given.',
+                               "given. In French: détail d'un membre, lire un membre de l'espace.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['workspace_member_id'],
@@ -862,7 +888,7 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'get_comment',
                 'class': 'read',
                 'description': 'One comment, with its thread, its author, its content and the record or '
-                               'entry it is on.',
+                               "entry it is on. In French: lire un commentaire, détail d'un commentaire.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['comment_id'],
@@ -878,7 +904,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'class': 'write',
                 'description': 'Reply in an existing thread of comments, in plain text, as a workspace '
                                "member (author_id, from list_workspace_members). A comment's thread_id comes "
-                               'with get_comment.',
+                               'with get_comment. In French: répondre à un commentaire, ajouter un '
+                               'commentaire dans un fil.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['content', 'author_id', 'thread_id'],
@@ -904,7 +931,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'delete_comment',
                 'class': 'sensitive',
                 'description': 'Delete a comment, for good; deleting the first comment of a thread deletes '
-                               'the whole thread.',
+                               'the whole thread. In French: supprimer un commentaire, effacer un fil de '
+                               'commentaires.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['comment_id'],
@@ -920,7 +948,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'get_thread',
                 'class': 'read',
-                'description': 'One thread of comments, with its comments in order.',
+                'description': 'One thread of comments, with its comments in order. In French: lire un fil '
+                               "de commentaires, commentaires d'un fil.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['thread_id'],
@@ -939,7 +968,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'from this ISO 8601 timestamp, inclusive) and starts_before (starting before '
                                'it, exclusive). sort: start_asc (default) or start_desc. A page holds limit '
                                'meetings, 50 by default, at most 200; pagination.next_cursor, passed back as '
-                               'cursor, gives the next one.',
+                               'cursor, gives the next one. In French: lister les réunions, rendez-vous '
+                               'synchronisés, réunions de la semaine.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -987,7 +1017,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'get_meeting',
                 'class': 'read',
-                'description': 'One meeting, with its participants and linked records.',
+                'description': 'One meeting, with its participants and linked records. In French: détail '
+                               "d'une réunion, participants d'une réunion.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['meeting_id'],
@@ -1003,7 +1034,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'class': 'read',
                 'description': 'The call recordings of a meeting, first page: id, status (processing, '
                                'completed, failed), creator. The transcript comes with '
-                               'get_call_recording_transcript. A video address is never given.',
+                               'get_call_recording_transcript. A video address is never given. In French: '
+                               "enregistrements d'une réunion, lister les enregistrements d'appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['meeting_id'],
@@ -1020,7 +1052,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'class': 'read',
                 'description': 'One call recording of a meeting: status, creator, its web_url in the Attio '
                                'app. The short-lived video download address is never given: anyone holding '
-                               'it sees the video.',
+                               "it sees the video. In French: détail d'un enregistrement d'appel, statut "
+                               "d'un enregistrement d'appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['meeting_id', 'call_recording_id'],
@@ -1044,7 +1077,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'description': 'The transcript of a call recording, one page at a time: segments with '
                                "speech, start and end times in seconds and the speaker's name, and the raw "
                                'transcript as text. A long call spans several pages: pagination.next_cursor, '
-                               'passed back as cursor, gives the next one; null on the last page.',
+                               'passed back as cursor, gives the next one; null on the last page. In French: '
+                               "transcription d'un appel, transcription d'une réunion.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['meeting_id', 'call_recording_id'],
@@ -1075,14 +1109,16 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'class': 'read',
                 'description': 'List the objects of the workspace, standard (companies, people, deals) and '
                                'custom, with their id and api_slug. Read it before writing to a custom '
-                               'object, never guess its slug.',
+                               'object, never guess its slug. In French: lister les objets du crm, objets '
+                               'personnalisés attio.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The objects', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/objects'},
                 'cost': {'per': 'request'}},
                {'name': 'get_object',
                 'class': 'read',
-                'description': 'One object, by id or api_slug, with its singular and plural nouns.',
+                'description': 'One object, by id or api_slug, with its singular and plural nouns. In '
+                               "French: détail d'un objet, lire un objet du crm.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id_or_slug'],
@@ -1095,7 +1131,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'list_object_views',
                 'class': 'read',
-                'description': 'The saved views of an object (a table or a kanban, and their filters).',
+                'description': 'The saved views of an object (a table or a kanban, and their filters). In '
+                               "French: vues d'un objet, vues enregistrées d'un objet.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_id_or_slug'],
@@ -1112,7 +1149,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'description': 'The attributes of an object (target objects) or of a list (target lists): '
                                'title, api_slug, type, whether required, unique, multiselect, and their '
                                'config. The api_slug is the key of a value in a record or an entry, and of a '
-                               'filter.',
+                               "filter. In French: lister les attributs, champs d'un objet, colonnes d'une "
+                               'liste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'identifier'],
@@ -1131,7 +1169,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'get_attribute',
                 'class': 'read',
-                'description': 'One attribute of an object or a list, by id or api_slug.',
+                'description': 'One attribute of an object or a list, by id or api_slug. In French: détail '
+                               "d'un attribut, lire un champ du crm.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'identifier', 'attribute'],
@@ -1154,7 +1193,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                 'cost': {'per': 'request'}},
                {'name': 'list_attribute_options',
                 'class': 'read',
-                'description': 'The options of a select attribute, with their id and title.',
+                'description': 'The options of a select attribute, with their id and title. In French: '
+                               "options d'un champ de sélection, valeurs d'une liste déroulante.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'identifier', 'attribute'],
@@ -1178,7 +1218,7 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'list_attribute_statuses',
                 'class': 'read',
                 'description': 'The statuses of a status attribute (the stages of a deal or a pipeline), '
-                               'with their id and title.',
+                               "with their id and title. In French: étapes d'un pipeline, statuts d'un deal.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'identifier', 'attribute'],
@@ -1205,7 +1245,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                                'location, domain, email-address, phone-number), is_required, is_unique, '
                                'is_multiselect and config (empty {} for most types; currency and '
                                'record-reference have theirs). Attio has no delete for an attribute: it can '
-                               'only be archived, in the app.',
+                               'only be archived, in the app. In French: créer un attribut, ajouter un champ '
+                               'personnalisé.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'identifier', 'definition'],
@@ -1299,7 +1340,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'create_attribute_option',
                 'class': 'write',
                 'description': 'Add an option to a select attribute of an object or a list. Attio deletes no '
-                               'option; it can only be archived.',
+                               'option; it can only be archived. In French: ajouter une option de sélection, '
+                               'nouvelle valeur de liste déroulante.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'identifier', 'attribute', 'title'],
@@ -1327,7 +1369,8 @@ DESCRIPTION = {'connector': {'name': 'attio',
                {'name': 'create_attribute_status',
                 'class': 'write',
                 'description': 'Add a status to a status attribute (a stage of a deal or a pipeline). Attio '
-                               'deletes no status; it can only be archived.',
+                               'deletes no status; it can only be archived. In French: ajouter une étape de '
+                               'pipeline, créer un statut de deal.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target', 'identifier', 'attribute', 'title'],

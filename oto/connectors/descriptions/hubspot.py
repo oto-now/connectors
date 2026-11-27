@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'hubspot',
                'label': 'HubSpot',
                'namespace': 'hubspot',
-               'version': '1.0.2',
+               'version': '1.0.3',
                'api_version': 'v3',
                'base_url': 'https://api.hubapi.com',
                'auth': {'kind': 'bearer', 'token': 'access_token'},
@@ -69,7 +69,9 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                                'to find records by value, use search_objects. Each record comes with its id '
                                'and the properties asked for (a default set otherwise), under their internal '
                                'names. associations adds the ids of associated records of the named types. '
-                               'Pass paging.next.after as after for the next page.',
+                               'Pass paging.next.after as after for the next page. In French: lister les '
+                               'contacts, lister les entreprises, lister les transactions, lister les '
+                               'tickets.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type'],
@@ -132,7 +134,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'description': 'Get one CRM record by its id: its properties (those asked for, a default set '
                                'otherwise) under their internal names, and the ids of its associated records '
                                'of the types named in associations. A property that does not exist in the '
-                               'portal is ignored here, not refused.',
+                               "portal is ignored here, not refused. In French: fiche d'un contact, détail "
+                               "d'une entreprise, détail d'une transaction.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type', 'object_id'],
@@ -184,7 +187,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                                'take their option value. sorts orders by one property. Returns total and '
                                'results; pass paging.next.after as after for the next page. At most 10,000 '
                                'results per search, about 5 searches per second; a record just written can '
-                               'take a few seconds to be found.',
+                               'take a few seconds to be found. In French: chercher un contact, trouver un '
+                               'contact par email, chercher une transaction, rechercher une entreprise.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type'],
@@ -376,7 +380,9 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                                'custom object record. properties are keyed by internal name (list_properties '
                                'gives them, and the values a dropdown accepts); associations attach it to '
                                'existing records at creation. A note takes hs_note_body and hs_timestamp, '
-                               'and an association to its record. Returns the created record and its id.',
+                               'and an association to its record. Returns the created record and its id. In '
+                               'French: créer un contact, créer une entreprise, créer une transaction, '
+                               'ajouter une note.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type', 'properties'],
@@ -450,7 +456,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'description': 'Update the properties of one CRM record by its id (PATCH): only the '
                                'properties given change, an empty string clears one. Internal names only; '
                                'list_properties gives them and the values a dropdown accepts. Returns the '
-                               'updated record.',
+                               'updated record. In French: modifier un contact, mettre à jour une '
+                               "transaction, changer l'étape d'un deal.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type', 'object_id', 'properties'],
@@ -487,7 +494,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'delete_object',
                 'class': 'sensitive',
                 'description': "Archive one CRM record: it moves to HubSpot's recycle bin, out of lists, "
-                               'searches and reports, restorable from HubSpot for 90 days.',
+                               'searches and reports, restorable from HubSpot for 90 days. In French: '
+                               'supprimer un contact, archiver une transaction, supprimer une entreprise.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type', 'object_id'],
@@ -509,7 +517,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'class': 'read',
                 'description': 'List the records of to_object_type associated with one record: the deals of '
                                'a contact, the contacts of a company. Returns their ids and association '
-                               'types; get_object or search_objects reads their properties.',
+                               'types; get_object or search_objects reads their properties. In French: '
+                               "transactions d'un contact, contacts d'une entreprise, objets associés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type', 'object_id', 'to_object_type'],
@@ -537,7 +546,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'list_owners',
                 'class': 'read',
                 'description': "List the portal's owners (its users): id, email, first and last name, teams. "
-                               "An owner's id is the value of hubspot_owner_id on a record.",
+                               "An owner's id is the value of hubspot_owner_id on a record. In French: "
+                               'propriétaires hubspot, commerciaux hubspot, utilisateurs du portail.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -570,7 +580,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'description': 'List the properties of an object type: internal name, label, type, field '
                                'type, group, and for a dropdown its options, whose value is what a record '
                                'accepts. Read it before writing a record: internal names are not the labels '
-                               'shown in HubSpot (dealstage, not Deal stage).',
+                               'shown in HubSpot (dealstage, not Deal stage). In French: propriétés hubspot, '
+                               "champs d'un contact, valeurs d'une liste déroulante.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type'],
@@ -598,7 +609,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'get_property',
                 'class': 'read',
                 'description': 'Get one property of an object type by its internal name: label, type, field '
-                               'type, group, options.',
+                               "type, group, options. In French: détail d'une propriété, options d'un champ "
+                               'hubspot.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type', 'property_name'],
@@ -627,7 +639,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'delete_property',
                 'class': 'sensitive',
                 'description': 'Archive a custom property of an object type: it disappears from records, '
-                               "forms and reports. HubSpot's own properties cannot be archived.",
+                               "forms and reports. HubSpot's own properties cannot be archived. In French: "
+                               'supprimer une propriété, archiver un champ personnalisé.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type', 'property_name'],
@@ -647,7 +660,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'list_property_groups',
                 'class': 'read',
                 'description': 'List the property groups of an object type (the sections of a record): the '
-                               'groupName a new property takes.',
+                               'groupName a new property takes. In French: groupes de propriétés, sections '
+                               "d'une fiche.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type'],
@@ -666,7 +680,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'description': 'Create a list (a segment) of records of one object type. MANUAL: members '
                                'added and removed by hand or by add_and_remove_list_memberships. DYNAMIC: '
                                'members recomputed by HubSpot from filter_branch. SNAPSHOT: filtered once, '
-                               'then managed by hand. The name is unique per object type.',
+                               'then managed by hand. The name is unique per object type. In French: créer '
+                               'une liste, créer un segment, nouvelle liste de contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'object_type_id', 'processing_type'],
@@ -721,7 +736,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'get_list',
                 'class': 'read',
                 'description': 'Get a list by its id: name, object type, processing type, size; '
-                               'include_filters adds its filter_branch.',
+                               "include_filters adds its filter_branch. In French: détail d'une liste, "
+                               "taille d'une liste hubspot.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -744,7 +760,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'cost': {'per': 'request'}},
                {'name': 'get_list_by_name',
                 'class': 'read',
-                'description': 'Get a list by its exact name within one object type.',
+                'description': 'Get a list by its exact name within one object type. In French: trouver une '
+                               'liste par son nom, liste hubspot par nom.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type_id', 'list_name'],
@@ -769,7 +786,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'search_lists',
                 'class': 'read',
                 'description': 'Search lists by name, processing type and object type: lists, with hasMore, '
-                               'and offset to pass back for the next page.',
+                               'and offset to pass back for the next page. In French: chercher une liste, '
+                               'lister les listes hubspot, segments existants.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -829,7 +847,7 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'cost': {'per': 'request'}},
                {'name': 'update_list_name',
                 'class': 'write',
-                'description': 'Rename a list.',
+                'description': 'Rename a list. In French: renommer une liste, renommer un segment.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'list_name'],
@@ -859,7 +877,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'description': 'Replace the criteria tree of a DYNAMIC or SNAPSHOT list: HubSpot recomputes '
                                'its members, which can add or remove many records, and '
                                'enroll_objects_in_workflows enrolls the new members in the workflows that '
-                               'use the list.',
+                               "use the list. In French: modifier les filtres d'une liste, changer les "
+                               "critères d'un segment.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'filter_branch'],
@@ -903,7 +922,7 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'delete_list',
                 'class': 'sensitive',
                 'description': 'Delete a list. Its records are untouched; the list is restorable for 90 days '
-                               'with restore_list.',
+                               'with restore_list. In French: supprimer une liste, supprimer un segment.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -920,7 +939,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'cost': {'per': 'request'}},
                {'name': 'restore_list',
                 'class': 'write',
-                'description': 'Restore a list deleted less than 90 days ago.',
+                'description': 'Restore a list deleted less than 90 days ago. In French: restaurer une '
+                               'liste, récupérer une liste supprimée.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -934,7 +954,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'class': 'read',
                 'description': 'List the ids of the records that are members of a list (recordId, and when '
                                'they joined), at most 250 per page; get_object or search_objects reads their '
-                               'properties. Pass paging.next.after as after for the next page.',
+                               'properties. Pass paging.next.after as after for the next page. In French: '
+                               "membres d'une liste, contacts d'une liste, qui est dans le segment.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -974,7 +995,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'class': 'write',
                 'description': 'Add and remove members of a MANUAL or SNAPSHOT list in one revision of the '
                                'list, by record id; pass an empty list for the side with nothing to do. A '
-                               'DYNAMIC list refuses it: its members follow its filters.',
+                               'DYNAMIC list refuses it: its members follow its filters. In French: ajouter '
+                               "un contact à une liste, retirer un contact d'une liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'record_ids_to_add', 'record_ids_to_remove'],
@@ -1011,7 +1033,7 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'delete_all_list_memberships',
                 'class': 'sensitive',
                 'description': 'Remove every member from a MANUAL or SNAPSHOT list; the list itself and its '
-                               'records stay.',
+                               'records stay. In French: vider une liste, retirer tous les membres.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -1029,7 +1051,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                {'name': 'add_memberships_from_list',
                 'class': 'write',
                 'description': 'Add the members of another list (of the same object type) to a MANUAL or '
-                               'SNAPSHOT list, up to 100,000 records.',
+                               "SNAPSHOT list, up to 100,000 records. In French: copier les membres d'une "
+                               'liste, fusionner deux listes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'source_list_id'],
@@ -1051,7 +1074,8 @@ DESCRIPTION = {'connector': {'name': 'hubspot',
                 'cost': {'per': 'request'}},
                {'name': 'get_record_memberships',
                 'class': 'read',
-                'description': 'List the lists one record belongs to.',
+                'description': "List the lists one record belongs to. In French: listes d'un contact, "
+                               "segments d'une fiche.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['object_type_id', 'record_id'],

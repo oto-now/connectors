@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'slack_user',
                'label': 'Slack (personal token)',
                'namespace': 'slack_user',
-               'version': '1.1.0',
+               'version': '1.1.1',
                'api_version': 'Web API',
                'base_url': 'https://slack.com/api',
                'auth': {'kind': 'bearer', 'token': 'user_token'},
@@ -127,7 +127,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                                'Slack\'s search syntax: words, "exact phrase", in:#channel, in:@person, '
                                'from:@person, before:2026-10-01, after:, has:link. Answers messages.matches '
                                '(text, user, channel, ts, permalink) and messages.total; one page only, up '
-                               'to count matches.',
+                               'to count matches. In French: chercher un message slack, retrouver une '
+                               'conversation slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['query'],
@@ -152,7 +153,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                 'class': 'read',
                 'description': "List the person's direct conversations: im (one-to-one DMs: id D…, user) and "
                                "mpim (group DMs). One page only (Slack's default size). The workspace "
-                               'channels are listed on the bot side (connectors/slack).',
+                               'channels are listed on the bot side (connectors/slack). In French: lister '
+                               'mes messages privés, mes conversations privées slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['types'],
@@ -170,7 +172,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                                "list_channels or open_dm), newest first: TOP-LEVEL messages only; a thread's "
                                'replies are read with replies. oldest and latest are exclusive bounds (a '
                                'message ts), inclusive includes the messages sitting on them. When more '
-                               'remain, pass the cursor given back.',
+                               'remain, pass the cursor given back. In French: lire une conversation privée, '
+                               'historique des messages privés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel'],
@@ -234,7 +237,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                                'the ts of the PARENT message. The parent comes first, as messages[0], on '
                                'every page; limit counts the replies only. Called with the ts of a reply, '
                                'Slack returns that one message alone: call again with its thread_ts. When '
-                               'has_more, pass response_metadata.next_cursor as cursor.',
+                               'has_more, pass response_metadata.next_cursor as cursor. In French: réponses '
+                               "d'un fil, lire un fil de discussion.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'thread_ts'],
@@ -282,7 +286,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                 'act': False,
                 'description': "Open the person's direct conversation with another user, or get it if it "
                                "exists: the answer's channel.id is the DM id to read (history) or to post to "
-                               '(post_message). Nothing is sent and no one is told.',
+                               '(post_message). Nothing is sent and no one is told. In French: ouvrir une '
+                               'conversation privée, ouvrir un message privé avec un collègue.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user'],
@@ -302,7 +307,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                                '12:30:00) as an emoji code and swallows it: such a text is refused, write '
                                'the time without seconds and with no colon right after it. blocks go as '
                                'given. unfurl_links and unfurl_media false post it without link previews. '
-                               'The answer gives ts, the anchor of a reply.',
+                               'The answer gives ts, the anchor of a reply. In French: envoyer un message '
+                               'slack, poster dans un canal, répondre dans un fil.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel'],
@@ -361,7 +367,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                 'class': 'sensitive',
                 'description': 'Replace the text or blocks of a message the person posted (channel and its '
                                'ts); it stays under their name, marked edited. The text goes as given: a '
-                               'number between two colons (20:51:) is read by Slack as an emoji code.',
+                               'number between two colons (20:51:) is read by Slack as an emoji code. In '
+                               'French: modifier un message slack, corriger un message slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'ts'],
@@ -394,7 +401,7 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                {'name': 'delete_message',
                 'class': 'sensitive',
                 'description': 'Delete a message the person posted (channel and its ts). It cannot be '
-                               'restored.',
+                               'restored. In French: supprimer un message slack, effacer un message slack.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'ts'],
@@ -415,7 +422,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                {'name': 'add_reaction',
                 'class': 'write',
                 'description': "Add an emoji reaction to a message (channel and its ts), under the person's "
-                               "own name. name is the emoji's name without colons (white_check_mark).",
+                               "own name. name is the emoji's name without colons (white_check_mark). In "
+                               'French: ajouter une réaction, réagir à un message avec un emoji.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['channel', 'ts', 'name'],
@@ -440,7 +448,8 @@ DESCRIPTION = {'connector': {'name': 'slack_user',
                 'class': 'read',
                 'description': 'Get the metadata of a file the person can see, DMs included, by its id (F…, '
                                "from a message's files[].id): name, title, mimetype, size, the conversations "
-                               'it was shared in. Its content is not returned.',
+                               "it was shared in. Its content is not returned. In French: détail d'un "
+                               'fichier slack, informations sur un fichier partagé.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['file_id'],

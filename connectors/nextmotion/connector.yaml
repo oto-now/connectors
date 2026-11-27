@@ -22,7 +22,7 @@ connector:
   name: nextmotion
   label: Nextmotion
   namespace: nextmotion
-  version: 1.2.0
+  version: 1.2.1
   api_version: v4
   base_url: https://api.nextmotion.net/open_api
   auth: {kind: bearer, token: api_key}
@@ -62,6 +62,8 @@ functions:
   description: >-
     List clinic's calendar appointments. Each appointment embeds a full nested patient object (personal
     data). Paginated by limit and offset; the answer is {count, next, previous, data}.
+    In French: lister les rendez-vous, agenda de la clinique, rendez-vous du
+    jour.
   input:
     type: object
     additionalProperties: false
@@ -110,6 +112,7 @@ functions:
   class: read
   description: >-
     Retrieve a calendar appointment. The appointment embeds a full nested patient object (personal data).
+    In French: détail d'un rendez-vous, lire un rendez-vous.
   input:
     type: object
     additionalProperties: false
@@ -135,6 +138,8 @@ functions:
     practitioner's notes, the treated zone, the free text, the consultation, the consent form and the
     staff the API also sends are dropped by the client and cannot be asked for. Used to count the
     sessions consumed from a sold package. Paginated by limit and offset.
+    In French: séances facturées d'un rendez-vous, séances décomptées d'un
+    devis.
   input:
     type: object
     additionalProperties: false
@@ -168,7 +173,8 @@ functions:
   class: write
   description: >-
     Move an appointment to a free slot. Both visit_type_opening_hour_id (the slot id) and time_slot come
-    from search_time_slots.
+    from search_time_slots. In French: déplacer un rendez-vous, reporter un
+    rendez-vous.
   input:
     type: object
     additionalProperties: false
@@ -205,7 +211,8 @@ functions:
     Change an appointment: calendar_event (with start_time and end_time) is required. The API notifies
     the patient by email and SMS by default: set send_appointment_modified_email and send_appointment_modified_sms
     to false unless the patient must be told. Only the arguments given are sent; a top-level field cannot
-    be set to null.
+    be set to null. In French: modifier un rendez-vous, changer l'heure d'un
+    rendez-vous.
   input:
     type: object
     additionalProperties: false
@@ -368,7 +375,7 @@ functions:
       custom_status: custom_status
 - name: delete_appointment
   class: sensitive
-  description: Delete a calendar appointment. Answers 204 when done; permanent.
+  description: "Delete a calendar appointment. Answers 204 when done; permanent. In French: supprimer un rendez-vous, annuler un rendez-vous."
   input:
     type: object
     additionalProperties: false
@@ -392,7 +399,9 @@ functions:
   description: >-
     A read despite the POST verb. Free online-booking slots of the clinic, unpaginated: {data: [{id, type,
     time_slot, utc_offset}]}. Without dates the search spans the current month. The slot id and time_slot
-    feed reschedule_appointment and create_appointment_request.
+    feed reschedule_appointment and create_appointment_request. In French:
+    créneaux disponibles, trouver un créneau libre, disponibilités de prise de
+    rendez-vous.
   input:
     type: object
     additionalProperties: false
@@ -452,6 +461,8 @@ functions:
   description: >-
     List clinic's appointment requests. Each request carries the requester's name, email and phone (personal
     data). Paginated by limit and offset; the answer is {count, next, previous, data}.
+    In French: demandes de rendez-vous, lister les demandes de rendez-vous en
+    ligne.
   input:
     type: object
     additionalProperties: false
@@ -494,7 +505,8 @@ functions:
   class: read
   description: >-
     Retrieve appointment request details. The request carries the requester's name, email and phone (personal
-    data).
+    data). In French: détail d'une demande de rendez-vous, lire une demande de
+    rendez-vous.
   input:
     type: object
     additionalProperties: false
@@ -518,7 +530,8 @@ functions:
     Request an appointment. An online booking request on a free slot (`visit_type_opening_hour`, `time_slot`
     from `search_time_slots`) for a person (`first_name`, `last_name`, `email`, `phone_number`, `birth_date`).
     The clinic is the slot's: the path carries none. Only the arguments given are sent; a top-level field
-    cannot be set to null.
+    cannot be set to null. In French: demander un rendez-vous, réserver un
+    créneau en ligne.
   input:
     type: object
     additionalProperties: false
@@ -576,7 +589,8 @@ functions:
   description: >-
     List clinic's calendar journeys. A patient's path through the clinic on an appointment (required /
     completed steps). Each journey embeds its patient (personal data). Paginated by limit and offset;
-    the answer is {count, next, previous, data}.
+    the answer is {count, next, previous, data}. In French: parcours patient,
+    étapes du parcours en clinique.
   input:
     type: object
     additionalProperties: false
@@ -676,7 +690,7 @@ functions:
   class: read
   description: >-
     List clinic's calendar absences. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: absences de l'agenda, lister les absences.
   input:
     type: object
     additionalProperties: false
@@ -733,7 +747,7 @@ functions:
       offset: offset
 - name: get_calendar_absence
   class: read
-  description: Retrieve a calendar absence.
+  description: "Retrieve a calendar absence. In French: détail d'une absence, lire une absence."
   input:
     type: object
     additionalProperties: false
@@ -755,7 +769,7 @@ functions:
   class: read
   description: >-
     List clinic's calendar opening hours. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: horaires d'ouverture, plages d'ouverture de l'agenda.
   input:
     type: object
     additionalProperties: false
@@ -795,7 +809,7 @@ functions:
     query: {show_all: show_all, limit: limit, offset: offset}
 - name: get_calendar_opening_hour
   class: read
-  description: Retrieve a calendar opening hour.
+  description: "Retrieve a calendar opening hour. In French: détail d'une plage d'ouverture, lire un horaire d'ouverture."
   input:
     type: object
     additionalProperties: false
@@ -819,7 +833,7 @@ functions:
   class: read
   description: >-
     List clinic's appointment rooms. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: salles de soins, lister les salles.
   input:
     type: object
     additionalProperties: false
@@ -853,7 +867,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: get_appointment_room
   class: read
-  description: Retrieve an appointment room.
+  description: "Retrieve an appointment room. In French: détail d'une salle, lire une salle de soins."
   input:
     type: object
     additionalProperties: false
@@ -875,7 +889,7 @@ functions:
   class: read
   description: >-
     List clinic's appointment devices. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: appareils de soins, lister les appareils.
   input:
     type: object
     additionalProperties: false
@@ -909,7 +923,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: get_appointment_device
   class: read
-  description: Retrieve an appointment device.
+  description: "Retrieve an appointment device. In French: détail d'un appareil, lire un appareil de soins."
   input:
     type: object
     additionalProperties: false
@@ -931,6 +945,7 @@ functions:
   class: write
   description: >-
     Create a calendar absence. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: créer une absence, poser une absence, bloquer l'agenda.
   input:
     type: object
     additionalProperties: false
@@ -1056,6 +1071,7 @@ functions:
   class: write
   description: >-
     Update a calendar absence. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: modifier une absence, changer une absence.
   input:
     type: object
     additionalProperties: false
@@ -1177,7 +1193,7 @@ functions:
     body: {calendar_event: calendar_event}
 - name: delete_calendar_absence
   class: sensitive
-  description: Delete a calendar absence. Answers 204 when done; permanent.
+  description: "Delete a calendar absence. Answers 204 when done; permanent. In French: supprimer une absence, annuler une absence."
   input:
     type: object
     additionalProperties: false
@@ -1200,7 +1216,8 @@ functions:
   class: write
   description: >-
     Create a calendar opening hour. Only the arguments given are sent; a top-level field cannot be set
-    to null.
+    to null. In French: créer une plage d'ouverture, ajouter un horaire
+    d'ouverture.
   input:
     type: object
     additionalProperties: false
@@ -1370,7 +1387,8 @@ functions:
   class: write
   description: >-
     Update a calendar opening hour. Only the arguments given are sent; a top-level field cannot be set
-    to null.
+    to null. In French: modifier une plage d'ouverture, changer les horaires
+    d'ouverture.
   input:
     type: object
     additionalProperties: false
@@ -1533,7 +1551,7 @@ functions:
       sub_visit_types: sub_visit_types
 - name: delete_calendar_opening_hour
   class: sensitive
-  description: Delete a calendar opening hour. Answers 204 when done; permanent.
+  description: "Delete a calendar opening hour. Answers 204 when done; permanent. In French: supprimer une plage d'ouverture, retirer un horaire d'ouverture."
   input:
     type: object
     additionalProperties: false
@@ -1559,7 +1577,7 @@ functions:
   class: write
   description: >-
     Create an appointment room. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: créer une salle, ajouter une salle de soins.
   input:
     type: object
     additionalProperties: false
@@ -1623,7 +1641,7 @@ functions:
   class: write
   description: >-
     Update an appointment room. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: modifier une salle, renommer une salle.
   input:
     type: object
     additionalProperties: false
@@ -1685,7 +1703,7 @@ functions:
       visit_type_category: visit_type_category
 - name: delete_appointment_room
   class: sensitive
-  description: Delete an appointment room. Answers 204 when done; permanent.
+  description: "Delete an appointment room. Answers 204 when done; permanent. In French: supprimer une salle, retirer une salle de soins."
   input:
     type: object
     additionalProperties: false
@@ -1708,7 +1726,7 @@ functions:
   class: write
   description: >-
     Create an appointment device. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: créer un appareil, ajouter un appareil de soins.
   input:
     type: object
     additionalProperties: false
@@ -1748,7 +1766,7 @@ functions:
   class: write
   description: >-
     Update an appointment device. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: modifier un appareil, renommer un appareil.
   input:
     type: object
     additionalProperties: false
@@ -1786,7 +1804,7 @@ functions:
     body: {name: name, visit_types: visit_types, sub_visit_types: sub_visit_types}
 - name: delete_appointment_device
   class: sensitive
-  description: Delete an appointment device. Answers 204 when done; permanent.
+  description: "Delete an appointment device. Answers 204 when done; permanent. In French: supprimer un appareil, retirer un appareil de soins."
   input:
     type: object
     additionalProperties: false
@@ -1809,6 +1827,8 @@ functions:
   class: read
   description: >-
     List clinic's visit types. Paginated by limit and offset; the answer is {count, next, previous, data}.
+    In French: types de consultation, motifs de rendez-vous, lister les types de
+    visite.
   input:
     type: object
     additionalProperties: false
@@ -1847,7 +1867,7 @@ functions:
     query: {visit_type_category: visit_type_category_id, limit: limit, offset: offset}
 - name: get_visit_type
   class: read
-  description: Retrieve a visit type.
+  description: "Retrieve a visit type. In French: détail d'un type de consultation, lire un motif de rendez-vous."
   input:
     type: object
     additionalProperties: false
@@ -1869,7 +1889,8 @@ functions:
   class: read
   description: >-
     List clinic's visit type categories. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: catégories de consultation, catégories de motifs de
+    rendez-vous.
   input:
     type: object
     additionalProperties: false
@@ -1903,7 +1924,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: get_visit_type_category
   class: read
-  description: Retrieve a visit type category.
+  description: "Retrieve a visit type category. In French: détail d'une catégorie de consultation, lire une catégorie de motif."
   input:
     type: object
     additionalProperties: false
@@ -1925,7 +1946,7 @@ functions:
   class: read
   description: >-
     List clinic's sub visit types. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: variantes de consultation, sous-types de visite.
   input:
     type: object
     additionalProperties: false
@@ -1964,7 +1985,7 @@ functions:
     query: {visit_type: visit_type_id, limit: limit, offset: offset}
 - name: get_sub_visit_type
   class: read
-  description: Retrieve a sub visit type.
+  description: "Retrieve a sub visit type. In French: détail d'une variante de consultation, lire un sous-type de visite."
   input:
     type: object
     additionalProperties: false
@@ -1986,7 +2007,8 @@ functions:
   class: read
   description: >-
     List clinic's treatment types. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: types de soins, catalogue des traitements, lister les
+    actes.
   input:
     type: object
     additionalProperties: false
@@ -2023,7 +2045,7 @@ functions:
     query: {search: search, limit: limit, offset: offset}
 - name: get_treatment_type
   class: read
-  description: Retrieve a treatment type.
+  description: "Retrieve a treatment type. In French: détail d'un soin, lire un type de traitement."
   input:
     type: object
     additionalProperties: false
@@ -2045,7 +2067,7 @@ functions:
   class: read
   description: >-
     List clinic's treatment pricings. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: tarifs des soins, grille tarifaire, prix des traitements.
   input:
     type: object
     additionalProperties: false
@@ -2084,7 +2106,7 @@ functions:
     query: {treatment_type: treatment_type_id, limit: limit, offset: offset}
 - name: get_treatment_pricing
   class: read
-  description: Retrieve a treatment pricing.
+  description: "Retrieve a treatment pricing. In French: détail d'un tarif, prix d'un soin."
   input:
     type: object
     additionalProperties: false
@@ -2106,7 +2128,8 @@ functions:
   class: read
   description: >-
     List a treatment pricing's per-provider accounting distributions. The per-user accounting distribution
-    of a pricing. Unpaginated.
+    of a pricing. Unpaginated. In French: répartition comptable d'un tarif,
+    rétrocession par praticien d'un tarif.
   input:
     type: object
     additionalProperties: false
@@ -2130,7 +2153,7 @@ functions:
   class: read
   description: >-
     List clinic's treatment packages. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: forfaits de soins, lister les forfaits, cures de soins.
   input:
     type: object
     additionalProperties: false
@@ -2165,7 +2188,7 @@ functions:
     query: {search: search, limit: limit, offset: offset}
 - name: get_treatment_package
   class: read
-  description: Retrieve a treatment package.
+  description: "Retrieve a treatment package. In French: détail d'un forfait, lire un forfait de soins."
   input:
     type: object
     additionalProperties: false
@@ -2187,7 +2210,8 @@ functions:
   class: read
   description: >-
     List treatment package items. The treatments a package holds. Paginated by limit and offset; the answer
-    is {count, next, previous, data}.
+    is {count, next, previous, data}. In French: contenu d'un forfait, soins
+    d'un forfait.
   input:
     type: object
     additionalProperties: false
@@ -2221,7 +2245,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: list_treatment_package_distributions
   class: read
-  description: List a treatment package's per-provider accounting distributions. Unpaginated.
+  description: "List a treatment package's per-provider accounting distributions. Unpaginated. In French: répartition comptable d'un forfait, rétrocession par praticien d'un forfait."
   input:
     type: object
     additionalProperties: false
@@ -2245,7 +2269,8 @@ functions:
   class: read
   description: >-
     List clinic's accounting distributions. Paginated by limit and offset; the answer is {count, next,
-    previous, data}.
+    previous, data}. In French: répartitions comptables, lister les
+    rétrocessions.
   input:
     type: object
     additionalProperties: false
@@ -2279,7 +2304,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: get_accounting_distribution
   class: read
-  description: Retrieve an accounting distribution.
+  description: "Retrieve an accounting distribution. In French: détail d'une répartition comptable, lire une rétrocession."
   input:
     type: object
     additionalProperties: false
@@ -2303,7 +2328,8 @@ functions:
   class: read
   description: >-
     Search global product catalog. The product catalogue (name, brand). No detail endpoint. Paginated
-    by limit and offset; the answer is {count, next, previous, data}.
+    by limit and offset; the answer is {count, next, previous, data}. In French:
+    catalogue des produits, chercher un produit du catalogue.
   input:
     type: object
     additionalProperties: false
@@ -2340,7 +2366,8 @@ functions:
   class: write
   description: >-
     Create a visit type in the clinic. Only the arguments given are sent; a top-level field cannot be
-    set to null.
+    set to null. In French: créer un type de consultation, ajouter un motif de
+    rendez-vous.
   input:
     type: object
     additionalProperties: false
@@ -2497,7 +2524,8 @@ functions:
   class: write
   description: >-
     sub_visit_types is the FULL list of variants: a variant left out is deleted. Only the arguments given
-    are sent; a top-level field cannot be set to null.
+    are sent; a top-level field cannot be set to null. In French: modifier un
+    type de consultation, changer un motif de rendez-vous.
   input:
     type: object
     additionalProperties: false
@@ -2663,7 +2691,7 @@ functions:
       appointment_treatment_presets: appointment_treatment_presets
 - name: delete_visit_type
   class: sensitive
-  description: Delete a visit type. Answers 204 when done; permanent.
+  description: "Delete a visit type. Answers 204 when done; permanent. In French: supprimer un type de consultation, retirer un motif de rendez-vous."
   input:
     type: object
     additionalProperties: false
@@ -2686,7 +2714,8 @@ functions:
   class: write
   description: >-
     Create a visit type category. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: créer une catégorie de consultation, ajouter une catégorie
+    de motif.
   input:
     type: object
     additionalProperties: false
@@ -2753,7 +2782,8 @@ functions:
   class: write
   description: >-
     Update a visit type category. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: modifier une catégorie de consultation, renommer une
+    catégorie de motif.
   input:
     type: object
     additionalProperties: false
@@ -2818,7 +2848,7 @@ functions:
     body: {name: name, speciality: speciality}
 - name: delete_visit_type_category
   class: sensitive
-  description: Delete a visit type category. Answers 204 when done; permanent.
+  description: "Delete a visit type category. Answers 204 when done; permanent. In French: supprimer une catégorie de consultation, retirer une catégorie de motif."
   input:
     type: object
     additionalProperties: false
@@ -2842,7 +2872,7 @@ functions:
   class: write
   description: >-
     Create a treatment type in the clinic. Only the arguments given are sent; a top-level field cannot
-    be set to null.
+    be set to null. In French: créer un soin, ajouter un type de traitement.
   input:
     type: object
     additionalProperties: false
@@ -3058,7 +3088,8 @@ functions:
   class: write
   description: >-
     pricings is the FULL list: a pricing left out is deleted. Only the arguments given are sent; a top-level
-    field cannot be set to null.
+    field cannot be set to null. In French: modifier un soin, changer les tarifs
+    d'un soin.
   input:
     type: object
     additionalProperties: false
@@ -3268,7 +3299,7 @@ functions:
       create_visit: create_visit
 - name: delete_treatment_type
   class: sensitive
-  description: Delete a treatment type. Answers 204 when done; permanent.
+  description: "Delete a treatment type. Answers 204 when done; permanent. In French: supprimer un soin, retirer un type de traitement."
   input:
     type: object
     additionalProperties: false
@@ -3290,7 +3321,7 @@ functions:
     summary: 'Delete treatment type {treatment_type_id}: permanent.'
 - name: get_post_treatment_config
   class: read
-  description: Retrieve a post-treatment config.
+  description: "Retrieve a post-treatment config. In French: consignes post-soin, réglages après traitement."
   input:
     type: object
     additionalProperties: false
@@ -3314,7 +3345,8 @@ functions:
   class: write
   description: >-
     Update a post-treatment config. Only the arguments given are sent; a top-level field cannot be set
-    to null.
+    to null. In French: modifier les consignes post-soin, changer les réglages
+    après traitement.
   input:
     type: object
     additionalProperties: false
@@ -3424,7 +3456,7 @@ functions:
   class: write
   description: >-
     Create a treatment package. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: créer un forfait, nouveau forfait de soins.
   input:
     type: object
     additionalProperties: false
@@ -3478,7 +3510,7 @@ functions:
   class: write
   description: >-
     Update a treatment package. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: modifier un forfait, changer un forfait de soins.
   input:
     type: object
     additionalProperties: false
@@ -3530,7 +3562,7 @@ functions:
       distributed_to: distributed_to
 - name: delete_treatment_package
   class: sensitive
-  description: Delete a treatment package. Answers 204 when done; permanent.
+  description: "Delete a treatment package. Answers 204 when done; permanent. In French: supprimer un forfait, retirer un forfait de soins."
   input:
     type: object
     additionalProperties: false
@@ -3554,7 +3586,7 @@ functions:
   class: write
   description: >-
     Add item to treatment package. Only the arguments given are sent; a top-level field cannot be set
-    to null.
+    to null. In French: ajouter un soin à un forfait, compléter un forfait.
   input:
     type: object
     additionalProperties: false
@@ -3592,7 +3624,8 @@ functions:
   class: write
   description: >-
     Update treatment package item. Only the arguments given are sent; a top-level field cannot be set
-    to null.
+    to null. In French: modifier un soin d'un forfait, changer la quantité d'un
+    forfait.
   input:
     type: object
     additionalProperties: false
@@ -3628,7 +3661,7 @@ functions:
     body: {pricing: pricing, sessions: sessions}
 - name: delete_treatment_package_item
   class: sensitive
-  description: Remove item from treatment package. Answers 204 when done; permanent.
+  description: "Remove item from treatment package. Answers 204 when done; permanent. In French: retirer un soin d'un forfait, enlever un élément d'un forfait."
   input:
     type: object
     additionalProperties: false
@@ -3654,7 +3687,8 @@ functions:
   class: write
   description: >-
     Create an accounting distribution. Only the arguments given are sent; a top-level field cannot be
-    set to null.
+    set to null. In French: créer une répartition comptable, ajouter une
+    rétrocession.
   input:
     type: object
     additionalProperties: false
@@ -3707,7 +3741,8 @@ functions:
   class: write
   description: >-
     Update an accounting distribution. Only the arguments given are sent; a top-level field cannot be
-    set to null.
+    set to null. In French: modifier une répartition comptable, changer une
+    rétrocession.
   input:
     type: object
     additionalProperties: false
@@ -3758,7 +3793,7 @@ functions:
     body: {name: name, model: model}
 - name: delete_accounting_distribution
   class: sensitive
-  description: Delete an accounting distribution. Answers 204 when done; permanent.
+  description: "Delete an accounting distribution. Answers 204 when done; permanent. In French: supprimer une répartition comptable, retirer une rétrocession."
   input:
     type: object
     additionalProperties: false
@@ -3782,7 +3817,7 @@ functions:
     summary: 'Delete accounting distribution {accounting_distribution_id}: permanent.'
 - name: get_me
   class: read
-  description: Useful to check which user an API key acts as.
+  description: "Useful to check which user an API key acts as. In French: mon compte nextmotion, utilisateur de la clé nextmotion."
   input:
     type: object
     additionalProperties: false
@@ -3795,7 +3830,8 @@ functions:
   class: read
   description: >-
     Start here: almost every other function needs a clinic_id from this list. Paginated by limit and offset;
-    the answer is {count, next, previous, data}.
+    the answer is {count, next, previous, data}. In French: lister les
+    cliniques, mes cliniques nextmotion.
   input:
     type: object
     additionalProperties: false
@@ -3823,7 +3859,8 @@ functions:
   description: >-
     List clinic features / subscription options. The clinic's Nextmotion subscription options (code, prices,
     counts, sale/cancel/end times). Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: options d'abonnement de la clinique, abonnement
+    nextmotion.
   input:
     type: object
     additionalProperties: false
@@ -3859,7 +3896,8 @@ functions:
   class: read
   description: >-
     List clinic's doctors. The clinic's practitioners. Paginated by limit and offset; the answer is {count,
-    next, previous, data}.
+    next, previous, data}. In French: lister les praticiens, médecins de la
+    clinique.
   input:
     type: object
     additionalProperties: false
@@ -3893,7 +3931,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: get_doctor
   class: read
-  description: Retrieve a doctor.
+  description: "Retrieve a doctor. In French: fiche d'un praticien, détail d'un médecin."
   input:
     type: object
     additionalProperties: false
@@ -3914,6 +3952,7 @@ functions:
   description: >-
     Create a doctor. Adds a collaborator (`email` and `kind` required; names required when the email is
     not a known user). Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: ajouter un praticien, créer un médecin, ajouter un collaborateur.
   input:
     type: object
     additionalProperties: false
@@ -4024,6 +4063,7 @@ functions:
   class: write
   description: >-
     Update a doctor. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: modifier un praticien, mettre à jour un médecin.
   input:
     type: object
     additionalProperties: false
@@ -4128,7 +4168,7 @@ functions:
       visit_types: visit_types
 - name: delete_doctor
   class: sensitive
-  description: Delete a doctor. Answers 204 when done; permanent.
+  description: "Delete a doctor. Answers 204 when done; permanent. In French: supprimer un praticien, retirer un médecin."
   input:
     type: object
     additionalProperties: false
@@ -4150,7 +4190,8 @@ functions:
   description: >-
     List clinic's leads. Prospects (contact details, source, status, desired treatment, follow-up counters).
     Each lead carries a person's name, email, phone and free-text notes (personal data). Paginated by
-    limit and offset; the answer is {count, next, previous, data}.
+    limit and offset; the answer is {count, next, previous, data}. In French:
+    lister les prospects, leads de la clinique, demandes de contact.
   input:
     type: object
     additionalProperties: false
@@ -4186,6 +4227,7 @@ functions:
   class: read
   description: >-
     Retrieve a lead. The lead carries a person's name, email, phone and free-text notes (personal data).
+    In French: fiche d'un prospect, détail d'un lead.
   input:
     type: object
     additionalProperties: false
@@ -4203,7 +4245,7 @@ functions:
   call: {method: GET, path: '/v4/leads/{lead_id}'}
 - name: create_lead
   class: write
-  description: Create a lead. Only the arguments given are sent; a top-level field cannot be set to null.
+  description: "Create a lead. Only the arguments given are sent; a top-level field cannot be set to null. In French: créer un prospect, ajouter un lead."
   input:
     type: object
     additionalProperties: false
@@ -4274,7 +4316,7 @@ functions:
       external_reference: external_reference
 - name: update_lead
   class: write
-  description: Update a lead. Only the arguments given are sent; a top-level field cannot be set to null.
+  description: "Update a lead. Only the arguments given are sent; a top-level field cannot be set to null. In French: modifier un prospect, changer le statut d'un lead."
   input:
     type: object
     additionalProperties: false
@@ -4343,7 +4385,7 @@ functions:
       external_reference: external_reference
 - name: delete_lead
   class: sensitive
-  description: Delete a lead. Answers 204 when done; permanent.
+  description: "Delete a lead. Answers 204 when done; permanent. In French: supprimer un prospect, supprimer un lead."
   input:
     type: object
     additionalProperties: false
@@ -4362,7 +4404,7 @@ functions:
   confirm: {summary: 'Delete lead {lead_id}: permanent.'}
 - name: convert_lead_to_patient
   class: sensitive
-  description: Turn a lead into a patient; answers the patient, an existing one when its details match.
+  description: "Turn a lead into a patient; answers the patient, an existing one when its details match. In French: convertir un prospect en patient, transformer un lead en patient."
   input:
     type: object
     additionalProperties: false
@@ -4384,6 +4426,7 @@ functions:
   description: >-
     Log a call. Logs a call (JSON; a recording file, multipart only, is not sent by this client). Only
     the arguments given are sent; a top-level field cannot be set to null.
+    In French: enregistrer un appel, noter un appel téléphonique.
   input:
     type: object
     additionalProperties: false
@@ -4461,7 +4504,8 @@ functions:
   description: >-
     SENDS a real email, SMS or WhatsApp message built from one of the clinic's communication templates,
     about one object (a quote, an invoice or an administrative document). Only the arguments given are
-    sent; a top-level field cannot be set to null.
+    sent; a top-level field cannot be set to null. In French: envoyer un devis
+    par email, envoyer un sms au patient, envoyer une facture par email.
   input:
     type: object
     additionalProperties: false
@@ -4517,7 +4561,8 @@ functions:
   class: read
   description: >-
     Labels used across the clinic: lead sources, statuses, channels, zones, quote tags, call labels. Paginated
-    by limit and offset; the answer is {count, next, previous, data}.
+    by limit and offset; the answer is {count, next, previous, data}. In French:
+    étiquettes de la clinique, sources de prospects, statuts des leads.
   input:
     type: object
     additionalProperties: false
@@ -4580,7 +4625,7 @@ functions:
   class: read
   description: >-
     List clinic communication templates. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: modèles de messages, modèles d'email et de sms.
   input:
     type: object
     additionalProperties: false
@@ -4619,7 +4664,7 @@ functions:
     query: {kind: kind, limit: limit, offset: offset}
 - name: get_communication_template
   class: read
-  description: Retrieve a communication template.
+  description: "Retrieve a communication template. In French: détail d'un modèle de message, lire un modèle d'email."
   input:
     type: object
     additionalProperties: false
@@ -4643,7 +4688,7 @@ functions:
   class: write
   description: >-
     Update a communication template. Only the arguments given are sent; a top-level field cannot be set
-    to null.
+    to null. In French: modifier un modèle de message, changer un modèle de sms.
   input:
     type: object
     additionalProperties: false
@@ -4685,7 +4730,8 @@ functions:
   class: read
   description: >-
     List communication template autocomplete metadata. The placeholders a template of that `type` (e.g.
-    `quote`, `appointment_reminder`) can use.
+    `quote`, `appointment_reminder`) can use. In French: variables des modèles
+    de message, champs de fusion des messages.
   input:
     type: object
     additionalProperties: false
@@ -4735,7 +4781,7 @@ functions:
   class: read
   description: >-
     List clinic's document templates. Paginated by limit and offset; the answer is {count, next, previous,
-    data}.
+    data}. In French: modèles de documents, lister les modèles de courrier.
   input:
     type: object
     additionalProperties: false
@@ -4783,7 +4829,7 @@ functions:
     query: {type: type, master: master_id, limit: limit, offset: offset}
 - name: get_document_template
   class: read
-  description: Retrieve a document template.
+  description: "Retrieve a document template. In French: détail d'un modèle de document, lire un modèle de document."
   input:
     type: object
     additionalProperties: false
@@ -4805,7 +4851,7 @@ functions:
   class: write
   description: >-
     Create a document template. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: créer un modèle de document, nouveau modèle de document.
   input:
     type: object
     additionalProperties: false
@@ -4904,7 +4950,8 @@ functions:
   class: write
   description: >-
     Update a document template. Only the arguments given are sent; a top-level field cannot be set to
-    null.
+    null. In French: modifier un modèle de document, changer un modèle de
+    document.
   input:
     type: object
     additionalProperties: false
@@ -4988,7 +5035,7 @@ functions:
       autoshow: autoshow
 - name: delete_document_template
   class: sensitive
-  description: Delete a document template. Answers 204 when done; permanent.
+  description: "Delete a document template. Answers 204 when done; permanent. In French: supprimer un modèle de document, retirer un modèle de document."
   input:
     type: object
     additionalProperties: false
@@ -5010,7 +5057,7 @@ functions:
     summary: 'Delete document template {document_template_id}: permanent.'
 - name: duplicate_document_template
   class: write
-  description: Duplicate a document template. Answers the copy.
+  description: "Duplicate a document template. Answers the copy. In French: dupliquer un modèle de document, copier un modèle de document."
   input:
     type: object
     additionalProperties: false
@@ -5034,6 +5081,8 @@ functions:
   class: read
   description: >-
     List autofills / autocomplete options. Placeholders per document type (same codes as `list_document_templates`).
+    In French: variables des modèles de document, champs de fusion des
+    documents.
   input:
     type: object
     additionalProperties: false
@@ -5055,6 +5104,8 @@ functions:
   class: read
   description: >-
     List clinic's survey forms. Paginated by limit and offset; the answer is {count, next, previous, data}.
+    In French: formulaires de la clinique, questionnaires patients, formulaires
+    de consentement.
   input:
     type: object
     additionalProperties: false
@@ -5095,7 +5146,7 @@ functions:
     query: {search: search, type: type, limit: limit, offset: offset}
 - name: get_survey_form
   class: read
-  description: Retrieve a survey form.
+  description: "Retrieve a survey form. In French: détail d'un formulaire, lire un questionnaire."
   input:
     type: object
     additionalProperties: false
@@ -5117,6 +5168,7 @@ functions:
   class: write
   description: >-
     Create a survey form. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: créer un formulaire, créer un questionnaire.
   input:
     type: object
     additionalProperties: false
@@ -5176,6 +5228,7 @@ functions:
   class: write
   description: >-
     Update a survey form. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: modifier un formulaire, changer un questionnaire.
   input:
     type: object
     additionalProperties: false
@@ -5225,7 +5278,7 @@ functions:
     body: {name: name, fields_tmpl: fields_tmpl, note_tmpl: note_tmpl}
 - name: delete_survey_form
   class: sensitive
-  description: Delete a survey form. Answers 204 when done; permanent.
+  description: "Delete a survey form. Answers 204 when done; permanent. In French: supprimer un formulaire, supprimer un questionnaire."
   input:
     type: object
     additionalProperties: false
@@ -5248,7 +5301,8 @@ functions:
   class: read
   description: >-
     List autocomplete options. Placeholders of a survey-form type (`bolt_note` | `treatment_consent`,
-    required).
+    required). In French: variables des formulaires, champs de fusion des
+    questionnaires.
   input:
     type: object
     additionalProperties: false
@@ -5269,6 +5323,7 @@ functions:
   class: read
   description: >-
     List clinic's webhooks. Paginated by limit and offset; the answer is {count, next, previous, data}.
+    In French: lister les webhooks, webhooks de la clinique.
   input:
     type: object
     additionalProperties: false
@@ -5302,7 +5357,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: get_webhook
   class: read
-  description: Retrieve a webhook.
+  description: "Retrieve a webhook. In French: détail d'un webhook, lire un webhook."
   input:
     type: object
     additionalProperties: false
@@ -5323,7 +5378,8 @@ functions:
   description: >-
     Register a webhook: Nextmotion will push the chosen events of this clinic, which may carry personal
     data, to the given URL. headers usually carry the receiver's secret. Only the arguments given are
-    sent; a top-level field cannot be set to null.
+    sent; a top-level field cannot be set to null. In French: créer un webhook,
+    s'abonner aux événements de la clinique.
   input:
     type: object
     additionalProperties: false
@@ -5437,7 +5493,8 @@ functions:
   class: sensitive
   description: >-
     Change where and how a webhook pushes this clinic's events (url required). Only the arguments given
-    are sent; a top-level field cannot be set to null.
+    are sent; a top-level field cannot be set to null. In French: modifier un
+    webhook, changer l'adresse d'un webhook.
   input:
     type: object
     additionalProperties: false
@@ -5489,7 +5546,7 @@ functions:
   confirm: {summary: 'Point webhook {webhook_id} to {url}.'}
 - name: delete_webhook
   class: sensitive
-  description: Delete a webhook. Answers 204 when done; permanent.
+  description: "Delete a webhook. Answers 204 when done; permanent. In French: supprimer un webhook, arrêter un webhook."
   input:
     type: object
     additionalProperties: false
@@ -5511,6 +5568,7 @@ functions:
   description: >-
     List clinic's patients. Patient records are personal data, including the practitioner's comments and
     a photograph. Paginated by limit and offset; the answer is {count, next, previous, data}.
+    In French: lister les patients, chercher un patient, fichier patients.
   input:
     type: object
     additionalProperties: false
@@ -5578,6 +5636,7 @@ functions:
   class: read
   description: >-
     Retrieve a patient. The record is personal data, including the practitioner's comments and a photograph.
+    In French: fiche d'un patient, dossier d'un patient.
   input:
     type: object
     additionalProperties: false
@@ -5597,7 +5656,7 @@ functions:
   class: write
   description: >-
     Create a patient record (identity only). Only the arguments given are sent; a top-level field cannot
-    be set to null.
+    be set to null. In French: créer un patient, ajouter un patient.
   input:
     type: object
     additionalProperties: false
@@ -5682,7 +5741,8 @@ functions:
   class: write
   description: >-
     Update a patient's identity (same fields as create_patient). Only the arguments given are sent; a
-    top-level field cannot be set to null.
+    top-level field cannot be set to null. In French: modifier un patient,
+    mettre à jour l'identité d'un patient.
   input:
     type: object
     additionalProperties: false
@@ -5763,7 +5823,8 @@ functions:
   class: read
   description: >-
     List clinic's quotes. Each quote embeds a nested patient object (personal data). Paginated by limit
-    and offset; the answer is {count, next, previous, data}.
+    and offset; the answer is {count, next, previous, data}. In French: lister
+    les devis, devis de la clinique.
   input:
     type: object
     additionalProperties: false
@@ -5802,7 +5863,7 @@ functions:
     query: {patient: patient_id, limit: limit, offset: offset}
 - name: get_quote
   class: read
-  description: Retrieve a quote. The quote embeds a nested patient object (personal data).
+  description: "Retrieve a quote. The quote embeds a nested patient object (personal data). In French: détail d'un devis, lire un devis."
   input:
     type: object
     additionalProperties: false
@@ -5823,7 +5884,8 @@ functions:
   description: >-
     The API accepts no filter on this list (no date, no patient), and its order is not documented. Each
     invoice embeds a nested patient object (personal data). Paginated by limit and offset; the answer
-    is {count, next, previous, data}.
+    is {count, next, previous, data}. In French: lister les factures, factures
+    de la clinique.
   input:
     type: object
     additionalProperties: false
@@ -5857,7 +5919,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: get_invoice
   class: read
-  description: Retrieve an invoice. The invoice embeds a nested patient object (personal data).
+  description: "Retrieve an invoice. The invoice embeds a nested patient object (personal data). In French: détail d'une facture, lire une facture."
   input:
     type: object
     additionalProperties: false
@@ -5877,6 +5939,7 @@ functions:
   class: write
   description: >-
     Update a quote. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: modifier un devis, corriger un devis.
   input:
     type: object
     additionalProperties: false
@@ -6005,7 +6068,7 @@ functions:
       scheduled_appointment_time: scheduled_appointment_time
 - name: delete_quote
   class: sensitive
-  description: Delete a quote. Answers 204 when done; permanent.
+  description: "Delete a quote. Answers 204 when done; permanent. In French: supprimer un devis, effacer un devis."
   input:
     type: object
     additionalProperties: false
@@ -6026,7 +6089,8 @@ functions:
   class: sensitive
   description: >-
     Validate a draft quote, optionally updating it in the same request. Irreversible. Only the arguments
-    given are sent; a top-level field cannot be set to null.
+    given are sent; a top-level field cannot be set to null. In French: valider
+    un devis, finaliser un devis.
   input:
     type: object
     additionalProperties: false
@@ -6165,6 +6229,7 @@ functions:
   class: write
   description: >-
     Update an invoice. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: modifier une facture, corriger une facture brouillon.
   input:
     type: object
     additionalProperties: false
@@ -6274,6 +6339,7 @@ functions:
   description: >-
     Validate a draft invoice: it gets its number and can no longer be edited. issued_time and invoiced_time
     are optional. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: valider une facture, émettre une facture.
   input:
     type: object
     additionalProperties: false
@@ -6310,6 +6376,8 @@ functions:
   description: >-
     Record a payment on an invoice: amounts per means, custom mediums, voucher, deferred date; do_validate
     also validates it. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: enregistrer un paiement, encaisser une facture, régler une
+    facture.
   input:
     type: object
     additionalProperties: false
@@ -6506,7 +6574,8 @@ functions:
   class: sensitive
   description: >-
     Issue a credit note (accounting record) for a patient; items are required. Only the arguments given
-    are sent; a top-level field cannot be set to null.
+    are sent; a top-level field cannot be set to null. In French: créer un
+    avoir, émettre un avoir.
   input:
     type: object
     additionalProperties: false
@@ -6831,7 +6900,8 @@ functions:
     transfer, stripe, voucher, other, custom_medium_list) and embeds its invoice. The embedded invoice
     carries a nested patient object (personal data) and its lines (invoiced_treatments, each with the id
     of its treatment); the practitioner of the act is not in the answer. Paginated by limit and offset; the answer is
-    {count, next, previous, data}.
+    {count, next, previous, data}. In French: lister les paiements,
+    encaissements du mois, règlements des patients.
   input:
     type: object
     additionalProperties: false
@@ -6886,7 +6956,7 @@ functions:
       offset: offset}
 - name: get_payment
   class: read
-  description: Retrieve a payment. The payment embeds a nested patient object (personal data).
+  description: "Retrieve a payment. The payment embeds a nested patient object (personal data). In French: détail d'un paiement, lire un règlement."
   input:
     type: object
     additionalProperties: false
@@ -6906,6 +6976,7 @@ functions:
   class: write
   description: >-
     Update a payment. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: modifier un paiement, corriger un règlement.
   input:
     type: object
     additionalProperties: false
@@ -7095,7 +7166,8 @@ functions:
   class: read
   description: >-
     List clinic's custom payment mediums. Custom payment means. Paginated by limit and offset; the answer
-    is {count, next, previous, data}.
+    is {count, next, previous, data}. In French: moyens de paiement
+    personnalisés, modes de règlement.
   input:
     type: object
     additionalProperties: false
@@ -7129,7 +7201,7 @@ functions:
     query: {limit: limit, offset: offset}
 - name: get_payment_medium
   class: read
-  description: Retrieve a custom payment medium.
+  description: "Retrieve a custom payment medium. In French: détail d'un moyen de paiement, lire un mode de règlement."
   input:
     type: object
     additionalProperties: false
@@ -7151,7 +7223,8 @@ functions:
   class: write
   description: >-
     Create a custom payment medium. Only the arguments given are sent; a top-level field cannot be set
-    to null.
+    to null. In French: créer un moyen de paiement, ajouter un mode de
+    règlement.
   input:
     type: object
     additionalProperties: false
@@ -7182,7 +7255,8 @@ functions:
   class: write
   description: >-
     Update a custom payment medium. Only the arguments given are sent; a top-level field cannot be set
-    to null.
+    to null. In French: modifier un moyen de paiement, renommer un mode de
+    règlement.
   input:
     type: object
     additionalProperties: false
@@ -7211,7 +7285,7 @@ functions:
     body: {name: name}
 - name: delete_payment_medium
   class: sensitive
-  description: Delete a custom payment medium. Answers 204 when done; permanent.
+  description: "Delete a custom payment medium. Answers 204 when done; permanent. In French: supprimer un moyen de paiement, retirer un mode de règlement."
   input:
     type: object
     additionalProperties: false
@@ -7235,7 +7309,8 @@ functions:
   class: read
   description: >-
     Appointment income of the clinic over time, as one chart (one value per period). Without dates the
-    API spans 6 periods up to today. Unpaginated.
+    API spans 6 periods up to today. Unpaginated. In French: chiffre d'affaires
+    des rendez-vous, revenus des rendez-vous par mois.
   input:
     type: object
     additionalProperties: false
@@ -7281,7 +7356,8 @@ functions:
   class: read
   description: >-
     Draft-quoted, quoted and invoiced treatment counts over time, one chart per treatment type. Without
-    dates the API spans 6 periods up to today. Unpaginated.
+    dates the API spans 6 periods up to today. Unpaginated. In French:
+    statistiques des soins, nombre de soins facturés, soins les plus vendus.
   input:
     type: object
     additionalProperties: false
@@ -7321,7 +7397,8 @@ functions:
   class: read
   description: >-
     Income from invoiced treatments over time, one chart per treatment type. Without dates the API spans
-    6 periods up to today. Unpaginated.
+    6 periods up to today. Unpaginated. In French: chiffre d'affaires par soin,
+    revenus par type de traitement.
   input:
     type: object
     additionalProperties: false
@@ -7362,6 +7439,8 @@ functions:
   description: >-
     A patient's financial totals: quoted, invoiced, paid, credit notes, reimbursements, first and last
     visit, review requests, media counts. No identity in the response.
+    In French: total facturé d'un patient, chiffre d'affaires d'un patient,
+    statistiques d'un patient.
   input:
     type: object
     additionalProperties: false
@@ -7382,7 +7461,8 @@ functions:
   description: >-
     List clinic's products in stock. The clinic's stock, one row per lot. A product row embeds its catalogue
     entry (`global_product`: name, brand). Paginated by limit and offset; the answer is {count, next,
-    previous, data}.
+    previous, data}. In French: stock de produits, lister les produits en stock,
+    lots en stock.
   input:
     type: object
     additionalProperties: false
@@ -7440,7 +7520,7 @@ functions:
       offset: offset
 - name: get_product
   class: read
-  description: Retrieve a product.
+  description: "Retrieve a product. In French: détail d'un produit en stock, lire un lot."
   input:
     type: object
     additionalProperties: false
@@ -7460,7 +7540,8 @@ functions:
   class: write
   description: >-
     Add a product to stock. A lot (`global_product` required). Only the arguments given are sent; a top-level
-    field cannot be set to null.
+    field cannot be set to null. In French: ajouter un produit au stock, entrer
+    un lot en stock.
   input:
     type: object
     additionalProperties: false
@@ -7522,6 +7603,7 @@ functions:
   class: write
   description: >-
     Update a product. Only the arguments given are sent; a top-level field cannot be set to null.
+    In French: modifier un produit en stock, mettre à jour un lot.
   input:
     type: object
     additionalProperties: false
@@ -7562,7 +7644,7 @@ functions:
       unit_price: unit_price
 - name: delete_product
   class: sensitive
-  description: Delete a stock lot; answers 200 with the deleted product.
+  description: "Delete a stock lot; answers 200 with the deleted product. In French: supprimer un produit du stock, retirer un lot."
   input:
     type: object
     additionalProperties: false
