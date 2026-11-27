@@ -451,7 +451,8 @@ class PennylaneClient(AnalyticsMixin, BankMixin, DocumentsMixin, ExportsMixin, I
                                 external_reference: str = None,
                                 pdf_free_text: str = None,
                                 customer_invoice_template_id: int = None,
-                                currency: str = "EUR") -> dict:
+                                currency: str = "EUR",
+                                installments: list[dict] = None) -> dict:
         """
         Create a customer invoice.
 
@@ -459,6 +460,9 @@ class PennylaneClient(AnalyticsMixin, BankMixin, DocumentsMixin, ExportsMixin, I
                label, raw_currency_unit_price, unit, vat_rate.
         pdf_free_text: free text printed on the PDF (customer-visible comment,
                API field `pdf_invoice_free_text`).
+        installments: payment schedule, each {deadline, amount (with tax, a
+               string), payment_methods}; the amounts add up to the total with
+               tax. Absent: one installment, with no payment method.
         """
         body = {
             "customer_id": customer_id,
@@ -474,6 +478,8 @@ class PennylaneClient(AnalyticsMixin, BankMixin, DocumentsMixin, ExportsMixin, I
             body["pdf_invoice_free_text"] = pdf_free_text
         if customer_invoice_template_id:
             body["customer_invoice_template_id"] = customer_invoice_template_id
+        if installments:
+            body["installments"] = installments
         return self.post("customer_invoices", body)
 
     def create_credit_note(self, customer_id: int, date: str, deadline: str,

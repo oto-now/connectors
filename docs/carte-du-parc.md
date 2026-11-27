@@ -65,7 +65,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `openai` | OpenAI Images | 1.0.0 | clé | non | 3 | 1 | 2 | 0 | oui | 0 | non | 0 |
 | `origami` | Origami | 1.0.0 | clé | non | 19 | 12 | 2 | 5 | oui | 19 | non | 0 |
 | `pappers` | Pappers | 1.0.0 | clé | non | 4 | 4 | 0 | 0 | oui | 0 | non | 0 |
-| `pennylane` | Pennylane | 2.2.0 | clé | non | 123 | 78 | 31 | 14 | oui | 123 | non | 0 |
+| `pennylane` | Pennylane | 2.3.0 | clé | non | 123 | 78 | 31 | 14 | oui | 123 | non | 0 |
 | `pennylane_firm` | Pennylane (firm) | 1.1.1 | clé | non | 8 | 6 | 1 | 1 | oui | 8 | non | 0 |
 | `pipecorn` | Pipecorn | 1.0.0 | clé | oui | 8 | 3 | 5 | 0 | oui, avec solde | 5 | non | 0 |
 | `qonto` | Qonto | 1.0.0 | clé | non | 20 | 20 | 0 | 0 | oui | 20 | non | 0 |
