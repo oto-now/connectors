@@ -28,7 +28,7 @@ export const companySearch = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search French companies (all legal units, from the national company register open data) by cumulative criteria: name, activity, place, size, legal form, collective agreement. Use it to identify a contract party when its SIREN is unknown, or to find the companies of a person's group. The name goes in query; a legal form spoken with the name (\"SCI Les Tilleuls\") does not belong there: put the name alone in query and the form in nature_juridique (6540 = SCI, 5710 = SAS, 5499 = SARL). Returns {results: [{siren, nom_complet, siege, dirigeants, finances, ...}], total_results, page, per_page, total_pages}. At least one criterion is required.",
+  description: "Search French companies (all legal units, from the national company register open data) by cumulative criteria: name, activity, place, size, legal form, collective agreement. Use it to identify a contract party when its SIREN is unknown, or to find the companies of a person's group. Put the name alone in query and a legal form spoken with it (\"SCI Les Tilleuls\") in nature_juridique (6540 = SCI, 5710 = SAS, 5499 = SARL). Returns {results: [{siren, nom_complet, activite_principale, nature_juridique, categorie_entreprise, etat_administratif, finances, ...}], total_results, page, per_page, total_pages}. A result is a short identity: the registered office (siege), officers (dirigeants), labels (complements) and matching establishments are left out, to keep a page of a common name readable; company_get on the SIREN chosen gives the full record. A name also matches officers, who are not shown here. At least one criterion is required.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -111,6 +111,7 @@ export const companySearch = defineFunction({
     body: {"query": "query", "naf": "naf", "departement": "departement", "code_postal": "code_postal", "commune": "commune", "employees": "employees", "categorie_entreprise": "categorie_entreprise", "ca_min": "ca_min", "ca_max": "ca_max", "idcc": "idcc", "nature_juridique": "nature_juridique", "page": "page", "per_page": "per_page"},
     headers: {},
   },
+  output: { strip: ["results.siege", "results.dirigeants", "results.complements", "results.matching_etablissements"] },
   cost: { per: "request" },
 })
 
@@ -4818,7 +4819,7 @@ export const connector = defineConnector({
   name: "fod",
   label: "France Open Data",
   namespace: "fod",
-  version: "2.0.0",
+  version: "3.0.0",
   apiVersion: "france-opendata-service 4d9f735 (routes unversioned)",
   baseUrl: "https://data.oto.zone",
   accesses: [

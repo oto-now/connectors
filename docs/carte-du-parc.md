@@ -33,7 +33,7 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `dropcontact` | Dropcontact | 1.0.0 | clé | oui | 3 | 2 | 1 | 0 | oui, avec solde | 1 | non | 0 |
 | `elevenlabs` | ElevenLabs | 1.0.1 | clé | non | 4 | 4 | 0 | 0 | oui | 4 | non | 0 |
 | `fillout` | Fillout | 1.0.0 | clé | non | 8 | 4 | 1 | 3 | oui | 8 | non | 0 |
-| `fod` | France Open Data | 2.0.0 | clé ou connexion d'une personne (OAuth) | oui | 103 | 103 | 0 | 0 | oui | 103 | non | 0 |
+| `fod` | France Open Data | 3.0.0 | clé ou connexion d'une personne (OAuth) | oui | 103 | 103 | 0 | 0 | oui | 103 | non | 0 |
 | `folk` | folk | 1.0.1 | clé | non | 62 | 23 | 21 | 18 | oui | 62 | non | 0 |
 | `fullenrich` | FullEnrich | 1.0.0 | clé | oui | 2 | 1 | 1 | 0 | non | 1 | non | 0 |
 | `gmail` | Gmail | 1.1.1 | connexion d'une personne (OAuth) | non | 13 | 8 | 2 | 3 | non | 13 | oui | 0 |

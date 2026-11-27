@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'fod',
                'label': 'France Open Data',
                'namespace': 'fod',
-               'version': '2.0.0',
+               'version': '3.0.0',
                'api_version': 'france-opendata-service 4d9f735 (routes unversioned)',
                'base_url': 'https://data.oto.zone',
                'accesses': [{'name': 'key',
@@ -78,12 +78,16 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Search French companies (all legal units, from the national company register '
                                'open data) by cumulative criteria: name, activity, place, size, legal form, '
                                'collective agreement. Use it to identify a contract party when its SIREN is '
-                               "unknown, or to find the companies of a person's group. The name goes in "
-                               'query; a legal form spoken with the name ("SCI Les Tilleuls") does not '
-                               'belong there: put the name alone in query and the form in nature_juridique '
-                               '(6540 = SCI, 5710 = SAS, 5499 = SARL). Returns {results: [{siren, '
-                               'nom_complet, siege, dirigeants, finances, ...}], total_results, page, '
-                               'per_page, total_pages}. At least one criterion is required.',
+                               "unknown, or to find the companies of a person's group. Put the name alone in "
+                               'query and a legal form spoken with it ("SCI Les Tilleuls") in '
+                               'nature_juridique (6540 = SCI, 5710 = SAS, 5499 = SARL). Returns {results: '
+                               '[{siren, nom_complet, activite_principale, nature_juridique, '
+                               'categorie_entreprise, etat_administratif, finances, ...}], total_results, '
+                               'page, per_page, total_pages}. A result is a short identity: the registered '
+                               'office (siege), officers (dirigeants), labels (complements) and matching '
+                               'establishments are left out, to keep a page of a common name readable; '
+                               'company_get on the SIREN chosen gives the full record. A name also matches '
+                               'officers, who are not shown here. At least one criterion is required.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['query']},
@@ -197,6 +201,10 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                   'nature_juridique': 'nature_juridique',
                                   'page': 'page',
                                   'per_page': 'per_page'}},
+                'output': {'strip': ['results.siege',
+                                     'results.dirigeants',
+                                     'results.complements',
+                                     'results.matching_etablissements']},
                 'cost': {'per': 'request'}},
                {'name': 'company_get',
                 'class': 'read',
