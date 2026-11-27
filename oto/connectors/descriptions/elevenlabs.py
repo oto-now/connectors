@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'elevenlabs',
                'label': 'ElevenLabs',
                'namespace': 'elevenlabs',
-               'version': '1.0.1',
+               'version': '1.0.2',
                'api_version': 'v1 (voices on v2)',
                'base_url': 'https://api.elevenlabs.io',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'xi-api-key', 'key': 'api_key'},
@@ -64,7 +64,8 @@ DESCRIPTION = {'connector': {'name': 'elevenlabs',
                                '(character_count) against the allowance (character_limit), when they reset '
                                '(next_character_count_reset_unix, UNIX seconds), and the voice slots used '
                                'and allowed. Read it before a batch of generations. A key restricted without '
-                               'user_read cannot read it.',
+                               'user_read cannot read it. In French: abonnement elevenlabs, crédits '
+                               'elevenlabs restants, quota de caractères.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Credits left this period', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v1/user/subscription'},
@@ -74,7 +75,8 @@ DESCRIPTION = {'connector': {'name': 'elevenlabs',
                 'description': 'The voices the account can use: its own (cloned, designed, saved from the '
                                "library) and the default ones, with each voice's id, name, category, labels "
                                '(accent, age, gender, use case) and a preview URL. Paged by next_page_token '
-                               'while has_more is true. A voice id is what a generation takes.',
+                               'while has_more is true. A voice id is what a generation takes. In French: '
+                               'lister les voix elevenlabs, voix clonées, bibliothèque de voix.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'search': {'type': 'string',
@@ -119,7 +121,7 @@ DESCRIPTION = {'connector': {'name': 'elevenlabs',
                 'class': 'read',
                 'description': 'One voice: name, category, labels, description, preview URL, its default '
                                'settings (stability, similarity_boost, style, speed) and the models it was '
-                               'tuned for.',
+                               "tuned for. In French: détail d'une voix elevenlabs, réglages d'une voix.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['voice_id'],
@@ -131,7 +133,9 @@ DESCRIPTION = {'connector': {'name': 'elevenlabs',
                 'class': 'read',
                 'description': 'The models and what each can do: text to speech or not, languages, maximum '
                                'characters per request, whether it takes style and speaker boost. A model id '
-                               '(eleven_multilingual_v2, eleven_v3…) is what a speech generation takes.',
+                               '(eleven_multilingual_v2, eleven_v3…) is what a speech generation takes. In '
+                               'French: modèles elevenlabs, modèles de synthèse vocale, langues prises en '
+                               'charge.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every model', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v1/models'},

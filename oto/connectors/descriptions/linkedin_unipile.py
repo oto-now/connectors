@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                'label': 'LinkedIn (Unipile)',
                'namespace': 'linkedin_unipile',
-               'version': '1.4.0',
+               'version': '1.4.1',
                'api_version': 'v2',
                'base_url': 'https://api.unipile.com/v2/{account_id}',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'X-API-KEY', 'key': 'api_key'},
@@ -50,7 +50,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'class': 'read',
                 'description': 'Get the LinkedIn profile of the connected account itself: the member whose '
                                "session the other functions act as. Its provider_id is the member's own id; "
-                               'its public_identifier, the slug of their profile URL.',
+                               'its public_identifier, the slug of their profile URL. In French: mon profil '
+                               'linkedin, compte linkedin connecté.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Who is connected', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/users/me'},
@@ -80,7 +81,9 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'provider_id that send_invitation needs, and the About text as bio. '
                                'with_sections narrows the sections returned (all of them when omitted); a '
                                '*_preview value returns only the first visible entries of a section. '
-                               'LinkedIn caps profile pages per account over hours.',
+                               'LinkedIn caps profile pages per account over hours. In French: profil '
+                               "linkedin d'une personne, voir le profil d'un membre, parcours d'un contact "
+                               'linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['identifier'],
@@ -149,7 +152,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'description': 'Get the LinkedIn page of a company, by slug (the public identifier in '
                                'linkedin.com/company/<slug>) or numeric id. A brand name is not always the '
                                'slug: on a 404, read the slug from the company page URL. LinkedIn caps '
-                               'company pages per account over hours.',
+                               "company pages per account over hours. In French: page linkedin d'une "
+                               "entreprise, profil linkedin d'une société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['identifier'],
@@ -172,7 +176,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'class': 'read',
                 'description': 'List the first-degree relations (connections) of the connected account, one '
                                'page at a time. Pass back next_cursor to read the next page; the page size '
-                               'is fixed by the first call of a walk, which the cursor keeps.',
+                               'is fixed by the first call of a walk, which the cursor keeps. In French: mes '
+                               'relations linkedin, mes contacts linkedin, liste de mes connexions.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -205,7 +210,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'description': 'List the pending invitations of the connected account, received or sent. '
                                'Pages by offset, not by cursor: for the next page, pass offset increased by '
                                'limit; an empty page ends the list. Stop too if a page repeats the previous '
-                               'one.',
+                               'one. In French: invitations en attente, invitations linkedin reçues, '
+                               'invitations envoyées.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['direction'],
@@ -230,7 +236,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                {'name': 'get_post',
                 'class': 'read',
                 'description': 'Get one LinkedIn post by its id, as listings and the feed return it (an '
-                               'activity URN, urn:li:activity:<id>).',
+                               'activity URN, urn:li:activity:<id>). In French: lire un post linkedin, '
+                               "détail d'une publication linkedin.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['post_id'],
@@ -262,7 +269,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'slug of the profile URL. For a company, it is the numeric id that '
                                'get_company returns (its id field), not the slug. Pass back next_cursor to '
                                'read the next page; an answer without next_cursor ends the list. A member or '
-                               'a page without posts returns an empty page.',
+                               "a page without posts returns an empty page. In French: posts d'une personne, "
+                               "publications d'une entreprise sur linkedin, derniers posts linkedin.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['identifier'],
@@ -320,7 +328,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'page at a time: CLASSIC_PRIMARY is the main inbox; the others hold archived, '
                                'spam, job, InMail and starred conversations. Each conversation carries the '
                                'id that list_chat_messages and send_message take. Pass back next_cursor to '
-                               'read the next page.',
+                               'read the next page. In French: conversations linkedin, messagerie linkedin, '
+                               'boîte de réception linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['inbox'],
@@ -366,7 +375,9 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                {'name': 'list_chat_messages',
                 'class': 'read',
                 'description': 'List the messages of one LinkedIn conversation of the connected account, by '
-                               'its chat id (from list_chats). Read them before replying with send_message.',
+                               'its chat id (from list_chats). Read them before replying with send_message. '
+                               "In French: messages d'une conversation linkedin, lire une conversation "
+                               'linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['chat_id'],
@@ -391,7 +402,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'class': 'sensitive',
                 'description': 'Send a LinkedIn connection invitation from the connected account to a '
                                'member, with an optional note. The member is named by provider id (ACoAA…, '
-                               'the provider_id of get_profile), not by slug.',
+                               'the provider_id of get_profile), not by slug. In French: envoyer une '
+                               "invitation linkedin, inviter quelqu'un sur linkedin, demande de connexion.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['provider_id'],
@@ -421,7 +433,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'description': 'Send a text message from the connected account in an existing LinkedIn '
                                'conversation, named by its chat id, taken from list_chats. The member on the '
                                'other side receives it at once; it cannot be unsent here. Starting a new '
-                               'conversation is not covered.',
+                               'conversation is not covered. In French: envoyer un message linkedin, '
+                               'répondre sur linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['chat_id', 'text'],
@@ -450,7 +463,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'industry, a skill, a job title… One label often returns several candidates '
                                '("Microsoft Excel": Excel, Microsoft Office…): read the names and keep the '
                                'relevant id. The same ids serve every product, classic, Sales Navigator or '
-                               'Recruiter.',
+                               "Recruiter. In French: identifiant d'un filtre linkedin, code d'une ville "
+                               "linkedin, identifiant d'une entreprise linkedin.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['facet_type', 'keywords'],
@@ -493,7 +507,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'no total: an absent next_cursor does not prove the population is swept. For '
                                'the next page, pass back next_cursor alone, without any other argument: the '
                                'cursor carries the whole search. LinkedIn throttles searches per account: '
-                               'space the calls.',
+                               'space the calls. In French: chercher des personnes sur linkedin, trouver des '
+                               'profils linkedin, recherche de profils.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'keywords': {'type': 'string',
@@ -568,7 +583,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'ids, then search with them; a name instead of an id is refused. Classic '
                                'filters include only, never exclude. For the next page, pass back '
                                'next_cursor alone, without any other argument: the cursor carries the whole '
-                               'search. LinkedIn throttles searches per account: space the calls.',
+                               'search. LinkedIn throttles searches per account: space the calls. In French: '
+                               'chercher des entreprises sur linkedin, trouver des sociétés linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'keywords': {'type': 'string',
@@ -610,7 +626,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'locations and employers are included only. A facet may not be applied by '
                                'LinkedIn without any error: a zero on a faceted search does not prove an '
                                'empty pool. For the next page, pass back next_cursor alone, without any '
-                               'other argument: the cursor carries the whole search.',
+                               'other argument: the cursor carries the whole search. In French: recherche de '
+                               'leads sales navigator, trouver des prospects sales navigator.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'keywords': {'type': 'string',
@@ -689,7 +706,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'first (LOCATION, INDUSTRY), keep the relevant ids, then search with them; a '
                                'name instead of an id is refused. Industries can be included or excluded; '
                                'locations are included only. For the next page, pass back next_cursor alone, '
-                               'without any other argument: the cursor carries the whole search.',
+                               'without any other argument: the cursor carries the whole search. In French: '
+                               'recherche de comptes sales navigator, entreprises cibles sales navigator.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'keywords': {'type': 'string',
@@ -744,7 +762,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'add priority DOESNT_HAVE to exclude it. Industries can be included or '
                                'excluded; locations and employers are included only. Recruiter has no '
                                'companies search. For the next page, pass back next_cursor alone, without '
-                               'any other argument: the cursor carries the whole search.',
+                               'any other argument: the cursor carries the whole search. In French: '
+                               'recherche de candidats recruiter, trouver des candidats linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'keywords': {'type': 'string',
@@ -846,7 +865,9 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                '(linkedin.com/search/results/…): the filters are those of the URL. The '
                                'results can be members, companies, posts or jobs, as the URL says. For the '
                                'next page, pass next_cursor alone to search_people or search_companies, as '
-                               "the URL's target. Prefer the structured search to control the filters.",
+                               "the URL's target. Prefer the structured search to control the filters. In "
+                               "French: lancer une recherche linkedin depuis un lien, résultats d'une url de "
+                               'recherche linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url'],
@@ -874,7 +895,9 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                '(linkedin.com/sales/search/…), under the selected contract: the filters are '
                                'those of the URL. For the next page, pass next_cursor alone to '
                                'search_sales_navigator_people or search_sales_navigator_companies, as the '
-                               "URL's target. Prefer the structured search to control the filters.",
+                               "URL's target. Prefer the structured search to control the filters. In "
+                               "French: lancer une recherche sales navigator depuis un lien, résultats d'une "
+                               'url sales navigator.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url'],
@@ -907,7 +930,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                '(linkedin.com/talent/search/…), under the selected contract: the filters are '
                                'those of the URL. Unreliable: an expired search context makes the call hang '
                                'until it fails; prefer search_recruiter_people. For the next page, pass '
-                               'next_cursor alone to search_recruiter_people.',
+                               'next_cursor alone to search_recruiter_people. In French: lancer une '
+                               "recherche recruiter depuis un lien, résultats d'une url recruiter.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url'],
@@ -941,7 +965,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'class': 'read',
                 'description': 'List the Recruiter and Sales Navigator contracts available to the connected '
                                'account, each with its product, its id and whether it is the selected one. '
-                               'The premium functions act under the selected contract.',
+                               'The premium functions act under the selected contract. In French: contrats '
+                               'sales navigator, contrats recruiter, abonnements linkedin premium.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Available contracts', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/linkedin/contracts'}},
@@ -949,7 +974,9 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'class': 'write',
                 'act': False,
                 'description': 'Select one Recruiter or Sales Navigator contract of the connected account, '
-                               'by its id from list_contracts: the premium calls that follow act under it.',
+                               'by its id from list_contracts: the premium calls that follow act under it. '
+                               'In French: choisir le contrat sales navigator, sélectionner le contrat '
+                               'recruiter.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contract_id'],
@@ -966,7 +993,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                {'name': 'inmail_balance',
                 'class': 'read',
                 'description': 'Get the InMail credit balance of the connected account: the premium messages '
-                               'it can still send to members outside its network.',
+                               'it can still send to members outside its network. In French: crédits inmail '
+                               'restants, solde inmail.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'InMail credits', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/linkedin/inmail-credits'}},
@@ -976,7 +1004,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                                'named by provider id (ACoAA…) or public identifier; the skill by its '
                                'endorsement id, read in the skills section of get_profile (with_sections '
                                'linkedin_skills). The member sees the endorsement at once; it cannot be '
-                               'withdrawn here.',
+                               'withdrawn here. In French: recommander une compétence, valider une '
+                               'compétence linkedin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['profile_id', 'skill_endorsement_id'],
@@ -1006,7 +1035,7 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'class': 'read',
                 'description': 'List the job postings of the connected account, one page at a time: title, '
                                'company, state, number of applications. Pass back next_cursor to read the '
-                               'next page.',
+                               "next page. In French: offres d'emploi publiées, mes annonces linkedin.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',
@@ -1036,7 +1065,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                {'name': 'get_job_posting',
                 'class': 'read',
                 'description': 'Get one job posting of the connected account by its id, from '
-                               'list_job_postings: title, company, location, description, state.',
+                               'list_job_postings: title, company, location, description, state. In French: '
+                               "détail d'une offre d'emploi, annonce linkedin.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['job_id'],
@@ -1055,7 +1085,7 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'class': 'read',
                 'description': 'List the applicants of one job posting of the connected account, one page at '
                                "a time, each with the applicant's profile. Pass back next_cursor to read the "
-                               'next page.',
+                               "next page. In French: candidats d'une offre, candidatures reçues.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['job_id'],
@@ -1098,7 +1128,8 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                {'name': 'get_job_applicant',
                 'class': 'read',
                 'description': 'Get one applicant of a job posting of the connected account, by the job id '
-                               "and the applicant id from list_job_applicants, with the applicant's profile.",
+                               "and the applicant id from list_job_applicants, with the applicant's profile. "
+                               "In French: détail d'un candidat, profil d'un candidat à une offre.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['job_id', 'applicant_id'],
@@ -1125,7 +1156,7 @@ DESCRIPTION = {'connector': {'name': 'linkedin_unipile',
                 'class': 'read',
                 'description': 'List the Recruiter hiring projects of the connected account, one page at a '
                                'time, each with its id, name and owner. Pass back next_cursor to read the '
-                               'next page.',
+                               'next page. In French: projets de recrutement, projets recruiter.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'cursor': {'type': 'string',

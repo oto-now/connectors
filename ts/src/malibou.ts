@@ -6,7 +6,7 @@ export const listCollaborators = defineFunction({
   connector: "malibou",
   class: "read",
   act: false,
-  description: "List the employees (collaborators) of the organization, ordered by last then first name: {data: [{id, status, personnelNumber, firstName, lastName, email, seniorityDate, team, manager, currentContract {id, startDate, natureContrat, estCadre}, ...}], total, page, limit}. Personal fields (social security number, address, phone, bank account) come only when the key holds the details scope. contract_status narrows on today's employment: active (at least one active contract), past (all contracts ended) or future (only an upcoming contract). Pages are numbered from 1; the last page holds fewer than limit items.",
+  description: "List the employees (collaborators) of the organization, ordered by last then first name: {data: [{id, status, personnelNumber, firstName, lastName, email, seniorityDate, team, manager, currentContract {id, startDate, natureContrat, estCadre}, ...}], total, page, limit}. Personal fields (social security number, address, phone, bank account) come only when the key holds the details scope. contract_status narrows on today's employment: active (at least one active contract), past (all contracts ended) or future (only an upcoming contract). Pages are numbered from 1; the last page holds fewer than limit items. In French: lister les salariés, liste des collaborateurs, effectif de l'entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -42,7 +42,7 @@ export const getCollaborator = defineFunction({
   connector: "malibou",
   class: "read",
   act: false,
-  description: "Get one employee by id, unwrapped (no data envelope): identity, contact, seniority, team, manager, current contract, and every contract {contractId, startDate, endDate}. Personal fields (socialSecurityNumber, address, phone, bankAccount, countryOfBirth) come only when the key holds the details scope.",
+  description: "Get one employee by id, unwrapped (no data envelope): identity, contact, seniority, team, manager, current contract, and every contract {contractId, startDate, endDate}. Personal fields (socialSecurityNumber, address, phone, bankAccount, countryOfBirth) come only when the key holds the details scope. In French: fiche d'un salarié, détail d'un collaborateur, contrat d'un salarié.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -72,7 +72,7 @@ export const listAbsences = defineFunction({
   connector: "malibou",
   class: "read",
   act: false,
-  description: "List the absences that overlap a date window (both bounds required, YYYY-MM-DD), ordered by start date: {data: [{id, collaboratorId, startDate, endDate, startHalfDay, endHalfDay, status, type, createdAt}], total, page, limit}. type (the leave code) needs the absence-type scope. status narrows to approved, pending or rejected.",
+  description: "List the absences that overlap a date window (both bounds required, YYYY-MM-DD), ordered by start date: {data: [{id, collaboratorId, startDate, endDate, startHalfDay, endHalfDay, status, type, createdAt}], total, page, limit}. type (the leave code) needs the absence-type scope. status narrows to approved, pending or rejected. In French: absences des salariés, congés de l'équipe, qui est absent.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -118,7 +118,7 @@ export const listWorkLocations = defineFunction({
   connector: "malibou",
   class: "read",
   act: false,
-  description: "List the declared work locations (remote work or on site) that overlap a date window (both bounds required, YYYY-MM-DD), ordered by start date: {data: [{id, collaboratorId, isRemoteWork, location, startDate, endDate, startHalfDay, endHalfDay, status, createdAt}], total, page, limit}. status narrows to approved, pending or rejected.",
+  description: "List the declared work locations (remote work or on site) that overlap a date window (both bounds required, YYYY-MM-DD), ordered by start date: {data: [{id, collaboratorId, isRemoteWork, location, startDate, endDate, startHalfDay, endHalfDay, status, createdAt}], total, page, limit}. status narrows to approved, pending or rejected. In French: télétravail des salariés, qui est en télétravail, lieux de travail déclarés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -163,7 +163,7 @@ export const connector = defineConnector({
   name: "malibou",
   label: "Malibou",
   namespace: "malibou",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "1.11.0",
   baseUrl: "https://app.malibou.com/api/public/v1/organizations/{organization_id}",
   auth: {"kind": "bearer", "token": "api_key"},

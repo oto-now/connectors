@@ -4,7 +4,7 @@ connector:
   name: sellsy
   label: Sellsy
   namespace: sellsy
-  version: 1.0.1
+  version: 1.0.2
   api_version: v2
   base_url: https://api.sellsy.com/v2
   auth:
@@ -42,7 +42,8 @@ functions:
     class: read
     description: >-
       List Sellsy estimates (quotes), one page at a time. Pass the returned
-      pagination.offset as offset to get the next page.
+      pagination.offset as offset to get the next page. In French: lister les
+      devis sellsy, devis en cours, chercher un devis.
     input:
       type: object
       additionalProperties: false
@@ -103,7 +104,8 @@ functions:
   - name: get_estimate
     class: read
     description: >-
-      Get the full record of one Sellsy estimate by its id.
+      Get the full record of one Sellsy estimate by its id. In French: détail
+      d'un devis sellsy, lignes d'un devis.
     input:
       type: object
       additionalProperties: false

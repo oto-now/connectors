@@ -6,7 +6,7 @@ export const listRecords = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "List the records of an object (companies, people, deals, or a custom object, by slug or id), with their attribute values. sort is a list of {attribute, direction asc or desc} (field picks a part of a composite value: last_name of a name). A page holds limit records (500 by default at Attio); advance offset for the next page, until a page is shorter than limit. To filter, use search_records.",
+  description: "List the records of an object (companies, people, deals, or a custom object, by slug or id), with their attribute values. sort is a list of {attribute, direction asc or desc} (field picks a part of a composite value: last_name of a name). A page holds limit records (500 by default at Attio); advance offset for the next page, until a page is shorter than limit. To filter, use search_records. In French: lister les entreprises du crm, lister les personnes du crm, lister les deals.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -65,7 +65,7 @@ export const getRecord = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One record of an object, with every attribute value and its web_url in the Attio app.",
+  description: "One record of an object, with every attribute value and its web_url in the Attio app. In French: fiche d'un enregistrement, lire une fiche entreprise, lire une fiche contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -103,7 +103,7 @@ export const searchRecords = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "Records of an object that match an Attio filter: {attribute slug: value} for equality ({\"email_addresses\": \"ada@acme.example\"}, the check before creating a person; {\"domains\": \"acme.example\"}), or with an operator ({\"name\": {\"$contains\": \"acme\"}}, $eq, $starts_with, $lt, $gte…), combined with $and, $or, $not. A page holds limit records (500 by default at Attio).",
+  description: "Records of an object that match an Attio filter: {attribute slug: value} for equality ({\"email_addresses\": \"ada@acme.example\"}, the check before creating a person; {\"domains\": \"acme.example\"}), or with an operator ({\"name\": {\"$contains\": \"acme\"}}, $eq, $starts_with, $lt, $gte…), combined with $and, $or, $not. A page holds limit records (500 by default at Attio). In French: chercher une entreprise dans le crm, chercher un contact par email, filtrer les deals.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -139,7 +139,7 @@ export const createRecord = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Create a record of an object. values maps each attribute api_slug (from list_attributes) to its value, a list for a multiselect: {\"name\": \"Acme\", \"domains\": [\"acme.example\"]} for a company, {\"email_addresses\": [\"ada@acme.example\"]} for a person. Search before creating: a unique value already taken is refused.",
+  description: "Create a record of an object. values maps each attribute api_slug (from list_attributes) to its value, a list for a multiselect: {\"name\": \"Acme\", \"domains\": [\"acme.example\"]} for a company, {\"email_addresses\": [\"ada@acme.example\"]} for a person. Search before creating: a unique value already taken is refused. In French: créer une entreprise dans le crm, ajouter un contact au crm, créer un deal.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -174,7 +174,7 @@ export const updateRecord = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Change values of a record. values maps each attribute api_slug (from list_attributes) to its value: a single value replaces the one there; for a multiselect (domains, email_addresses), the values given are added to those already there, and [] changes nothing. Attributes not given stay. To replace or empty a multiselect, replace_record_values.",
+  description: "Change values of a record. values maps each attribute api_slug (from list_attributes) to its value: a single value replaces the one there; for a multiselect (domains, email_addresses), the values given are added to those already there, and [] changes nothing. Attributes not given stay. To replace or empty a multiselect, replace_record_values. In French: modifier une fiche, mettre à jour un contact, ajouter un email à un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -214,7 +214,7 @@ export const replaceRecordValues = defineFunction({
   connector: "attio",
   class: "sensitive",
   act: true,
-  description: "Replace values of a record. For each multiselect attribute given (domains, email_addresses), the values given replace those there, which are lost; [] empties it. A single value replaces the one there, as with update_record; attributes not given stay. The way to free a unique value (a domain, an email address) left on a record to be merged: replace that attribute without it, then another record can take it. To add to a multiselect, update_record.",
+  description: "Replace values of a record. For each multiselect attribute given (domains, email_addresses), the values given replace those there, which are lost; [] empties it. A single value replaces the one there, as with update_record; attributes not given stay. The way to free a unique value (a domain, an email address) left on a record to be merged: replace that attribute without it, then another record can take it. To add to a multiselect, update_record. In French: remplacer les valeurs d'une fiche, écraser les emails d'un contact, vider un champ d'une fiche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -255,7 +255,7 @@ export const mergeRecords = defineFunction({
   connector: "attio",
   class: "sensitive",
   act: true,
-  description: "Merge two records of the same object, for good. Attio marks both merged, neither can be read again, and creates a third record whose id is data.new_record_id; where both carry a value, the primary's wins. A 202 answer says the merge goes on in the background (404 merge_in_progress until it ends); replaying it fails (404).",
+  description: "Merge two records of the same object, for good. Attio marks both merged, neither can be read again, and creates a third record whose id is data.new_record_id; where both carry a value, the primary's wins. A 202 answer says the merge goes on in the background (404 merge_in_progress until it ends); replaying it fails (404). In French: fusionner deux fiches, fusionner des doublons.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -299,7 +299,7 @@ export const deleteRecord = defineFunction({
   connector: "attio",
   class: "sensitive",
   act: true,
-  description: "Delete a record of an object, for good, with its entries in lists.",
+  description: "Delete a record of an object, for good, with its entries in lists. In French: supprimer une fiche, supprimer un contact du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -338,7 +338,7 @@ export const listNotes = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "List notes, oldest first: Attio has no sort and no date filter here. parent_object and parent_record_id together restrict to the notes of one record, the cheaper way to the recent ones. A page holds limit notes, 10 by default, at most 50; advance offset until a page is shorter than limit. The content of a note comes with get_note.",
+  description: "List notes, oldest first: Attio has no sort and no date filter here. parent_object and parent_record_id together restrict to the notes of one record, the cheaper way to the recent ones. A page holds limit notes, 10 by default, at most 50; advance offset until a page is shorter than limit. The content of a note comes with get_note. In French: lister les notes, notes d'une fiche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -384,7 +384,7 @@ export const getNote = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One note, with its title, its content in plain text and markdown, its parent record and its creator.",
+  description: "One note, with its title, its content in plain text and markdown, its parent record and its creator. In French: lire une note, contenu d'une note.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -417,7 +417,7 @@ export const createNote = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Add a note to a record: a title and a content in markdown. Attio does not edit a note afterwards; delete_note removes it.",
+  description: "Add a note to a record: a title and a content in markdown. Attio does not edit a note afterwards; delete_note removes it. In French: ajouter une note, créer une note sur une fiche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -458,7 +458,7 @@ export const deleteNote = defineFunction({
   connector: "attio",
   class: "sensitive",
   act: true,
-  description: "Delete a note, for good. Attio does not edit a note's content.",
+  description: "Delete a note, for good. Attio does not edit a note's content. In French: supprimer une note, effacer une note.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -492,7 +492,7 @@ export const listTasks = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "List tasks: content, deadline, completion, assignees, linked records. completed filters on completion. sort: created_at:asc (Attio's default, oldest first), created_at:desc (newest first, the way to read recent tasks: there is no date filter), completed_at:asc or completed_at:desc. A page holds limit tasks, 500 by default, at most 1000; advance offset for the next page.",
+  description: "List tasks: content, deadline, completion, assignees, linked records. completed filters on completion. sort: created_at:asc (Attio's default, oldest first), created_at:desc (newest first, the way to read recent tasks: there is no date filter), completed_at:asc or completed_at:desc. A page holds limit tasks, 500 by default, at most 1000; advance offset for the next page. In French: lister les tâches, tâches à faire, tâches non terminées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -531,7 +531,7 @@ export const getTask = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One task, with its content, deadline, completion, assignees and linked records.",
+  description: "One task, with its content, deadline, completion, assignees and linked records. In French: lire une tâche, détail d'une tâche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -564,7 +564,7 @@ export const deleteTask = defineFunction({
   connector: "attio",
   class: "sensitive",
   act: true,
-  description: "Delete a task, for good.",
+  description: "Delete a task, for good. In French: supprimer une tâche, effacer une tâche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -598,7 +598,7 @@ export const listLists = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "List the lists this token can reach (saved collections of records of one object, a pipeline), with their id, api_slug and parent object.",
+  description: "List the lists this token can reach (saved collections of records of one object, a pipeline), with their id, api_slug and parent object. In French: lister les listes, lister les pipelines.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The lists", input: {} },
@@ -620,7 +620,7 @@ export const getList = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One list, by id or api_slug, with its parent object and its access settings.",
+  description: "One list, by id or api_slug, with its parent object and its access settings. In French: détail d'une liste, lire un pipeline.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -653,7 +653,7 @@ export const listListViews = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The saved views of a list (a table or a kanban, and their filters).",
+  description: "The saved views of a list (a table or a kanban, and their filters). In French: vues d'une liste, vues kanban d'un pipeline.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -686,7 +686,7 @@ export const createList = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Create a list of records of one object (a pipeline). api_slug is its key in the API, in snake case. workspace_access is the level of every workspace member: full-access, read-and-write, read-only, or null for none; workspace_member_access gives members their own level, [] for none.",
+  description: "Create a list of records of one object (a pipeline). api_slug is its key in the API, in snake case. workspace_access is the level of every workspace member: full-access, read-and-write, read-only, or null for none; workspace_member_access gives members their own level, [] for none. In French: créer une liste, créer un pipeline.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -738,7 +738,7 @@ export const updateList = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Change a list's name, api_slug or access levels (as create_list says them); only what is given changes.",
+  description: "Change a list's name, api_slug or access levels (as create_list says them); only what is given changes. In French: renommer une liste, modifier les accès d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -792,7 +792,7 @@ export const queryEntries = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The entries of a list: each one a record in the list, with the list's own attribute values (a stage, an owner). filter is an Attio filter on the entry's attributes ({\"stage\": \"Won\"}), or on its parent record through path. sorts is a list of {attribute, direction asc or desc}. A page holds limit entries (500 by default at Attio); advance offset for the next page.",
+  description: "The entries of a list: each one a record in the list, with the list's own attribute values (a stage, an owner). filter is an Attio filter on the entry's attributes ({\"stage\": \"Won\"}), or on its parent record through path. sorts is a list of {attribute, direction asc or desc}. A page holds limit entries (500 by default at Attio); advance offset for the next page. In French: entrées d'une liste, deals d'un pipeline par étape, filtrer les entrées d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -852,7 +852,7 @@ export const getEntry = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One entry of a list, with its parent record and the list's attribute values.",
+  description: "One entry of a list, with its parent record and the list's attribute values. In French: lire une entrée de liste, détail d'une entrée de pipeline.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -890,7 +890,7 @@ export const createEntry = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Add a record to a list, as a new entry. entry_values maps the list's own attributes (api_slug from list_attributes, target lists) to their values, {} for none: {\"stage\": \"Lead\"}.",
+  description: "Add a record to a list, as a new entry. entry_values maps the list's own attributes (api_slug from list_attributes, target lists) to their values, {} for none: {\"stage\": \"Lead\"}. In French: ajouter une fiche à une liste, mettre un deal dans un pipeline.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -938,7 +938,7 @@ export const updateEntry = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Change values of a list entry. entry_values maps the list's own attributes (api_slug from list_attributes, target lists) to their values: a single value replaces the one there ({\"stage\": \"Won\"}); for a multiselect, the values given are added to those already there, and [] changes nothing. Attributes not given stay. To replace or empty a multiselect, replace_entry_values.",
+  description: "Change values of a list entry. entry_values maps the list's own attributes (api_slug from list_attributes, target lists) to their values: a single value replaces the one there ({\"stage\": \"Won\"}); for a multiselect, the values given are added to those already there, and [] changes nothing. Attributes not given stay. To replace or empty a multiselect, replace_entry_values. In French: changer l'étape d'un deal, modifier une entrée de liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -982,7 +982,7 @@ export const replaceEntryValues = defineFunction({
   connector: "attio",
   class: "sensitive",
   act: true,
-  description: "Replace values of a list entry. For each multiselect attribute of the list given, the values given replace those there, which are lost; [] empties it. A single value replaces the one there, as with update_entry; attributes not given stay. To add to a multiselect, update_entry.",
+  description: "Replace values of a list entry. For each multiselect attribute of the list given, the values given replace those there, which are lost; [] empties it. A single value replaces the one there, as with update_entry; attributes not given stay. To add to a multiselect, update_entry. In French: remplacer les valeurs d'une entrée, écraser les valeurs d'une entrée de liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1027,7 +1027,7 @@ export const deleteEntry = defineFunction({
   connector: "attio",
   class: "sensitive",
   act: true,
-  description: "Remove an entry from its list, with the list's values on it; the record itself stays.",
+  description: "Remove an entry from its list, with the list's values on it; the record itself stays. In French: retirer une fiche d'une liste, sortir un deal d'un pipeline.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1066,7 +1066,7 @@ export const listWorkspaceMembers = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "List the people with access to the workspace: id, name, email, access level. An id is what a task's assignee and a comment's author take. The address of an avatar picture is never given.",
+  description: "List the people with access to the workspace: id, name, email, access level. An id is what a task's assignee and a comment's author take. The address of an avatar picture is never given. In French: lister les membres de l'espace, lister les utilisateurs attio.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The workspace members", input: {} },
@@ -1089,7 +1089,7 @@ export const getWorkspaceMember = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One workspace member, by id. The address of an avatar picture is never given.",
+  description: "One workspace member, by id. The address of an avatar picture is never given. In French: détail d'un membre, lire un membre de l'espace.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1123,7 +1123,7 @@ export const getComment = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One comment, with its thread, its author, its content and the record or entry it is on.",
+  description: "One comment, with its thread, its author, its content and the record or entry it is on. In French: lire un commentaire, détail d'un commentaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1156,7 +1156,7 @@ export const createComment = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Reply in an existing thread of comments, in plain text, as a workspace member (author_id, from list_workspace_members). A comment's thread_id comes with get_comment.",
+  description: "Reply in an existing thread of comments, in plain text, as a workspace member (author_id, from list_workspace_members). A comment's thread_id comes with get_comment. In French: répondre à un commentaire, ajouter un commentaire dans un fil.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1196,7 +1196,7 @@ export const deleteComment = defineFunction({
   connector: "attio",
   class: "sensitive",
   act: true,
-  description: "Delete a comment, for good; deleting the first comment of a thread deletes the whole thread.",
+  description: "Delete a comment, for good; deleting the first comment of a thread deletes the whole thread. In French: supprimer un commentaire, effacer un fil de commentaires.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1230,7 +1230,7 @@ export const getThread = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One thread of comments, with its comments in order.",
+  description: "One thread of comments, with its comments in order. In French: lire un fil de commentaires, commentaires d'un fil.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1263,7 +1263,7 @@ export const listMeetings = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "List the meetings synced into Attio: title, start, end, participants, linked records. The only date window of Attio's lists: ends_from (meetings ending from this ISO 8601 timestamp, inclusive) and starts_before (starting before it, exclusive). sort: start_asc (default) or start_desc. A page holds limit meetings, 50 by default, at most 200; pagination.next_cursor, passed back as cursor, gives the next one.",
+  description: "List the meetings synced into Attio: title, start, end, participants, linked records. The only date window of Attio's lists: ends_from (meetings ending from this ISO 8601 timestamp, inclusive) and starts_before (starting before it, exclusive). sort: start_asc (default) or start_desc. A page holds limit meetings, 50 by default, at most 200; pagination.next_cursor, passed back as cursor, gives the next one. In French: lister les réunions, rendez-vous synchronisés, réunions de la semaine.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1315,7 +1315,7 @@ export const getMeeting = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One meeting, with its participants and linked records.",
+  description: "One meeting, with its participants and linked records. In French: détail d'une réunion, participants d'une réunion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1348,7 +1348,7 @@ export const listCallRecordings = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The call recordings of a meeting, first page: id, status (processing, completed, failed), creator. The transcript comes with get_call_recording_transcript. A video address is never given.",
+  description: "The call recordings of a meeting, first page: id, status (processing, completed, failed), creator. The transcript comes with get_call_recording_transcript. A video address is never given. In French: enregistrements d'une réunion, lister les enregistrements d'appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1382,7 +1382,7 @@ export const getCallRecording = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One call recording of a meeting: status, creator, its web_url in the Attio app. The short-lived video download address is never given: anyone holding it sees the video.",
+  description: "One call recording of a meeting: status, creator, its web_url in the Attio app. The short-lived video download address is never given: anyone holding it sees the video. In French: détail d'un enregistrement d'appel, statut d'un enregistrement d'appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1421,7 +1421,7 @@ export const getCallRecordingTranscript = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The transcript of a call recording, one page at a time: segments with speech, start and end times in seconds and the speaker's name, and the raw transcript as text. A long call spans several pages: pagination.next_cursor, passed back as cursor, gives the next one; null on the last page.",
+  description: "The transcript of a call recording, one page at a time: segments with speech, start and end times in seconds and the speaker's name, and the raw transcript as text. A long call spans several pages: pagination.next_cursor, passed back as cursor, gives the next one; null on the last page. In French: transcription d'un appel, transcription d'une réunion.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1465,7 +1465,7 @@ export const listObjects = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "List the objects of the workspace, standard (companies, people, deals) and custom, with their id and api_slug. Read it before writing to a custom object, never guess its slug.",
+  description: "List the objects of the workspace, standard (companies, people, deals) and custom, with their id and api_slug. Read it before writing to a custom object, never guess its slug. In French: lister les objets du crm, objets personnalisés attio.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The objects", input: {} },
@@ -1487,7 +1487,7 @@ export const getObject = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One object, by id or api_slug, with its singular and plural nouns.",
+  description: "One object, by id or api_slug, with its singular and plural nouns. In French: détail d'un objet, lire un objet du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1520,7 +1520,7 @@ export const listObjectViews = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The saved views of an object (a table or a kanban, and their filters).",
+  description: "The saved views of an object (a table or a kanban, and their filters). In French: vues d'un objet, vues enregistrées d'un objet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1553,7 +1553,7 @@ export const listAttributes = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The attributes of an object (target objects) or of a list (target lists): title, api_slug, type, whether required, unique, multiselect, and their config. The api_slug is the key of a value in a record or an entry, and of a filter.",
+  description: "The attributes of an object (target objects) or of a list (target lists): title, api_slug, type, whether required, unique, multiselect, and their config. The api_slug is the key of a value in a record or an entry, and of a filter. In French: lister les attributs, champs d'un objet, colonnes d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1588,7 +1588,7 @@ export const getAttribute = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "One attribute of an object or a list, by id or api_slug.",
+  description: "One attribute of an object or a list, by id or api_slug. In French: détail d'un attribut, lire un champ du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1627,7 +1627,7 @@ export const listAttributeOptions = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The options of a select attribute, with their id and title.",
+  description: "The options of a select attribute, with their id and title. In French: options d'un champ de sélection, valeurs d'une liste déroulante.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1666,7 +1666,7 @@ export const listAttributeStatuses = defineFunction({
   connector: "attio",
   class: "read",
   act: false,
-  description: "The statuses of a status attribute (the stages of a deal or a pipeline), with their id and title.",
+  description: "The statuses of a status attribute (the stages of a deal or a pipeline), with their id and title. In French: étapes d'un pipeline, statuts d'un deal.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1705,7 +1705,7 @@ export const createAttribute = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Add an attribute to an object or a list. definition gives title, description (or null), api_slug (snake case), type (text, number, checkbox, currency, date, timestamp, rating, status, select, record-reference, actor-reference, location, domain, email-address, phone-number), is_required, is_unique, is_multiselect and config (empty {} for most types; currency and record-reference have theirs). Attio has no delete for an attribute: it can only be archived, in the app.",
+  description: "Add an attribute to an object or a list. definition gives title, description (or null), api_slug (snake case), type (text, number, checkbox, currency, date, timestamp, rating, status, select, record-reference, actor-reference, location, domain, email-address, phone-number), is_required, is_unique, is_multiselect and config (empty {} for most types; currency and record-reference have theirs). Attio has no delete for an attribute: it can only be archived, in the app. In French: créer un attribut, ajouter un champ personnalisé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1784,7 +1784,7 @@ export const createAttributeOption = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Add an option to a select attribute of an object or a list. Attio deletes no option; it can only be archived.",
+  description: "Add an option to a select attribute of an object or a list. Attio deletes no option; it can only be archived. In French: ajouter une option de sélection, nouvelle valeur de liste déroulante.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1824,7 +1824,7 @@ export const createAttributeStatus = defineFunction({
   connector: "attio",
   class: "write",
   act: true,
-  description: "Add a status to a status attribute (a stage of a deal or a pipeline). Attio deletes no status; it can only be archived.",
+  description: "Add a status to a status attribute (a stage of a deal or a pipeline). Attio deletes no status; it can only be archived. In French: ajouter une étape de pipeline, créer un statut de deal.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1863,7 +1863,7 @@ export const connector = defineConnector({
   name: "attio",
   label: "Attio",
   namespace: "attio",
-  version: "1.3.0",
+  version: "1.3.1",
   apiVersion: "v2",
   baseUrl: "https://api.attio.com/v2",
   auth: {"kind": "bearer", "token": "api_key"},

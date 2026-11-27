@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'dropcontact',
                'label': 'Dropcontact',
                'namespace': 'dropcontact',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1',
                'base_url': 'https://api.dropcontact.com/v1',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'X-Access-Token', 'key': 'api_key'},
@@ -55,7 +55,9 @@ DESCRIPTION = {'connector': {'name': 'dropcontact',
                                'finds the professional email (qualified), phones, job, company website and '
                                'LinkedIn; with siren, French company data (SIREN, SIRET, VAT, NAF, address, '
                                'leader). Pay on success: 1 credit per contact whose verified email is '
-                               'returned, or whose email sent in is verified.',
+                               'returned, or whose email sent in is verified. In French: enrichir des '
+                               "contacts, trouver l'email d'un contact, lancer un enrichissement "
+                               'dropcontact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contacts'],
@@ -183,7 +185,8 @@ DESCRIPTION = {'connector': {'name': 'dropcontact',
                                "country, with siren the company's siren, siret, address, vat, naf5_code, "
                                'nb_employees, and custom_fields. A contact with nothing found comes back as '
                                'sent. force_results returns the partial result now, unprocessed contacts as '
-                               'sent. Free.',
+                               "sent. Free. In French: résultat d'un enrichissement, récupérer les contacts "
+                               'enrichis.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['request_id'],
@@ -207,7 +210,8 @@ DESCRIPTION = {'connector': {'name': 'dropcontact',
                {'name': 'check_credits',
                 'class': 'read',
                 'description': 'The credits left on the Dropcontact account behind this key: {credits_left}. '
-                               'Sends one empty contact, which Dropcontact does not bill. Free.',
+                               'Sends one empty contact, which Dropcontact does not bill. Free. In French: '
+                               'crédits restants dropcontact, solde de crédits dropcontact.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The credits left', 'input': {}}],
                 'call': {'method': 'POST', 'path': '/enrich/all', 'constants': {'body': {'data': [{}]}}}}]}

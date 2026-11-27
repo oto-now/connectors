@@ -6,7 +6,7 @@ export const listMessages = defineFunction({
   connector: "microsoft_app",
   class: "read",
   act: false,
-  description: "List the messages of the account's mailbox, every folder included, newest first unless orderby says otherwise: {value: [{id, subject, from, toRecipients, receivedDateTime, isRead, hasAttachments, bodyPreview, body, parentFolderId, conversationId, webLink}]}; bodies come as text. search is a KQL query in double quotes (\"from:dupont subject:invoice\"), ranked by relevance; it cannot be combined with filter, orderby or skip. filter is OData (receivedDateTime ge 2026-10-01T00:00:00Z and hasAttachments eq true); a property in orderby must also come first in filter. Needs the application permission Mail.Read. Granted in Microsoft Entra, it opens every mailbox of the tenant to the application, not only this account's, unless the admin grants it through Exchange RBAC for Applications and removes it from Entra.",
+  description: "List the messages of the account's mailbox, every folder included, newest first unless orderby says otherwise: {value: [{id, subject, from, toRecipients, receivedDateTime, isRead, hasAttachments, bodyPreview, body, parentFolderId, conversationId, webLink}]}; bodies come as text. search is a KQL query in double quotes (\"from:dupont subject:invoice\"), ranked by relevance; it cannot be combined with filter, orderby or skip. filter is OData (receivedDateTime ge 2026-10-01T00:00:00Z and hasAttachments eq true); a property in orderby must also come first in filter. Needs the application permission Mail.Read. Granted in Microsoft Entra, it opens every mailbox of the tenant to the application, not only this account's, unless the admin grants it through Exchange RBAC for Applications and removes it from Entra. In French: lister les emails, mails reçus, chercher un email dans outlook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -83,7 +83,7 @@ export const listFolderMessages = defineFunction({
   connector: "microsoft_app",
   class: "read",
   act: false,
-  description: "List the messages of one folder of the account's mailbox, same answer and query rules as list_messages. folder is a folder id or a well-known name: inbox, sentitems, drafts, deleteditems, archive, junkemail.",
+  description: "List the messages of one folder of the account's mailbox, same answer and query rules as list_messages. folder is a folder id or a well-known name: inbox, sentitems, drafts, deleteditems, archive, junkemail. In French: emails d'un dossier, mails de la boîte de réception, emails envoyés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -165,7 +165,7 @@ export const getMessage = defineFunction({
   connector: "microsoft_app",
   class: "read",
   act: false,
-  description: "Get one message of the account's mailbox by id: subject, from, sender, toRecipients, ccRecipients, receivedDateTime, sentDateTime, body (as text), hasAttachments, internetMessageId, conversationId, webLink. Needs Mail.Read (application).",
+  description: "Get one message of the account's mailbox by id: subject, from, sender, toRecipients, ccRecipients, receivedDateTime, sentDateTime, body (as text), hasAttachments, internetMessageId, conversationId, webLink. Needs Mail.Read (application). In French: lire un email, contenu d'un mail outlook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -228,7 +228,7 @@ export const listAttachments = defineFunction({
   connector: "microsoft_app",
   class: "read",
   act: false,
-  description: "List the attachments of one message, metadata only: {value: [{id, name, contentType, size, isInline, lastModifiedDateTime}]}; size is in bytes. The content is not returned. Needs Mail.Read (application).",
+  description: "List the attachments of one message, metadata only: {value: [{id, name, contentType, size, isInline, lastModifiedDateTime}]}; size is in bytes. The content is not returned. Needs Mail.Read (application). In French: pièces jointes d'un email, lister les pièces jointes d'un mail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -260,7 +260,7 @@ export const createDraft = defineFunction({
   connector: "microsoft_app",
   class: "write",
   act: false,
-  description: "Create a draft in the Drafts folder of the account's mailbox, without sending it, and return it with its id and webLink, where someone can review and send it from Outlook. Needs Mail.ReadWrite (application).",
+  description: "Create a draft in the Drafts folder of the account's mailbox, without sending it, and return it with its id and webLink, where someone can review and send it from Outlook. Needs Mail.ReadWrite (application). In French: créer un brouillon, préparer un email, rédiger un brouillon outlook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -351,7 +351,7 @@ export const sendMail = defineFunction({
   connector: "microsoft_app",
   class: "sensitive",
   act: true,
-  description: "Send an email from the account's mailbox, at once: it leaves for its recipients and, unless save_to_sent_items is false, is kept in Sent Items. Nothing is returned (202). Prefer create_draft when a person should read it first. Needs the application permission Mail.Send. Granted in Microsoft Entra, it lets the application send as any mailbox of the tenant, not only this account's, unless the admin grants it through Exchange RBAC for Applications and removes it from Entra.",
+  description: "Send an email from the account's mailbox, at once: it leaves for its recipients and, unless save_to_sent_items is false, is kept in Sent Items. Nothing is returned (202). Prefer create_draft when a person should read it first. Needs the application permission Mail.Send. Granted in Microsoft Entra, it lets the application send as any mailbox of the tenant, not only this account's, unless the admin grants it through Exchange RBAC for Applications and removes it from Entra. In French: envoyer un email, envoyer un mail outlook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -480,7 +480,7 @@ export const connector = defineConnector({
   name: "microsoft_app",
   label: "Microsoft 365 mail (application access)",
   namespace: "microsoft_app",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v1.0",
   baseUrl: "https://graph.microsoft.com/v1.0/users/{mailbox}",
   auth: {

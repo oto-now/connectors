@@ -6,7 +6,7 @@ export const listCampaigns = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List one page of the team's campaigns (at most 100): id, name, status, senders, labels, timezone, creation, errors, with a pagination object (nextPage). A campaign can hold several statuses at once (paused with errors): status filters, it does not partition. Pass page for the next page.",
+  description: "List one page of the team's campaigns (at most 100): id, name, status, senders, labels, timezone, creation, errors, with a pagination object (nextPage). A campaign can hold several statuses at once (paused with errors): status filters, it does not partition. Pass page for the next page. In French: lister les campagnes, campagnes lemlist en cours.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -40,7 +40,7 @@ export const getCampaign = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Get one campaign: settings, senders, sequenceId and scheduleIds, the status shown in the app.",
+  description: "Get one campaign: settings, senders, sequenceId and scheduleIds, the status shown in the app. In French: détail d'une campagne, paramètres d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -67,7 +67,7 @@ export const createCampaign = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Create a campaign, with an empty sequence and a default schedule; the answer gives sequenceId and scheduleIds. A campaign created by the API is born running, not as a draft: it sends nothing until it has a sender, a step and a launched lead. Call pause_campaign right after to build it quietly.",
+  description: "Create a campaign, with an empty sequence and a default schedule; the answer gives sequenceId and scheduleIds. A campaign created by the API is born running, not as a draft: it sends nothing until it has a sender, a step and a launched lead. Call pause_campaign right after to build it quietly. In French: créer une campagne, nouvelle campagne de prospection.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -101,7 +101,7 @@ export const startCampaign = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Start, in practice resume, a paused campaign: from here lemlist walks the sequence and sends to every launched lead. A campaign created by the API is already running: lemlist answers 400 \"already running\". Read get_campaign_statutes first: a level 3 statute blocks the launch.",
+  description: "Start, in practice resume, a paused campaign: from here lemlist walks the sequence and sends to every launched lead. A campaign created by the API is already running: lemlist answers 400 \"already running\". Read get_campaign_statutes first: a level 3 statute blocks the launch. In French: démarrer une campagne, reprendre une campagne en pause.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -129,7 +129,7 @@ export const pauseCampaign = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Pause a running campaign: it stops advancing; already scheduled messages are not recalled. This is the switch that decides whether a campaign can send. A campaign that is not running gets 400.",
+  description: "Pause a running campaign: it stops advancing; already scheduled messages are not recalled. This is the switch that decides whether a campaign can send. A campaign that is not running gets 400. In French: mettre en pause une campagne, arrêter une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -156,7 +156,7 @@ export const duplicateCampaign = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Copy a campaign, sequence steps, schedules and AI templates included; the copy is paused, without leads. Without name, lemlist appends \" Copy\" to the original name.",
+  description: "Copy a campaign, sequence steps, schedules and AI templates included; the copy is paused, without leads. Without name, lemlist appends \" Copy\" to the original name. In French: dupliquer une campagne, copier une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -186,7 +186,7 @@ export const updateCampaign = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Change the settings of a campaign: only the keys given in data change. Its name, its senders (sendUserIds replaces the sender pool, with the first account of each channel type of each user: to choose the mailboxes, replace_campaign_senders), the stop rules, the tracking, the AI handling of replies, and what happens to a lead on a reply, a click or a booked meeting. Auto-review is not set here: it turns adding a lead into a send.",
+  description: "Change the settings of a campaign: only the keys given in data change. Its name, its senders (sendUserIds replaces the sender pool, with the first account of each channel type of each user: to choose the mailboxes, replace_campaign_senders), the stop rules, the tracking, the AI handling of replies, and what happens to a lead on a reply, a click or a booked meeting. Auto-review is not set here: it turns adding a lead into a send. In French: modifier une campagne, renommer une campagne, changer les paramètres d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -333,7 +333,7 @@ export const getCampaignSenders = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The sender pool of a campaign: its strategy, whether it is read-only, and each sender (userId, email) with its enabled channels (type, id of the mailbox or account, alias) and their diagnostics.",
+  description: "The sender pool of a campaign: its strategy, whether it is read-only, and each sender (userId, email) with its enabled channels (type, id of the mailbox or account, alias) and their diagnostics. In French: expéditeurs d'une campagne, boîtes d'envoi d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -360,7 +360,7 @@ export const addCampaignSenders = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Add senders and channels to the sender pool of a campaign; nothing is removed. A sender without channels gets every healthy account of each channel type the steps use; name the mailboxes to choose them.",
+  description: "Add senders and channels to the sender pool of a campaign; nothing is removed. A sender without channels gets every healthy account of each channel type the steps use; name the mailboxes to choose them. In French: ajouter un expéditeur à une campagne, ajouter une boîte d'envoi à une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -424,7 +424,7 @@ export const replaceCampaignSenders = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Replace the whole sender pool of a campaign: a sender or a channel left out is removed, an empty list clears the pool. impact.contactedLeads counts the contacted leads that keep a removed sender.",
+  description: "Replace the whole sender pool of a campaign: a sender or a channel left out is removed, an empty list clears the pool. impact.contactedLeads counts the contacted leads that keep a removed sender. In French: remplacer les expéditeurs d'une campagne, changer les boîtes d'envoi d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -488,7 +488,7 @@ export const getCampaignStatutes = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The validation statutes of a campaign, from the engine of the lemlist app: {name, status, statutes: [{type, level, message, category}]}. Level 3 blocks a launch (no sender, broken DNS), 2 is a warning, 1 is information. Read it before start_campaign.",
+  description: "The validation statutes of a campaign, from the engine of the lemlist app: {name, status, statutes: [{type, level, message, category}]}. Level 3 blocks a launch (no sender, broken DNS), 2 is a warning, 1 is information. Read it before start_campaign. In French: vérifier une campagne avant lancement, erreurs bloquantes d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -515,7 +515,7 @@ export const getSequences = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The sequences of a campaign: a map from sequence id to its level and steps (type, delay, subject and message of an email, branches of a conditional step).",
+  description: "The sequences of a campaign: a map from sequence id to its level and steps (type, delay, subject and message of an email, branches of a conditional step). In French: étapes d'une campagne, séquence d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -542,7 +542,7 @@ export const deleteStep = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete a step from a sequence. lemlist refuses it (400) while the campaign is running: pause it first.",
+  description: "Delete a step from a sequence. lemlist refuses it (400) while the campaign is running: pause it first. In French: supprimer une étape de séquence, retirer une étape d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -573,7 +573,7 @@ export const addStep = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Add a step, or a condition, to a sequence (get_sequences gives the sequence id). type is required; the other keys depend on it: subject and message for an email, message for a LinkedIn message, WhatsApp or SMS, title for a manual task, method and url for an api step (lemlist calls that address for each lead), conditionKey and delayType for a condition, campaignId for a move to another campaign. On a campaign leads have entered, the new step reaches them: it sends to real people.",
+  description: "Add a step, or a condition, to a sequence (get_sequences gives the sequence id). type is required; the other keys depend on it: subject and message for an email, message for a LinkedIn message, WhatsApp or SMS, title for a manual task, method and url for an api step (lemlist calls that address for each lead), conditionKey and delayType for a condition, campaignId for a move to another campaign. On a campaign leads have entered, the new step reaches them: it sends to real people. In French: ajouter une étape à une séquence, ajouter un email de relance.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -714,7 +714,7 @@ export const updateStep = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Change a step of a sequence: only the keys given in data change. type is required and must be the step's own kind: it says the step's shape, it does not convert it. images and videos replace what the step carries ([] clears them). It changes what the leads going through the step receive, and where an api step calls.",
+  description: "Change a step of a sequence: only the keys given in data change. type is required and must be the step's own kind: it says the step's shape, it does not convert it. images and videos replace what the step carries ([] clears them). It changes what the leads going through the step receive, and where an api step calls. In French: modifier une étape de séquence, changer le texte d'un email de la séquence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -851,7 +851,7 @@ export const createAbVariant = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Create variant B of an email step, prefilled from A, and start the A/B split: from here the leads going through the step are shared between A and B. Email Pro plan.",
+  description: "Create variant B of an email step, prefilled from A, and start the A/B split: from here the leads going through the step are shared between A and B. Email Pro plan. In French: créer une variante b, lancer un test ab sur un email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -882,7 +882,7 @@ export const getAbVariant = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Read variant B (subject, message, settings) of an email step's A/B test.",
+  description: "Read variant B (subject, message, settings) of an email step's A/B test. In French: lire la variante b, contenu du test ab.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -912,7 +912,7 @@ export const updateAbVariant = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Change variant B of an email step's A/B test: only the keys given in data change.",
+  description: "Change variant B of an email step's A/B test: only the keys given in data change. In French: modifier la variante b, changer le test ab.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -959,7 +959,7 @@ export const deleteAbVariant = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "End an A/B test by dropping one variant: B drops variant B; A drops A and promotes B, the step keeping B's content.",
+  description: "End an A/B test by dropping one variant: B drops variant B; A drops A and promotes B, the step keeping B's content. In French: arrêter un test ab, supprimer une variante du test ab.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -991,7 +991,7 @@ export const selectAbWinner = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Pick the winning variant of an A/B test: its template is then sent to every remaining lead going through the step.",
+  description: "Pick the winning variant of an A/B test: its template is then sent to every remaining lead going through the step. In French: choisir le gagnant d'un test ab, désigner la variante gagnante.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1023,7 +1023,7 @@ export const listSchedules = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the team's schedules (sending windows: days, hours, time zone, pacing), one page: {schedules: [...], pagination}. A schedule belongs to the team; several campaigns can share one.",
+  description: "List the team's schedules (sending windows: days, hours, time zone, pacing), one page: {schedules: [...], pagination}. A schedule belongs to the team; several campaigns can share one. In French: lister les plannings d'envoi, créneaux d'envoi de l'équipe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1053,7 +1053,7 @@ export const getSchedule = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Get one schedule.",
+  description: "Get one schedule. In French: détail d'un planning d'envoi, lire un planning d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1080,7 +1080,7 @@ export const createSchedule = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Create a sending window: the days (1 Monday to 7 Sunday), the hours (HH:mm, 24 h) in an IANA time zone, and optionally the pacing between two sends (lemlist's default 1200 s) and whether the team sees it as a template. Attach it to a campaign with associate_schedule.",
+  description: "Create a sending window: the days (1 Monday to 7 Sunday), the hours (HH:mm, 24 h) in an IANA time zone, and optionally the pacing between two sends (lemlist's default 1200 s) and whether the team sees it as a template. Attach it to a campaign with associate_schedule. In French: créer un planning d'envoi, définir les horaires d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1125,7 +1125,7 @@ export const updateSchedule = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Change a schedule: only the keys given in data change, with the vocabulary of create_schedule. Every campaign that uses it follows.",
+  description: "Change a schedule: only the keys given in data change, with the vocabulary of create_schedule. Every campaign that uses it follows. In French: modifier un planning d'envoi, changer les horaires d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1178,7 +1178,7 @@ export const deleteSchedule = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete a schedule; the campaigns that use it lose that sending window.",
+  description: "Delete a schedule; the campaigns that use it lose that sending window. In French: supprimer un planning d'envoi, effacer un créneau d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1206,7 +1206,7 @@ export const getCampaignSchedules = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The schedules attached to a campaign.",
+  description: "The schedules attached to a campaign. In French: plannings d'une campagne, horaires d'envoi d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1233,7 +1233,7 @@ export const associateSchedule = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Attach an existing schedule to a campaign.",
+  description: "Attach an existing schedule to a campaign. In French: associer un planning à une campagne, attacher des horaires d'envoi à une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1263,7 +1263,7 @@ export const deleteLead = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Take a lead out of a campaign. Without action, lemlist UNSUBSCRIBES the lead (it stays in the campaign, marked unsubscribed); action remove deletes it from the campaign.",
+  description: "Take a lead out of a campaign. Without action, lemlist UNSUBSCRIBES the lead (it stays in the campaign, marked unsubscribed); action remove deletes it from the campaign. In French: retirer un lead d'une campagne, désinscrire un prospect d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1300,7 +1300,7 @@ export const getLead = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Look a lead up by id or by email: its campaigns, state and variables. Give lead_id or email.",
+  description: "Look a lead up by id or by email: its campaigns, state and variables. Give lead_id or email. In French: fiche d'un lead, retrouver un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1331,7 +1331,7 @@ export const getLeadByEmail = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Look a lead up by its email address, the same object as get_lead.",
+  description: "Look a lead up by its email address, the same object as get_lead. In French: chercher un lead par email, retrouver un prospect par son email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1361,7 +1361,7 @@ export const getCampaignLeads = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The leads of a campaign with their state, as JSON. state filters on the lead state.",
+  description: "The leads of a campaign with their state, as JSON. state filters on the lead state. In French: leads d'une campagne, prospects d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1396,7 +1396,7 @@ export const createLead = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Create a lead in a campaign, never updating one: the answer carries its _id (launch_lead, update_lead). Every field is optional for lemlist, though a lead without an email, a LinkedIn URL or a phone is reached by no step. Any key besides lemlist's fields is a custom variable of the lead, a text, used as {{name}} in the messages. In a campaign with auto review, the lead is launched and sent to; otherwise it waits for launch_lead. lemlist refuses a lead already in this campaign or, with deduplicate, in another one. The enrichment flags spend lemlist credits.",
+  description: "Create a lead in a campaign, never updating one: the answer carries its _id (launch_lead, update_lead). Every field is optional for lemlist, though a lead without an email, a LinkedIn URL or a phone is reached by no step. Any key besides lemlist's fields is a custom variable of the lead, a text, used as {{name}} in the messages. In a campaign with auto review, the lead is launched and sent to; otherwise it waits for launch_lead. lemlist refuses a lead already in this campaign or, with deduplicate, in another one. The enrichment flags spend lemlist credits. In French: ajouter un lead à une campagne, ajouter un prospect à une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1458,7 +1458,7 @@ export const updateLead = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Change the fields of a lead in a campaign: only the keys given in data change. Its custom variables are not changed here.",
+  description: "Change the fields of a lead in a campaign: only the keys given in data change. Its custom variables are not changed here. In French: modifier un lead, mettre à jour un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1503,7 +1503,7 @@ export const pauseLead = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Pause a lead: in one campaign with campaign_id, in ALL its campaigns without it.",
+  description: "Pause a lead: in one campaign with campaign_id, in ALL its campaigns without it. In French: mettre un lead en pause, suspendre un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1533,7 +1533,7 @@ export const resumeLead = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Resume a paused lead: it goes back into a live sequence, and lemlist sends to it again.",
+  description: "Resume a paused lead: it goes back into a live sequence, and lemlist sends to it again. In French: reprendre un lead en pause, réactiver un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1561,7 +1561,7 @@ export const launchLead = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Launch a lead waiting for manual review, in a campaign that reviews before sending: from here its sequence sends. A 400 names the reason (CAMPAIGN_LEAD_REVIEW_LEAD_ALREADY_LAUNCHED, …_LEAD_PAUSED, …_AI_VARIABLE_INVALID, …_NO_SENDER_AVAILABLE, …_CAMPAIGN_STEP_ERRORS).",
+  description: "Launch a lead waiting for manual review, in a campaign that reviews before sending: from here its sequence sends. A 400 names the reason (CAMPAIGN_LEAD_REVIEW_LEAD_ALREADY_LAUNCHED, …_LEAD_PAUSED, …_AI_VARIABLE_INVALID, …_NO_SENDER_AVAILABLE, …_CAMPAIGN_STEP_ERRORS). In French: lancer un lead en attente, valider un prospect en revue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1589,7 +1589,7 @@ export const importLeadsFromCrm = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Import leads from a connected CRM into a campaign, by a CRM-side filter (get_crm_filters lists them). In a campaign with auto review, the imported leads are launched and sent to.",
+  description: "Import leads from a connected CRM into a campaign, by a CRM-side filter (get_crm_filters lists them). In a campaign with auto review, the imported leads are launched and sent to. In French: importer des leads depuis le crm, importer des contacts du crm dans une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1624,7 +1624,7 @@ export const uploadLeadAudio = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Upload the audio of a LinkedIn voice note step for one lead: the step sends it when it runs. audio is the id of a transit file of yours or of a file on a page you can read: a transit file is consumed once lemlist accepts it, a page file stays.",
+  description: "Upload the audio of a LinkedIn voice note step for one lead: the step sends it when it runs. audio is the id of a transit file of yours or of a file on a page you can read: a transit file is consumed once lemlist accepts it, a page file stays. In French: envoyer un message vocal linkedin, ajouter un audio à un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1660,7 +1660,7 @@ export const enrich = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Submit a standalone enrichment, no campaign nor lead: find or verify an email, find a phone, enrich from LinkedIn. Each action spends lemlist credits. Give the identity you have: a LinkedIn URL, or a name with a company domain, resolves best. Returns {id}; the result is read later by the hand-written client (a 404 there is an answer).",
+  description: "Submit a standalone enrichment, no campaign nor lead: find or verify an email, find a phone, enrich from LinkedIn. Each action spends lemlist credits. Give the identity you have: a LinkedIn URL, or a name with a company domain, resolves best. Returns {id}; the result is read later by the hand-written client (a 404 there is an answer). In French: enrichir un contact, trouver l'email d'une personne, trouver un numéro de téléphone, vérifier un email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1703,7 +1703,7 @@ export const enrichLead = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Enrich a lead of a campaign, the result written back onto it; same actions as enrich, each spending lemlist credits. Only a lead still awaiting review: a reviewed lead gets 400.",
+  description: "Enrich a lead of a campaign, the result written back onto it; same actions as enrich, each spending lemlist credits. Only a lead still awaiting review: a reviewed lead gets 400. In French: enrichir un lead, trouver l'email d'un lead.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1742,7 +1742,7 @@ export const getActivities = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Activities of leads (emails sent, opened, replied, LinkedIn steps, pauses…), one page by offset. Filters: campaign, lead, type, first occurrence per lead, and two pairs of date bounds lemlist keeps apart.",
+  description: "Activities of leads (emails sent, opened, replied, LinkedIn steps, pauses…), one page by offset. Filters: campaign, lead, type, first occurrence per lead, and two pairs of date bounds lemlist keeps apart. In French: activités des leads, emails ouverts et réponses, historique d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1784,7 +1784,7 @@ export const deleteActivityRecordingTranscript = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete the recording transcript attached to a call activity.",
+  description: "Delete the recording transcript attached to a call activity. In French: supprimer la transcription d'un appel, effacer la transcription d'un enregistrement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1812,7 +1812,7 @@ export const getCampaignStatsV2 = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Campaign stats from lemlist's own counters over a period: leads (nbLeads, nbLeadsReached, nbLeadsAnswered…), messages (sent, opened, clicked, replied, bounced), perChannel and per step. Optionally one sender, one side of an A/B test, some channels.",
+  description: "Campaign stats from lemlist's own counters over a period: leads (nbLeads, nbLeadsReached, nbLeadsAnswered…), messages (sent, opened, clicked, replied, bounced), perChannel and per step. Optionally one sender, one side of an A/B test, some channels. In French: statistiques d'une campagne, taux de réponse d'une campagne, taux d'ouverture d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1857,7 +1857,7 @@ export const getBatchCampaignStats = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The counters of get_campaign_stats_v2 for up to 100 campaigns in one call.",
+  description: "The counters of get_campaign_stats_v2 for up to 100 campaigns in one call. In French: statistiques de plusieurs campagnes, comparer les statistiques des campagnes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1906,7 +1906,7 @@ export const getCampaignReports = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "One report row per campaign, in the app's vocabulary (emailsSent, emailsOpened, emailsReplied, senderNames, state): the shape to compare campaigns.",
+  description: "One report row per campaign, in the app's vocabulary (emailsSent, emailsOpened, emailsReplied, senderNames, state): the shape to compare campaigns. In French: rapport des campagnes, comparer les campagnes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1939,7 +1939,7 @@ export const listUnsubscribes = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the unsubscribed emails and domains: the same list as list_unsubscribed_variables (the v1 listing route is no longer served), rows {_id, value, source, createdAt}, at most 100 per page.",
+  description: "List the unsubscribed emails and domains: the same list as list_unsubscribed_variables (the v1 listing route is no longer served), rows {_id, value, source, createdAt}, at most 100 per page. In French: liste des désinscrits, emails désinscrits.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1968,7 +1968,7 @@ export const addUnsubscribe = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Add an email, or a whole domain (@example.com), to the unsubscribe list: lemlist never sends to it again. The same request as unsubscribe_variable; idempotent.",
+  description: "Add an email, or a whole domain (@example.com), to the unsubscribe list: lemlist never sends to it again. The same request as unsubscribe_variable; idempotent. In French: désinscrire un email, bloquer un domaine, ajouter à la liste des désinscrits.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2003,7 +2003,7 @@ export const deleteUnsubscribe = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Remove an email or a domain from the unsubscribe list: lemlist may send to it again. The same request as resubscribe_variable.",
+  description: "Remove an email or a domain from the unsubscribe list: lemlist may send to it again. The same request as resubscribe_variable. In French: réinscrire un email, retirer de la liste des désinscrits.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2038,7 +2038,7 @@ export const listUnsubscribedVariables = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the unsubscribed variables (v2): emails, domains, LinkedIn URLs, phone numbers.",
+  description: "List the unsubscribed variables (v2): emails, domains, LinkedIn URLs, phone numbers. In French: lister les désinscriptions, numéros et profils désinscrits.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2067,7 +2067,7 @@ export const getUnsubscribedVariable = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Read one unsubscribed variable by its value (v2).",
+  description: "Read one unsubscribed variable by its value (v2). In French: vérifier si un email est désinscrit, statut de désinscription.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2101,7 +2101,7 @@ export const unsubscribeVariable = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Unsubscribe one variable (v2). Idempotent.",
+  description: "Unsubscribe one variable (v2). Idempotent. In French: désinscrire un contact, désinscrire un numéro de téléphone.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2136,7 +2136,7 @@ export const resubscribeVariable = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Re-subscribe a variable, removing it from the v2 list.",
+  description: "Re-subscribe a variable, removing it from the v2 list. In French: réinscrire un contact, annuler une désinscription.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2171,7 +2171,7 @@ export const bulkUnsubscribeVariables = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Unsubscribe up to 10 000 variables in one call (v2).",
+  description: "Unsubscribe up to 10 000 variables in one call (v2). In French: désinscrire en masse, importer une liste de désinscrits.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2211,7 +2211,7 @@ export const getContactSubscription = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Whether a CRM contact is flagged do-not-contact (v2).",
+  description: "Whether a CRM contact is flagged do-not-contact (v2). In French: contact à ne pas contacter, vérifier le statut ne pas contacter.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2238,7 +2238,7 @@ export const unsubscribeContact = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Flag a CRM contact do-not-contact (v2); the flag rides the contact, not one of its values.",
+  description: "Flag a CRM contact do-not-contact (v2); the flag rides the contact, not one of its values. In French: marquer un contact à ne pas contacter, bloquer un contact du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2266,7 +2266,7 @@ export const resubscribeContact = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Clear the do-not-contact flag of a CRM contact (v2).",
+  description: "Clear the do-not-contact flag of a CRM contact (v2). In French: lever le blocage d'un contact, retirer le statut ne pas contacter.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2294,7 +2294,7 @@ export const listContacts = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List or look up contacts of the lemlist CRM: specific ones by id or email (at most 100), or by search, list, company, or contacts in no campaign.",
+  description: "List or look up contacts of the lemlist CRM: specific ones by id or email (at most 100), or by search, list, company, or contacts in no campaign. In French: lister les contacts du crm, chercher un contact lemlist.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2338,7 +2338,7 @@ export const getContact = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Read one CRM contact by id or email.",
+  description: "Read one CRM contact by id or email. In French: fiche d'un contact, lire un contact du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2367,7 +2367,7 @@ export const upsertContact = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Create or update a contact of the lemlist CRM, one route for both: matched by contactId (update only), email, linkedinUrl or linkedinUrlSalesNav, one of them at least. The fields left out keep their value. Any key besides lemlist's fields is a custom field of the CRM, registered in the team's fields beforehand (list_fields): a text, a number or a boolean, as the field's type says; a date as a text. Nothing is sent to the contact.",
+  description: "Create or update a contact of the lemlist CRM, one route for both: matched by contactId (update only), email, linkedinUrl or linkedinUrlSalesNav, one of them at least. The fields left out keep their value. Any key besides lemlist's fields is a custom field of the CRM, registered in the team's fields beforehand (list_fields): a text, a number or a boolean, as the field's type says; a date as a text. Nothing is sent to the contact. In French: créer un contact, mettre à jour un contact du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2444,7 +2444,7 @@ export const deleteContact = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete a CRM contact.",
+  description: "Delete a CRM contact. In French: supprimer un contact, effacer un contact du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2474,7 +2474,7 @@ export const listContactLists = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the contact lists of the team.",
+  description: "List the contact lists of the team. In French: lister les listes de contacts, listes du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2500,7 +2500,7 @@ export const createContactList = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Create a contact list.",
+  description: "Create a contact list. In French: créer une liste de contacts, nouvelle liste de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2527,7 +2527,7 @@ export const manageContactList = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Add contacts to a list, or, with action remove, take them out. Without action, it ADDS.",
+  description: "Add contacts to a list, or, with action remove, take them out. Without action, it ADDS. In French: ajouter des contacts à une liste, retirer des contacts d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2562,7 +2562,7 @@ export const listCompanies = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List or look up companies of the lemlist CRM, by id or domain, or by search, with chosen fields.",
+  description: "List or look up companies of the lemlist CRM, by id or domain, or by search, with chosen fields. In French: lister les entreprises du crm, chercher une entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2598,7 +2598,7 @@ export const upsertCompany = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Create or update a company of the lemlist CRM, one route for both: matched by companyId (update only), domain, linkedinUrl or linkedinUrlSalesNav; without companyId, name and one of the three are needed. The fields left out keep their value. Any key besides lemlist's fields is a custom field of the CRM, registered in the team's fields beforehand (list_fields): a text, a number or a boolean, as the field's type says; a date as a text.",
+  description: "Create or update a company of the lemlist CRM, one route for both: matched by companyId (update only), domain, linkedinUrl or linkedinUrlSalesNav; without companyId, name and one of the three are needed. The fields left out keep their value. Any key besides lemlist's fields is a custom field of the CRM, registered in the team's fields beforehand (list_fields): a text, a number or a boolean, as the field's type says; a date as a text. In French: créer une entreprise, mettre à jour une entreprise du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2662,7 +2662,7 @@ export const deleteCompany = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete a CRM company. lemlist refuses while contacts hang off it; force: true deletes it anyway.",
+  description: "Delete a CRM company. lemlist refuses while contacts hang off it; force: true deletes it anyway. In French: supprimer une entreprise, effacer une société du crm.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2693,7 +2693,7 @@ export const getCompanyNotes = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the notes attached to a CRM company.",
+  description: "List the notes attached to a CRM company. In French: notes d'une entreprise, lire les notes d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2726,7 +2726,7 @@ export const createCompanyNote = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Attach a note to a CRM company.",
+  description: "Attach a note to a CRM company. In French: ajouter une note à une entreprise, noter un échange avec une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2756,7 +2756,7 @@ export const listInboxes = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The inbox conversations of one user.",
+  description: "The inbox conversations of one user. In French: conversations de la boîte de réception, lister les conversations.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2787,7 +2787,7 @@ export const getContactMessages = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The message history of a conversation, by CRM contact, all channels.",
+  description: "The message history of a conversation, by CRM contact, all channels. In French: historique des messages d'un contact, conversation avec un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2819,7 +2819,7 @@ export const listInboxLabels = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the inbox labels of the team.",
+  description: "List the inbox labels of the team. In French: lister les étiquettes de la boîte de réception, libellés des conversations.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The labels", input: {} },
@@ -2841,7 +2841,7 @@ export const getInboxLabel = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Read one inbox label.",
+  description: "Read one inbox label. In French: détail d'une étiquette, lire un libellé de conversation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2868,7 +2868,7 @@ export const createInboxLabel = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Create an inbox label.",
+  description: "Create an inbox label. In French: créer une étiquette, nouveau libellé de conversation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2895,7 +2895,7 @@ export const attachInboxLabels = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Put labels on a conversation. append true adds them; append false REPLACES the conversation's labels with these.",
+  description: "Put labels on a conversation. append true adds them; append false REPLACES the conversation's labels with these. In French: étiqueter une conversation, ajouter un libellé à une conversation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2930,7 +2930,7 @@ export const removeInboxLabels = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Take labels off a conversation.",
+  description: "Take labels off a conversation. In French: retirer une étiquette, enlever un libellé d'une conversation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2964,7 +2964,7 @@ export const listDrafts = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The drafts of a conversation; a draft belongs to a user, draft_owner.",
+  description: "The drafts of a conversation; a draft belongs to a user, draft_owner. In French: brouillons d'une conversation, lister les brouillons.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2994,7 +2994,7 @@ export const getDraft = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Read one draft.",
+  description: "Read one draft. In French: lire un brouillon, contenu d'un brouillon.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3025,7 +3025,7 @@ export const createDraft = defineFunction({
   connector: "lemlist",
   class: "write",
   act: false,
-  description: "Write a draft in a conversation, on one channel. A draft sends nothing: a person sends it from the lemlist inbox.",
+  description: "Write a draft in a conversation, on one channel. A draft sends nothing: a person sends it from the lemlist inbox. In French: rédiger un brouillon de réponse, préparer une réponse à un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3062,7 +3062,7 @@ export const updateDraft = defineFunction({
   connector: "lemlist",
   class: "write",
   act: false,
-  description: "Change a draft: only the keys given in data change. A draft sends nothing: a person sends it from the lemlist inbox.",
+  description: "Change a draft: only the keys given in data change. A draft sends nothing: a person sends it from the lemlist inbox. In French: modifier un brouillon, corriger un brouillon.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3105,7 +3105,7 @@ export const deleteDraft = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete a draft.",
+  description: "Delete a draft. In French: supprimer un brouillon, effacer un brouillon.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3137,7 +3137,7 @@ export const sendInboxEmail = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Send an email from the inbox, at once, to a real person: no campaign, no review. The sender's user id, email and mailbox id are required (get_user_channels lists them).",
+  description: "Send an email from the inbox, at once, to a real person: no campaign, no review. The sender's user id, email and mailbox id are required (get_user_channels lists them). In French: envoyer un email à un prospect, répondre par email depuis la boîte de réception.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3175,7 +3175,7 @@ export const sendLinkedinMessage = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Send a LinkedIn message from the inbox, at once, to a real person.",
+  description: "Send a LinkedIn message from the inbox, at once, to a real person. In French: envoyer un message linkedin, écrire à un prospect sur linkedin.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3208,7 +3208,7 @@ export const sendWhatsappMessage = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Send a WhatsApp message from the inbox, at once, to a real person.",
+  description: "Send a WhatsApp message from the inbox, at once, to a real person. In French: envoyer un message whatsapp, écrire sur whatsapp à un prospect.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3242,7 +3242,7 @@ export const listTasks = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List tasks, filtered by a list of {filterId, …} objects. filters is required by lemlist (400 \"Malformed filters\" without it): pass [] for no filter.",
+  description: "List tasks, filtered by a list of {filterId, …} objects. filters is required by lemlist (400 \"Malformed filters\" without it): pass [] for no filter. In French: lister les tâches, tâches manuelles à faire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3273,7 +3273,7 @@ export const createTask = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Create a manual task assigned to a user, on a contact (ctc_…) or a lead (lea_…): record_id is required by lemlist. It sends nothing by itself.",
+  description: "Create a manual task assigned to a user, on a contact (ctc_…) or a lead (lea_…): record_id is required by lemlist. It sends nothing by itself. In French: créer une tâche, ajouter une tâche manuelle.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3310,7 +3310,7 @@ export const ignoreTasks = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Dismiss tasks without completing them.",
+  description: "Dismiss tasks without completing them. In French: ignorer des tâches, écarter une tâche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3337,7 +3337,7 @@ export const listWatchLists = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the team's watch lists (signals monitored).",
+  description: "List the team's watch lists (signals monitored). In French: lister les listes de veille, signaux surveillés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3368,7 +3368,7 @@ export const createWatchList = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Create a watch list on a signal type. lemlist requires filters, segment_type, signal_processing_type and activate. Filters depend on the type (read get_watch_list_filters, values from get_watch_list_filter_values, numbers as strings). With push_to_campaign and activate true, the list pushes people into a campaign on its own, which can end in sends; persona_id and campaign_id go only with push_to_campaign. An active list spends lemlist credits per signal caught.",
+  description: "Create a watch list on a signal type. lemlist requires filters, segment_type, signal_processing_type and activate. Filters depend on the type (read get_watch_list_filters, values from get_watch_list_filter_values, numbers as strings). With push_to_campaign and activate true, the list pushes people into a campaign on its own, which can end in sends; persona_id and campaign_id go only with push_to_campaign. An active list spends lemlist credits per signal caught. In French: créer une liste de veille, surveiller un signal.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3434,7 +3434,7 @@ export const deleteWatchList = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete a watch list.",
+  description: "Delete a watch list. In French: supprimer une liste de veille, arrêter une veille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3462,7 +3462,7 @@ export const getWatchListFilters = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The filters available for a watch list type.",
+  description: "The filters available for a watch list type. In French: filtres d'une liste de veille, critères de veille disponibles.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3488,7 +3488,7 @@ export const getWatchListFilterValues = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The canonical values a watch list filter accepts, by search text; a free value is refused.",
+  description: "The canonical values a watch list filter accepts, by search text; a free value is refused. In French: valeurs d'un filtre de veille, valeurs acceptées d'un critère de veille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3515,7 +3515,7 @@ export const getWatchListLibrary = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The library of ready-made watch lists.",
+  description: "The library of ready-made watch lists. In French: modèles de listes de veille, bibliothèque de veilles.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The library", input: {} },
@@ -3537,7 +3537,7 @@ export const getWatchListHistory = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The history of a watch list.",
+  description: "The history of a watch list. In French: historique d'une liste de veille, historique d'une veille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3568,7 +3568,7 @@ export const getSignals = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The signals caught by the watch lists, filtered by type, status, list and reception dates.",
+  description: "The signals caught by the watch lists, filtered by type, status, list and reception dates. In French: signaux détectés, signaux d'achat, lister les signaux.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3604,7 +3604,7 @@ export const pushExternalSignals = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Push a signal detected outside lemlist into a watch list: contact needs linkedinUrl, company needs domain and name. A list set to push_to_campaign pushes the person into its campaign.",
+  description: "Push a signal detected outside lemlist into a watch list: contact needs linkedinUrl, company needs domain and name. A list set to push_to_campaign pushes the person into its campaign. In French: envoyer un signal externe, ajouter un signal à une veille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3647,7 +3647,7 @@ export const startCampaignExport = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Open an asynchronous export of a campaign's stats; returns its id, to follow with get_campaign_export_status.",
+  description: "Open an asynchronous export of a campaign's stats; returns its id, to follow with get_campaign_export_status. In French: exporter les statistiques d'une campagne, lancer un export de campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3674,7 +3674,7 @@ export const getCampaignExportStatus = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Where an asynchronous campaign export stands.",
+  description: "Where an asynchronous campaign export stands. In French: état d'un export de campagne, avancement d'un export.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3704,7 +3704,7 @@ export const setCampaignExportEmail = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Have lemlist email the export to an address when it completes.",
+  description: "Have lemlist email the export to an address when it completes. In French: recevoir l'export par email, envoyer l'export à une adresse.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3736,7 +3736,7 @@ export const exportCampaignLeads = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The leads of a campaign with their data, as JSON. state is required: all for every lead (without it lemlist returns none), or one lead state.",
+  description: "The leads of a campaign with their data, as JSON. state is required: all for every lead (without it lemlist returns none), or one lead state. In French: exporter les leads d'une campagne, extraire les prospects d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3771,7 +3771,7 @@ export const searchPeopleDatabase = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Search the shared people database by filters (vocabulary from get_database_filters) or free text, one page.",
+  description: "Search the shared people database by filters (vocabulary from get_database_filters) or free text, one page. In French: chercher des personnes dans la base lemlist, trouver des prospects dans la base.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3803,7 +3803,7 @@ export const searchCompaniesDatabase = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Search the shared companies database by filters (vocabulary from get_database_filters), one page.",
+  description: "Search the shared companies database by filters (vocabulary from get_database_filters), one page. In French: chercher des entreprises dans la base lemlist, trouver des sociétés cibles.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3833,7 +3833,7 @@ export const getDatabaseFilters = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The filters the shared database accepts; read it before building filters.",
+  description: "The filters the shared database accepts; read it before building filters. In French: filtres de recherche de la base, critères de recherche de prospects.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The filters", input: {} },
@@ -3855,7 +3855,7 @@ export const listPersonas = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List saved personas (named sets of database filters).",
+  description: "List saved personas (named sets of database filters). In French: lister les personas, personas enregistrés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3881,7 +3881,7 @@ export const createPersona = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Save a persona, a named set of database filters, for leads or companies.",
+  description: "Save a persona, a named set of database filters, for leads or companies. In French: créer un persona, enregistrer un persona.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3912,7 +3912,7 @@ export const deletePersona = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete a persona.",
+  description: "Delete a persona. In French: supprimer un persona, effacer un persona.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3940,7 +3940,7 @@ export const getTeam = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The team behind the key: plan, members, billing.",
+  description: "The team behind the key: plan, members, billing. In French: informations de l'équipe, abonnement lemlist, membres de l'équipe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3968,7 +3968,7 @@ export const getTeamCredits = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The remaining credits of the team, which enrichment spends.",
+  description: "The remaining credits of the team, which enrichment spends. In French: crédits restants, solde de crédits lemlist.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The credits", input: {} },
@@ -3990,7 +3990,7 @@ export const getTeamSenders = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Team members and the campaigns they send from, by campaign status.",
+  description: "Team members and the campaigns they send from, by campaign status. In French: expéditeurs de l'équipe, qui envoie quelles campagnes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4016,7 +4016,7 @@ export const getUser = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Read one user of the team.",
+  description: "Read one user of the team. In French: fiche d'un utilisateur, lire un membre de l'équipe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4043,7 +4043,7 @@ export const getUserChannels = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The channels the key's user can send on (mailboxes, LinkedIn, WhatsApp): the ids the inbox sends require.",
+  description: "The channels the key's user can send on (mailboxes, LinkedIn, WhatsApp): the ids the inbox sends require. In French: canaux d'envoi disponibles, boîtes mail et comptes linkedin.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "My channels", input: {} },
@@ -4065,7 +4065,7 @@ export const getTeamCrmUsers = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The team's users connected to a CRM.",
+  description: "The team's users connected to a CRM. In French: utilisateurs connectés au crm, membres liés au crm.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "CRM users", input: {} },
@@ -4087,7 +4087,7 @@ export const getCrmFilters = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The CRM-side filters usable to import leads (import_leads_from_crm).",
+  description: "The CRM-side filters usable to import leads (import_leads_from_crm). In French: filtres du crm pour l'import, filtres d'import de leads.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4118,7 +4118,7 @@ export const listFields = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The fields of contacts or companies, default, custom or synced from a CRM.",
+  description: "The fields of contacts or companies, default, custom or synced from a CRM. In French: lister les champs des contacts, champs personnalisés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4147,7 +4147,7 @@ export const disconnectEmailAccount = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Disconnect a mailbox; the campaigns sending from it stop.",
+  description: "Disconnect a mailbox; the campaigns sending from it stop. In French: déconnecter une boîte mail, retirer une boîte d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4175,7 +4175,7 @@ export const testEmailAccount = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Test a connected mailbox (an SMTP and IMAP round trip).",
+  description: "Test a connected mailbox (an SMTP and IMAP round trip). In French: tester une boîte mail, vérifier une boîte d'envoi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4202,7 +4202,7 @@ export const getLemwarmSettings = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "The lemwarm (deliverability warm-up) settings of a mailbox.",
+  description: "The lemwarm (deliverability warm-up) settings of a mailbox. In French: réglages lemwarm, paramètres de réchauffement d'une boîte mail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4229,7 +4229,7 @@ export const updateLemwarmSettings = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Change the lemwarm settings of a mailbox: only the keys given in data change, one at least.",
+  description: "Change the lemwarm settings of a mailbox: only the keys given in data change, one at least. In French: modifier les réglages lemwarm, changer le réchauffement d'une boîte mail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4292,7 +4292,7 @@ export const startLemwarm = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Start warming a mailbox: it sends mail inside the lemwarm network of other lemlist mailboxes, never to a prospect.",
+  description: "Start warming a mailbox: it sends mail inside the lemwarm network of other lemlist mailboxes, never to a prospect. In French: lancer lemwarm, démarrer le réchauffement d'une boîte mail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4319,7 +4319,7 @@ export const pauseLemwarm = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Pause warming a mailbox.",
+  description: "Pause warming a mailbox. In French: mettre lemwarm en pause, suspendre le réchauffement d'une boîte mail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4346,7 +4346,7 @@ export const listDeliverabilityAlerts = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the deliverability alerts of the team.",
+  description: "List the deliverability alerts of the team. In French: alertes de délivrabilité, lister les alertes de délivrabilité.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The alerts", input: {} },
@@ -4368,7 +4368,7 @@ export const getDeliverabilityAlert = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "Read one deliverability alert.",
+  description: "Read one deliverability alert. In French: détail d'une alerte de délivrabilité, lire une alerte de délivrabilité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4395,7 +4395,7 @@ export const createDeliverabilityAlert = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Create a deliverability alert on a warm-up or outreach metric, over a period, for the whole team, a mailbox or a domain. Without channel_config the alert is in-app only; its email channel needs at least one address.",
+  description: "Create a deliverability alert on a warm-up or outreach metric, over a period, for the whole team, a mailbox or a domain. Without channel_config the alert is in-app only; its email channel needs at least one address. In French: créer une alerte de délivrabilité, surveiller la délivrabilité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4443,7 +4443,7 @@ export const updateDeliverabilityAlert = defineFunction({
   connector: "lemlist",
   class: "write",
   act: true,
-  description: "Change a deliverability alert: only the keys given in data change. Its widget, metric, severity and scope do not change: create another alert for that.",
+  description: "Change a deliverability alert: only the keys given in data change. Its widget, metric, severity and scope do not change: create another alert for that. In French: modifier une alerte de délivrabilité, changer une alerte de délivrabilité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4529,7 +4529,7 @@ export const deleteDeliverabilityAlert = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Delete a deliverability alert.",
+  description: "Delete a deliverability alert. In French: supprimer une alerte de délivrabilité, effacer une alerte de délivrabilité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4557,7 +4557,7 @@ export const listWebhooks = defineFunction({
   connector: "lemlist",
   class: "read",
   act: false,
-  description: "List the team's webhooks.",
+  description: "List the team's webhooks. In French: lister les webhooks, webhooks de l'équipe.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The webhooks", input: {} },
@@ -4579,7 +4579,7 @@ export const addWebhook = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Subscribe an address to lemlist events: lemlist then posts every matching event (replies, opens, LinkedIn acceptances, signals…) with lead data to it. type is one event name; without it, all events. campaign_id narrows to one campaign, is_first to the first occurrence per lead.",
+  description: "Subscribe an address to lemlist events: lemlist then posts every matching event (replies, opens, LinkedIn acceptances, signals…) with lead data to it. type is one event name; without it, all events. campaign_id narrows to one campaign, is_first to the first occurrence per lead. In French: créer un webhook, s'abonner aux événements lemlist.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4618,7 +4618,7 @@ export const deleteWebhook = defineFunction({
   connector: "lemlist",
   class: "sensitive",
   act: true,
-  description: "Unsubscribe a webhook.",
+  description: "Unsubscribe a webhook. In French: supprimer un webhook, désabonner un webhook.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4645,7 +4645,7 @@ export const connector = defineConnector({
   name: "lemlist",
   label: "lemlist",
   namespace: "lemlist",
-  version: "1.6.1",
+  version: "1.6.2",
   apiVersion: "v1 and v2 routes",
   baseUrl: "https://api.lemlist.com/api",
   auth: {"kind": "basic", "password": "api_key"},

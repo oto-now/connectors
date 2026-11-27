@@ -6,7 +6,7 @@ export const listWorkspaces = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "List the organization's workspaces, the containers of tables, documents and campaigns: id, name, url, createdAt. search keeps the names that contain it.",
+  description: "List the organization's workspaces, the containers of tables, documents and campaigns: id, name, url, createdAt. search keeps the names that contain it. In French: lister les espaces de travail, espaces origami.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -52,7 +52,7 @@ export const createWorkspace = defineFunction({
   connector: "origami",
   class: "write",
   act: true,
-  description: "Create a workspace (a session container) to put tables and documents in. Answers the workspace, with its id.",
+  description: "Create a workspace (a session container) to put tables and documents in. Answers the workspace, with its id. In French: créer un espace de travail, nouvel espace origami.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -87,7 +87,7 @@ export const listTables = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "List the organization's lead tables, or a workspace's: id, workspaceId, name, leadCount, columns, credits used, url.",
+  description: "List the organization's lead tables, or a workspace's: id, workspaceId, name, leadCount, columns, credits used, url. In French: lister les tables de leads, tables de prospects.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -133,7 +133,7 @@ export const getTable = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "Get one table: name, leadCount, columns, credits used (credits.lifetimeUsed, final once its runs are over). include stats adds the economics: creditsPerLead, qualification, funnel, lead sources.",
+  description: "Get one table: name, leadCount, columns, credits used (credits.lifetimeUsed, final once its runs are over). include stats adds the economics: creditsPerLead, qualification, funnel, lead sources. In French: détail d'une table de leads, crédits consommés d'une table.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -163,7 +163,7 @@ export const listColumns = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "List a table's columns: id, name, slug, kind, autoTrigger. Read it before any upsert_rows: row keys and match columns are the slugs (with dashes, first-name) of the columns whose kind is input, never the displayed names.",
+  description: "List a table's columns: id, name, slug, kind, autoTrigger. Read it before any upsert_rows: row keys and match columns are the slugs (with dashes, first-name) of the columns whose kind is input, never the displayed names. In French: colonnes d'une table, lister les colonnes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -191,7 +191,7 @@ export const listRows = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "List a table's rows. Pass cells flat to get each row as {slug: value}; without it, Origami returns typed cells. limit goes up to 200. filters ({column, operator, value}, column a slug) replace the table's saved filters; sort is {column, direction}. The total row count is in get_table (leadCount).",
+  description: "List a table's rows. Pass cells flat to get each row as {slug: value}; without it, Origami returns typed cells. limit goes up to 200. filters ({column, operator, value}, column a slug) replace the table's saved filters; sort is {column, direction}. The total row count is in get_table (leadCount). In French: lignes d'une table, lister les leads d'une table.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -286,7 +286,7 @@ export const upsertRows = defineFunction({
   connector: "origami",
   class: "sensitive",
   act: true,
-  description: "Insert or update 1 to 100 rows of a table: a row whose match_columns values all equal an existing row updates it, otherwise it is inserted. Row keys and match_columns are slugs of input columns (list_columns), each row giving a non-empty value for every match column. enrich true enriches the inserted rows and spends Origami credits; reenrich_updated also re-enriches the updated ones. batch_id makes a retry idempotent. Answers an enrichment run {id, counts: inserted, updated, skipped}.",
+  description: "Insert or update 1 to 100 rows of a table: a row whose match_columns values all equal an existing row updates it, otherwise it is inserted. Row keys and match_columns are slugs of input columns (list_columns), each row giving a non-empty value for every match column. enrich true enriches the inserted rows and spends Origami credits; reenrich_updated also re-enriches the updated ones. batch_id makes a retry idempotent. Answers an enrichment run {id, counts: inserted, updated, skipped}. In French: ajouter des leads à une table, mettre à jour des lignes, importer des prospects.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -342,7 +342,7 @@ export const listCampaigns = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "List the campaigns that send from a table: id, slug, name, status, peopleCount. There is no list of all campaigns: list_sequences on a workspace sees every campaign through its sequences.",
+  description: "List the campaigns that send from a table: id, slug, name, status, peopleCount. There is no list of all campaigns: list_sequences on a workspace sees every campaign through its sequences. In French: campagnes d'une table, lister les campagnes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -370,7 +370,7 @@ export const getCampaign = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "Get one campaign: name, status (draft, active, paused), workspaceId, tableId, channels (email, linkedin), settings (blockPriorContacts, blockActiveDuplicates…), brief. After a delete, a 404 here is the only proof that the campaign is gone.",
+  description: "Get one campaign: name, status (draft, active, paused), workspaceId, tableId, channels (email, linkedin), settings (blockPriorContacts, blockActiveDuplicates…), brief. After a delete, a 404 here is the only proof that the campaign is gone. In French: détail d'une campagne, statut d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -397,7 +397,7 @@ export const campaignStats = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "Get a campaign's figures: found, contacted, connectSent, connectAccepted, connectionRate, replied, replyRate, hasEmail, hasLinkedin. found rising while contacted does not means sequences without a recipient.",
+  description: "Get a campaign's figures: found, contacted, connectSent, connectAccepted, connectionRate, replied, replyRate, hasEmail, hasLinkedin. found rising while contacted does not means sequences without a recipient. In French: statistiques d'une campagne, taux de réponse d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -424,7 +424,7 @@ export const campaignPeople = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "List the people enrolled in a campaign, one sequence each: sequenceId, rowId, recipient, sendStatus, stopReason, fitScore, fitExplanation, profile, addedAt. status keeps some send statuses (comma-separated); search matches the recipient or identity.",
+  description: "List the people enrolled in a campaign, one sequence each: sequenceId, rowId, recipient, sendStatus, stopReason, fitScore, fitExplanation, profile, addedAt. status keeps some send statuses (comma-separated); search matches the recipient or identity. In French: personnes d'une campagne, prospects inscrits dans une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -482,7 +482,7 @@ export const createCampaign = defineFunction({
   connector: "origami",
   class: "sensitive",
   act: true,
-  description: "Have Origami's agent draft a campaign on a table from instructions (audience, channels, tone, offer, follow-ups): it creates the campaign and its sequences, spends credits, and sends nothing until launch_campaign. Answers 202 {agent: {id}, run: {id}, table}: poll get_run until status is not running, then list_campaigns. If the brief enrols people into an existing campaign, that campaign's settings apply. settings are requested, not guaranteed: read them back with get_campaign.",
+  description: "Have Origami's agent draft a campaign on a table from instructions (audience, channels, tone, offer, follow-ups): it creates the campaign and its sequences, spends credits, and sends nothing until launch_campaign. Answers 202 {agent: {id}, run: {id}, table}: poll get_run until status is not running, then list_campaigns. If the brief enrols people into an existing campaign, that campaign's settings apply. settings are requested, not guaranteed: read them back with get_campaign. In French: créer une campagne, rédiger une campagne de prospection.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -531,7 +531,7 @@ export const getRun = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "Read an agent run, after create_campaign: status (running until terminal), steps, actions, response (tables touched). include adds stats or transcript (stats,transcript). Poll until status is not running. A finished run whose actions list is empty created nothing, whatever its text says: check list_campaigns before reporting anything.",
+  description: "Read an agent run, after create_campaign: status (running until terminal), steps, actions, response (tables touched). include adds stats or transcript (stats,transcript). Poll until status is not running. A finished run whose actions list is empty created nothing, whatever its text says: check list_campaigns before reporting anything. In French: suivi de l'agent origami, état d'une exécution d'agent.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -567,7 +567,7 @@ export const launchCampaign = defineFunction({
   connector: "origami",
   class: "sensitive",
   act: true,
-  description: "Launch a campaign: it becomes active and Origami schedules the sends, emails and LinkedIn messages to every enrolled person. Idempotent on an active campaign. dry_run true previews ({wouldLaunch}) and writes nothing. A result with launch.blocked.missingChannels sent nothing: no sending account for those channels.",
+  description: "Launch a campaign: it becomes active and Origami schedules the sends, emails and LinkedIn messages to every enrolled person. Idempotent on an active campaign. dry_run true previews ({wouldLaunch}) and writes nothing. A result with launch.blocked.missingChannels sent nothing: no sending account for those channels. In French: lancer une campagne, démarrer les envois d'une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -599,7 +599,7 @@ export const pauseCampaign = defineFunction({
   connector: "origami",
   class: "write",
   act: true,
-  description: "Pause a campaign: no further sends (idempotent). Messages already handed to a provider still go out (pause.inFlightSending). dry_run true previews and writes nothing.",
+  description: "Pause a campaign: no further sends (idempotent). Messages already handed to a provider still go out (pause.inFlightSending). dry_run true previews and writes nothing. In French: mettre en pause une campagne, arrêter les envois.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -629,7 +629,7 @@ export const resumeCampaign = defineFunction({
   connector: "origami",
   class: "sensitive",
   act: true,
-  description: "Resume a paused campaign where its sequences stopped: it sends again (idempotent). resume.missingChannels lists the channels without a sending account, whose sequences did not resume. dry_run true previews and writes nothing.",
+  description: "Resume a paused campaign where its sequences stopped: it sends again (idempotent). resume.missingChannels lists the channels without a sending account, whose sequences did not resume. dry_run true previews and writes nothing. In French: reprendre une campagne, relancer une campagne en pause.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -660,7 +660,7 @@ export const deleteCampaign = defineFunction({
   connector: "origami",
   class: "sensitive",
   act: true,
-  description: "Delete a campaign, in two steps. Without confirm (or with dry_run): the impact preview {id, name, confirmationRequired, status}, nothing removed. With confirm: soft-delete and cancellation of its pending sequences, {deleted: true}. Origami may answer that without deleting: only a 404 from get_campaign afterwards proves it is gone.",
+  description: "Delete a campaign, in two steps. Without confirm (or with dry_run): the impact preview {id, name, confirmationRequired, status}, nothing removed. With confirm: soft-delete and cancellation of its pending sequences, {deleted: true}. Origami may answer that without deleting: only a 404 from get_campaign afterwards proves it is gone. In French: supprimer une campagne, effacer une campagne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -693,7 +693,7 @@ export const listSequences = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "List every sequence of a workspace, one per enrolled person, each with its campaignId, status, sendStatus, stopReason, tableId and rowId: the only view of all the campaigns of a workspace. Filters: status, channel (email or linkedin), recipient.",
+  description: "List every sequence of a workspace, one per enrolled person, each with its campaignId, status, sendStatus, stopReason, tableId and rowId: the only view of all the campaigns of a workspace. Filters: status, channel (email or linkedin), recipient. In French: séquences d'un espace, lister les séquences des prospects.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -743,7 +743,7 @@ export const getSequence = defineFunction({
   connector: "origami",
   class: "read",
   act: false,
-  description: "Get one sequence with its steps inline (the message of each step); provider internals are redacted.",
+  description: "Get one sequence with its steps inline (the message of each step); provider internals are redacted. In French: détail d'une séquence, messages d'une séquence.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -769,7 +769,7 @@ export const connector = defineConnector({
   name: "origami",
   label: "Origami",
   namespace: "origami",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v2",
   baseUrl: "https://origami.chat/api/v2",
   auth: {"kind": "bearer", "token": "api_key"},

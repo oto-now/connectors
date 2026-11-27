@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'modjo',
                'label': 'Modjo',
                'namespace': 'modjo',
-               'version': '2.0.0',
+               'version': '2.0.1',
                'api_version': 'v2',
                'base_url': 'https://api.modjo.ai/v2',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -58,7 +58,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                                'accountId); expand replaces them by the objects and can inline sub-resources '
                                '(transcript, summaries, next-steps...), which makes pages heavy: expand '
                                'transcript on one call at a time. status processing means the analysis is '
-                               'not finished (5 to 30 minutes after upload).',
+                               'not finished (5 to 30 minutes after upload). In French: lister les appels '
+                               'modjo, appels enregistrés, derniers appels commerciaux.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'ids': {'type': 'array',
@@ -167,7 +168,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                                'returns): date, duration, direction, language, status, retention status, CRM '
                                'activity. expand inlines participants, deal, account, transcript, AI '
                                'summaries, notes, next steps, topics, tags, CRM filling answers and AI '
-                               'scoring in a single request.',
+                               "scoring in a single request. In French: détail d'un appel modjo, durée d'un "
+                               'appel modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -204,7 +206,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'class': 'read',
                 'description': 'Get the transcript of one Modjo call: timed blocks with their speaker (type '
                                'user for a workspace member, contact for an external participant). Empty '
-                               'while the call is still processing.',
+                               "while the call is still processing. In French: transcription d'un appel "
+                               "modjo, verbatim d'un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -220,7 +223,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_call_summaries',
                 'class': 'read',
                 'description': 'Get the AI summaries of one Modjo call, one per summary template of the '
-                               'workspace; the text is in answer.',
+                               "workspace; the text is in answer. In French: résumé d'un appel modjo, compte "
+                               "rendu d'un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -236,7 +240,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_call_notes',
                 'class': 'read',
                 'description': 'Get the published notes of one Modjo call, written by a user or by the AI; '
-                               'drafts are not returned. rawContent is rich text in JSON.',
+                               'drafts are not returned. rawContent is rich text in JSON. In French: notes '
+                               "d'un appel modjo, notes publiées sur un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -252,7 +257,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_call_next_steps',
                 'class': 'read',
                 'description': "Get the next steps Modjo's AI drew from one call (title, description). Empty "
-                               'while the call is processing or when there is none.',
+                               'while the call is processing or when there is none. In French: prochaines '
+                               "étapes d'un appel, actions à suivre après un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -269,7 +275,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'class': 'read',
                 'description': 'Get a signed URL to download the audio or video recording of one Modjo call. '
                                'The URL expires after one hour (expiresAt): fetch it right before use and '
-                               'never store it.',
+                               "never store it. In French: enregistrement d'un appel modjo, télécharger "
+                               "l'audio d'un appel modjo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -290,7 +297,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'class': 'read',
                 'description': "List the CRM field values Modjo's AI filled from one call and pushed to the "
                                'CRM; answers never pushed are not returned. crmFillingFieldUuid refers to a '
-                               'field of list_crm_filling_template_fields.',
+                               'field of list_crm_filling_template_fields. In French: champs crm remplis par '
+                               "l'ia, remplissage du crm après un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -316,7 +324,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'list_call_tags',
                 'class': 'read',
-                'description': 'Get the tags set on one Modjo call.',
+                'description': "Get the tags set on one Modjo call. In French: tags d'un appel modjo, "
+                               "étiquettes d'un appel modjo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id'],
@@ -332,7 +341,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'add_call_tag',
                 'class': 'write',
                 'description': 'Set an existing tag on one Modjo call (tag ids from list_tags). Idempotent: '
-                               'a tag already set stays set once.',
+                               'a tag already set stays set once. In French: ajouter un tag à un appel '
+                               'modjo, étiqueter un appel modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id', 'tag_id'],
@@ -348,7 +358,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'remove_call_tag',
                 'class': 'write',
-                'description': 'Remove a tag from one Modjo call; the tag itself is kept.',
+                'description': 'Remove a tag from one Modjo call; the tag itself is kept. In French: retirer '
+                               "un tag d'un appel modjo, enlever une étiquette d'un appel modjo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['call_id', 'tag_id'],
@@ -371,7 +382,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                                'minutes): the answer gives the call UUID and status processing; read it with '
                                'get_call until completed or failed. Modjo also logs the call in the '
                                'connected CRM, updating the activity crm_activity_id when given, creating '
-                               'one otherwise. The API cannot delete a call.',
+                               'one otherwise. The API cannot delete a call. In French: importer un appel '
+                               'dans modjo, envoyer un enregistrement à modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['media_url', 'date', 'participants'],
@@ -480,7 +492,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'description': 'List the reviews of calls (coaching scorecards), with their answers per '
                                'question; ratings go from 0 to 4, -1 meaning not applicable. Newest first '
                                'unless order is asc, the choice for incremental syncs. The API returns '
-                               'private reviews too (isPrivate is informative only).',
+                               'private reviews too (isPrivate is informative only). In French: évaluations '
+                               "d'appels, grilles de coaching, notes de coaching des commerciaux.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'start_date_time': {'type': 'string',
@@ -516,7 +529,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_accounts',
                 'class': 'read',
                 'description': 'List the accounts (companies) Modjo mirrors from the connected CRM, with '
-                               'their CRM id and link.',
+                               'their CRM id and link. In French: entreprises du crm dans modjo, comptes '
+                               'clients modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -538,7 +552,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'get_account',
                 'class': 'read',
-                'description': 'Get one account Modjo mirrors from the connected CRM.',
+                'description': "Get one account Modjo mirrors from the connected CRM. In French: fiche d'un "
+                               "compte modjo, détail d'une entreprise modjo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['account_id'],
@@ -552,7 +567,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_contacts',
                 'class': 'read',
                 'description': 'List the contacts (external people) Modjo mirrors from the connected CRM: '
-                               'email, phone, job title, account.',
+                               'email, phone, job title, account. In French: contacts modjo, contacts du crm '
+                               'dans modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -574,7 +590,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'get_contact',
                 'class': 'read',
-                'description': 'Get one contact Modjo mirrors from the connected CRM.',
+                'description': "Get one contact Modjo mirrors from the connected CRM. In French: fiche d'un "
+                               "contact modjo, détail d'un contact modjo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_id'],
@@ -588,7 +605,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_deals',
                 'class': 'read',
                 'description': 'List the deals Modjo mirrors from the connected CRM: status, stage, amount, '
-                               'close date, probability, owner (a Modjo user id).',
+                               'close date, probability, owner (a Modjo user id). In French: affaires modjo, '
+                               'opportunités du crm dans modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -625,7 +643,7 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'get_deal_summary',
                 'class': 'read',
                 'description': 'Get the AI summary Modjo built for one deal across its calls, as typed '
-                               'sections.',
+                               "sections. In French: résumé d'une affaire, synthèse ia d'une opportunité.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['deal_id'],
@@ -638,7 +656,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'list_tags',
                 'class': 'read',
-                'description': 'List the call tags of the Modjo workspace.',
+                'description': 'List the call tags of the Modjo workspace. In French: tags modjo, lister les '
+                               "tags d'appel modjo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -656,7 +675,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_topics',
                 'class': 'read',
                 'description': 'List the topics Modjo detects in calls (saidBy: by a user, by a contact, or '
-                               'by anyone).',
+                               'by anyone). In French: sujets détectés dans les appels, thèmes abordés en '
+                               'appel.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -674,7 +694,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_users',
                 'class': 'read',
                 'description': 'List the members of the Modjo workspace (role user, manager or admin). email '
-                               'finds one person, whose id filters list_calls.',
+                               'finds one person, whose id filters list_calls. In French: utilisateurs '
+                               "modjo, commerciaux de l'espace modjo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'email': {'type': 'string',
@@ -697,7 +718,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'get_user',
                 'class': 'read',
-                'description': 'Get one member of the Modjo workspace.',
+                'description': "Get one member of the Modjo workspace. In French: détail d'un utilisateur "
+                               "modjo, fiche d'un commercial modjo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user_id'],
@@ -710,7 +732,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'list_teams',
                 'class': 'read',
-                'description': 'List the teams of the Modjo workspace.',
+                'description': 'List the teams of the Modjo workspace. In French: équipes modjo, lister les '
+                               'équipes commerciales.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string',
@@ -732,7 +755,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'get_team',
                 'class': 'read',
-                'description': 'Get one team of the Modjo workspace.',
+                'description': "Get one team of the Modjo workspace. In French: détail d'une équipe modjo, "
+                               'lire une équipe modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['team_id'],
@@ -745,7 +769,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'list_team_members',
                 'class': 'read',
-                'description': 'List the members of one Modjo team.',
+                'description': "List the members of one Modjo team. In French: membres d'une équipe modjo, "
+                               "commerciaux d'une équipe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['team_id'],
@@ -770,7 +795,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_crm_filling_templates',
                 'class': 'read',
                 'description': 'List the CRM filling templates: which calls (duration, providers, teams, '
-                               "tags) get CRM fields filled by Modjo's AI.",
+                               "tags) get CRM fields filled by Modjo's AI. In French: modèles de remplissage "
+                               'du crm, modèles de remplissage modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'status': {'type': 'string', 'enum': ['pending', 'published']},
@@ -790,7 +816,8 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                 'cost': {'per': 'request'}},
                {'name': 'get_crm_filling_template',
                 'class': 'read',
-                'description': 'Get one CRM filling template.',
+                'description': "Get one CRM filling template. In French: détail d'un modèle de remplissage "
+                               'du crm, lire un modèle de remplissage modjo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_uuid'],
@@ -806,7 +833,9 @@ DESCRIPTION = {'connector': {'name': 'modjo',
                {'name': 'list_crm_filling_template_fields',
                 'class': 'read',
                 'description': 'List the fields of one CRM filling template: the prompt, the CRM field it '
-                               'fills (entity, key, type) and whether it is pushed automatically.',
+                               'fills (entity, key, type) and whether it is pushed automatically. In French: '
+                               "champs d'un modèle de remplissage du crm, questions d'un modèle de "
+                               'remplissage.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_uuid'],

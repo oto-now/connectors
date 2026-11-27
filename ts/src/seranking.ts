@@ -6,7 +6,7 @@ export const getSubscription = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The SE Ranking subscription behind this key: status (active, inactive, expired, disabled), start and expiration dates, and the Data API credits: units_limit and units_left. Free.",
+  description: "The SE Ranking subscription behind this key: status (active, inactive, expired, disabled), start and expiration dates, and the Data API credits: units_limit and units_left. Free. In French: abonnement se ranking, crédits restants se ranking.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The subscription and its credits left", input: {} },
@@ -27,7 +27,7 @@ export const domainOverview = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "SEO overview of a domain (or one URL) in one regional database, for the current month: organic and paid (adv) keyword count, estimated traffic and its value, new, improved, declined and lost keywords, and keywords by position band (top 1-5 to 51-100). Spends 100 SE Ranking credits. A 244 answer means the site is too large to be served by the API.",
+  description: "SEO overview of a domain (or one URL) in one regional database, for the current month: organic and paid (adv) keyword count, estimated traffic and its value, new, improved, declined and lost keywords, and keywords by position band (top 1-5 to 51-100). Spends 100 SE Ranking credits. A 244 answer means the site is too large to be served by the API. In French: aperçu seo d'un domaine, trafic organique d'un site, analyse seo d'un domaine.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -71,7 +71,7 @@ export const domainOverviewHistory = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "Monthly history of a domain in one regional database: for each month, keyword count, estimated traffic and its value, and keywords by position band. type picks organic (default) or paid (adv) search. Spends 100 SE Ranking credits.",
+  description: "Monthly history of a domain in one regional database: for each month, keyword count, estimated traffic and its value, and keywords by position band. type picks organic (default) or paid (adv) search. Spends 100 SE Ranking credits. In French: historique du trafic organique, évolution seo d'un domaine.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -120,7 +120,7 @@ export const domainKeywords = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "The keywords a domain ranks for in one regional database: keyword, position and previous position, search volume, CPC, competition, difficulty, intents, SERP features, estimated traffic and its share, and the ranking URL. Sorted by traffic by default. year and month together read a past month. One page per call: page reads further, limit sets its size (100 by default, up to 1000). Spends 100 SE Ranking credits per call, whatever the page size.",
+  description: "The keywords a domain ranks for in one regional database: keyword, position and previous position, search volume, CPC, competition, difficulty, intents, SERP features, estimated traffic and its share, and the ranking URL. Sorted by traffic by default. year and month together read a past month. One page per call: page reads further, limit sets its size (100 by default, up to 1000). Spends 100 SE Ranking credits per call, whatever the page size. In French: mots-clés d'un domaine, positionnement d'un site sur les mots-clés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -207,7 +207,7 @@ export const domainCompetitors = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "The competitors of a domain in one regional database, by shared keywords: for each, the domain, common keywords, relevance, total and missing keywords, estimated traffic and its value. Up to 500 competitors, in one answer. type picks organic (default) or paid (adv) search. Spends 100 SE Ranking credits.",
+  description: "The competitors of a domain in one regional database, by shared keywords: for each, the domain, common keywords, relevance, total and missing keywords, estimated traffic and its value. Up to 500 competitors, in one answer. type picks organic (default) or paid (adv) search. Spends 100 SE Ranking credits. In French: concurrents d'un domaine, concurrents seo d'un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -250,7 +250,7 @@ export const backlinksSummary = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "Backlink profile of one target: backlinks, referring domains, subnets and IPs, dofollow and nofollow counts, InLink Rank, and the top anchors, pages, TLDs and countries. mode reads the target as a host (default), a whole domain or one URL. A negative value means unknown. Spends 100 SE Ranking credits.",
+  description: "Backlink profile of one target: backlinks, referring domains, subnets and IPs, dofollow and nofollow counts, InLink Rank, and the top anchors, pages, TLDs and countries. mode reads the target as a host (default), a whole domain or one URL. A negative value means unknown. Spends 100 SE Ranking credits. In French: profil de liens d'un site, résumé des backlinks, nombre de domaines référents.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -284,7 +284,7 @@ export const listBacklinks = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "The backlinks of one target: for each, the linking URL and page title, the target URL, anchor, alt text, nofollow and image flags, InLink Rank of the page and of its domain, first seen and last visited dates. limit sets how many (100 by default and at most here); per_domain caps the links kept per linking domain. Spends 1 SE Ranking credit per backlink returned.",
+  description: "The backlinks of one target: for each, the linking URL and page title, the target URL, anchor, alt text, nofollow and image flags, InLink Rank of the page and of its domain, first seen and last visited dates. limit sets how many (100 by default and at most here); per_domain caps the links kept per linking domain. Spends 1 SE Ranking credit per backlink returned. In French: lister les backlinks, liens entrants d'un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -332,7 +332,7 @@ export const listReferringDomains = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "The domains linking to one target: for each, the referring domain, its backlinks and dofollow backlinks to the target, its InLink Rank and when it was first seen. limit sets how many (100 by default and at most here). Spends 1 SE Ranking credit per domain returned.",
+  description: "The domains linking to one target: for each, the referring domain, its backlinks and dofollow backlinks to the target, its InLink Rank and when it was first seen. limit sets how many (100 by default and at most here). Spends 1 SE Ranking credit per domain returned. In French: domaines référents, sites qui font un lien.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -378,7 +378,7 @@ export const keywordMetrics = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "Metrics of a list of keywords in one regional database: whether data was found, monthly search volume, CPC, competition (0-1), difficulty (0-100), intents and the volume trend. history_from and history_to (within the last 12 months) add the monthly history. Spends 10 SE Ranking credits per keyword returned; up to 100 keywords per call here.",
+  description: "Metrics of a list of keywords in one regional database: whether data was found, monthly search volume, CPC, competition (0-1), difficulty (0-100), intents and the volume trend. history_from and history_to (within the last 12 months) add the monthly history. Spends 10 SE Ranking credits per keyword returned; up to 100 keywords per call here. In French: volume de recherche d'un mot-clé, difficulté d'un mot-clé, cpc d'un mot-clé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -427,7 +427,7 @@ export const similarKeywords = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "Keywords similar to a seed keyword in one regional database, with the total found: for each, volume, CPC, difficulty, competition, intents and SERP features. limit sets how many (100 by default and at most here), offset skips the first ones to read further. Spends 10 SE Ranking credits per keyword returned.",
+  description: "Keywords similar to a seed keyword in one regional database, with the total found: for each, volume, CPC, difficulty, competition, intents and SERP features. limit sets how many (100 by default and at most here), offset skips the first ones to read further. Spends 10 SE Ranking credits per keyword returned. In French: mots-clés similaires, idées de mots-clés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -475,7 +475,7 @@ export const relatedKeywords = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "Keywords related to a seed keyword in one regional database (same topic, other words), with the total found: for each, relevance, volume, CPC, difficulty, competition, intents and SERP features. limit sets how many (100 by default and at most here), offset skips the first ones. Spends 10 SE Ranking credits per keyword returned.",
+  description: "Keywords related to a seed keyword in one regional database (same topic, other words), with the total found: for each, relevance, volume, CPC, difficulty, competition, intents and SERP features. limit sets how many (100 by default and at most here), offset skips the first ones. Spends 10 SE Ranking credits per keyword returned. In French: mots-clés associés, mots-clés du même thème.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -523,7 +523,7 @@ export const questionKeywords = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "Questions people search around a seed keyword in one regional database, with the total found: for each, volume, CPC, difficulty, competition, intents and SERP features. limit sets how many (100 by default and at most here), offset skips the first ones. Spends 10 SE Ranking credits per question returned.",
+  description: "Questions people search around a seed keyword in one regional database, with the total found: for each, volume, CPC, difficulty, competition, intents and SERP features. limit sets how many (100 by default and at most here), offset skips the first ones. Spends 10 SE Ranking credits per question returned. In French: questions des internautes, questions autour d'un mot-clé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -571,7 +571,7 @@ export const listSites = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The projects (sites) tracked in the SE Ranking account: id, name (the site's address), title, group, active flag, check frequency and day, search depth and keyword count. The id is the site_id of the other project functions. Free.",
+  description: "The projects (sites) tracked in the SE Ranking account: id, name (the site's address), title, group, active flag, check frequency and day, search depth and keyword count. The id is the site_id of the other project functions. Free. In French: lister les projets se ranking, sites suivis.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The tracked projects", input: {} },
@@ -593,7 +593,7 @@ export const listSiteSearchEngines = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The search engines a project tracks: for each, site_engine_id (used by the positions functions), search engine id, region, language and keyword count. Free.",
+  description: "The search engines a project tracks: for each, site_engine_id (used by the positions functions), search engine id, region, language and keyword count. Free. In French: moteurs de recherche suivis, moteurs d'un projet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -619,7 +619,7 @@ export const listSiteKeywords = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The keywords a project tracks: id, keyword, group, target URL, tags and the search engines that track it; site_engine_id narrows to one engine and adds the first check date. Free.",
+  description: "The keywords a project tracks: id, keyword, group, target URL, tags and the search engines that track it; site_engine_id narrows to one engine and adds the first check date. Free. In French: mots-clés suivis, mots-clés d'un projet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -652,7 +652,7 @@ export const getSiteSummary = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "Summary of a project's rankings: average position today and yesterday, keywords up and down, keywords in the top 5, 10 and 30, visibility and its percentage, domain authority and pages indexed by Google. Free.",
+  description: "Summary of a project's rankings: average position today and yesterday, keywords up and down, keywords in the top 5, 10 and 30, visibility and its percentage, domain authority and pages indexed by Google. Free. In French: résumé des positions d'un projet, visibilité d'un site, position moyenne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -678,7 +678,7 @@ export const getSitePositions = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The positions of a project's keywords over a period, by search engine: for each keyword and day, the position, its change, and map and paid positions, with volume and competition. The last 7 days by default. in_top keeps the keywords in the top N at the last check; flags add the landing pages, SERP features or content score. Free; long periods on large projects answer large.",
+  description: "The positions of a project's keywords over a period, by search engine: for each keyword and day, the position, its change, and map and paid positions, with volume and competition. The last 7 days by default. in_top keeps the keywords in the top N at the last check; flags add the landing pages, SERP features or content score. Free; long periods on large projects answer large. In French: positions des mots-clés, suivi de positionnement, classement google d'un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -723,7 +723,7 @@ export const recheckPositions = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "Schedule a fresh position check of a project: of every keyword of one search engine (site_engine_id), or of the listed keyword and engine pairs. Uses the plan's checks; answers the number of keywords scheduled. Results appear later in get_site_positions.",
+  description: "Schedule a fresh position check of a project: of every keyword of one search engine (site_engine_id), or of the listed keyword and engine pairs. Uses the plan's checks; answers the number of keywords scheduled. Results appear later in get_site_positions. In French: relancer le suivi des positions, revérifier les positions.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -776,7 +776,7 @@ export const listCompetitors = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The competitors a project tracks: id, name, URL and domain trust. The id is the competitor_id of get_competitor_positions. Free.",
+  description: "The competitors a project tracks: id, name, URL and domain trust. The id is the competitor_id of get_competitor_positions. Free. In French: concurrents suivis, concurrents d'un projet.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -802,7 +802,7 @@ export const getCompetitorPositions = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The positions of a tracked competitor on the project's keywords over a period, by search engine. The last 7 days by default. Free.",
+  description: "The positions of a tracked competitor on the project's keywords over a period, by search engine. The last 7 days by default. Free. In French: positions d'un concurrent, classement d'un concurrent.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -838,7 +838,7 @@ export const listAudits = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The site audits of the account: id, URL, title, status, stats and last update. search filters by URL or title, date_start and date_end by date. limit sets how many (100 by default), offset skips the first ones to read further: fewer than limit means the last page. Free.",
+  description: "The site audits of the account: id, URL, title, status, stats and last update. search filters by URL or title, date_start and date_end by date. limit sets how many (100 by default), offset skips the first ones to read further: fewer than limit means the last page. Free. In French: lister les audits de site, audits seo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -871,7 +871,7 @@ export const createAudit = defineFunction({
   connector: "seranking",
   class: "write",
   act: true,
-  description: "Start a technical SEO audit of a domain (crawl of its pages, issues by severity). Uses the plan's audit limits; answers the audit id. The crawl takes minutes to hours: follow it with get_audit_status, then read get_audit_report.",
+  description: "Start a technical SEO audit of a domain (crawl of its pages, issues by severity). Uses the plan's audit limits; answers the audit id. The crawl takes minutes to hours: follow it with get_audit_status, then read get_audit_report. In French: lancer un audit seo, auditer un site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -904,7 +904,7 @@ export const getAuditStatus = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The progress of a site audit: status (queued, processing, finished, cancelled, expired), pages crawled, errors, warnings and passed checks, start time and duration. Free.",
+  description: "The progress of a site audit: status (queued, processing, finished, cancelled, expired), pages crawled, errors, warnings and passed checks, start time and duration. Free. In French: avancement d'un audit, état d'un audit seo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -932,7 +932,7 @@ export const getAuditReport = defineFunction({
   connector: "seranking",
   class: "read",
   act: false,
-  description: "The report of a site audit: whether it is finished, the score, the totals of errors, warnings and notices, the domain's properties, and the issues by section with their counts. Free.",
+  description: "The report of a site audit: whether it is finished, the score, the totals of errors, warnings and notices, the domain's properties, and the issues by section with their counts. Free. In French: rapport d'audit seo, erreurs d'un audit de site.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -959,7 +959,7 @@ export const connector = defineConnector({
   name: "seranking",
   label: "SE Ranking",
   namespace: "seranking",
-  version: "1.1.0",
+  version: "1.1.1",
   apiVersion: "v1",
   baseUrl: "https://api.seranking.com/v1",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "prefix": "Token ", "key": "api_key"},

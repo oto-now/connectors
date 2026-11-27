@@ -105,7 +105,7 @@ connector:
   name: google_search_console
   label: Google Search Console
   namespace: google_search_console
-  version: 2.0.0
+  version: 2.0.1
   api_version: v1
   base_url: https://searchconsole.googleapis.com
   accesses:
@@ -184,7 +184,8 @@ functions:
       (SITE_OWNER, SITE_FULL_USER, SITE_RESTRICTED_USER, SITE_UNVERIFIED_USER): {siteEntry: [{siteUrl,
       permissionLevel}]}. siteUrl is the name every other function takes: sc-domain:example.com for a Domain
       property, a full URL with a trailing slash for a URL-prefix property. An empty answer means the account was
-      added to no property yet. Free.
+      added to no property yet. Free. In French: propriétés search console, sites suivis, mes sites dans search
+      console.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - title: Every property shared with the account
@@ -201,7 +202,8 @@ functions:
       dimension gives one total row. Data lags about two days; data_state all adds fresh, incomplete days (metadata
       says from when). Returns at most row_limit rows (default 1,000, up to 25,000) and may hold back the long
       tail. For more rows, call again with start_row = previous start_row + row_limit, until fewer rows come back.
-      Free, bounded by quotas.
+      Free, bounded by quotas. In French: clics et impressions, performances seo, requêtes google du site, position
+      moyenne.
     input:
       type: object
       additionalProperties: false
@@ -297,7 +299,8 @@ functions:
       lastCrawlTime, googleCanonical, userCanonical, crawledAs, sitemap, referringUrls), and when they apply
       mobileUsabilityResult, richResultsResult, ampResult, plus inspectionResultLink to the Search Console screen.
       The URL must belong to the property. Free, but bounded to 2,000 inspections a day and 600 a minute per
-      property: inspect the pages that matter, not a whole sitemap.
+      property: inspect the pages that matter, not a whole sitemap. In French: statut d'indexation d'une page,
+      page indexée par google, inspecter une url.
     input:
       type: object
       additionalProperties: false
@@ -324,7 +327,8 @@ functions:
       List the sitemaps submitted for a property, or those of one sitemap index:
       [{path, lastSubmitted, lastDownloaded, isPending, isSitemapsIndex, type, warnings, errors,
       contents: [{type, submitted}]}]; warnings, errors and submitted are counts written as strings. Read
-      one sitemap with get_sitemap, submit one with add_sitemap. Free.
+      one sitemap with get_sitemap, submit one with add_sitemap. Free. In French: lister les sitemaps,
+      sitemaps soumis.
     input:
       type: object
       additionalProperties: false
@@ -350,7 +354,8 @@ functions:
     description: >-
       Get one submitted sitemap of a property: {path, lastSubmitted, lastDownloaded, isPending, isSitemapsIndex,
       type, warnings, errors, contents: [{type, submitted}]}; warnings, errors and submitted are counts written as
-      strings. A sitemap never submitted for this property is not found. Free.
+      strings. A sitemap never submitted for this property is not found. Free. In French: détail d'un sitemap,
+      erreurs du sitemap.
     input:
       type: object
       additionalProperties: false
@@ -375,7 +380,7 @@ functions:
       Submit a sitemap for a property, so Google crawls the addresses it lists: answers {} on success. Submitting an
       address already submitted submits it again. The sitemap must be reachable by Google and under the property; its
       processing (isPending, errors, warnings) is read afterwards with get_sitemap. The account must be an Owner or
-      Full user of the property: Restricted only reads. Free.
+      Full user of the property: Restricted only reads. Free. In French: soumettre un sitemap, ajouter un sitemap.
     input:
       type: object
       additionalProperties: false

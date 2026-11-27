@@ -57,9 +57,9 @@ def _described(function: dict, arguments: dict) -> dict:
             "params": query or None, "headers": {**connector["headers"], connector["auth"]["name"]: "k"}}
 
 
-def test_the_description_is_version_1_0_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_0_1_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.0"
+    assert description["connector"]["version"] == "1.0.1"
     check(description, SIRENE)
 
 

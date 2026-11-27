@@ -6,7 +6,7 @@ export const listEstimates = defineFunction({
   connector: "sellsy",
   class: "read",
   act: false,
-  description: "List Sellsy estimates (quotes), one page at a time. Pass the returned pagination.offset as offset to get the next page.",
+  description: "List Sellsy estimates (quotes), one page at a time. Pass the returned pagination.offset as offset to get the next page. In French: lister les devis sellsy, devis en cours, chercher un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -85,7 +85,7 @@ export const getEstimate = defineFunction({
   connector: "sellsy",
   class: "read",
   act: false,
-  description: "Get the full record of one Sellsy estimate by its id.",
+  description: "Get the full record of one Sellsy estimate by its id. In French: détail d'un devis sellsy, lignes d'un devis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -152,7 +152,7 @@ export const connector = defineConnector({
   name: "sellsy",
   label: "Sellsy",
   namespace: "sellsy",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v2",
   baseUrl: "https://api.sellsy.com/v2",
   auth: {

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'threecx',
                'label': '3CX',
                'namespace': 'threecx',
-               'version': '1.1.0',
+               'version': '1.1.1',
                'api_version': 'XAPI v1 (3CX V20)',
                'base_url': '{base_url}/xapi/v1',
                'auth': {'kind': 'oauth2_client_credentials',
@@ -46,7 +46,9 @@ DESCRIPTION = {'connector': {'name': 'threecx',
                                'the audio as a file; a recording is never a link. date_from and date_to are '
                                'UTC instants (2026-10-01T00:00:00Z). top is the number of rows per page, 1 '
                                'to 500; continue with skip increased by top while a page holds top rows: a '
-                               'page with fewer rows is the last. What the API client sees bounds the rows.',
+                               'page with fewer rows is the last. What the API client sees bounds the rows. '
+                               'In French: journal des appels, historique des appels, appels manqués, appels '
+                               "d'un poste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['date_from', 'date_to', 'top'],
@@ -86,7 +88,8 @@ DESCRIPTION = {'connector': {'name': 'threecx',
                                'the answer gives its file id, to pass as is to a function that takes a file '
                                '(a transcription). Never a link. rec_id is the SrcRecId or DstRecId of a '
                                'list_calls row. The audio is WAV; a recording over 50 MB is refused. The API '
-                               'client needs a role that sees the recordings of that call.',
+                               'client needs a role that sees the recordings of that call. In French: '
+                               "enregistrement d'un appel, télécharger l'audio d'un appel, écouter un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['rec_id'],

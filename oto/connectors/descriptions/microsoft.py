@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'microsoft',
                'label': 'Microsoft 365 (SharePoint, OneDrive)',
                'namespace': 'microsoft',
-               'version': '3.2.1',
+               'version': '3.2.2',
                'api_version': 'v1.0',
                'base_url': 'https://graph.microsoft.com/v1.0',
                'auth': {'kind': 'oauth2_user',
@@ -59,7 +59,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Sites.Read.All'],
                 'description': 'Search the SharePoint sites whose name or description matches a query. Only '
-                               'the sites the signed-in person can open are returned.',
+                               'the sites the signed-in person can open are returned. In French: chercher un '
+                               "site sharepoint, trouver un site d'équipe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['query'],
@@ -79,7 +80,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Sites.Read.All'],
                 'description': 'Get one SharePoint site by its composite id '
-                               '({hostname},{site-collection-id},{web-id}), as returned by search_sites.',
+                               '({hostname},{site-collection-id},{web-id}), as returned by search_sites. In '
+                               "French: détail d'un site sharepoint, lire un site sharepoint.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_id'],
@@ -100,7 +102,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'scopes': ['https://graph.microsoft.com/Sites.Read.All'],
                 'description': 'Get one SharePoint site by the host name and server-relative path read in '
                                'its URL: https://acme.sharepoint.com/sites/Marketing gives hostname '
-                               'acme.sharepoint.com and site_path sites/Marketing.',
+                               'acme.sharepoint.com and site_path sites/Marketing. In French: site '
+                               'sharepoint par son adresse, ouvrir un site depuis son lien.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['hostname', 'site_path'],
@@ -125,7 +128,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Sites.Read.All'],
                 'description': 'List the document libraries of a SharePoint site. A library is a drive: its '
-                               'id is the drive_id of the item functions.',
+                               'id is the drive_id of the item functions. In French: bibliothèques de '
+                               "documents d'un site, lister les bibliothèques sharepoint.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_id'],
@@ -148,7 +152,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'class': 'read',
                 'scopes': ['User.Read'],
                 'description': 'Get the signed-in person: id, displayName, mail and userPrincipalName. Every '
-                               'other function acts on their behalf and sees what they see.',
+                               'other function acts on their behalf and sees what they see. In French: mon '
+                               'compte microsoft, utilisateur connecté à microsoft.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Who the token acts as', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/me'},
@@ -157,7 +162,7 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Files.Read.All'],
                 'description': 'Get the OneDrive of the signed-in person. Its id is the drive_id of the item '
-                               'functions.',
+                               'functions. In French: mon onedrive, mon espace onedrive.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'My OneDrive', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/me/drive'},
@@ -167,7 +172,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'scopes': ['https://graph.microsoft.com/Files.Read.All'],
                 'description': 'Get the OneDrive of a colleague, by user id or userPrincipalName (usually '
                                'the work email), if they shared it with the signed-in person. Its id is the '
-                               'drive_id of the item functions.',
+                               "drive_id of the item functions. In French: onedrive d'un collègue, fichiers "
+                               'partagés par un collègue.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user'],
@@ -185,7 +191,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                {'name': 'get_item',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Files.Read.All'],
-                'description': 'Get the metadata of one file or folder of a drive by its item id.',
+                'description': 'Get the metadata of one file or folder of a drive by its item id. In French: '
+                               "détail d'un fichier, métadonnées d'un dossier.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['drive_id', 'item_id'],
@@ -209,7 +216,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Files.Read.All'],
                 'description': 'Get the metadata of one file or folder of a drive by its path from the drive '
-                               'root, e.g. Contracts/2026/nda.docx.',
+                               'root, e.g. Contracts/2026/nda.docx. In French: fichier par son chemin, '
+                               'trouver un fichier par son chemin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['drive_id', 'path'],
@@ -232,7 +240,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                {'name': 'list_root_children',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Files.Read.All'],
-                'description': 'List the files and folders at the root of a drive.',
+                'description': 'List the files and folders at the root of a drive. In French: fichiers à la '
+                               'racine, contenu de la racine du drive.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['drive_id'],
@@ -255,7 +264,7 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Files.Read.All'],
                 'description': "List the files and folders inside one folder of a drive, by the folder's "
-                               'item id.',
+                               "item id. In French: contenu d'un dossier, lister les fichiers d'un dossier.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['drive_id', 'item_id'],
@@ -288,7 +297,8 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'class': 'read',
                 'scopes': ['https://graph.microsoft.com/Files.Read.All'],
                 'description': "List the files and folders inside one folder of a drive, by the folder's "
-                               'path from the drive root, e.g. Contracts/2026.',
+                               "path from the drive root, e.g. Contracts/2026. In French: contenu d'un "
+                               'dossier par son chemin, lister un dossier par son chemin.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['drive_id', 'path'],
@@ -320,7 +330,9 @@ DESCRIPTION = {'connector': {'name': 'microsoft',
                 'scopes': ['https://graph.microsoft.com/Files.Read.All'],
                 'description': 'Search the files of a whole drive by name, metadata and content. Results '
                                'come from the SharePoint index, not a live scan: a file added seconds ago '
-                               'may not show yet. The query cannot contain an apostrophe.',
+                               'may not show yet. The query cannot contain an apostrophe. In French: '
+                               'chercher un fichier, rechercher un document sharepoint, trouver un document '
+                               'onedrive.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['drive_id', 'query'],

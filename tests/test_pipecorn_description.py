@@ -142,9 +142,9 @@ def _valid(function: dict, arguments: dict) -> bool:
     return jsonschema.Draft202012Validator(function["input"]).is_valid(arguments)
 
 
-def test_the_description_is_version_1_0_0_and_passes_the_fabrique():
+def test_the_description_is_version_1_0_1_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.0.0"
+    assert description["connector"]["version"] == "1.0.1"
     check(description, PIPECORN)
 
 

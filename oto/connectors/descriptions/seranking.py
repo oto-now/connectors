@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'seranking',
                'label': 'SE Ranking',
                'namespace': 'seranking',
-               'version': '1.1.0',
+               'version': '1.1.1',
                'api_version': 'v1',
                'base_url': 'https://api.seranking.com/v1',
                'auth': {'kind': 'api_key',
@@ -67,7 +67,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'class': 'read',
                 'description': 'The SE Ranking subscription behind this key: status (active, inactive, '
                                'expired, disabled), start and expiration dates, and the Data API credits: '
-                               'units_limit and units_left. Free.',
+                               'units_limit and units_left. Free. In French: abonnement se ranking, crédits '
+                               'restants se ranking.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The subscription and its credits left', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/account/subscription'}},
@@ -77,7 +78,9 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'current month: organic and paid (adv) keyword count, estimated traffic and '
                                'its value, new, improved, declined and lost keywords, and keywords by '
                                'position band (top 1-5 to 51-100). Spends 100 SE Ranking credits. A 244 '
-                               'answer means the site is too large to be served by the API.',
+                               'answer means the site is too large to be served by the API. In French: '
+                               "aperçu seo d'un domaine, trafic organique d'un site, analyse seo d'un "
+                               'domaine.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['source', 'domain'],
@@ -110,7 +113,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'description': 'Monthly history of a domain in one regional database: for each month, '
                                'keyword count, estimated traffic and its value, and keywords by position '
                                'band. type picks organic (default) or paid (adv) search. Spends 100 SE '
-                               'Ranking credits.',
+                               'Ranking credits. In French: historique du trafic organique, évolution seo '
+                               "d'un domaine.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['source', 'domain'],
@@ -150,7 +154,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'SERP features, estimated traffic and its share, and the ranking URL. Sorted '
                                'by traffic by default. year and month together read a past month. One page '
                                'per call: page reads further, limit sets its size (100 by default, up to '
-                               '1000). Spends 100 SE Ranking credits per call, whatever the page size.',
+                               '1000). Spends 100 SE Ranking credits per call, whatever the page size. In '
+                               "French: mots-clés d'un domaine, positionnement d'un site sur les mots-clés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['source', 'domain'],
@@ -235,7 +240,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'for each, the domain, common keywords, relevance, total and missing '
                                'keywords, estimated traffic and its value. Up to 500 competitors, in one '
                                'answer. type picks organic (default) or paid (adv) search. Spends 100 SE '
-                               'Ranking credits.',
+                               "Ranking credits. In French: concurrents d'un domaine, concurrents seo d'un "
+                               'site.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['source', 'domain'],
@@ -264,7 +270,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'IPs, dofollow and nofollow counts, InLink Rank, and the top anchors, pages, '
                                'TLDs and countries. mode reads the target as a host (default), a whole '
                                'domain or one URL. A negative value means unknown. Spends 100 SE Ranking '
-                               'credits.',
+                               "credits. In French: profil de liens d'un site, résumé des backlinks, nombre "
+                               'de domaines référents.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -287,7 +294,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'target URL, anchor, alt text, nofollow and image flags, InLink Rank of the '
                                'page and of its domain, first seen and last visited dates. limit sets how '
                                'many (100 by default and at most here); per_domain caps the links kept per '
-                               'linking domain. Spends 1 SE Ranking credit per backlink returned.',
+                               'linking domain. Spends 1 SE Ranking credit per backlink returned. In French: '
+                               "lister les backlinks, liens entrants d'un site.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -341,7 +349,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'description': 'The domains linking to one target: for each, the referring domain, its '
                                'backlinks and dofollow backlinks to the target, its InLink Rank and when it '
                                'was first seen. limit sets how many (100 by default and at most here). '
-                               'Spends 1 SE Ranking credit per domain returned.',
+                               'Spends 1 SE Ranking credit per domain returned. In French: domaines '
+                               'référents, sites qui font un lien.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['target'],
@@ -384,7 +393,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'found, monthly search volume, CPC, competition (0-1), difficulty (0-100), '
                                'intents and the volume trend. history_from and history_to (within the last '
                                '12 months) add the monthly history. Spends 10 SE Ranking credits per keyword '
-                               'returned; up to 100 keywords per call here.',
+                               'returned; up to 100 keywords per call here. In French: volume de recherche '
+                               "d'un mot-clé, difficulté d'un mot-clé, cpc d'un mot-clé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['source', 'keywords'],
@@ -432,7 +442,7 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'found: for each, volume, CPC, difficulty, competition, intents and SERP '
                                'features. limit sets how many (100 by default and at most here), offset '
                                'skips the first ones to read further. Spends 10 SE Ranking credits per '
-                               'keyword returned.',
+                               'keyword returned. In French: mots-clés similaires, idées de mots-clés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['source', 'keyword'],
@@ -477,7 +487,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'other words), with the total found: for each, relevance, volume, CPC, '
                                'difficulty, competition, intents and SERP features. limit sets how many (100 '
                                'by default and at most here), offset skips the first ones. Spends 10 SE '
-                               'Ranking credits per keyword returned.',
+                               'Ranking credits per keyword returned. In French: mots-clés associés, '
+                               'mots-clés du même thème.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['source', 'keyword'],
@@ -521,7 +532,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'description': 'Questions people search around a seed keyword in one regional database, with '
                                'the total found: for each, volume, CPC, difficulty, competition, intents and '
                                'SERP features. limit sets how many (100 by default and at most here), offset '
-                               'skips the first ones. Spends 10 SE Ranking credits per question returned.',
+                               'skips the first ones. Spends 10 SE Ranking credits per question returned. In '
+                               "French: questions des internautes, questions autour d'un mot-clé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['source', 'keyword'],
@@ -565,7 +577,7 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'description': "The projects (sites) tracked in the SE Ranking account: id, name (the site's "
                                'address), title, group, active flag, check frequency and day, search depth '
                                'and keyword count. The id is the site_id of the other project functions. '
-                               'Free.',
+                               'Free. In French: lister les projets se ranking, sites suivis.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The tracked projects', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/project-management/sites'},
@@ -574,7 +586,7 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'class': 'read',
                 'description': 'The search engines a project tracks: for each, site_engine_id (used by the '
                                'positions functions), search engine id, region, language and keyword count. '
-                               'Free.',
+                               "Free. In French: moteurs de recherche suivis, moteurs d'un projet.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_id'],
@@ -589,7 +601,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'class': 'read',
                 'description': 'The keywords a project tracks: id, keyword, group, target URL, tags and the '
                                'search engines that track it; site_engine_id narrows to one engine and adds '
-                               'the first check date. Free.',
+                               "the first check date. Free. In French: mots-clés suivis, mots-clés d'un "
+                               'projet.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_id'],
@@ -609,7 +622,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'class': 'read',
                 'description': "Summary of a project's rankings: average position today and yesterday, "
                                'keywords up and down, keywords in the top 5, 10 and 30, visibility and its '
-                               'percentage, domain authority and pages indexed by Google. Free.',
+                               'percentage, domain authority and pages indexed by Google. Free. In French: '
+                               "résumé des positions d'un projet, visibilité d'un site, position moyenne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_id'],
@@ -627,7 +641,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                                'with volume and competition. The last 7 days by default. in_top keeps the '
                                'keywords in the top N at the last check; flags add the landing pages, SERP '
                                'features or content score. Free; long periods on large projects answer '
-                               'large.',
+                               'large. In French: positions des mots-clés, suivi de positionnement, '
+                               "classement google d'un site.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_id'],
@@ -681,7 +696,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'description': 'Schedule a fresh position check of a project: of every keyword of one search '
                                'engine (site_engine_id), or of the listed keyword and engine pairs. Uses the '
                                "plan's checks; answers the number of keywords scheduled. Results appear "
-                               'later in get_site_positions.',
+                               'later in get_site_positions. In French: relancer le suivi des positions, '
+                               'revérifier les positions.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_id'],
@@ -731,7 +747,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                {'name': 'list_competitors',
                 'class': 'read',
                 'description': 'The competitors a project tracks: id, name, URL and domain trust. The id is '
-                               'the competitor_id of get_competitor_positions. Free.',
+                               'the competitor_id of get_competitor_positions. Free. In French: concurrents '
+                               "suivis, concurrents d'un projet.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_id'],
@@ -745,7 +762,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                {'name': 'get_competitor_positions',
                 'class': 'read',
                 'description': "The positions of a tracked competitor on the project's keywords over a "
-                               'period, by search engine. The last 7 days by default. Free.',
+                               'period, by search engine. The last 7 days by default. Free. In French: '
+                               "positions d'un concurrent, classement d'un concurrent.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['competitor_id'],
@@ -783,7 +801,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'description': 'The site audits of the account: id, URL, title, status, stats and last '
                                'update. search filters by URL or title, date_start and date_end by date. '
                                'limit sets how many (100 by default), offset skips the first ones to read '
-                               'further: fewer than limit means the last page. Free.',
+                               'further: fewer than limit means the last page. Free. In French: lister les '
+                               'audits de site, audits seo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -819,7 +838,7 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'description': 'Start a technical SEO audit of a domain (crawl of its pages, issues by '
                                "severity). Uses the plan's audit limits; answers the audit id. The crawl "
                                'takes minutes to hours: follow it with get_audit_status, then read '
-                               'get_audit_report.',
+                               'get_audit_report. In French: lancer un audit seo, auditer un site.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['domain'],
@@ -840,7 +859,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'class': 'read',
                 'description': 'The progress of a site audit: status (queued, processing, finished, '
                                'cancelled, expired), pages crawled, errors, warnings and passed checks, '
-                               'start time and duration. Free.',
+                               "start time and duration. Free. In French: avancement d'un audit, état d'un "
+                               'audit seo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['audit_id'],
@@ -856,7 +876,8 @@ DESCRIPTION = {'connector': {'name': 'seranking',
                 'class': 'read',
                 'description': 'The report of a site audit: whether it is finished, the score, the totals of '
                                "errors, warnings and notices, the domain's properties, and the issues by "
-                               'section with their counts. Free.',
+                               "section with their counts. Free. In French: rapport d'audit seo, erreurs "
+                               "d'un audit de site.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['audit_id'],

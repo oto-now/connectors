@@ -6,7 +6,7 @@ export const accountGet = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the account FOD recognises for this call. For a person signed in: {type: \"oauth\", sub, email}, email only when the sign-in token carries it. For an organization key: {type: \"cle\", consommateur: \"cle:<fingerprint>\"}, the fingerprint naming the key, never the key. Nothing of the data is read.",
+  description: "Get the account FOD recognises for this call. For a person signed in: {type: \"oauth\", sub, email}, email only when the sign-in token carries it. For an organization key: {type: \"cle\", consommateur: \"cle:<fingerprint>\"}, the fingerprint naming the key, never the key. Nothing of the data is read. In French: compte france open data, identité du compte fod.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who the call acts as", input: {} },
@@ -28,7 +28,7 @@ export const companySearch = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search French companies (all legal units, from the national company register open data) by cumulative criteria: name, activity, place, size, legal form, collective agreement. Use it to identify a contract party when its SIREN is unknown, or to find the companies of a person's group. Put the name alone in query and a legal form spoken with it (\"SCI Les Tilleuls\") in nature_juridique (6540 = SCI, 5710 = SAS, 5499 = SARL). Returns {results: [{siren, nom_complet, activite_principale, nature_juridique, categorie_entreprise, etat_administratif, finances, ...}], total_results, page, per_page, total_pages}. A result is a short identity: the registered office (siege), officers (dirigeants), labels (complements) and matching establishments are left out, to keep a page of a common name readable; company_get on the SIREN chosen gives the full record. A name also matches officers, who are not shown here. At least one criterion is required.",
+  description: "Search French companies (all legal units, from the national company register open data) by cumulative criteria: name, activity, place, size, legal form, collective agreement. Use it to identify a contract party when its SIREN is unknown, or to find the companies of a person's group. Put the name alone in query and a legal form spoken with it (\"SCI Les Tilleuls\") in nature_juridique (6540 = SCI, 5710 = SAS, 5499 = SARL). Returns {results: [{siren, nom_complet, activite_principale, nature_juridique, categorie_entreprise, etat_administratif, finances, ...}], total_results, page, per_page, total_pages}. A result is a short identity: the registered office (siege), officers (dirigeants), labels (complements) and matching establishments are left out, to keep a page of a common name readable; company_get on the SIREN chosen gives the full record. A name also matches officers, who are not shown here. At least one criterion is required. In French: trouver une entreprise, sociétés d'une commune.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -120,7 +120,7 @@ export const companyGet = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the full record of one French company by its SIREN: identity, legal form, registered office, activity, headcount band, VAT number, closure status (etat_administratif, date_fermeture), latest summary accounts, officers, collective agreements and some thirty labels. Use it to check that a contract party exists, is active, and is what the contract says it is.",
+  description: "Get the full record of one French company by its SIREN: identity, legal form, registered office, activity, headcount band, VAT number, closure status (etat_administratif, date_fermeture), latest summary accounts, officers, collective agreements and some thirty labels. Use it to check that a contract party exists, is active, and is what the contract says it is. In French: fiche d'une entreprise par siren, infos légales d'une société, entreprise active ou fermée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -152,7 +152,7 @@ export const companyListDirectors = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the officers of a French company as declared in the national register (RNE): [{nom, prenoms, date_de_naissance, qualite, type_dirigeant}]. An officer is a natural person or a legal person (type_dirigeant \"personne morale\", with its own siren): a subsidiary is often chaired by a company. Use it to check who has power to sign for a company that is a contract party. Empty list when none is declared or the SIREN is unknown.",
+  description: "List the officers of a French company as declared in the national register (RNE): [{nom, prenoms, date_de_naissance, qualite, type_dirigeant}]. An officer is a natural person or a legal person (type_dirigeant \"personne morale\", with its own siren): a subsidiary is often chaired by a company. Use it to check who has power to sign for a company that is a contract party. Empty list when none is declared or the SIREN is unknown. In French: dirigeants d'une entreprise, gérant d'une société, mandataires sociaux.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -179,7 +179,7 @@ export const companyListBodaccNotices = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the BODACC legal notices of a French company, newest first: insolvency proceedings, changes, filing of accounts, sales and transfers of a business, registrations and deregistrations. Returns {results: [{dateparution, familleavis, familleavis_lib, tribunal, texte, ...}], total_count}. Use it before contracting with a company: an insolvency proceeding (famille collective) is the strongest signal read here, and the publication date is not the date of the judgment.",
+  description: "List the BODACC legal notices of a French company, newest first: insolvency proceedings, changes, filing of accounts, sales and transfers of a business, registrations and deregistrations. Returns {results: [{dateparution, familleavis, familleavis_lib, tribunal, texte, ...}], total_count}. Use it before contracting with a company: an insolvency proceeding (famille collective) is the strongest signal read here, and the publication date is not the date of the judgment. In French: annonces bodacc d'une entreprise, procédure collective, redressement judiciaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -226,7 +226,7 @@ export const companyListFiscalYears = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the fiscal years of a French company for which annual accounts were filed with INPI, newest first: [{date_cloture_exercice, type_bilan, confidentiality, chiffre_d_affaires, ...}]. A confidential filing has no figures. Gives the exact closing date a balance sheet is read by. The first call after a restart of the service is slow.",
+  description: "List the fiscal years of a French company for which annual accounts were filed with INPI, newest first: [{date_cloture_exercice, type_bilan, confidentiality, chiffre_d_affaires, ...}]. A confidential filing has no figures. Gives the exact closing date a balance sheet is read by. The first call after a restart of the service is slow. In French: exercices comptables déposés, comptes annuels disponibles.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -253,7 +253,7 @@ export const companyGetBalanceSheet = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the balance sheet of one fiscal year of a French company, as filed with INPI: the raw items of the tax return (CERFA 2050-2053 or 2033, under liasse, keyed by item code), with turnover and net result derived from them. Use it to assess the financial standing of a contract party, such as a customer, a supplier or a guarantor. date_cloture must be exactly one of the closing dates of this company's filed fiscal years.",
+  description: "Get the balance sheet of one fiscal year of a French company, as filed with INPI: the raw items of the tax return (CERFA 2050-2053 or 2033, under liasse, keyed by item code), with turnover and net result derived from them. Use it to assess the financial standing of a contract party, such as a customer, a supplier or a guarantor. date_cloture must be exactly one of the closing dates of this company's filed fiscal years. In French: bilan d'une entreprise, chiffre d'affaires d'une société, comptes annuels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -288,7 +288,7 @@ export const companyScreenBodaccNotices = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Screen the BODACC legal notices of many French companies at once (up to 1,000 SIRENs, grouped into a few upstream requests), newest first. Returns {annonces: [{siren, partie, date_parution, date_jugement, famille, famille_code, type_avis, jugement_famille, jugement_nature, texte, texte_source, tribunal, commercant, bodacc_id}], synthese: {sirens_avec_annonce, sirens_sans_annonce, annonces_total, lignes_total, par_famille, ..., periode}}. One row per notice and per requested SIREN it names (a sale names both parties); partie is that SIREN's role, indeterminee when the notice does not say. The counts are not a verdict: whether a company is in insolvency proceedings is read in texte, SIREN by SIREN. Without famille, every family comes back.",
+  description: "Screen the BODACC legal notices of many French companies at once (up to 1,000 SIRENs, grouped into a few upstream requests), newest first. Returns {annonces: [{siren, partie, date_parution, date_jugement, famille, famille_code, type_avis, jugement_famille, jugement_nature, texte, texte_source, tribunal, commercant, bodacc_id}], synthese: {sirens_avec_annonce, sirens_sans_annonce, annonces_total, lignes_total, par_famille, ..., periode}}. One row per notice and per requested SIREN it names (a sale names both parties); partie is that SIREN's role, indeterminee when the notice does not say. The counts are not a verdict: whether a company is in insolvency proceedings is read in texte, SIREN by SIREN. Without famille, every family comes back. In French: surveiller les annonces bodacc, procédures collectives d'un portefeuille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -350,7 +350,7 @@ export const companyGetEqualityIndex = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the gender equality index (Egapro) a French company declared for one year: {annee, entreprise: {siren, raison_sociale, code_naf, effectif: {total, tranche}, ...}, indicateurs, declaration}. entreprise.effectif.total is the exact headcount declared, where the company register only gives a band. Only companies of 50 employees or more must declare: no declaration is not a bad score. When the latest year is unknown, use the latest declaration instead.",
+  description: "Get the gender equality index (Egapro) a French company declared for one year: {annee, entreprise: {siren, raison_sociale, code_naf, effectif: {total, tranche}, ...}, indicateurs, declaration}. entreprise.effectif.total is the exact headcount declared, where the company register only gives a band. Only companies of 50 employees or more must declare: no declaration is not a bad score. When the latest year is unknown, use the latest declaration instead. In French: index égalité femmes hommes, index egapro d'une année.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -385,7 +385,7 @@ export const companyGetLatestEqualityIndex = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the most recent gender equality index (Egapro) of a French company, looking back up to five years from the current one: same shape as one year's declaration, annee saying which. Use it to qualify a company's exact headcount (entreprise.effectif.total) and to confirm it employs 50 people or more.",
+  description: "Get the most recent gender equality index (Egapro) of a French company, looking back up to five years from the current one: same shape as one year's declaration, annee saying which. Use it to qualify a company's exact headcount (entreprise.effectif.total) and to confirm it employs 50 people or more. In French: dernier index égalité, dernier index egapro.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -417,7 +417,7 @@ export const companySearchAgreements = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search the French company agreements filed since 2017-09-01 (ACCO, metadata only), by cumulative filters. Returns {results: [{id, nature, numero, siret, raison_sociale, code_idcc, date_texte, date_depot, conforme_version_integrale, theme_codes, themes_libelle, syndicats_libelle, titre, permalien, ...}], total_count, effectifs_filter}. Theme codes prove presence, never absence: the indexing is declarative and misses clauses (a health clause often sits in an agreement coded otherwise), so confirm by reading the text. To check one company, search by siren without themes: an agreement is filed under the establishment that deposits it. When effectifs_filter.truncated is true, the answer is not exhaustive: raise scan_cap.",
+  description: "Search the French company agreements filed since 2017-09-01 (ACCO, metadata only), by cumulative filters. Returns {results: [{id, nature, numero, siret, raison_sociale, code_idcc, date_texte, date_depot, conforme_version_integrale, theme_codes, themes_libelle, syndicats_libelle, titre, permalien, ...}], total_count, effectifs_filter}. Theme codes prove presence, never absence: the indexing is declarative and misses clauses (a health clause often sits in an agreement coded otherwise), so confirm by reading the text. To check one company, search by siren without themes: an agreement is filed under the establishment that deposits it. When effectifs_filter.truncated is true, the answer is not exhaustive: raise scan_cap. In French: accords d'entreprise, chercher un accord collectif d'entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -535,7 +535,7 @@ export const companyGetAgreement = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the metadata of one French company agreement by its DILA id (ACCOTEXT...) or its filing number (T...): who signed it (siret, raison_sociale, syndicats_libelle), when (date_texte, date_effet, date_fin), its branch, themes and title, and permalien. The body is not here: it is read with the agreement text, by the DILA id.",
+  description: "Get the metadata of one French company agreement by its DILA id (ACCOTEXT...) or its filing number (T...): who signed it (siret, raison_sociale, syndicats_libelle), when (date_texte, date_effet, date_fin), its branch, themes and title, and permalien. The body is not here: it is read with the agreement text, by the DILA id. In French: détail d'un accord d'entreprise, signataires d'un accord.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -574,7 +574,7 @@ export const companyListAgreementThemes = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the theme codes of company agreements with their label and how many agreements carry each: [{code, libelle, count}]. Read it before filtering agreements by theme: the codes cannot be guessed. A count says how often the code was applied, not how many agreements cover the topic.",
+  description: "List the theme codes of company agreements with their label and how many agreements carry each: [{code, libelle, count}]. Read it before filtering agreements by theme: the codes cannot be guessed. A count says how often the code was applied, not how many agreements cover the topic. In French: thèmes des accords d'entreprise, codes thèmes des accords.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Theme codes", input: {} },
@@ -596,7 +596,7 @@ export const companyGetAgreementText = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the full text of a French company agreement, read from Légifrance on demand, with its metadata: {id, titre, nature, siret, raison_sociale, date_texte, date_effet, syndicats, texte, texte_chars, offset, tronque, next_offset, permalien}. texte may be empty when no full version was published. A long text comes in slices: when tronque is true, call again with offset set to next_offset (health, provident and final provisions often sit at the end).",
+  description: "Get the full text of a French company agreement, read from Légifrance on demand, with its metadata: {id, titre, nature, siret, raison_sociale, date_texte, date_effet, syndicats, texte, texte_chars, offset, tronque, next_offset, permalien}. texte may be empty when no full version was published. A long text comes in slices: when tronque is true, call again with offset set to next_offset (health, provident and final provisions often sit at the end). In French: texte d'un accord d'entreprise, lire un accord d'entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -649,7 +649,7 @@ export const companyGetStockInfo = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the vintage of the SIRENE stock FOD reads: {millesime, built_at, age_days, rows, total_rows, source_url, size_bytes, mtime}. millesime is the date of the INSEE monthly file (YYYYMMDD); age_days counts the days since FOD built its copy; build_info \"absent\" means the vintage is unknown. The stock functions answer as of that file, not live: a company created or closed since is not in it, the live register (company_get) is. Quote the vintage with a figure drawn from the stock.",
+  description: "Get the vintage of the SIRENE stock FOD reads: {millesime, built_at, age_days, rows, total_rows, source_url, size_bytes, mtime}. millesime is the date of the INSEE monthly file (YYYYMMDD); age_days counts the days since FOD built its copy; build_info \"absent\" means the vintage is unknown. The stock functions answer as of that file, not live: a company created or closed since is not in it, the live register (company_get) is. Quote the vintage with a figure drawn from the stock. In French: date du stock sirene, fraîcheur des données sirene.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Vintage of the stock", input: {} },
@@ -672,7 +672,7 @@ export const companySearchEstablishments = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Enumerate French establishments in the SIRENE stock (every establishment, head offices and branches, active or closed) by cumulative filters, ordered by SIRET: {items: [{siren, siret, nic, is_siege, etat, date_creation, denomination, enseigne_1, naf, tranche_effectifs, annee_effectifs, caractere_employeur, numero_voie, type_voie, libelle_voie, code_postal, libelle_commune, code_commune, ...}], count, limit, offset}. Use it for exhaustive lists a search engine caps: every bakery of a department, every site of a brand, head offices of 100 to 499 employees in a department. The company's name is not in this stock: denomination is the establishment's usual name, empty for most; read the names by listing the legal units of the SIRENs. To find a company by its name, use the company search. count equal to limit: more may follow, pass offset + limit. A department or a postal code narrows the scan to one part of the stock; without one the scan reads all of France and may be stopped.",
+  description: "Enumerate French establishments in the SIRENE stock (head offices and branches, active or closed) by cumulative filters, ordered by SIRET: {items: [{siren, siret, nic, is_siege, etat, date_creation, denomination, enseigne_1, naf, tranche_effectifs, annee_effectifs, caractere_employeur, code_postal, libelle_commune, code_commune, ...}], count, limit, offset}. Use it for exhaustive lists a search engine caps: every bakery of a department, every site of a brand, head offices of 100 to 499 employees in a department. The company's name is not in this stock: denomination is the establishment's usual name, empty for most; read the names by listing the legal units of the SIRENs. To find a company by its name, use the company search. count equal to limit: more may follow, pass offset + limit. A department or a postal code narrows the scan to one part of the stock; without one the scan reads all of France and may be stopped. In French: liste d'établissements, sites d'une enseigne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -757,7 +757,7 @@ export const companyListHeadquartersAddresses = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the head office of many French companies at once from the SIRENE stock, in one scan, as an address: {siren: {siren, siret, is_headquarters, street, postal_code, city, code_commune, status, naf, denomination, lambert_x, lambert_y, tranche_effectifs, annee_effectifs, caractere_employeur}}. status is active or closed. A SIREN without a head office in the stock is absent from the answer. Use it to enrich a list of companies (address, activity, size of the head office) far faster than one lookup each; the company names come from the legal units.",
+  description: "Get the head office of many French companies at once from the SIRENE stock, in one scan, as an address: {siren: {siren, siret, is_headquarters, street, postal_code, city, code_commune, status, naf, denomination, lambert_x, lambert_y, tranche_effectifs, annee_effectifs, caractere_employeur}}. status is active or closed. A SIREN without a head office in the stock is absent from the answer. Use it to enrich a list of companies (address, activity, size of the head office) far faster than one lookup each; the company names come from the legal units. In French: adresses des sièges, adresse du siège de plusieurs sociétés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -795,7 +795,7 @@ export const companyListHeadquarters = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the head office record of many French companies at once from the SIRENE stock, in one scan, with every column the stock holds: {siren: {siren, siret, nic, is_siege, etat, date_creation, date_debut, denomination, enseigne_1, naf, tranche_effectifs, annee_effectifs, caractere_employeur, numero_voie, type_voie, libelle_voie, code_postal, libelle_commune, code_commune, code_cedex, lambert_x, lambert_y, date_dernier_traitement, ...}}. etat A is active, F closed. A SIREN without a head office in the stock is absent. The head office addresses give the same companies in a shorter form.",
+  description: "Get the head office record of many French companies at once from the SIRENE stock, in one scan, with every column the stock holds: {siren: {siren, siret, nic, is_siege, etat, date_creation, date_debut, denomination, enseigne_1, naf, tranche_effectifs, annee_effectifs, caractere_employeur, numero_voie, type_voie, libelle_voie, code_postal, libelle_commune, code_commune, code_cedex, lambert_x, lambert_y, date_dernier_traitement, ...}}. etat A is active, F closed. A SIREN without a head office in the stock is absent. The head office addresses give the same companies in a shorter form. In French: sièges de plusieurs entreprises, fiches siège en masse.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -833,7 +833,7 @@ export const companyListLegalUnits = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the legal unit of many French companies at once from the SIRENE stock of legal units, in one scan: {items: {siren: {siren, denomination, sigle, nom, nom_usage, etat, date_creation, categorie_entreprise, annee_categorie_entreprise, tranche_effectifs, categorie_juridique, naf, nic_siege, ess, societe_mission, caractere_employeur, statut_diffusion, ...}}, count}. denomination is the company name (null for a sole trader, whose name is nom). categorie_entreprise (PME, ETI, GE) is computed by INSEE over the whole group: a small subsidiary of a large group is GE, which no headcount band shows. An unknown SIREN is absent, never an empty entry; categorie_entreprise null is a category not given. A unit with statut_diffusion P is under partial diffusion: its data must not be redistributed whole nor used for prospecting.",
+  description: "Get the legal unit of many French companies at once from the SIRENE stock of legal units, in one scan: {items: {siren: {siren, denomination, sigle, nom, nom_usage, etat, date_creation, categorie_entreprise, annee_categorie_entreprise, tranche_effectifs, categorie_juridique, naf, nic_siege, ess, societe_mission, caractere_employeur, statut_diffusion, ...}}, count}. denomination is the company name (null for a sole trader, whose name is nom). categorie_entreprise (PME, ETI, GE) is computed by INSEE over the whole group: a small subsidiary of a large group is GE, which no headcount band shows. An unknown SIREN is absent, never an empty entry; categorie_entreprise null is a category not given. A unit with statut_diffusion P is under partial diffusion: its data must not be redistributed whole nor used for prospecting. In French: unités légales en masse, plusieurs entreprises par siren.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -872,7 +872,7 @@ export const companyListEstablishmentsBySiret = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get many French establishments at once from the SIRENE stock by their SIRET, in one scan, with their headcount: {items: {siret: {siren, siret, is_headquarters, street, postal_code, city, code_commune, status, naf, denomination, tranche_effectifs, annee_effectifs, caractere_employeur, ...}}, erreurs: [{siret, code}], count}. tranche_effectifs is the establishment's INSEE headcount band for the year annee_effectifs, null when not filled; caractere_employeur O (employs staff) or N. Errors are per SIRET, never for the list: siret_invalide (not 14 digits), introuvable (not in the stock). A SIRET given twice is read once.",
+  description: "Get many French establishments at once from the SIRENE stock by their SIRET, in one scan, with their headcount: {items: {siret: {siren, siret, is_headquarters, street, postal_code, city, code_commune, status, naf, denomination, tranche_effectifs, annee_effectifs, caractere_employeur, ...}}, erreurs: [{siret, code}], count}. tranche_effectifs is the establishment's INSEE headcount band for the year annee_effectifs, null when not filled; caractere_employeur O (employs staff) or N. Errors are per SIRET, never for the list: siret_invalide (not 14 digits), introuvable (not in the stock). A SIRET given twice is read once. In French: établissements par siret, plusieurs siret à la fois.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -910,7 +910,7 @@ export const companyGetHeadquarters = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the head office of one French company from the SIRENE stock, with every column the stock holds (same record as the head office records of many). The head office whose period is still open is kept. For many companies, read them in one call.",
+  description: "Get the head office of one French company from the SIRENE stock, with every column the stock holds (same record as the head office records of many). The head office whose period is still open is kept. For many companies, read them in one call. In French: siège d'une entreprise, siège social d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -943,7 +943,7 @@ export const companyListEstablishments = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List every establishment of one French company from the SIRENE stock, head office first, then the latest: [{siret, is_siege, etat, denomination, enseigne_1, naf, tranche_effectifs, code_postal, libelle_commune, code_commune, ...}]. Use it to map the sites, branches or shops of a company. Empty list when the SIREN is unknown or, with active_only, has no open establishment.",
+  description: "List every establishment of one French company from the SIRENE stock, head office first, then the latest: [{siret, is_siege, etat, denomination, enseigne_1, naf, tranche_effectifs, code_postal, libelle_commune, code_commune, ...}]. Use it to map the sites, branches or shops of a company. Empty list when the SIREN is unknown or, with active_only, has no open establishment. In French: établissements d'une entreprise, sites d'une société, liste des siret.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -976,7 +976,7 @@ export const companyGetEstablishment = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one French establishment from the SIRENE stock by its SIRET, with every column the stock holds: activity, headcount band and its year, employer status, address, state (etat A active, F closed). The name of the company is not in it: read its legal unit.",
+  description: "Get one French establishment from the SIRENE stock by its SIRET, with every column the stock holds: activity, headcount band and its year, employer status, address, state (etat A active, F closed). The name of the company is not in it: read its legal unit. In French: fiche d'un établissement, établissement par siret.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1009,7 +1009,7 @@ export const propertyGeocodeAddress = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Geocode a French address with the national address base (BAN), best match first: [{label, score, lon, lat, type, citycode, city, postcode}]. citycode is the INSEE code of the commune (an arrondissement code in Paris, Lyon and Marseille). Use it to normalise the address of a property and get the point and commune code that parcel, zoning and risk lookups take. A score under about 0.5 is a doubtful match.",
+  description: "Geocode a French address with the national address base (BAN), best match first: [{label, score, lon, lat, type, citycode, city, postcode}]. citycode is the INSEE code of the commune (an arrondissement code in Paris, Lyon and Marseille). Use it to normalise the address of a property and get the point and commune code that parcel, zoning and risk lookups take. A score under about 0.5 is a doubtful match. In French: géocoder une adresse, coordonnées d'une adresse.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1050,7 +1050,7 @@ export const propertyReverseGeocode = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Give the nearest BAN address of a point: {label, score, lon, lat, citycode, city, postcode}.",
+  description: "Give the nearest BAN address of a point: {label, score, lon, lat, citycode, city, postcode}. In French: adresse d'un point gps, adresse la plus proche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1091,7 +1091,7 @@ export const propertyGetCadastralParcel = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the cadastral parcel that contains a point: {idu, commune, code_insee, section, numero, contenance_m2, geometry}. Use it to check the cadastral references and area a document gives for a property. A geocoded house number often falls on the street, outside any parcel: the point must lie inside the plot.",
+  description: "Get the cadastral parcel that contains a point: {idu, commune, code_insee, section, numero, contenance_m2, geometry}. Use it to check the cadastral references and area a document gives for a property. A geocoded house number often falls on the street, outside any parcel: the point must lie inside the plot. In French: parcelle cadastrale, référence cadastrale d'un terrain.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1132,7 +1132,7 @@ export const propertyListEnergyRatings = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the energy performance diagnoses (DPE, ADEME) of dwellings around an address, nearest first: {adresse_geocodee, code_commune, count, dpe: [{etiquette_dpe, etiquette_ges, conso_ep_kwh_m2_an, surface_habitable, annee_construction, type_batiment, adresse, date_dpe, distance_m}]}. Use it to check the DPE a sale or a lease must carry. In a block of flats a building has many DPE: match by address, surface and date, never by proximity alone.",
+  description: "List the energy performance diagnoses (DPE, ADEME) of dwellings around an address, nearest first: {adresse_geocodee, code_commune, count, dpe: [{etiquette_dpe, etiquette_ges, conso_ep_kwh_m2_an, surface_habitable, annee_construction, type_batiment, adresse, date_dpe, distance_m}]}. Use it to check the DPE a sale or a lease must carry. In a block of flats a building has many DPE: match by address, surface and date, never by proximity alone. In French: diagnostics dpe autour d'une adresse, étiquette énergie d'un logement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1186,7 +1186,7 @@ export const propertyListComparableSales = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the property sales recorded in DVF (land registry transfers, from 2014) around an address, most recent first: {adresse_geocodee, code_commune, count, median_prix_m2, mutations: [{date_mutation, nature_mutation, valeur_fonciere, type_local, surface_reelle_bati, surface_terrain, prix_m2, vefa, id_parcelle, adresse, distance_m}]}. Use it to check a price against the local market or to value an estate property. Every kind of sale is listed (outbuildings, land, mixed premises) unless filtered. DVF does not cover Alsace-Moselle and Mayotte.",
+  description: "List the property sales recorded in DVF (land registry transfers, from 2014) around an address, most recent first: {adresse_geocodee, code_commune, count, median_prix_m2, mutations: [{date_mutation, nature_mutation, valeur_fonciere, type_local, surface_reelle_bati, surface_terrain, prix_m2, vefa, id_parcelle, adresse, distance_m}]}. Use it to check a price against the local market or to value an estate property. Every kind of sale is listed (outbuildings, land, mixed premises) unless filtered. DVF does not cover Alsace-Moselle and Mayotte. In French: ventes immobilières autour d'une adresse, prix de vente dvf, ventes comparables.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1245,7 +1245,7 @@ export const propertyGetPriceStats = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the price per m² statistics of a commune from DVF: {count, median_prix_m2, mean_prix_m2, min_prix_m2, max_prix_m2, by_year: {year: {count, median_prix_m2}}}. Only single flats and houses are counted, and outliers (under 100 or over 50,000 €/m²) are left out. Use it to place a price within its commune.",
+  description: "Get the price per m² statistics of a commune from DVF: {count, median_prix_m2, mean_prix_m2, min_prix_m2, max_prix_m2, by_year: {year: {count, median_prix_m2}}}. Only single flats and houses are counted, and outliers (under 100 or over 50,000 €/m²) are left out. Use it to place a price within its commune. In French: prix au mètre carré d'une commune, prix immobilier moyen.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1289,7 +1289,7 @@ export const propertySearchBuildingPermits = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search building and development permits (Sitadel, Ministry for Ecological Transition) by commune, department, year of filing or applicant company: {total, page, page_size, permis: [{type, num_dau, date_depot, date_autorisation, etat, demandeur, adresse, parcelles, logements, surf_hab_creee_m2, ...}]}. kind chooses the file: logements (permits creating dwellings), locaux (non-residential premises), amenager (development permits). Use it to check the permits on a property or a plot: the parcel is not a filter, so search the commune and read the parcelles of each permit. Applicants who are natural persons are not published.",
+  description: "Search building and development permits (Sitadel, Ministry for Ecological Transition) by commune, department, year of filing or applicant company: {total, page, page_size, permis: [{type, num_dau, date_depot, date_autorisation, etat, demandeur, adresse, parcelles, logements, surf_hab_creee_m2, ...}]}. kind chooses the file: logements (permits creating dwellings), locaux (non-residential premises), amenager (development permits). Use it to check the permits on a property or a plot: the parcel is not a filter, so search the commune and read the parcelles of each permit. Applicants who are natural persons are not published. In French: permis de construire, permis d'aménager, autorisations d'urbanisme.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1334,7 +1334,7 @@ export const propertyGetParcelBuildings = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Measure what is already built on a cadastral parcel (IGN BDTOPO): {nb_batiments, emprise_batie_m2, contenance_m2, ces_reel, hauteur_max_m, dont_constructions_legeres, par_usage: {usage: {nb, emprise_m2}}, batiments: [{cleabs, usage, nature, hauteur_m, emprise_m2, construction_legere}]}. Pass the parcel's geometry and contenance_m2 as the cadastral parcel at a point returns them. A building counts for the parcel when its centroid falls inside it. ces_reel (built footprint over parcel area) is null without contenance_m2; a low ratio in a dense zone flags under-used land. No building is an answer, not a failure.",
+  description: "Measure what is already built on a cadastral parcel (IGN BDTOPO): {nb_batiments, emprise_batie_m2, contenance_m2, ces_reel, hauteur_max_m, dont_constructions_legeres, par_usage: {usage: {nb, emprise_m2}}, batiments: [{cleabs, usage, nature, hauteur_m, emprise_m2, construction_legere}]}. Pass the parcel's geometry and contenance_m2 as the cadastral parcel at a point returns them. A building counts for the parcel when its centroid falls inside it. ces_reel (built footprint over parcel area) is null without contenance_m2; a low ratio in a dense zone flags under-used land. No building is an answer, not a failure. In French: bâti d'une parcelle, emprise au sol, surface construite.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1377,7 +1377,7 @@ export const propertyGetSolarYield = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Estimate the annual yield of a rooftop photovoltaic system of kwc kWp at a point (PVGIS 5.3, European Commission JRC), at the optimal tilt and azimuth: {productible_kwh_an, irradiance_kwh_m2_an, pertes_pct, optimal_slope_deg, optimal_azimuth_deg, inputs}. Physical data only, with 14% system losses assumed: tariffs, self-consumption and savings are the caller's assumptions.",
+  description: "Estimate the annual yield of a rooftop photovoltaic system of kwc kWp at a point (PVGIS 5.3, European Commission JRC), at the optimal tilt and azimuth: {productible_kwh_an, irradiance_kwh_m2_an, pertes_pct, optimal_slope_deg, optimal_azimuth_deg, inputs}. Physical data only, with 14% system losses assumed: tariffs, self-consumption and savings are the caller's assumptions. In French: production solaire d'une toiture, rendement photovoltaïque, productible pvgis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1419,7 +1419,7 @@ export const propertyGetIsochrone = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the area reachable from a point, or from which the point is reached, within a travel time or a distance, on foot or by car (IGN Géoplateforme routing on BD TOPO): {geometry (GeoJSON polygon), centroid: {lat, lon}, bbox, profile, direction, minutes, metres}. Exactly one of minutes and metres. The primitive of a catchment area: to know what lies within ten minutes' walk of a site, test points against the polygon. By car, departure and arrival differ (one-way streets).",
+  description: "Get the area reachable from a point, or from which the point is reached, within a travel time or a distance, on foot or by car (IGN Géoplateforme routing on BD TOPO): {geometry (GeoJSON polygon), centroid: {lat, lon}, bbox, profile, direction, minutes, metres}. Exactly one of minutes and metres. The primitive of a catchment area: to know what lies within ten minutes' walk of a site, test points against the polygon. By car, departure and arrival differ (one-way streets). In French: zone accessible en voiture, temps de trajet, isochrone à pied.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1466,7 +1466,7 @@ export const propertyListElectricityConsumption = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the annual electricity consumption of business addresses on the distribution grid (Enedis open data), one row per address and NAF division as Enedis publishes it: {total, signals: [{ref_key, row_key, annee, code_commune, adresse, naf2, secteur, mwh, nombre_de_sites, raw}], tronque, lignes_ignorees, mwh_ignores}. An address with several divisions has several rows sharing ref_key: thresholding rows misses sites whose total alone passes the bar; for sites, sum by address or use the site grain. limit cuts in the dataset's order (commune code), not by consumption: when tronque is true, raise min_mwh or pass limit -1. Sites on the transmission grid, the largest consumers, are not here. Rows without an address are counted in lignes_ignorees.",
+  description: "List the annual electricity consumption of business addresses on the distribution grid (Enedis open data), one row per address and NAF division as Enedis publishes it: {total, signals: [{ref_key, row_key, annee, code_commune, adresse, naf2, secteur, mwh, nombre_de_sites, raw}], tronque, lignes_ignorees, mwh_ignores}. An address with several divisions has several rows sharing ref_key: thresholding rows misses sites whose total alone passes the bar; for sites, sum by address or use the site grain. limit cuts in the dataset's order (commune code), not by consumption: when tronque is true, raise min_mwh or pass limit -1. Sites on the transmission grid, the largest consumers, are not here. Rows without an address are counted in lignes_ignorees. In French: consommation électrique des entreprises, consommation d'électricité par adresse.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1537,7 +1537,7 @@ export const propertyListElectricitySites = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List business sites on the distribution grid (Enedis open data) with their total annual electricity consumption, the NAF divisions of an address summed, largest first: {total, lignes_lues, signals: [{site_key, annee, code_commune, adresse, mwh, naf2_principal, naf2_detail, multi_naf2, secteurs, code_iris, nombre_de_sites}], lignes_ignorees, mwh_ignores}. min_mwh applies after the sum: the grain almost every question means. limit caps the rows read before the sum, in the dataset's order: with min_mwh, leave limit at -1 or read total as a floor. Sites on the transmission grid, the largest consumers, are read apart.",
+  description: "List business sites on the distribution grid (Enedis open data) with their total annual electricity consumption, the NAF divisions of an address summed, largest first: {total, lignes_lues, signals: [{site_key, annee, code_commune, adresse, mwh, naf2_principal, naf2_detail, multi_naf2, secteurs, code_iris, nombre_de_sites}], lignes_ignorees, mwh_ignores}. min_mwh applies after the sum: the grain almost every question means. limit caps the rows read before the sum, in the dataset's order: with min_mwh, leave limit at -1 or read total as a floor. Sites on the transmission grid, the largest consumers, are read apart. In French: sites professionnels raccordés, gros consommateurs d'électricité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1611,7 +1611,7 @@ export const propertyListTransmissionConsumption = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the annual electricity consumption of sites on the transmission grid (ODRÉ, RTE), by IRIS, largest first: {total, annee, signals: [{ref_key, annee, code_iris, code_commune, nom_commune, mwh, pdl, maille, site_unique, geo_point, raw}]}. These sites, the largest consumers, are absent from the distribution data. maille site: one delivery point in the IRIS, the row is one site; iris_agrege: a sum. site_unique (true by default) keeps single-site IRIS only and hides the aggregates, where the largest consumers often are. The data lags a year behind Enedis: an empty answer comes with annees_disponibles, and is no proof of absence. No NAF code here.",
+  description: "List the annual electricity consumption of sites on the transmission grid (ODRÉ, RTE), by IRIS, largest first: {total, annee, signals: [{ref_key, annee, code_iris, code_commune, nom_commune, mwh, pdl, maille, site_unique, geo_point, raw}]}. These sites, the largest consumers, are absent from the distribution data. maille site: one delivery point in the IRIS, the row is one site; iris_agrege: a sum. site_unique (true by default) keeps single-site IRIS only and hides the aggregates, where the largest consumers often are. The data lags a year behind Enedis: an empty answer comes with annees_disponibles, and is no proof of absence. No NAF code here. In French: consommation sur le réseau rte, gros sites industriels consommateurs.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1669,7 +1669,7 @@ export const propertyListTransmissionYears = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the years the transmission grid consumption data (ODRÉ) carries, newest first: [\"2023\", ...]. It lags a year behind the distribution data: read it before crossing the two.",
+  description: "List the years the transmission grid consumption data (ODRÉ) carries, newest first: [\"2023\", ...]. It lags a year behind the distribution data: read it before crossing the two. In French: années disponibles rte, années de consommation odré.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Years available", input: {} },
@@ -1691,7 +1691,7 @@ export const propertyListCommuneSales = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the property sales recorded in DVF (land registry transfers, from 2014) in a commune, most recent first, raw: {code_commune, type_local, years, count, mutations: [{id_mutation, date_mutation, nature_mutation, valeur_fonciere, type_bien, type_local, surface_reelle_bati, surface_terrain, nombre_locaux, prix_m2, vefa, id_parcelle, id_parcelles, adresse, latitude, longitude}]}. Every kind of property and transfer (off-plan sale, auction, exchange) unless filtered; type_local is set only for a single flat or house. For a clean price per m², read the commune's price statistics. DVF does not cover Alsace-Moselle and Mayotte. A dense commune (a Paris arrondissement) may time out on a first call while the source warms up: retry before concluding.",
+  description: "List the property sales recorded in DVF (land registry transfers, from 2014) in a commune, most recent first, raw: {code_commune, type_local, years, count, mutations: [{id_mutation, date_mutation, nature_mutation, valeur_fonciere, type_bien, type_local, surface_reelle_bati, surface_terrain, nombre_locaux, prix_m2, vefa, id_parcelle, id_parcelles, adresse, latitude, longitude}]}. Every kind of property and transfer (off-plan sale, auction, exchange) unless filtered; type_local is set only for a single flat or house. For a clean price per m², read the commune's price statistics. DVF does not cover Alsace-Moselle and Mayotte. A dense commune (a Paris arrondissement) may time out on a first call while the source warms up: retry before concluding. In French: ventes immobilières d'une commune, transactions dvf d'une commune.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1738,7 +1738,7 @@ export const propertyGetEnergyRatingStats = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the distribution of the energy labels (DPE, A to G, ADEME) of a commune's dwellings: {code_commune, type_batiment, total, repartition_etiquettes: {A: count, ...}}. Counts diagnoses made since July 2021, not dwellings.",
+  description: "Get the distribution of the energy labels (DPE, A to G, ADEME) of a commune's dwellings: {code_commune, type_batiment, total, repartition_etiquettes: {A: count, ...}}. Counts diagnoses made since July 2021, not dwellings. In French: répartition des dpe d'une commune, étiquettes énergie d'une commune.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1772,7 +1772,7 @@ export const propertyListNonResidentialEnergyRatings = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the energy performance diagnoses of non-residential buildings (tertiary DPE, ADEME, since July 2021): offices, shops, care, schools, hotels, largest floor area first: {total, sans_position, diagnostics: [{numero_dpe, date_etablissement, date_fin_validite, secteur_activite, categorie_erp, etiquette_dpe, etiquette_ges, surface_shon, surface_utile, occupants, annee_construction, adresse, code_commune, lambert_x, lambert_y, geocode, id_rnb, raw}]}. Says what a building is, where consumption data says how much. lambert_x and lambert_y are Lambert 93, the projection of the company register's establishments; sans_position counts the diagnoses without a position. total counts what came back: equal to size, more exist. A missing label is not a G.",
+  description: "List the energy performance diagnoses of non-residential buildings (tertiary DPE, ADEME, since July 2021): offices, shops, care, schools, hotels, largest floor area first: {total, sans_position, diagnostics: [{numero_dpe, date_etablissement, date_fin_validite, secteur_activite, categorie_erp, etiquette_dpe, etiquette_ges, surface_shon, surface_utile, occupants, annee_construction, adresse, code_commune, lambert_x, lambert_y, geocode, id_rnb, raw}]}. Says what a building is, where consumption data says how much. lambert_x and lambert_y are Lambert 93, the projection of the company register's establishments; sans_position counts the diagnoses without a position. total counts what came back: equal to size, more exist. A missing label is not a G. In French: dpe tertiaire, diagnostic énergie des bureaux.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1863,7 +1863,7 @@ export const propertyListGhgReports = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the greenhouse gas reports (BEGES, ADEME) organisations published, keyed by SIREN, latest reporting year first: {total, bilans: [{siren, raison_sociale, naf, annee_reporting, date_publication, obligee, tranche_salaries, rapport_url, objectif_2030, contact, entites_consolidees, electricite, emissions: {par_categorie, total, postes_declares, postes_absents, unite}, raw}]}. A missing post is not a zero: totals sum what was declared. electricite is a MWh estimate inferred from post 2.1 with the French average factor (certitude infere), never metered. contact is the declared officer, null when masked at source. The reporting year is not the publication year. total counts what came back: equal to size, more exist.",
+  description: "List the greenhouse gas reports (BEGES, ADEME) organisations published, keyed by SIREN, latest reporting year first: {total, bilans: [{siren, raison_sociale, naf, annee_reporting, date_publication, obligee, tranche_salaries, rapport_url, objectif_2030, contact, entites_consolidees, electricite, emissions: {par_categorie, total, postes_declares, postes_absents, unite}, raw}]}. A missing post is not a zero: totals sum what was declared. electricite is a MWh estimate inferred from post 2.1 with the French average factor (certitude infere), never metered. contact is the declared officer, null when masked at source. The reporting year is not the publication year. total counts what came back: equal to size, more exist. In French: bilan carbone d'une entreprise, bilan des émissions de gaz à effet de serre.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1914,7 +1914,7 @@ export const propertyListBuildingOwners = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List buildings with the SIREN of their owner when it is a legal entity (BDNB, CSTB, from the land registry: an exact link, not an address match): {total, requetes, tronque, couverture_partielle, signaux: [{batiment_groupe_id, adresse, code_commune, proprietaire: {siren, denomination, nb_locaux}, autres_proprietaires, bati: {emprise_m2, hauteur_m, annee_construction, usage}, energie: {conso_pro_elec_kwh, conso_pro_gaz_kwh, millesime_conso, classe_dpe_tertiaire, classe_dpe}}]}. By siren, every building a company owns; by commune with emprise_min, a town's large buildings. Natural persons are anonymised at source: a missing building is not one without an owner. No offset: rows come by ascending owner SIREN, not by size; tronque true means more exist, narrow before concluding on a territory.",
+  description: "List buildings with the SIREN of their owner when it is a legal entity (BDNB, CSTB, from the land registry: an exact link, not an address match): {total, requetes, tronque, couverture_partielle, signaux: [{batiment_groupe_id, adresse, code_commune, proprietaire: {siren, denomination, nb_locaux}, autres_proprietaires, bati: {emprise_m2, hauteur_m, annee_construction, usage}, energie: {conso_pro_elec_kwh, conso_pro_gaz_kwh, millesime_conso, classe_dpe_tertiaire, classe_dpe}}]}. By siren, every building a company owns; by commune with emprise_min, a town's large buildings. Natural persons are anonymised at source: a missing building is not one without an owner. No offset: rows come by ascending owner SIREN, not by size; tronque true means more exist, narrow before concluding on a territory. In French: propriétaire d'un bâtiment, bâtiments d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1974,7 +1974,7 @@ export const propertyListPollutantEmitters = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the establishments that declared emissions of a pollutant to the IREP registry for a year, largest first, with SIRET and coordinates: {annee, total, tronque, sous_seuil, signaux: [{identifiant, nom, siret, adresse, code_commune, naf, latitude, longitude, polluant, milieu, quantite, unite, sous_seuil}]}. Where a GHG report covers a whole organisation, this names the site. Without polluant, fossil CO2 to air. A quantity declared below the reporting threshold comes back as quantite null with sous_seuil true, after the known ones: neither zero nor absence. CO2 has three labels (fossil, biomass, total): do not read the total as fossil.",
+  description: "List the establishments that declared emissions of a pollutant to the IREP registry for a year, largest first, with SIRET and coordinates: {annee, total, tronque, sous_seuil, signaux: [{identifiant, nom, siret, adresse, code_commune, naf, latitude, longitude, polluant, milieu, quantite, unite, sous_seuil}]}. Where a GHG report covers a whole organisation, this names the site. Without polluant, fossil CO2 to air. A quantity declared below the reporting threshold comes back as quantite null with sous_seuil true, after the known ones: neither zero nor absence. CO2 has three labels (fossil, biomass, total): do not read the total as fossil. In French: émetteurs de polluants, rejets polluants des usines.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2029,7 +2029,7 @@ export const propertyListPointsOfInterest = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the OpenStreetMap objects carrying a tag over a commune, a department or a box, in one call (Overpass): {selector, count, pois: [{osm_type, osm_id, name, lat, lon, postcode, tags}]}. selector is an OSM tag, key=value (amenity=parking, shop=laundry) or a bare key (shop). count equal to limit: more exist. Infrastructure (parking, schools, transport, public facilities) is well mapped; shops and businesses less so: a count of shops is a floor.",
+  description: "List the OpenStreetMap objects carrying a tag over a commune, a department or a box, in one call (Overpass): {selector, count, pois: [{osm_type, osm_id, name, lat, lon, postcode, tags}]}. selector is an OSM tag, key=value (amenity=parking, shop=laundry) or a bare key (shop). count equal to limit: more exist. Infrastructure (parking, schools, transport, public facilities) is well mapped; shops and businesses less so: a count of shops is a floor. In French: points d'intérêt d'une commune, commerces d'une zone.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2083,7 +2083,7 @@ export const urbanGetZoning = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the town-planning zoning that applies at a point, from the national town-planning portal (GPU): {zone: {libelle, libelle_long, type_zone, idurba, reglement_url}, zones_superposees, prescriptions, informations, servitudes_utilite_publique, document, documents_couvrants, avertissements}. Use it for the planning information of a property: zone of the local plan (PLU, PLUi), easements of public interest, pre-emption perimeters. zone.idurba and zone.libelle lead to the written regulation of the zone. zone and document are null when the commune has no digitised plan (national planning rules apply, or the plan is not published).",
+  description: "Get the town-planning zoning that applies at a point, from the national town-planning portal (GPU): {zone: {libelle, libelle_long, type_zone, idurba, reglement_url}, zones_superposees, prescriptions, informations, servitudes_utilite_publique, document, documents_couvrants, avertissements}. Use it for the planning information of a property: zone of the local plan (PLU, PLUi), easements of public interest, pre-emption perimeters. zone.idurba and zone.libelle lead to the written regulation of the zone. zone and document are null when the commune has no digitised plan (national planning rules apply, or the plan is not published). In French: zonage plu, zone du plu à une adresse, zone urbaine ou agricole.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2119,7 +2119,7 @@ export const urbanGetZoningRegulation = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Read the written regulation (règlement écrit) of a local plan (PLU, PLUi, PSMV): height, footprint, setbacks, prohibited uses, parking. idurba and zone come from the zoning at the point (zone.idurba, zone.libelle, case kept). With zone alone, the zone's chapter in extraits[0], cut at max_chars (tronque); a sector without its own chapter (UAa) gets its parent zone's (section.zone_chapitre UA). With query too, the passages of that chapter holding it, case and accents ignored, in French (hauteur, emprise au sol, recul). With query alone, passages of the whole document, general provisions included. Returns {idurba, cached, titre, section, nb_occurrences, extraits, note}; section is null when no chapter of the zone is found. Quote the raw extracts, never a figure they do not hold: rules drawn on a graphic document are not in the text. cached false comes with a statut: start the ingestion, then read its state until pret. scanne_probable true means a scanned PDF, unreadable without OCR.",
+  description: "Read the written regulation (règlement écrit) of a local plan (PLU, PLUi, PSMV): height, footprint, setbacks, prohibited uses, parking. idurba and zone come from the zoning at the point (zone.idurba, zone.libelle). With zone alone, the zone's chapter in extraits[0], cut at max_chars (tronque); a sector without its own chapter (UAa) gets its parent zone's (section.zone_chapitre UA). With query too, the passages of that chapter holding it, case and accents ignored, in French (hauteur, emprise au sol, recul). With query alone, passages of the whole document. Returns {idurba, cached, titre, section, nb_occurrences, extraits, note}; section is null when the zone has no chapter. Quote the raw extracts, never a figure they do not hold: rules drawn on a graphic document are not in the text. cached false comes with a statut: start the ingestion, then read its state until pret. scanne_probable true means a scanned PDF, unreadable without OCR. In French: règlement du plu, règles d'urbanisme.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2181,7 +2181,7 @@ export const urbanStartRegulationIngestion = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Ask FOD to fetch and index the written regulation of a local plan it does not hold yet, from the national town-planning portal (GPU). The work runs in the background, from 20 seconds to a few minutes; the answer comes at once with the state {idurba, statut, message, ...}: en_cours (started, or already running), pret or scanne (already held, nothing restarted), echec (a recent failure, erreur gives the cause; no new attempt before relance_possible_apres). Calling it again never starts a second ingestion. Then read the ingestion state every 20 to 30 seconds until pret, scanne or echec. FOD ingests one regulation at a time: a busy answer asks to retry in a minute. A document replaced on the portal is not swapped for its successor; the refusal names the documents published for the same territory.",
+  description: "Ask FOD to fetch and index the written regulation of a local plan it does not hold yet, from the national town-planning portal (GPU). The work runs in the background, from 20 seconds to a few minutes; the answer comes at once with the state {idurba, statut, message, ...}: en_cours (started, or already running), pret or scanne (already held, nothing restarted), echec (a recent failure, erreur gives the cause; no new attempt before relance_possible_apres). Calling it again never starts a second ingestion. Then read the ingestion state every 20 to 30 seconds until pret, scanne or echec. FOD ingests one regulation at a time: a busy answer asks to retry in a minute. A document replaced on the portal is not swapped for its successor; the refusal names the documents published for the same territory. In French: charger le règlement d'un plu, indexer un règlement d'urbanisme.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2217,7 +2217,7 @@ export const urbanGetRegulationIngestion = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Read the state of the ingestion of a local plan's written regulation in FOD: {idurba, statut, message, ...}. statut is absent (never asked), en_cours (with depuis), pret (readable; titre, doc_type, text_chars, and sources, the PDF addresses on the portal), scanne (a scanned PDF, unreadable without OCR: say so and give the source) or echec (erreur gives the cause, relance_possible_apres when a new attempt is allowed).",
+  description: "Read the state of the ingestion of a local plan's written regulation in FOD: {idurba, statut, message, ...}. statut is absent (never asked), en_cours (with depuis), pret (readable; titre, doc_type, text_chars, and sources, the PDF addresses on the portal), scanne (a scanned PDF, unreadable without OCR: say so and give the source) or echec (erreur gives the cause, relance_possible_apres when a new attempt is allowed). In French: état du chargement d'un plu, avancement de l'indexation du règlement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2250,7 +2250,7 @@ export const urbanListCommuneRisks = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the natural and technological risks recorded for a commune (Géorisques, GASPAR): {code_insee, risques: [labels]}, such as flood, ground movement, clay shrink-swell, earthquake, radon, industrial risk. Use it to prepare the risk and pollution statement (ERP) annexed to a sale or lease. Takes the commune code: in Paris, Lyon and Marseille the whole city (75056, 69123, 13055), not an arrondissement, whose list comes back empty.",
+  description: "List the natural and technological risks recorded for a commune (Géorisques, GASPAR): {code_insee, risques: [labels]}, such as flood, ground movement, clay shrink-swell, earthquake, radon, industrial risk. Use it to prepare the risk and pollution statement (ERP) annexed to a sale or lease. Takes the commune code: in Paris, Lyon and Marseille the whole city (75056, 69123, 13055), not an arrondissement, whose list comes back empty. In French: risques naturels d'une commune, risque inondation, risques technologiques.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2283,7 +2283,7 @@ export const urbanGetClayExposure = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the clay shrink-swell exposure at a point (Géorisques): {code_exposition, exposition}, from no exposure to strong. In a medium or strong zone, the sale of building land requires a soil study.",
+  description: "Get the clay shrink-swell exposure at a point (Géorisques): {code_exposition, exposition}, from no exposure to strong. In a medium or strong zone, the sale of building land requires a soil study. In French: retrait gonflement des argiles, risque argile d'un terrain.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2319,7 +2319,7 @@ export const urbanListClassifiedFacilities = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the classified facilities for environmental protection (ICPE, Géorisques) of a commune or of one establishment: {results, page, total_pages, data: [{raisonSociale, adresse1, codeInsee, commune, regime, statutSeveso, etatActivite, longitude, latitude, inspections, ...}]}, 20 per page. Use it to spot an industrial site on or near a property, or to check a company's environmental obligations. A SIRET or a commune code is required.",
+  description: "List the classified facilities for environmental protection (ICPE, Géorisques) of a commune or of one establishment: {results, page, total_pages, data: [{raisonSociale, adresse1, codeInsee, commune, regime, statutSeveso, etatActivite, longitude, latitude, inspections, ...}]}, 20 per page. Use it to spot an industrial site on or near a property, or to check a company's environmental obligations. A SIRET or a commune code is required. In French: installations classées, sites icpe d'une commune.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2354,7 +2354,7 @@ export const urbanListPublicServices = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List public services from the official directory of the administration (Service-Public): town halls, prefectures, tax offices, departmental directorates, public bodies, with phone, email, website, address and named head of service. Returns {total, rendus, tronque, signaux: [{nom, type_service, siren, siret, code_commune, telephone, courriel, site_internet, adresse, affectation_personne, ...}]}. Use it to find the town hall for a pre-emption notice (DIA) or a planning certificate, or the land registration office. A SIREN or a commune code is required.",
+  description: "List public services from the official directory of the administration (Service-Public): town halls, prefectures, tax offices, departmental directorates, public bodies, with phone, email, website, address and named head of service. Returns {total, rendus, tronque, signaux: [{nom, type_service, siren, siret, code_commune, telephone, courriel, site_internet, adresse, affectation_personne, ...}]}. Use it to find the town hall for a pre-emption notice (DIA) or a planning certificate, or the land registration office. A SIREN or a commune code is required. In French: mairie d'une commune, services publics proches, centre des impôts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2398,7 +2398,7 @@ export const urbanListCachedRegulations = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the written regulations of local plans FOD already holds, readable at once without an ingestion: {count, reglements: [{idurba, titre, doc_type, partition, text_chars, taille, scanne, genere_le}]}. The cache is shared by every FOD consumer and filled on demand: a plan absent from it is not missing from the national town-planning portal; start its ingestion. scanne true means a scanned PDF, unreadable without OCR. No filter: the whole list comes back.",
+  description: "List the written regulations of local plans FOD already holds, readable at once without an ingestion: {count, reglements: [{idurba, titre, doc_type, partition, text_chars, taille, scanne, genere_le}]}. The cache is shared by every FOD consumer and filled on demand: a plan absent from it is not missing from the national town-planning portal; start its ingestion. scanne true means a scanned PDF, unreadable without OCR. No filter: the whole list comes back. In French: règlements plu disponibles, plu déjà chargés.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Regulations FOD holds", input: {} },
@@ -2421,7 +2421,7 @@ export const urbanGetRegulationText = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the whole written regulation of a local plan FOD holds, as a text file of yours kept 24 hours: the answer gives its file id. It is the text extracted from the PDF, often several hundred thousand characters. Use it to read the regulation from end to end, or search it yourself, when the chapter of a zone or the passages of a query do not answer: a zone whose chapter is not found, general provisions, definitions, a table of contents. The plan must be held: read the ingestion state, or start the ingestion, first. A scanned PDF holds no text: no file comes back.",
+  description: "Get the whole written regulation of a local plan FOD holds, as a text file of yours kept 24 hours: the answer gives its file id. It is the text extracted from the PDF, often several hundred thousand characters. Use it to read the regulation from end to end, or search it yourself, when the chapter of a zone or the passages of a query do not answer: a zone whose chapter is not found, general provisions, definitions, a table of contents. The plan must be held: read the ingestion state, or start the ingestion, first. A scanned PDF holds no text: no file comes back. In French: texte complet du règlement plu, télécharger le règlement d'urbanisme.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2457,7 +2457,7 @@ export const urbanListPriorityDistricts = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the priority districts of urban policy (QPV, national dataset) of a commune: {code_insee, nb_qpv, qpv_dans_la_commune, qpv: [{code_qp, nom_qp, commune_qp, code_insee, nom_epci}]}. nb_qpv counts them all; qpv lists 20 at most. Being in a QPV, or within 300 m of one, is the geographic condition of several incentives, such as the reduced 5.5% VAT on a new home purchase; never the whole eligibility, price and buyer income caps also apply. For one address, list the districts near its point.",
+  description: "List the priority districts of urban policy (QPV, national dataset) of a commune: {code_insee, nb_qpv, qpv_dans_la_commune, qpv: [{code_qp, nom_qp, commune_qp, code_insee, nom_epci}]}. nb_qpv counts them all; qpv lists 20 at most. Being in a QPV, or within 300 m of one, is the geographic condition of several incentives, such as the reduced 5.5% VAT on a new home purchase; never the whole eligibility, price and buyer income caps also apply. For one address, list the districts near its point. In French: quartiers prioritaires d'une commune, quartiers qpv.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2490,7 +2490,7 @@ export const urbanListPriorityDistrictsNearPoint = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the priority districts of urban policy (QPV) within radius_m metres of a point: {point: [lon, lat], radius_m, nb_qpv, eligible_geo, qpv: [{code_qp, nom_qp, commune_qp, code_insee, nom_epci}]}, 20 listed at most. eligible_geo is true when at least one district lies within the radius; 300 m, the default, is the perimeter of the reduced 5.5% VAT on a new home purchase. It is the geographic condition only: the price and buyer income caps are the caller's to check. Geocode the address first.",
+  description: "List the priority districts of urban policy (QPV) within radius_m metres of a point: {point: [lon, lat], radius_m, nb_qpv, eligible_geo, qpv: [{code_qp, nom_qp, commune_qp, code_insee, nom_epci}]}, 20 listed at most. eligible_geo is true when at least one district lies within the radius; 300 m, the default, is the perimeter of the reduced 5.5% VAT on a new home purchase. It is the geographic condition only: the price and buyer income caps are the caller's to check. Geocode the address first. In French: quartiers prioritaires autour d'un point, qpv à proximité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2533,7 +2533,7 @@ export const urbanGetLandAgencyIntervention = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get whether the public land agency of Île-de-France (EPFIF) intervenes in a commune: {secteur_epfif, nom, niveau_max, interventions: [{type, partenaire, date, kmlid}], source, stale, note}. type is veille (land watch), maitrise (land acquisition) or orcodin (ORCOD-IN, degraded condominiums); niveau_max is the strongest. An intervening commune means land under pressure, pre-emption often delegated to the agency: a public operator to reckon with, not neutral land. secteur_epfif false: no known intervention, or a commune outside Île-de-France. Read from the agency's map page, refreshed weekly; stale true means the last refresh failed and the previous copy is served.",
+  description: "Get whether the public land agency of Île-de-France (EPFIF) intervenes in a commune: {secteur_epfif, nom, niveau_max, interventions: [{type, partenaire, date, kmlid}], source, stale, note}. type is veille (land watch), maitrise (land acquisition) or orcodin (ORCOD-IN, degraded condominiums); niveau_max is the strongest. An intervening commune means land under pressure, pre-emption often delegated to the agency: a public operator to reckon with, not neutral land. secteur_epfif false: no known intervention, or a commune outside Île-de-France. Read from the agency's map page, refreshed weekly; stale true means the last refresh failed and the previous copy is served. In French: intervention de l'epfif, établissement public foncier d'île-de-france.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2571,7 +2571,7 @@ export const urbanGetCommuneStatistics = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one block of a commune's statistics from INSEE (Mélodi: census and Filosofi). population: {year: municipal population} for each census vintage INSEE publishes, about three over eleven years (the trend). familles: {total_familles, effectifs, parts_pct, part_monoparentales_pct} by family type. personnes_seules: a number, the one-person households, null without data. revenus: {millesime, revenu_median_uc_eur, taux_pauvrete_pct}. logement: {millesime, residences_principales, logements_vacants, logements_secondaires, taux_vacance_pct, statut_occupation: {effectifs, parts_pct, part_social_pct}}. A missing figure is null, never zero. Paris, Lyon and Marseille answer for the whole city or an arrondissement (75112, 13201). Inside a commune, the IRIS census gives the districts.",
+  description: "Get one block of a commune's statistics from INSEE (Mélodi: census and Filosofi). population: {year: municipal population} for each census vintage INSEE publishes, about three over eleven years (the trend). familles: {total_familles, effectifs, parts_pct, part_monoparentales_pct} by family type. personnes_seules: a number, the one-person households, null without data. revenus: {millesime, revenu_median_uc_eur, taux_pauvrete_pct}. logement: {millesime, residences_principales, logements_vacants, logements_secondaires, taux_vacance_pct, statut_occupation: {effectifs, parts_pct, part_social_pct}}. A missing figure is null, never zero. Paris, Lyon and Marseille answer for the whole city or an arrondissement (75112, 13201). Inside a commune, the IRIS census gives the districts. In French: population d'une commune, statistiques insee d'une commune, revenus des habitants.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2610,7 +2610,7 @@ export const urbanGetIrisCensus = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the census figures of one IRIS, INSEE's district mesh of about 2,000 inhabitants (census 2021, a copy held by FOD): {iris, com, typ_iris, lab_iris, pop, pop_0_19, pop_20_64, pop_65p, logements, res_principales, res_secondaires, logements_vacants, maisons, appartements, rp_en_appartement}. typ_iris: H housing, A business, D other, Z a commune not split into IRIS. lab_iris is INSEE's label, often a number, not a district name. One census year: no trend here; the commune statistics give it.",
+  description: "Get the census figures of one IRIS, INSEE's district mesh of about 2,000 inhabitants (census 2021, a copy held by FOD): {iris, com, typ_iris, lab_iris, pop, pop_0_19, pop_20_64, pop_65p, logements, res_principales, res_secondaires, logements_vacants, maisons, appartements, rp_en_appartement}. typ_iris: H housing, A business, D other, Z a commune not split into IRIS. lab_iris is INSEE's label, often a number, not a district name. One census year: no trend here; the commune statistics give it. In French: recensement d'un quartier iris, population d'un iris.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2648,7 +2648,7 @@ export const urbanListCommuneIrisCensus = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the census figures of every IRIS of a commune (census 2021), with the commune's totals: {com, nb_iris, totaux: {pop, logements, res_principales, res_secondaires, logements_vacants, maisons, appartements, rp_en_appartement}, iris: [{iris, typ_iris, lab_iris, pop, pop_0_19, pop_20_64, pop_65p, ...}]}, 200 IRIS at most. A commune not split into IRIS has one row, typ_iris Z. Paris, Lyon and Marseille are read by arrondissement.",
+  description: "List the census figures of every IRIS of a commune (census 2021), with the commune's totals: {com, nb_iris, totaux: {pop, logements, res_principales, res_secondaires, logements_vacants, maisons, appartements, rp_en_appartement}, iris: [{iris, typ_iris, lab_iris, pop, pop_0_19, pop_20_64, pop_65p, ...}]}, 200 IRIS at most. A commune not split into IRIS has one row, typ_iris Z. Paris, Lyon and Marseille are read by arrondissement. In French: recensement par quartier, iris d'une commune.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2686,7 +2686,7 @@ export const urbanListMayors = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List mayors from the national register of elected officials (Ministry of the Interior, data.gouv.fr): {fonction, total, tronque, signaux: [{nom, prenom, fonction, code_commune, commune, code_departement, debut_mandat, debut_fonction}]}. On a public body the decision-maker is an elected official, not a company director. Match on the commune code, never on its name: Sainte-Marie exists dozens of times. debut_fonction tells whether the mayor changed since a past contact. total counts the rows returned; tronque true means more matched than limit. Birth date and sex, in the source, are not returned. A commune code or a department is required.",
+  description: "List mayors from the national register of elected officials (Ministry of the Interior, data.gouv.fr): {fonction, total, tronque, signaux: [{nom, prenom, fonction, code_commune, commune, code_departement, debut_mandat, debut_fonction}]}. On a public body the decision-maker is an elected official, not a company director. Match on the commune code, never on its name: Sainte-Marie exists dozens of times. debut_fonction tells whether the mayor changed since a past contact. total counts the rows returned; tronque true means more matched than limit. Birth date and sex, in the source, are not returned. A commune code or a department is required. In French: maire d'une commune, liste des maires.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2732,7 +2732,7 @@ export const urbanListEpciPresidents = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List presidents of intercommunal bodies (EPCI: metropolis, urban or community of communes) from the national register of elected officials: {fonction, total, tronque, signaux: [{nom, prenom, fonction, siren_epci, epci, code_commune, commune, code_departement, debut_mandat, debut_fonction}]}. Presidents only, not the thousands of community councillors. An EPCI has a SIREN, no commune code: code_commune is the commune the register attaches the president to. total counts the rows returned; tronque true means more matched than limit. Birth date and sex are not returned. Without siren or departement, every president up to limit.",
+  description: "List presidents of intercommunal bodies (EPCI: metropolis, urban or community of communes) from the national register of elected officials: {fonction, total, tronque, signaux: [{nom, prenom, fonction, siren_epci, epci, code_commune, commune, code_departement, debut_mandat, debut_fonction}]}. Presidents only, not the thousands of community councillors. An EPCI has a SIREN, no commune code: code_commune is the commune the register attaches the president to. total counts the rows returned; tronque true means more matched than limit. Birth date and sex are not returned. Without siren or departement, every president up to limit. In French: président d'une intercommunalité, président de la communauté de communes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2776,7 +2776,7 @@ export const lawListCodes = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the consolidated French codes covered, with the short alias the law functions take: {codes: [{alias, legitext, libelle}]}, such as CC (Code civil), CGI (Code général des impôts), CU (Code de l'urbanisme), CCH (Code de la construction et de l'habitation).",
+  description: "List the consolidated French codes covered, with the short alias the law functions take: {codes: [{alias, legitext, libelle}]}, such as CC (Code civil), CGI (Code général des impôts), CU (Code de l'urbanisme), CCH (Code de la construction et de l'habitation). In French: liste des codes juridiques, codes de loi disponibles.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Codes covered", input: {} },
@@ -2798,7 +2798,7 @@ export const lawGetArticle = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one article of a consolidated French code in the version in force at a date (today by default): {id, titre_texte, num, etat, date_debut, date_fin, texte, nota, source_url}. Use it to quote the exact text that applied on a given day, such as the day a contract was signed. source_url points to that version on Légifrance.",
+  description: "Get one article of a consolidated French code in the version in force at a date (today by default): {id, titre_texte, num, etat, date_debut, date_fin, texte, nota, source_url}. Use it to quote the exact text that applied on a given day, such as the day a contract was signed. source_url points to that version on Légifrance. In French: article du code civil, article de loi en vigueur, lire un article de code.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2844,7 +2844,7 @@ export const lawSearchArticles = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Full-text search in the articles of the consolidated French codes: {count, articles: [{id, num, etat, date_debut, date_fin, titre_texte, extrait, source_url}]}. The query takes web-search syntax: \"quoted phrase\", OR, -excluded. By default only the versions in force today are searched. Use it to find the article that governs a question when its number is unknown.",
+  description: "Full-text search in the articles of the consolidated French codes: {count, articles: [{id, num, etat, date_debut, date_fin, titre_texte, extrait, source_url}]}. The query takes web-search syntax: \"quoted phrase\", OR, -excluded. By default only the versions in force today are searched. Use it to find the article that governs a question when its number is unknown. In French: chercher dans les codes, rechercher un article de loi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2884,7 +2884,7 @@ export const lawListArticleVersions = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List every version of one code article, oldest first: {count, versions: [{id, etat, date_debut, date_fin, apercu, source_url}]}. Use it to see when an article changed, before reading the version in force at a given date. Empty when the article is unknown.",
+  description: "List every version of one code article, oldest first: {count, versions: [{id, etat, date_debut, date_fin, apercu, source_url}]}. Use it to see when an article changed, before reading the version in force at a given date. Empty when the article is unknown. In French: versions d'un article de loi, historique d'un article de code.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2923,7 +2923,7 @@ export const lawSearchCaseLaw = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search French and European case law, ranked by relevance weighted by the authority of the court: {count, decisions: [{id, fond, titre, juridiction, numero, date_dec, solution, formation, ecli, autorite, extrait}]}. fond picks one collection: cass (Cour de cassation, published), inca (Cour de cassation, unpublished), capp (courts of appeal), jade (administrative courts), constit (Conseil constitutionnel), cnil, cedh (European Court of Human Rights), cjue (Court of Justice of the EU), jade_live (recent administrative decisions), judilibre (recent judicial decisions). Use it to find the case law on a question of succession, property or contract law.",
+  description: "Search French and European case law, ranked by relevance weighted by the authority of the court: {count, decisions: [{id, fond, titre, juridiction, numero, date_dec, solution, formation, ecli, autorite, extrait}]}. fond picks one collection: cass (Cour de cassation, published), inca (Cour de cassation, unpublished), capp (courts of appeal), jade (administrative courts), constit (Conseil constitutionnel), cnil, cedh (European Court of Human Rights), cjue (Court of Justice of the EU), jade_live (recent administrative decisions), judilibre (recent judicial decisions). Use it to find the case law on a question of succession, property or contract law. In French: chercher une jurisprudence, décisions de justice, arrêts de la cour de cassation.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -2974,7 +2974,7 @@ export const lawGetDecision = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the full text of one court decision by its id, as case-law search returns it: {id, fond, titre, juridiction, numero, date_dec, solution, formation, ecli, texte, texte_chars, source_url}. The text is cut at max_chars (tronque true); source_url leads to the whole decision.",
+  description: "Get the full text of one court decision by its id, as case-law search returns it: {id, fond, titre, juridiction, numero, date_dec, solution, formation, ecli, texte, texte_chars, source_url}. The text is cut at max_chars (tronque true); source_url leads to the whole decision. In French: texte d'une décision de justice, lire un arrêt.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3019,7 +3019,7 @@ export const lawListCollectiveAgreements = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List French collective agreements of a branch (conventions collectives, KALI, DILA) by exact IDCC or by words of their title: {count, conventions: [{id, idcc, titre, etat, date_publi}]}, those in force first. etat: VIGUEUR_ETEN (extended, binds every employer of the branch), VIGUEUR_NON_ETEN (binds the signatories' members only), ABROGE... idcc null: a professional agreement outside a branch. Use it to resolve which agreement an IDCC is (from a payslip or a company record) before searching its articles. These are the sector's law; an agreement signed by one company is a company agreement, read apart.",
+  description: "List French collective agreements of a branch (conventions collectives, KALI, DILA) by exact IDCC or by words of their title: {count, conventions: [{id, idcc, titre, etat, date_publi}]}, those in force first. etat: VIGUEUR_ETEN (extended, binds every employer of the branch), VIGUEUR_NON_ETEN (binds the signatories' members only), ABROGE... idcc null: a professional agreement outside a branch. Use it to resolve which agreement an IDCC is (from a payslip or a company record) before searching its articles. These are the sector's law; an agreement signed by one company is a company agreement, read apart. In French: conventions collectives, convention collective par idcc.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3059,7 +3059,7 @@ export const lawSearchCollectiveAgreementArticles = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Full-text search in the articles of French collective agreements (KALI): articles, amendments (avenants), salary scales, extension orders: {count, articles: [{id, num, etat, date_debut, date_fin, date_signature, texte_titre, texte_nature, idcc, convention, extrait, permalien, lien_construit}]}. The query takes web-search syntax (\"quoted phrase\", OR, -excluded), French stemming applied. idcc restricts it to one agreement. Only versions in force by default. sort recent puts the latest effective date first: for a salary scale the latest amendment prevails, not the densest match. permalien is a verifiable FOD link; lien_construit a Légifrance address built by pattern, not guaranteed. Read an article whole by its id.",
+  description: "Full-text search in the articles of French collective agreements (KALI): articles, amendments (avenants), salary scales, extension orders: {count, articles: [{id, num, etat, date_debut, date_fin, date_signature, texte_titre, texte_nature, idcc, convention, extrait, permalien, lien_construit}]}. The query takes web-search syntax (\"quoted phrase\", OR, -excluded), French stemming applied. idcc restricts it to one agreement. Only versions in force by default. sort recent puts the latest effective date first: for a salary scale the latest amendment prevails, not the densest match. permalien is a verifiable FOD link; lien_construit a Légifrance address built by pattern, not guaranteed. Read an article whole by its id. In French: chercher dans une convention collective, grille de salaires conventionnelle.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3105,7 +3105,7 @@ export const lawGetCollectiveAgreementArticle = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the full text of one collective-agreement article by its id, as the search returns it: {id, num, etat, date_debut, date_fin, date_signature, texte_id, texte_titre, texte_nature, texte, texte_chars, conteneur_id, idcc, convention, convention_etat, permalien, lien_construit, source_archive_url, source_archive_date}. texte_titre is the amendment or agreement that carries it, convention and idcc the agreement it belongs to: quote them with the article. The text is cut at max_chars (tronque true); texte_chars gives its whole length, permalien the whole article.",
+  description: "Get the full text of one collective-agreement article by its id, as the search returns it: {id, num, etat, date_debut, date_fin, date_signature, texte_id, texte_titre, texte_nature, texte, texte_chars, conteneur_id, idcc, convention, convention_etat, permalien, lien_construit, source_archive_url, source_archive_date}. texte_titre is the amendment or agreement that carries it, convention and idcc the agreement it belongs to: quote them with the article. The text is cut at max_chars (tronque true); texte_chars gives its whole length, permalien the whole article. In French: article de convention collective, texte d'un avenant.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3149,7 +3149,7 @@ export const taxSearchBofip = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search the French tax administration's official doctrine (BOFiP-Impôts, DGFiP), commentaries in force only: {total_count, publications: [{identifiant_juridique, titre, serie, type, debut_de_validite, permalien, extrait}], source}. A commentary matches when it holds every word of query: 2 to 5 French keywords (droits de mutation, plus-values, IFI, pacte Dutreil, TVA immobilière); no result means fewer or other words. extrait is 400 characters around the first word found; total_count counts every match, beyond limit. Use it to find how the administration reads a tax rule, then read the commentary by its identifiant_juridique. Doctrine is the administration's reading of the law, not the law itself.",
+  description: "Search the French tax administration's official doctrine (BOFiP-Impôts, DGFiP), commentaries in force only: {total_count, publications: [{identifiant_juridique, titre, serie, type, debut_de_validite, permalien, extrait}], source}. A commentary matches when it holds every word of query: 2 to 5 French keywords (droits de mutation, plus-values, IFI, pacte Dutreil, TVA immobilière); no result means fewer or other words. extrait is 400 characters around the first word found; total_count counts every match, beyond limit. Use it to find how the administration reads a tax rule, then read the commentary by its identifiant_juridique. Doctrine is the administration's reading of the law, not the law itself. In French: doctrine fiscale bofip, chercher dans le bofip, règle fiscale.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3185,7 +3185,7 @@ export const taxGetBofipDocument = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Read one BOFiP-Impôts commentary or news item in force by its reference (identifiant_juridique of a search result): {identifiant_juridique, titre, serie, type, debut_de_validite, permalien, contenu, contenu_chars, tronque, source}. The text is cut at max_chars (tronque true, contenu_chars gives its whole length); permalien is the official page on bofip.impots.gouv.fr. The version suffix of a permalink (-20240319) is accepted and dropped.",
+  description: "Read one BOFiP-Impôts commentary or news item in force by its reference (identifiant_juridique of a search result): {identifiant_juridique, titre, serie, type, debut_de_validite, permalien, contenu, contenu_chars, tronque, source}. The text is cut at max_chars (tronque true, contenu_chars gives its whole length); permalien is the official page on bofip.impots.gouv.fr. The version suffix of a permalink (-20240319) is accepted and dropped. In French: lire un commentaire bofip, document bofip.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3229,7 +3229,7 @@ export const complianceScreenAssetFreeze = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Screen a name against the French national register of asset freezes (DG Trésor): persons, entities and ships under a freeze in force in France (UN, EU and national measures). Use it to screen a client, a supplier or a contract party. An entry matches when its name or an alias holds every word of nom, accents, case and punctuation ignored. prenom only orders the matches, never drops one: each carries sur, nom_et_prenom (one of its first names contains prenom) or nom_seul. Returns {publication, inscrits, total, nom_et_prenom, nom_seul, correspondances: [{sur, nature, nom, prenoms, naissance, fondement}], source}; limit bounds the list, never the counts: total above the list length means more matches to read. A match on a common name is not a confirmed freeze: compare first names and date of birth. The name travels in the request body and FOD does not keep it.",
+  description: "Screen a name against the French national register of asset freezes (DG Trésor): persons, entities and ships under a freeze in force in France (UN, EU and national measures). Use it to screen a client, a supplier or a contract party. An entry matches when its name or an alias holds every word of nom, accents, case and punctuation ignored. prenom only orders the matches, never drops one: each carries sur, nom_et_prenom (one of its first names contains prenom) or nom_seul. Returns {publication, inscrits, total, nom_et_prenom, nom_seul, correspondances: [{sur, nature, nom, prenoms, naissance, fondement}], source}; limit bounds the list, never the counts: total above the list length means more matches to read. A match on a common name is not a confirmed freeze: compare first names and date of birth. The name travels in the request body and FOD does not keep it. In French: gel des avoirs, liste des sanctions, personne sous sanctions.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3282,7 +3282,7 @@ export const complianceCheckMutualTermination = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Check a French mutual termination (rupture conventionnelle) BEFORE filing the request for approval, by fixed rules: reference salary (12 or 3 months, bonuses pro rata, months marked neutralise left out), length of service, legal minimum, collective-agreement minimum, withdrawal, filing and earliest termination dates. Returns {verdict: conforme, non_conforme or incomplet, controles: [{controle, statut, valeur, detail, source}], telerc}. statut non_couvert means the agreement minimum of that IDCC is not coded: never present it as compliant, it is to check by hand. telerc holds the fields of the online request on TéléRC (mandatory since April 2022), to copy as given; a null field is to fill in by hand. Read every figure from the payslips, never estimate one. Mark a month neutralise WITHOUT its reason (it would be health data), and send enough earlier months that 12 not neutralised remain. The amounts travel in the request body and FOD keeps nothing.",
+  description: "Check a French mutual termination (rupture conventionnelle) BEFORE filing the request for approval, by fixed rules: reference salary (12 or 3 months, bonuses pro rata, months marked neutralise left out), length of service, legal minimum, collective-agreement minimum, withdrawal, filing and earliest termination dates. Returns {verdict: conforme, non_conforme or incomplet, controles: [{controle, statut, valeur, detail, source}], telerc}. statut non_couvert means the agreement minimum of that IDCC is not coded: never present it as compliant, it is to check by hand. telerc holds the fields of the online request on TéléRC (mandatory since April 2022), to copy as given; a null field is to fill in by hand. Read every figure from the payslips, never estimate one. Mark a month neutralise WITHOUT its reason (it would be health data), and send enough earlier months that 12 not neutralised remain. The amounts travel in the request body and FOD keeps nothing. In French: départ négocié, fin de cdi.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3401,7 +3401,7 @@ export const healthSearchMedicines = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search the French public medicines database (BDPM: ANSM, HAS and Assurance maladie) for medicines whose name or an active substance holds every word of q, accents and case ignored. Returns {total, medicaments: [{cis, denomination, forme, voies, substances, titulaires, statut_amm, commercialisation, alerte, lien}], source}; total counts every match, beyond limit. alerte is the database's warning on the medicine, if any. Pass cis to health_get_medicine for its full record and safety information. source.mise_a_jour is the date of the database, which its licence asks to quote. The first call after a restart of the service takes about 10 s.",
+  description: "Search the French public medicines database (BDPM: ANSM, HAS and Assurance maladie) for medicines whose name or an active substance holds every word of q, accents and case ignored. Returns {total, medicaments: [{cis, denomination, forme, voies, substances, titulaires, statut_amm, commercialisation, alerte, lien}], source}; total counts every match, beyond limit. alerte is the database's warning on the medicine, if any. Pass cis to health_get_medicine for its full record and safety information. source.mise_a_jour is the date of the database, which its licence asks to quote. The first call after a restart of the service takes about 10 s. In French: chercher un médicament, base des médicaments, substance active.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3437,7 +3437,7 @@ export const healthGetMedicine = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the full record of one medicine of the French public medicines database by its CIS code: composition, presentations (CIP13, price, reimbursement rate), HAS opinions on medical benefit (smr) and its improvement (asmr) with the link to each opinion, prescription and dispensing conditions, generic groups, and the securite block: ANSM important safety information (text, dates, link), supply shortages and tensions (disponibilite), and whether it is a medicine of major therapeutic interest (interet_therapeutique_majeur, with its ATC code). Also date_amm, procedure_amm, surveillance_renforcee and source (with mise_a_jour, the date of the database).",
+  description: "Get the full record of one medicine of the French public medicines database by its CIS code: composition, presentations (CIP13, price, reimbursement rate), HAS opinions on medical benefit (smr) and its improvement (asmr) with the link to each opinion, prescription and dispensing conditions, generic groups, and the securite block: ANSM important safety information (text, dates, link), supply shortages and tensions (disponibilite), and whether it is a medicine of major therapeutic interest (interet_therapeutique_majeur, with its ATC code). Also date_amm, procedure_amm, surveillance_renforcee and source (with mise_a_jour, the date of the database). In French: fiche d'un médicament, prix et remboursement d'un médicament.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3475,7 +3475,7 @@ export const healthSearchEstablishments = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search the national directory of health and social-care establishments (FINESS, about 100,000: hospitals, care homes, pharmacies, laboratories, health centres, home-care services) by name or FINESS code: {count, results: [{finess_et, finess_ej, rs, rs_longue, adresse, cp_commune, commune_code, departement_code, departement, tel, categorie_code, categorie, categorie_agregee, siret, ape}]}. finess_et is the establishment, finess_ej the legal entity that runs it; siret links to the company register. count is the number returned, never the total: count equal to limit means more match, narrow by department or category. The first call after a restart of the service loads the file, up to a minute.",
+  description: "Search the national directory of health and social-care establishments (FINESS, about 100,000: hospitals, care homes, pharmacies, laboratories, health centres, home-care services) by name or FINESS code: {count, results: [{finess_et, finess_ej, rs, rs_longue, adresse, cp_commune, commune_code, departement_code, departement, tel, categorie_code, categorie, categorie_agregee, siret, ape}]}. finess_et is the establishment, finess_ej the legal entity that runs it; siret links to the company register. count is the number returned, never the total: count equal to limit means more match, narrow by department or category. The first call after a restart of the service loads the file, up to a minute. In French: établissements de santé, chercher un hôpital, annuaire finess.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3523,7 +3523,7 @@ export const healthGetEstablishment = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one establishment of the FINESS directory by its exact code, as an establishment (finess_et) or as the legal entity that runs it (finess_ej, the first of its establishments then): same fields as a search result.",
+  description: "Get one establishment of the FINESS directory by its exact code, as an establishment (finess_et) or as the legal entity that runs it (finess_ej, the first of its establishments then): same fields as a search result. In French: fiche finess, détail d'un établissement de santé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3562,7 +3562,7 @@ export const healthSearchQualityEvaluations = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search the quality evaluations of social and medico-social establishments and services (ESSMS: care homes, disability services, child protection...) published by the HAS, one row per establishment and evaluation: {total, returned, results: [{finess_geo, raison_sociale, region_libelle, departement_code, essms_categ_finess_libelle, essms_secteur, essms_type_structure, essms_statut_juridique, eval_date_debut, indice_qualite}]}. total counts every match, beyond limit. finess_geo is the FINESS code of the establishment. Labels match exactly: read the values first (regions are upper case without accents, ILE DE FRANCE). Without a filter, every evaluation.",
+  description: "Search the quality evaluations of social and medico-social establishments and services (ESSMS: care homes, disability services, child protection...) published by the HAS, one row per establishment and evaluation: {total, returned, results: [{finess_geo, raison_sociale, region_libelle, departement_code, essms_categ_finess_libelle, essms_secteur, essms_type_structure, essms_statut_juridique, eval_date_debut, indice_qualite}]}. total counts every match, beyond limit. finess_geo is the FINESS code of the establishment. Labels match exactly: read the values first (regions are upper case without accents, ILE DE FRANCE). Without a filter, every evaluation. In French: évaluation qualité d'un ehpad, évaluations des établissements médico-sociaux.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3618,7 +3618,7 @@ export const healthListQualityEvaluationValues = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the values the quality evaluations of ESSMS can be filtered by, each with its number of rows: {region_libelle, essms_secteur, essms_type_structure, essms_statut_juridique, essms_categ_finess_libelle, annees}, each a list of [value, count], largest first (annees by year). Read it before a search: the filters take these labels exactly.",
+  description: "List the values the quality evaluations of ESSMS can be filtered by, each with its number of rows: {region_libelle, essms_secteur, essms_type_structure, essms_statut_juridique, essms_categ_finess_libelle, annees}, each a list of [value, count], largest first (annees by year). Read it before a search: the filters take these labels exactly. In French: filtres des évaluations essms, valeurs des évaluations qualité.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Filter values of the ESSMS evaluations", input: {} },
@@ -3641,7 +3641,7 @@ export const healthSearchClinicalTrials = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search the ClinicalTrials.gov registry (U.S. National Library of Medicine, worldwide) for trials matching every criterion given; at least one of condition, intervention, promoteur, terme. pays keeps trials with at least one site in that country (France by default, English name as the registry writes it). Returns {total, essais: [{nct, titre, acronyme, statut, type, phases, effectif, promoteur, collaborateurs, conditions, interventions, dates, a_des_resultats, nb_sites_pays, villes_pays, lien}], page_suivante, source}; a date carries estimee true when it is planned. Site contacts are never returned.",
+  description: "Search the ClinicalTrials.gov registry (U.S. National Library of Medicine, worldwide) for trials matching every criterion given; at least one of condition, intervention, promoteur, terme. pays keeps trials with at least one site in that country (France by default, English name as the registry writes it). Returns {total, essais: [{nct, titre, acronyme, statut, type, phases, effectif, promoteur, collaborateurs, conditions, interventions, dates, a_des_resultats, nb_sites_pays, villes_pays, lien}], page_suivante, source}; a date carries estimee true when it is planned. Site contacts are never returned. In French: essais cliniques, chercher un essai clinique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3730,7 +3730,7 @@ export const healthGetClinicalTrial = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one trial of the ClinicalTrials.gov registry by its NCT id: the fields of a search result, plus its brief summary (resume) and each site in the country asked (sites_pays: [{etablissement, ville, code_postal, statut}], France by default). Site contacts are never returned.",
+  description: "Get one trial of the ClinicalTrials.gov registry by its NCT id: the fields of a search result, plus its brief summary (resume) and each site in the country asked (sites_pays: [{etablissement, ville, code_postal, statut}], France by default). Site contacts are never returned. In French: détail d'un essai clinique, essai par numéro nct.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3775,7 +3775,7 @@ export const healthSearchEuClinicalTrials = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search the EU clinical trials register (CTIS, public portal of the European Medicines Agency) for trials matching every criterion given; at least one of texte, condition, promoteur, produit. Latest decision first. Returns {total, page, pages, essais: [{numero, titre, titre_court, statut, statut_code, phase, conditions, domaines_therapeutiques, produits, promoteur, type_promoteur, pays, effectif_prevu, date_decision, date_debut_ue, date_fin_ue, lien}], source}. Next page: page + 1 while page is below pages. The portal API is not documented by the EMA: an answer out of shape is refused, never read as an empty list.",
+  description: "Search the EU clinical trials register (CTIS, public portal of the European Medicines Agency) for trials matching every criterion given; at least one of texte, condition, promoteur, produit. Latest decision first. Returns {total, page, pages, essais: [{numero, titre, titre_court, statut, statut_code, phase, conditions, domaines_therapeutiques, produits, promoteur, type_promoteur, pays, effectif_prevu, date_decision, date_debut_ue, date_fin_ue, lien}], source}. Next page: page + 1 while page is below pages. The portal API is not documented by the EMA: an answer out of shape is refused, never read as an empty list. In French: essais cliniques européens, registre européen des essais.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3869,7 +3869,7 @@ export const healthGetEuClinicalTrial = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one trial of the EU register (CTIS) by its EU CT number: title, phase, overall status, plus its products (produits_detail: name, substance, form), its status in the country asked (statut_pays: statut, date_decision, recrutement_commence, effectif_prevu) and the sites there (sites_pays: [{etablissement, service, ville, code_postal}]), France by default. Site contacts are never returned.",
+  description: "Get one trial of the EU register (CTIS) by its EU CT number: title, phase, overall status, plus its products (produits_detail: name, substance, form), its status in the country asked (statut_pays: statut, date_decision, recrutement_commence, effectif_prevu) and the sites there (sites_pays: [{etablissement, service, ville, code_postal}]), France by default. Site contacts are never returned. In French: détail d'un essai européen, essai ctis.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3945,7 +3945,7 @@ export const healthSearchPubmed = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search PubMed (U.S. National Library of Medicine) in PubMed syntax (glioblastoma AND france[ad], [mh], [dp], [au]...), newest first, or by relevance. Returns {total, offset, traduction, articles: [{pmid, doi, pmcid, titre, revue, date, volume, numero, pages, types, langues, auteurs, lien}], source}; traduction is the query as PubMed understood it. No abstract here: health_get_europepmc_article with pmid gives it. Next page: offset + limit.",
+  description: "Search PubMed (U.S. National Library of Medicine) in PubMed syntax (glioblastoma AND france[ad], [mh], [dp], [au]...), newest first, or by relevance. Returns {total, offset, traduction, articles: [{pmid, doi, pmcid, titre, revue, date, volume, numero, pages, types, langues, auteurs, lien}], source}; traduction is the query as PubMed understood it. No abstract here: health_get_europepmc_article with pmid gives it. Next page: offset + limit. In French: chercher sur pubmed, articles scientifiques, publications médicales.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -3996,7 +3996,7 @@ export const healthGetPubmedArticle = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one PubMed record by its PMID: {pmid, doi, pmcid, titre, revue, revue_abregee, date, volume, numero, pages, types, langues, auteurs, lien, source}. No abstract: health_get_europepmc_article with the same pmid gives it.",
+  description: "Get one PubMed record by its PMID: {pmid, doi, pmcid, titre, revue, revue_abregee, date, volume, numero, pages, types, langues, auteurs, lien, source}. No abstract: health_get_europepmc_article with the same pmid gives it. In French: article pubmed, résumé d'une publication médicale.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4028,7 +4028,7 @@ export const healthSearchEuropepmc = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search Europe PMC (EMBL-EBI: PubMed, PubMed Central, preprints...) in Europe PMC syntax (glioblastoma AND AFF:\"France\", AUTH:, PUB_YEAR:...). Returns {total, articles: [{id, base, pmid, pmcid, doi, titre, auteurs, revue, annee, date_publication, acces_libre, citations, lien}], curseur_suivant, source}. A malformed query returns zero results, like a query without match.",
+  description: "Search Europe PMC (EMBL-EBI: PubMed, PubMed Central, preprints...) in Europe PMC syntax (glioblastoma AND AFF:\"France\", AUTH:, PUB_YEAR:...). Returns {total, articles: [{id, base, pmid, pmcid, doi, titre, auteurs, revue, annee, date_publication, acces_libre, citations, lien}], curseur_suivant, source}. A malformed query returns zero results, like a query without match. In French: chercher sur europe pmc, littérature scientifique européenne.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4078,7 +4078,7 @@ export const healthGetEuropepmcArticle = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one full Europe PMC record by pmid or by doi (exactly one): the fields of a search result plus resume (the abstract), affiliation, langue, types, mots_cles and textes_integraux: [{acces, format, site, url}], each full-text link saying whether it is open access or needs a subscription.",
+  description: "Get one full Europe PMC record by pmid or by doi (exactly one): the fields of a search result plus resume (the abstract), affiliation, langue, types, mots_cles and textes_integraux: [{acces, format, site, url}], each full-text link saying whether it is open access or needs a subscription. In French: article europe pmc, résumé d'un article scientifique.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4119,7 +4119,7 @@ export const healthListInterestDeclarations = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the links of interest declared by health-sector companies to their beneficiaries (Transparence Santé), newest first: {total, declarations: [{type, identifiant, montant, date, periode, motif, convention_liee, entreprise: {raison_sociale, siren}, beneficiaire: {nom, prenom, categorie, identifiant, profession, structure, ville, departement}}], source}; never the postal address. montant null is a missing amount, not 0. Do not add amounts of different types: a payment or benefit can execute an agreement (convention_liee), the same money then appears twice. Personal data under licence CC BY-NC-SA 4.0, reuse restricted to transparency of links of interest (no strictly commercial use); credit required: \"Source : base Transparence - Santé (Direction Générale de la Santé), transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0.\" (source.attribution).",
+  description: "List the links of interest declared by health-sector companies to their beneficiaries (Transparence Santé), newest first: {total, declarations: [{type, identifiant, montant, date, periode, motif, convention_liee, entreprise: {raison_sociale, siren}, beneficiaire: {nom, prenom, categorie, identifiant, profession, structure, ville, departement}}], source}; never the postal address. montant null is a missing amount, not 0. Do not add amounts of different types: a payment or benefit can execute an agreement (convention_liee), the same money then appears twice. Personal data under licence CC BY-NC-SA 4.0, reuse restricted to transparency of links of interest (no strictly commercial use); credit required: \"Source : base Transparence - Santé (Direction Générale de la Santé), transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0.\" (source.attribution). In French: liens d'intérêt, transparence santé, avantages versés aux médecins.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4197,7 +4197,7 @@ export const healthSumInterestsByCompany = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "The declared links of interest (Transparence Santé) that match the filters, grouped by company and by type: {groupes: [{entreprise: {raison_sociale, siren}, type, montant_total, declarations, premiere, derniere}], suite, source}, largest total first; suite true means more groups after this page (no total is given). Do not add totals of different types: a payment or benefit can execute an agreement (convention_liee), the same money is then counted in both. Personal data under licence CC BY-NC-SA 4.0, reuse restricted to transparency of links of interest (no strictly commercial use); credit required: \"Source : base Transparence - Santé (Direction Générale de la Santé), transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0.\" (source.attribution).",
+  description: "The declared links of interest (Transparence Santé) that match the filters, grouped by company and by type: {groupes: [{entreprise: {raison_sociale, siren}, type, montant_total, declarations, premiere, derniere}], suite, source}, largest total first; suite true means more groups after this page (no total is given). Do not add totals of different types: a payment or benefit can execute an agreement (convention_liee), the same money is then counted in both. Personal data under licence CC BY-NC-SA 4.0, reuse restricted to transparency of links of interest (no strictly commercial use); credit required: \"Source : base Transparence - Santé (Direction Générale de la Santé), transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0.\" (source.attribution). In French: montants des liens d'intérêt par laboratoire, total transparence santé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4275,7 +4275,7 @@ export const procurementSearchNotices = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search French public tender notices (BOAMP, index kept by FOD and refreshed daily), newest first: {results: [{idweb, objet, organisme, date_publication, date_limite_reponse, dep_publication, nature_marche, type_procedure, type_avis_famille, statut, descripteurs, synthese, url}], total_count}. A notice says a need and a deadline, not who wins: the outcome is in the awarded contracts. Without any filter, the latest notices of all France come back.",
+  description: "Search French public tender notices (BOAMP, index kept by FOD and refreshed daily), newest first: {results: [{idweb, objet, organisme, date_publication, date_limite_reponse, dep_publication, nature_marche, type_procedure, type_avis_famille, statut, descripteurs, synthese, url}], total_count}. A notice says a need and a deadline, not who wins: the outcome is in the awarded contracts. Without any filter, the latest notices of all France come back. In French: appels d'offres, marchés publics ouverts, avis boamp.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4343,7 +4343,7 @@ export const procurementGetNotice = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one French public tender notice (BOAMP) by its id: buyer (organisme), subject, publication date, response deadline (date_limite_reponse), procedure, descriptors, summary (synthese) and the address of the full notice (url).",
+  description: "Get one French public tender notice (BOAMP) by its id: buyer (organisme), subject, publication date, response deadline (date_limite_reponse), procedure, descriptors, summary (synthese) and the address of the full notice (url). In French: détail d'un appel d'offres, avis de marché boamp.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4381,7 +4381,7 @@ export const procurementSearchAwardedContracts = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search French public contracts awarded (DECP, essential data of public procurement), latest notification first: {total, rendus, tronque, signaux: [{ref_key, arrete, objet, nature, procedure, code_cpv, date_notification, duree_mois, montant, acheteur: {siret, nom}, lieu_execution: {code, type_code, nom}, titulaires: [{rang, identifiant, type_identifiant, denomination}]}]}. Says who won, for how much and for how long: the real competition of a territory. Since 2024 the source publishes no name (buyer, place, winners), and before 2024 never the main winner's: a null name is the source's shape, resolve it by SIRET. At least one of mot_cle, titulaire_siret, acheteur_siret, lieu. tronque true: more contracts match than were returned.",
+  description: "Search French public contracts awarded (DECP, essential data of public procurement), latest notification first: {total, rendus, tronque, signaux: [{ref_key, arrete, objet, nature, procedure, code_cpv, date_notification, duree_mois, montant, acheteur: {siret, nom}, lieu_execution: {code, type_code, nom}, titulaires: [{rang, identifiant, type_identifiant, denomination}]}]}. Says who won, for how much and for how long: the real competition of a territory. Since 2024 the source publishes no name (buyer, place, winners), and before 2024 never the main winner's: a null name is the source's shape, resolve it by SIRET. At least one of mot_cle, titulaire_siret, acheteur_siret, lieu. tronque true: more contracts match than were returned. In French: marchés publics attribués, titulaires de marchés publics.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4438,7 +4438,7 @@ export const fundingSearchSchemes = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Shortlist French public funding schemes for a company or a project (grants, loans, guarantees, calls for projects; State reference base of about 2,400 active schemes, refreshed daily): {funnel, count, items: [{id, nom, objet, montant, natures, financeurs, niveau, date_fin, effectif_codes, source_url}]}. The filter is deterministic (place, by the hierarchy commune, department, region, France, EU; headcount; nature; deadline; words) and funnel counts what each step kept. Sector relevance cannot come from the base, whose tagging covers almost every sector: rank the shortlist by reading it, then get each kept scheme by its id and quote it, never from memory. The first call after a restart of the service is slow.",
+  description: "Shortlist French public funding schemes for a company or a project (grants, loans, guarantees, calls for projects; State reference base of about 2,400 active schemes, refreshed daily): {funnel, count, items: [{id, nom, objet, montant, natures, financeurs, niveau, date_fin, effectif_codes, source_url}]}. The filter is deterministic (place, by the hierarchy commune, department, region, France, EU; headcount; nature; deadline; words) and funnel counts what each step kept. Sector relevance cannot come from the base, whose tagging covers almost every sector: rank the shortlist by reading it, then get each kept scheme by its id and quote it, never from memory. The first call after a restart of the service is slow. In French: aides publiques, subventions pour une entreprise, financements publics.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4506,7 +4506,7 @@ export const fundingGetScheme = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get the full record of one French public funding scheme by its id: name, purpose, amount, conditions and beneficiaries (aid_nom, aid_objet, aid_montant, aid_conditions, aid_benef, decoded text), date_fin, niveau, natures, funders, territories, contacts, official sources and forms. The source of truth to quote a scheme kept from a search.",
+  description: "Get the full record of one French public funding scheme by its id: name, purpose, amount, conditions and beneficiaries (aid_nom, aid_objet, aid_montant, aid_conditions, aid_benef, decoded text), date_fin, niveau, natures, funders, territories, contacts, official sources and forms. The source of truth to quote a scheme kept from a search. In French: détail d'une aide publique, conditions d'une subvention.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4540,7 +4540,7 @@ export const ecosystemSearchDirectory = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Search the directory of the French Tech Aix-Marseille ecosystem (about 700 start-ups, support structures and service providers of the region), read live from the capital's site: {total, results: [{slug, nom, type, secteurs, pitch, dirigeant, email, telephone, website, ville, code_postal, adresse, date_creation, effectif, ca, fonds_leves, recrute, recherche_fonds, besoins, link}]}. Only this capital, not every French Tech. dirigeant, email and telephone are the persons the companies declared, personal data published for the ecosystem: reuse them within the GDPR. ca and the other figures are declared once by the company and not kept up to date. Without all_results, the first page only (per_page entries), and ville filters that page; total counts what is returned. secteur and type_annuaire take a term exactly as the results name it in secteurs and type.",
+  description: "Search the directory of the French Tech Aix-Marseille ecosystem (about 700 start-ups, support structures and service providers of the region), read live from the capital's site: {total, results: [{slug, nom, type, secteurs, pitch, dirigeant, email, telephone, website, ville, code_postal, adresse, date_creation, effectif, ca, fonds_leves, recrute, recherche_fonds, besoins, link}]}. Only this capital, not every French Tech. dirigeant, email and telephone are the persons the companies declared, personal data published for the ecosystem: reuse them within the GDPR. ca and the other figures are declared once by the company and not kept up to date. Without all_results, the first page only (per_page entries), and ville filters that page; total counts what is returned. secteur and type_annuaire take a term exactly as the results name it in secteurs and type. In French: annuaire french tech, startups de la région, structures d'accompagnement.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4600,7 +4600,7 @@ export const ecosystemGetDirectoryEntry = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "Get one entry of the French Tech Aix-Marseille directory by its slug, the slug of a search result: same fields as a result (pitch, director, contact, sectors, figures declared by the company, needs).",
+  description: "Get one entry of the French Tech Aix-Marseille directory by its slug, the slug of a search result: same fields as a result (pitch, director, contact, sectors, figures declared by the company, needs). In French: fiche d'une startup, fiche de l'annuaire french tech.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4639,7 +4639,7 @@ export const ecosystemListMembers = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the member pages of the French Tech Aix-Marseille community, named persons: {total, results: [{slug, titre, date, resume, link, localisation}]}. titre is the person's name, resume the start of the page. Personal data published by the site: reuse within the GDPR. Without all_results, the latest 100; total counts what is returned.",
+  description: "List the member pages of the French Tech Aix-Marseille community, named persons: {total, results: [{slug, titre, date, resume, link, localisation}]}. titre is the person's name, resume the start of the page. Personal data published by the site: reuse within the GDPR. Without all_results, the latest 100; total counts what is returned. In French: membres de la communauté french tech, membres french tech.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4679,7 +4679,7 @@ export const ecosystemListEvents = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the events of the French Tech Aix-Marseille agenda (meetups, conferences), newest publication first: {total, results: [{slug, titre, date, resume, link, localisation}]}. date is when the page was published, not when the event takes place: read it in resume or on the page. Without all_results, the latest 50.",
+  description: "List the events of the French Tech Aix-Marseille agenda (meetups, conferences), newest publication first: {total, results: [{slug, titre, date, resume, link, localisation}]}. date is when the page was published, not when the event takes place: read it in resume or on the page. Without all_results, the latest 50. In French: événements french tech, agenda french tech.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4718,7 +4718,7 @@ export const ecosystemListCalls = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the calls for applications relayed by French Tech Aix-Marseille (calls for projects, competitions, calls for expressions of interest), newest publication first: {total, results: [{slug, titre, date, resume, link, localisation}]}. The deadline is in the text, not in a field: read resume or the page before saying a call is open. Without all_results, the latest 50.",
+  description: "List the calls for applications relayed by French Tech Aix-Marseille (calls for projects, competitions, calls for expressions of interest), newest publication first: {total, results: [{slug, titre, date, resume, link, localisation}]}. The deadline is in the text, not in a field: read resume or the page before saying a call is open. Without all_results, the latest 50. In French: appels à projets, appels à candidatures french tech.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4757,7 +4757,7 @@ export const ecosystemListFunding = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the funding schemes French Tech Aix-Marseille presents to start-ups: {total, results: [{slug, titre, date, resume, link, type_financement, montant_maximum, critere_elegibilite, stade, localisation}]}, the last five lists of labels. A selection by the site, not the State reference base of public funding schemes, which the funding search covers. Without all_results, the latest 100.",
+  description: "List the funding schemes French Tech Aix-Marseille presents to start-ups: {total, results: [{slug, titre, date, resume, link, type_financement, montant_maximum, critere_elegibilite, stade, localisation}]}, the last five lists of labels. A selection by the site, not the State reference base of public funding schemes, which the funding search covers. Without all_results, the latest 100. In French: financements pour startups, aides french tech.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -4796,7 +4796,7 @@ export const ecosystemListCentralServices = defineFunction({
   connector: "fod",
   class: "read",
   act: false,
-  description: "List the appointments French Tech Central Aix-Marseille offers with State correspondents and partners (research tax credit and JEI status, public procurement, export, European and national funding, business and labour law...), read live from its booking page: {company, scenarios: [{name, duration, price}]}. Gives who a start-up can meet, not the free slots: booking is done on the page.",
+  description: "List the appointments French Tech Central Aix-Marseille offers with State correspondents and partners (research tax credit and JEI status, public procurement, export, European and national funding, business and labour law...), read live from its booking page: {company, scenarios: [{name, duration, price}]}. Gives who a start-up can meet, not the free slots: booking is done on the page. In French: rendez-vous french tech central, correspondants de l'état.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Appointments offered", input: {} },
@@ -4819,7 +4819,7 @@ export const connector = defineConnector({
   name: "fod",
   label: "France Open Data",
   namespace: "fod",
-  version: "3.0.0",
+  version: "3.0.1",
   apiVersion: "france-opendata-service 4d9f735 (routes unversioned)",
   baseUrl: "https://data.oto.zone",
   accesses: [

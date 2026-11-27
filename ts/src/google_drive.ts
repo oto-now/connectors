@@ -7,7 +7,7 @@ export const getAbout = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-  description: "Get the signed-in person (displayName, emailAddress, permissionId) and the storage quota of their Drive. Every other function acts on their behalf.",
+  description: "Get the signed-in person (displayName, emailAddress, permissionId) and the storage quota of their Drive. Every other function acts on their behalf. In French: mon compte google drive, espace de stockage drive, quota du drive.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Who the token acts as", input: {} },
@@ -31,7 +31,7 @@ export const listFiles = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-  description: "List or search files and folders with a Drive query. Trashed items are included unless the query says trashed = false. Children of a folder: '<folder id>' in parents and trashed = false. By name: name contains 'report'. Folders only: mimeType = 'application/vnd.google-apps.folder'. corpora user (default) covers My Drive and what is shared with the person; drive with drive_id, one shared drive; allDrives, everything.",
+  description: "List or search files and folders with a Drive query. Trashed items are included unless the query says trashed = false. Children of a folder: '<folder id>' in parents and trashed = false. By name: name contains 'report'. Folders only: mimeType = 'application/vnd.google-apps.folder'. corpora user (default) covers My Drive and what is shared with the person; drive with drive_id, one shared drive; allDrives, everything. In French: chercher un fichier, lister les fichiers d'un dossier, retrouver un document drive.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -100,7 +100,7 @@ export const getFile = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-  description: "Get the metadata of one file or folder by id: name, type, size, dates, owners, parent folder, shared drive, link, and whether it is trashed.",
+  description: "Get the metadata of one file or folder by id: name, type, size, dates, owners, parent folder, shared drive, link, and whether it is trashed. In French: détail d'un fichier, infos d'un document drive, lien d'un fichier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -137,7 +137,7 @@ export const listSharedDrives = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-  description: "List the shared drives the signed-in person belongs to. A shared drive id is the drive_id of list_files.",
+  description: "List the shared drives the signed-in person belongs to. A shared drive id is the drive_id of list_files. In French: lister les drives partagés, disques partagés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -184,7 +184,7 @@ export const listPermissions = defineFunction({
   class: "read",
   act: false,
   scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-  description: "List who has access to a file or folder: permission id, type (user, group, domain, anyone), role and email address. A permission id is what delete_permission takes.",
+  description: "List who has access to a file or folder: permission id, type (user, group, domain, anyone), role and email address. A permission id is what delete_permission takes. In French: qui a accès au fichier, partages d'un document, droits d'accès d'un dossier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -232,7 +232,7 @@ export const createFolder = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/drive"],
-  description: "Create a folder, at the root of My Drive or inside a parent folder. Returns its id, name, parent and link.",
+  description: "Create a folder, at the root of My Drive or inside a parent folder. Returns its id, name, parent and link. In French: créer un dossier, nouveau dossier drive.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -276,7 +276,7 @@ export const renameFile = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/drive"],
-  description: "Rename a file or folder. Returns its id, new name and link.",
+  description: "Rename a file or folder. Returns its id, new name and link. In French: renommer un fichier, renommer un dossier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -314,7 +314,7 @@ export const moveFile = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/drive"],
-  description: "Move a file or folder from its parent folder to another: remove_parent_id is its current parent, from get_file. Returns its id, name and parents.",
+  description: "Move a file or folder from its parent folder to another: remove_parent_id is its current parent, from get_file. Returns its id, name and parents. In French: déplacer un fichier, changer de dossier, ranger un document.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -357,7 +357,7 @@ export const trashFile = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/drive"],
-  description: "Move a file or folder to the trash, for every person who has access. Google deletes it for good after 30 days; until then untrash_file brings it back. Only its owner, or a manager of its shared drive, can trash it.",
+  description: "Move a file or folder to the trash, for every person who has access. Google deletes it for good after 30 days; until then untrash_file brings it back. Only its owner, or a manager of its shared drive, can trash it. In French: mettre à la corbeille, supprimer un fichier drive.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -395,7 +395,7 @@ export const untrashFile = defineFunction({
   class: "write",
   act: true,
   scopes: ["https://www.googleapis.com/auth/drive"],
-  description: "Take a file or folder out of the trash, back to its folder.",
+  description: "Take a file or folder out of the trash, back to its folder. In French: restaurer un fichier, sortir de la corbeille.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -432,7 +432,7 @@ export const shareFile = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/drive"],
-  description: "Give one person access to a file or folder, by email address, as reader, commenter or writer. With notify true, Google emails them the link. Returns the permission id.",
+  description: "Give one person access to a file or folder, by email address, as reader, commenter or writer. With notify true, Google emails them the link. Returns the permission id. In French: partager un fichier, donner accès à un document, partager un dossier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -473,7 +473,7 @@ export const deletePermission = defineFunction({
   class: "sensitive",
   act: true,
   scopes: ["https://www.googleapis.com/auth/drive"],
-  description: "Remove one access to a file or folder, by permission id from list_permissions. The owner's permission cannot be removed.",
+  description: "Remove one access to a file or folder, by permission id from list_permissions. The owner's permission cannot be removed. In French: retirer un accès, arrêter de partager un fichier.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -514,7 +514,7 @@ export const connector = defineConnector({
   name: "google_drive",
   label: "Google Drive",
   namespace: "google_drive",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v3",
   baseUrl: "https://www.googleapis.com/drive/v3",
   auth: {

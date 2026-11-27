@@ -6,7 +6,7 @@ export const getOrganization = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "The organization behind the key and its bank accounts: {organization: {id, name, slug, legal_name, legal_number, legal_form, legal_address, bank_accounts: [{id, name, iban, bic, currency, status, main, balance, authorized_balance, balance_cents, updated_at}]}}. Balances are in the account currency, in units (balance) and in cents (balance_cents); authorized_balance deducts pending debits. A bank account id is what list_transactions takes.",
+  description: "The organization behind the key and its bank accounts: {organization: {id, name, slug, legal_name, legal_number, legal_form, legal_address, bank_accounts: [{id, name, iban, bic, currency, status, main, balance, authorized_balance, balance_cents, updated_at}]}}. Balances are in the account currency, in units (balance) and in cents (balance_cents); authorized_balance deducts pending debits. A bank account id is what list_transactions takes. In French: solde des comptes, solde bancaire, comptes qonto, iban du compte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -34,7 +34,7 @@ export const listMemberships = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "The members of the organization: {memberships: [{id, first_name, last_name, email, role, status, team_id}], meta}. role is owner, admin, manager, employee, reporting or accountant.",
+  description: "The members of the organization: {memberships: [{id, first_name, last_name, email, role, status, team_id}], meta}. role is owner, admin, manager, employee, reporting or accountant. In French: membres de l'équipe qonto, utilisateurs du compte qonto.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -63,7 +63,7 @@ export const listLabels = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "The labels that tag transactions: {labels: [{id, name, parent_id}], meta}. A label id is what a transaction's label_ids holds.",
+  description: "The labels that tag transactions: {labels: [{id, name, parent_id}], meta}. A label id is what a transaction's label_ids holds. In French: libellés des transactions, étiquettes qonto.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -92,7 +92,7 @@ export const listTransactions = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "The transactions of ONE bank account (bank_account_id or iban, exactly one; get_organization lists them), newest settled first: {transactions: [{id, transaction_id, amount, amount_cents, currency, local_amount, local_currency, side (credit or debit), operation_type (card, transfer, income, direct_debit, qonto_fee, ...), status, label (counterparty), reference, note, settled_at, emitted_at, settled_balance, vat_amount, vat_rate, category, cashflow_category, label_ids, attachment_ids, card_last_digits, initiator_id}], meta {current_page, next_page, total_pages, total_count, per_page}}. includes embeds vat_details (VAT per rate), labels and attachments. Date bounds are ISO 8601; a pending transaction has no settled_at, so a settled_at window leaves it out. meta.next_page is null on the last page.",
+  description: "The transactions of ONE bank account (bank_account_id or iban, exactly one; get_organization lists them), newest settled first: {transactions: [{id, transaction_id, amount, amount_cents, currency, local_amount, local_currency, side (credit or debit), operation_type (card, transfer, income, direct_debit, qonto_fee, ...), status, label (counterparty), reference, note, settled_at, emitted_at, settled_balance, vat_amount, vat_rate, category, cashflow_category, label_ids, attachment_ids, card_last_digits, initiator_id}], meta {current_page, next_page, total_pages, total_count, per_page}}. includes embeds vat_details (VAT per rate), labels and attachments. Date bounds are ISO 8601; a pending transaction has no settled_at, so a settled_at window leaves it out. meta.next_page is null on the last page. In French: lister les transactions, relevé des opérations, dépenses du mois, mouvements bancaires.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -156,7 +156,7 @@ export const getTransaction = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "One transaction by its id (the UUID, not the transaction_id slug): {transaction: {...}}, the same fields as list_transactions.",
+  description: "One transaction by its id (the UUID, not the transaction_id slug): {transaction: {...}}, the same fields as list_transactions. In French: détail d'une transaction, détail d'une opération bancaire.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -192,7 +192,7 @@ export const listTransactionAttachments = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "The receipts attached to one transaction: {attachments: [{id, file_name, file_size, file_content_type, url, created_at}], meta}. url is signed and expires 30 minutes after the call.",
+  description: "The receipts attached to one transaction: {attachments: [{id, file_name, file_size, file_content_type, url, created_at}], meta}. url is signed and expires 30 minutes after the call. In French: justificatifs d'une transaction, reçus d'une opération.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -223,7 +223,7 @@ export const getAttachment = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "One attachment (a receipt or an invoice file): {attachment: {id, file_name, file_size, file_content_type, url, probative_attachment}}. url is signed and expires 30 minutes after the call.",
+  description: "One attachment (a receipt or an invoice file): {attachment: {id, file_name, file_size, file_content_type, url, probative_attachment}}. url is signed and expires 30 minutes after the call. In French: télécharger un justificatif, fichier d'un reçu.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -256,7 +256,7 @@ export const listStatements = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "Monthly bank statements, newest period first: {statements: [{id, bank_account_id, period (MM-YYYY), file {file_name, file_url, ...}}], meta}. bank_account_ids and ibans are exclusive; periods are MM-YYYY.",
+  description: "Monthly bank statements, newest period first: {statements: [{id, bank_account_id, period (MM-YYYY), file {file_name, file_url, ...}}], meta}. bank_account_ids and ibans are exclusive; periods are MM-YYYY. In French: relevés bancaires, relevés de compte mensuels.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -300,7 +300,7 @@ export const getStatement = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "One statement: {statement: {id, bank_account_id, period, file}}; the file url is signed.",
+  description: "One statement: {statement: {id, bank_account_id, period, file}}; the file url is signed. In French: télécharger un relevé, relevé de compte du mois.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -327,7 +327,7 @@ export const listSupplierInvoices = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "Invoices and receipts received (forwarded by email, uploaded, e-invoices): {supplier_invoices: [{id, status, supplier_name, invoice_number, issue_date, due_date, payment_date, total_amount {value, currency}, total_amount_excluding_taxes, total_tax_amount, payable_amount, attachment_id, file_name, attachment_category, matched_transactions_ids, is_credit_note}], meta}. Amounts are decimal strings. query searches the supplier name, amount, file name and invoice number.",
+  description: "Invoices and receipts received (forwarded by email, uploaded, e-invoices): {supplier_invoices: [{id, status, supplier_name, invoice_number, issue_date, due_date, payment_date, total_amount {value, currency}, total_amount_excluding_taxes, total_tax_amount, payable_amount, attachment_id, file_name, attachment_category, matched_transactions_ids, is_credit_note}], meta}. Amounts are decimal strings. query searches the supplier name, amount, file name and invoice number. In French: factures fournisseurs, factures reçues, factures à payer.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -377,7 +377,7 @@ export const getSupplierInvoice = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "One supplier invoice: {supplier_invoice: {...}}, the fields of list_supplier_invoices and more.",
+  description: "One supplier invoice: {supplier_invoice: {...}}, the fields of list_supplier_invoices and more. In French: détail d'une facture fournisseur, facture reçue.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -404,7 +404,7 @@ export const listSepaTransfers = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "Outgoing SEPA transfers, last updated first: {transfers: [{id, beneficiary_id, amount, currency, reference, note, status, scheduled_date, processed_at, transaction_id}], meta}.",
+  description: "Outgoing SEPA transfers, last updated first: {transfers: [{id, beneficiary_id, amount, currency, reference, note, status, scheduled_date, processed_at, transaction_id}], meta}. In French: virements émis, virements sepa, paiements sortants.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -453,7 +453,7 @@ export const listSepaBeneficiaries = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "Saved SEPA payees: {beneficiaries: [{id, name, iban, bic, email, status, trusted, activity_tag, created_at, updated_at}], meta}. 25 per page by default.",
+  description: "Saved SEPA payees: {beneficiaries: [{id, name, iban, bic, email, status, trusted, activity_tag, created_at, updated_at}], meta}. 25 per page by default. In French: bénéficiaires de virement, liste des bénéficiaires.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -496,7 +496,7 @@ export const listRequests = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "Spend requests from members (a transfer, several transfers, a flash or a virtual card) and their approval: {requests: [{id, request_type, status, initiator_id, approver_id, amount, currency, note, created_at, processed_at, ...}], meta}.",
+  description: "Spend requests from members (a transfer, several transfers, a flash or a virtual card) and their approval: {requests: [{id, request_type, status, initiator_id, approver_id, amount, currency, note, created_at, processed_at, ...}], meta}. In French: demandes de dépense, demandes de virement à valider, demandes de carte.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -544,7 +544,7 @@ export const listClientInvoices = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "Invoices issued from Qonto, newest first: {client_invoices: [{id, number, status (draft, unpaid, paid, canceled), client, issue_date, due_date, total_amount {value, currency}, vat_amount, paid_at, invoice_url, ...}], meta}. Invoices imported into Qonto are left out unless exclude_imported is false. per_page goes up to 500.",
+  description: "Invoices issued from Qonto, newest first: {client_invoices: [{id, number, status (draft, unpaid, paid, canceled), client, issue_date, due_date, total_amount {value, currency}, vat_amount, paid_at, invoice_url, ...}], meta}. Invoices imported into Qonto are left out unless exclude_imported is false. per_page goes up to 500. In French: factures clients, factures émises, factures impayées.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -586,7 +586,7 @@ export const getClientInvoice = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "One client invoice with its items: {client_invoice: {...}}.",
+  description: "One client invoice with its items: {client_invoice: {...}}. In French: détail d'une facture client, lignes d'une facture.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -613,7 +613,7 @@ export const listCreditNotes = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "Credit notes issued against client invoices, newest first: {credit_notes: [{id, number, invoice_id, issue_date, total_amount, vat_amount, client, ...}], meta}.",
+  description: "Credit notes issued against client invoices, newest first: {credit_notes: [{id, number, invoice_id, issue_date, total_amount, vat_amount, client, ...}], meta}. In French: avoirs émis, liste des avoirs.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -649,7 +649,7 @@ export const listQuotes = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "Quotes issued from Qonto, newest first: {quotes: [{id, number, status (pending_approval, approved, canceled), client, issue_date, expiry_date, total_amount, ...}], meta}. per_page goes up to 500.",
+  description: "Quotes issued from Qonto, newest first: {quotes: [{id, number, status (pending_approval, approved, canceled), client, issue_date, expiry_date, total_amount, ...}], meta}. per_page goes up to 500. In French: lister les devis, devis émis, devis en attente.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -690,7 +690,7 @@ export const listClients = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "The customers invoiced from Qonto: {clients: [{id, kind (company, individual, freelancer), name, first_name, last_name, email, vat_number, tax_identification_number, billing_address, currency, locale, ...}], meta}. name matches partially, case and accents ignored (2 characters at least); email, vat_number and tax_identification_number match exactly.",
+  description: "The customers invoiced from Qonto: {clients: [{id, kind (company, individual, freelancer), name, first_name, last_name, email, vat_number, tax_identification_number, billing_address, currency, locale, ...}], meta}. name matches partially, case and accents ignored (2 characters at least); email, vat_number and tax_identification_number match exactly. In French: lister les clients, clients facturés, fichier clients qonto.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -730,7 +730,7 @@ export const getClient = defineFunction({
   connector: "qonto",
   class: "read",
   act: false,
-  description: "One client: {client: {...}}, the fields of list_clients.",
+  description: "One client: {client: {...}}, the fields of list_clients. In French: fiche d'un client, coordonnées d'un client.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -756,7 +756,7 @@ export const connector = defineConnector({
   name: "qonto",
   label: "Qonto",
   namespace: "qonto",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v2",
   baseUrl: "https://thirdparty.qonto.com/v2",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "key": "api_key"},

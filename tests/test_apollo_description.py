@@ -226,9 +226,9 @@ def _client_view(sent: tuple) -> tuple:
     return method, url, query, body
 
 
-def test_the_description_is_version_1_1_1_and_passes_the_fabrique():
+def test_the_description_is_version_1_1_2_and_passes_the_fabrique():
     description = _description()
-    assert description["connector"]["version"] == "1.1.1"
+    assert description["connector"]["version"] == "1.1.2"
     check(description, APOLLO)
 
 

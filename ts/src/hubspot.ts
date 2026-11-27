@@ -6,7 +6,7 @@ export const listObjects = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "List the records of one CRM object type (contacts, companies, deals, tickets, notes or a custom object), one page at a time, in no useful order: to find records by value, use search_objects. Each record comes with its id and the properties asked for (a default set otherwise), under their internal names. associations adds the ids of associated records of the named types. Pass paging.next.after as after for the next page.",
+  description: "List the records of one CRM object type (contacts, companies, deals, tickets, notes or a custom object), one page at a time, in no useful order: to find records by value, use search_objects. Each record comes with its id and the properties asked for (a default set otherwise), under their internal names. associations adds the ids of associated records of the named types. Pass paging.next.after as after for the next page. In French: lister les contacts, lister les entreprises, lister les transactions, lister les tickets.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -64,7 +64,7 @@ export const getObject = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "Get one CRM record by its id: its properties (those asked for, a default set otherwise) under their internal names, and the ids of its associated records of the types named in associations. A property that does not exist in the portal is ignored here, not refused.",
+  description: "Get one CRM record by its id: its properties (those asked for, a default set otherwise) under their internal names, and the ids of its associated records of the types named in associations. A property that does not exist in the portal is ignored here, not refused. In French: fiche d'un contact, détail d'une entreprise, détail d'une transaction.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -112,7 +112,7 @@ export const searchObjects = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "Search the records of one CRM object type by full-text query, by filters on property values, or both. filter_groups: the filters inside one group must all match (AND); the record matches if any group matches (OR); at most 5 groups, 6 filters per group, 18 in all. A filter names a property by internal name and an operator: EQ, NEQ, LT, LTE, GT, GTE, CONTAINS_TOKEN (* as wildcard), NOT_CONTAINS_TOKEN take value; BETWEEN takes value and highValue; IN, NOT_IN take values (exact match); HAS_PROPERTY, NOT_HAS_PROPERTY take nothing. Dates go as epoch milliseconds; dropdowns take their option value. sorts orders by one property. Returns total and results; pass paging.next.after as after for the next page. At most 10,000 results per search, about 5 searches per second; a record just written can take a few seconds to be found.",
+  description: "Search the records of one CRM object type by full-text query, by filters on property values, or both. filter_groups: the filters inside one group must all match (AND); the record matches if any group matches (OR); at most 5 groups, 6 filters per group, 18 in all. A filter names a property by internal name and an operator: EQ, NEQ, LT, LTE, GT, GTE, CONTAINS_TOKEN (* as wildcard), NOT_CONTAINS_TOKEN take value; BETWEEN takes value and highValue; IN, NOT_IN take values (exact match); HAS_PROPERTY, NOT_HAS_PROPERTY take nothing. Dates go as epoch milliseconds; dropdowns take their option value. sorts orders by one property. Returns total and results; pass paging.next.after as after for the next page. At most 10,000 results per search, about 5 searches per second; a record just written can take a few seconds to be found. In French: chercher un contact, trouver un contact par email, chercher une transaction, rechercher une entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -271,7 +271,7 @@ export const createObject = defineFunction({
   connector: "hubspot",
   class: "write",
   act: true,
-  description: "Create one CRM record: a contact, a company, a deal, a ticket, a note or a custom object record. properties are keyed by internal name (list_properties gives them, and the values a dropdown accepts); associations attach it to existing records at creation. A note takes hs_note_body and hs_timestamp, and an association to its record. Returns the created record and its id.",
+  description: "Create one CRM record: a contact, a company, a deal, a ticket, a note or a custom object record. properties are keyed by internal name (list_properties gives them, and the values a dropdown accepts); associations attach it to existing records at creation. A note takes hs_note_body and hs_timestamp, and an association to its record. Returns the created record and its id. In French: créer un contact, créer une entreprise, créer une transaction, ajouter une note.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -346,7 +346,7 @@ export const updateObject = defineFunction({
   connector: "hubspot",
   class: "write",
   act: true,
-  description: "Update the properties of one CRM record by its id (PATCH): only the properties given change, an empty string clears one. Internal names only; list_properties gives them and the values a dropdown accepts. Returns the updated record.",
+  description: "Update the properties of one CRM record by its id (PATCH): only the properties given change, an empty string clears one. Internal names only; list_properties gives them and the values a dropdown accepts. Returns the updated record. In French: modifier un contact, mettre à jour une transaction, changer l'étape d'un deal.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -390,7 +390,7 @@ export const deleteObject = defineFunction({
   connector: "hubspot",
   class: "sensitive",
   act: true,
-  description: "Archive one CRM record: it moves to HubSpot's recycle bin, out of lists, searches and reports, restorable from HubSpot for 90 days.",
+  description: "Archive one CRM record: it moves to HubSpot's recycle bin, out of lists, searches and reports, restorable from HubSpot for 90 days. In French: supprimer un contact, archiver une transaction, supprimer une entreprise.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -425,7 +425,7 @@ export const listAssociations = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "List the records of to_object_type associated with one record: the deals of a contact, the contacts of a company. Returns their ids and association types; get_object or search_objects reads their properties.",
+  description: "List the records of to_object_type associated with one record: the deals of a contact, the contacts of a company. Returns their ids and association types; get_object or search_objects reads their properties. In French: transactions d'un contact, contacts d'une entreprise, objets associés.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -465,7 +465,7 @@ export const listOwners = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "List the portal's owners (its users): id, email, first and last name, teams. An owner's id is the value of hubspot_owner_id on a record.",
+  description: "List the portal's owners (its users): id, email, first and last name, teams. An owner's id is the value of hubspot_owner_id on a record. In French: propriétaires hubspot, commerciaux hubspot, utilisateurs du portail.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -504,7 +504,7 @@ export const listProperties = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "List the properties of an object type: internal name, label, type, field type, group, and for a dropdown its options, whose value is what a record accepts. Read it before writing a record: internal names are not the labels shown in HubSpot (dealstage, not Deal stage).",
+  description: "List the properties of an object type: internal name, label, type, field type, group, and for a dropdown its options, whose value is what a record accepts. Read it before writing a record: internal names are not the labels shown in HubSpot (dealstage, not Deal stage). In French: propriétés hubspot, champs d'un contact, valeurs d'une liste déroulante.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -545,7 +545,7 @@ export const getProperty = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "Get one property of an object type by its internal name: label, type, field type, group, options.",
+  description: "Get one property of an object type by its internal name: label, type, field type, group, options. In French: détail d'une propriété, options d'un champ hubspot.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -582,7 +582,7 @@ export const deleteProperty = defineFunction({
   connector: "hubspot",
   class: "sensitive",
   act: true,
-  description: "Archive a custom property of an object type: it disappears from records, forms and reports. HubSpot's own properties cannot be archived.",
+  description: "Archive a custom property of an object type: it disappears from records, forms and reports. HubSpot's own properties cannot be archived. In French: supprimer une propriété, archiver un champ personnalisé.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -617,7 +617,7 @@ export const listPropertyGroups = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "List the property groups of an object type (the sections of a record): the groupName a new property takes.",
+  description: "List the property groups of an object type (the sections of a record): the groupName a new property takes. In French: groupes de propriétés, sections d'une fiche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -651,7 +651,7 @@ export const createList = defineFunction({
   connector: "hubspot",
   class: "write",
   act: true,
-  description: "Create a list (a segment) of records of one object type. MANUAL: members added and removed by hand or by add_and_remove_list_memberships. DYNAMIC: members recomputed by HubSpot from filter_branch. SNAPSHOT: filtered once, then managed by hand. The name is unique per object type.",
+  description: "Create a list (a segment) of records of one object type. MANUAL: members added and removed by hand or by add_and_remove_list_memberships. DYNAMIC: members recomputed by HubSpot from filter_branch. SNAPSHOT: filtered once, then managed by hand. The name is unique per object type. In French: créer une liste, créer un segment, nouvelle liste de contacts.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -700,7 +700,7 @@ export const getList = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "Get a list by its id: name, object type, processing type, size; include_filters adds its filter_branch.",
+  description: "Get a list by its id: name, object type, processing type, size; include_filters adds its filter_branch. In French: détail d'une liste, taille d'une liste hubspot.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -732,7 +732,7 @@ export const getListByName = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "Get a list by its exact name within one object type.",
+  description: "Get a list by its exact name within one object type. In French: trouver une liste par son nom, liste hubspot par nom.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -767,7 +767,7 @@ export const searchLists = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "Search lists by name, processing type and object type: lists, with hasMore, and offset to pass back for the next page.",
+  description: "Search lists by name, processing type and object type: lists, with hasMore, and offset to pass back for the next page. In French: chercher une liste, lister les listes hubspot, segments existants.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -819,7 +819,7 @@ export const updateListName = defineFunction({
   connector: "hubspot",
   class: "write",
   act: true,
-  description: "Rename a list.",
+  description: "Rename a list. In French: renommer une liste, renommer un segment.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -852,7 +852,7 @@ export const updateListFilters = defineFunction({
   connector: "hubspot",
   class: "sensitive",
   act: true,
-  description: "Replace the criteria tree of a DYNAMIC or SNAPSHOT list: HubSpot recomputes its members, which can add or remove many records, and enroll_objects_in_workflows enrolls the new members in the workflows that use the list.",
+  description: "Replace the criteria tree of a DYNAMIC or SNAPSHOT list: HubSpot recomputes its members, which can add or remove many records, and enroll_objects_in_workflows enrolls the new members in the workflows that use the list. In French: modifier les filtres d'une liste, changer les critères d'un segment.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -894,7 +894,7 @@ export const deleteList = defineFunction({
   connector: "hubspot",
   class: "sensitive",
   act: true,
-  description: "Delete a list. Its records are untouched; the list is restorable for 90 days with restore_list.",
+  description: "Delete a list. Its records are untouched; the list is restorable for 90 days with restore_list. In French: supprimer une liste, supprimer un segment.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -924,7 +924,7 @@ export const restoreList = defineFunction({
   connector: "hubspot",
   class: "write",
   act: true,
-  description: "Restore a list deleted less than 90 days ago.",
+  description: "Restore a list deleted less than 90 days ago. In French: restaurer une liste, récupérer une liste supprimée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -951,7 +951,7 @@ export const getListMemberships = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "List the ids of the records that are members of a list (recordId, and when they joined), at most 250 per page; get_object or search_objects reads their properties. Pass paging.next.after as after for the next page.",
+  description: "List the ids of the records that are members of a list (recordId, and when they joined), at most 250 per page; get_object or search_objects reads their properties. Pass paging.next.after as after for the next page. In French: membres d'une liste, contacts d'une liste, qui est dans le segment.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -994,7 +994,7 @@ export const addAndRemoveListMemberships = defineFunction({
   connector: "hubspot",
   class: "write",
   act: true,
-  description: "Add and remove members of a MANUAL or SNAPSHOT list in one revision of the list, by record id; pass an empty list for the side with nothing to do. A DYNAMIC list refuses it: its members follow its filters.",
+  description: "Add and remove members of a MANUAL or SNAPSHOT list in one revision of the list, by record id; pass an empty list for the side with nothing to do. A DYNAMIC list refuses it: its members follow its filters. In French: ajouter un contact à une liste, retirer un contact d'une liste.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1038,7 +1038,7 @@ export const deleteAllListMemberships = defineFunction({
   connector: "hubspot",
   class: "sensitive",
   act: true,
-  description: "Remove every member from a MANUAL or SNAPSHOT list; the list itself and its records stay.",
+  description: "Remove every member from a MANUAL or SNAPSHOT list; the list itself and its records stay. In French: vider une liste, retirer tous les membres.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1068,7 +1068,7 @@ export const addMembershipsFromList = defineFunction({
   connector: "hubspot",
   class: "write",
   act: true,
-  description: "Add the members of another list (of the same object type) to a MANUAL or SNAPSHOT list, up to 100,000 records.",
+  description: "Add the members of another list (of the same object type) to a MANUAL or SNAPSHOT list, up to 100,000 records. In French: copier les membres d'une liste, fusionner deux listes.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1100,7 +1100,7 @@ export const getRecordMemberships = defineFunction({
   connector: "hubspot",
   class: "read",
   act: false,
-  description: "List the lists one record belongs to.",
+  description: "List the lists one record belongs to. In French: listes d'un contact, segments d'une fiche.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1134,7 +1134,7 @@ export const connector = defineConnector({
   name: "hubspot",
   label: "HubSpot",
   namespace: "hubspot",
-  version: "1.0.2",
+  version: "1.0.3",
   apiVersion: "v3",
   baseUrl: "https://api.hubapi.com",
   auth: {"kind": "bearer", "token": "access_token"},

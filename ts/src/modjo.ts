@@ -6,7 +6,7 @@ export const listCalls = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the calls recorded in Modjo, page by page (pagination.total gives the count; another page exists while page * size < total). The key belongs to the workspace: without user_id it returns every user's calls. date_from and date_to bound the call date, created_from and created_to the creation date. Without expand, related objects are ids only (userIds, contactIds, dealId, accountId); expand replaces them by the objects and can inline sub-resources (transcript, summaries, next-steps...), which makes pages heavy: expand transcript on one call at a time. status processing means the analysis is not finished (5 to 30 minutes after upload).",
+  description: "List the calls recorded in Modjo, page by page (pagination.total gives the count; another page exists while page * size < total). The key belongs to the workspace: without user_id it returns every user's calls. date_from and date_to bound the call date, created_from and created_to the creation date. Without expand, related objects are ids only (userIds, contactIds, dealId, accountId); expand replaces them by the objects and can inline sub-resources (transcript, summaries, next-steps...), which makes pages heavy: expand transcript on one call at a time. status processing means the analysis is not finished (5 to 30 minutes after upload). In French: lister les appels modjo, appels enregistrés, derniers appels commerciaux.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -96,7 +96,7 @@ export const getCall = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get one Modjo call by its numeric id or its UUID (the one an upload returns): date, duration, direction, language, status, retention status, CRM activity. expand inlines participants, deal, account, transcript, AI summaries, notes, next steps, topics, tags, CRM filling answers and AI scoring in a single request.",
+  description: "Get one Modjo call by its numeric id or its UUID (the one an upload returns): date, duration, direction, language, status, retention status, CRM activity. expand inlines participants, deal, account, transcript, AI summaries, notes, next steps, topics, tags, CRM filling answers and AI scoring in a single request. In French: détail d'un appel modjo, durée d'un appel modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -154,7 +154,7 @@ export const getCallTranscript = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get the transcript of one Modjo call: timed blocks with their speaker (type user for a workspace member, contact for an external participant). Empty while the call is still processing.",
+  description: "Get the transcript of one Modjo call: timed blocks with their speaker (type user for a workspace member, contact for an external participant). Empty while the call is still processing. In French: transcription d'un appel modjo, verbatim d'un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -189,7 +189,7 @@ export const listCallSummaries = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get the AI summaries of one Modjo call, one per summary template of the workspace; the text is in answer.",
+  description: "Get the AI summaries of one Modjo call, one per summary template of the workspace; the text is in answer. In French: résumé d'un appel modjo, compte rendu d'un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -224,7 +224,7 @@ export const listCallNotes = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get the published notes of one Modjo call, written by a user or by the AI; drafts are not returned. rawContent is rich text in JSON.",
+  description: "Get the published notes of one Modjo call, written by a user or by the AI; drafts are not returned. rawContent is rich text in JSON. In French: notes d'un appel modjo, notes publiées sur un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -259,7 +259,7 @@ export const listCallNextSteps = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get the next steps Modjo's AI drew from one call (title, description). Empty while the call is processing or when there is none.",
+  description: "Get the next steps Modjo's AI drew from one call (title, description). Empty while the call is processing or when there is none. In French: prochaines étapes d'un appel, actions à suivre après un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -294,7 +294,7 @@ export const getCallRecording = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get a signed URL to download the audio or video recording of one Modjo call. The URL expires after one hour (expiresAt): fetch it right before use and never store it.",
+  description: "Get a signed URL to download the audio or video recording of one Modjo call. The URL expires after one hour (expiresAt): fetch it right before use and never store it. In French: enregistrement d'un appel modjo, télécharger l'audio d'un appel modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -330,7 +330,7 @@ export const listCallCrmFillingAnswers = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the CRM field values Modjo's AI filled from one call and pushed to the CRM; answers never pushed are not returned. crmFillingFieldUuid refers to a field of list_crm_filling_template_fields.",
+  description: "List the CRM field values Modjo's AI filled from one call and pushed to the CRM; answers never pushed are not returned. crmFillingFieldUuid refers to a field of list_crm_filling_template_fields. In French: champs crm remplis par l'ia, remplissage du crm après un appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -367,7 +367,7 @@ export const listCallTags = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get the tags set on one Modjo call.",
+  description: "Get the tags set on one Modjo call. In French: tags d'un appel modjo, étiquettes d'un appel modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -402,7 +402,7 @@ export const addCallTag = defineFunction({
   connector: "modjo",
   class: "write",
   act: true,
-  description: "Set an existing tag on one Modjo call (tag ids from list_tags). Idempotent: a tag already set stays set once.",
+  description: "Set an existing tag on one Modjo call (tag ids from list_tags). Idempotent: a tag already set stays set once. In French: ajouter un tag à un appel modjo, étiqueter un appel modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -438,7 +438,7 @@ export const removeCallTag = defineFunction({
   connector: "modjo",
   class: "write",
   act: true,
-  description: "Remove a tag from one Modjo call; the tag itself is kept.",
+  description: "Remove a tag from one Modjo call; the tag itself is kept. In French: retirer un tag d'un appel modjo, enlever une étiquette d'un appel modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -474,7 +474,7 @@ export const uploadCall = defineFunction({
   connector: "modjo",
   class: "sensitive",
   act: true,
-  description: "Import into Modjo a call recorded elsewhere: Modjo downloads the media from media_url, which must be publicly reachable. At least one participant of type user must be a licensed Modjo user. Processing is asynchronous (5 to 30 minutes): the answer gives the call UUID and status processing; read it with get_call until completed or failed. Modjo also logs the call in the connected CRM, updating the activity crm_activity_id when given, creating one otherwise. The API cannot delete a call.",
+  description: "Import into Modjo a call recorded elsewhere: Modjo downloads the media from media_url, which must be publicly reachable. At least one participant of type user must be a licensed Modjo user. Processing is asynchronous (5 to 30 minutes): the answer gives the call UUID and status processing; read it with get_call until completed or failed. Modjo also logs the call in the connected CRM, updating the activity crm_activity_id when given, creating one otherwise. The API cannot delete a call. In French: importer un appel dans modjo, envoyer un enregistrement à modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -572,7 +572,7 @@ export const listCallReviews = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the reviews of calls (coaching scorecards), with their answers per question; ratings go from 0 to 4, -1 meaning not applicable. Newest first unless order is asc, the choice for incremental syncs. The API returns private reviews too (isPrivate is informative only).",
+  description: "List the reviews of calls (coaching scorecards), with their answers per question; ratings go from 0 to 4, -1 meaning not applicable. Newest first unless order is asc, the choice for incremental syncs. The API returns private reviews too (isPrivate is informative only). In French: évaluations d'appels, grilles de coaching, notes de coaching des commerciaux.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -612,7 +612,7 @@ export const listAccounts = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the accounts (companies) Modjo mirrors from the connected CRM, with their CRM id and link.",
+  description: "List the accounts (companies) Modjo mirrors from the connected CRM, with their CRM id and link. In French: entreprises du crm dans modjo, comptes clients modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -642,7 +642,7 @@ export const getAccount = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get one account Modjo mirrors from the connected CRM.",
+  description: "Get one account Modjo mirrors from the connected CRM. In French: fiche d'un compte modjo, détail d'une entreprise modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -671,7 +671,7 @@ export const listContacts = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the contacts (external people) Modjo mirrors from the connected CRM: email, phone, job title, account.",
+  description: "List the contacts (external people) Modjo mirrors from the connected CRM: email, phone, job title, account. In French: contacts modjo, contacts du crm dans modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -701,7 +701,7 @@ export const getContact = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get one contact Modjo mirrors from the connected CRM.",
+  description: "Get one contact Modjo mirrors from the connected CRM. In French: fiche d'un contact modjo, détail d'un contact modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -730,7 +730,7 @@ export const listDeals = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the deals Modjo mirrors from the connected CRM: status, stage, amount, close date, probability, owner (a Modjo user id).",
+  description: "List the deals Modjo mirrors from the connected CRM: status, stage, amount, close date, probability, owner (a Modjo user id). In French: affaires modjo, opportunités du crm dans modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -762,7 +762,7 @@ export const getDealSummary = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get the AI summary Modjo built for one deal across its calls, as typed sections.",
+  description: "Get the AI summary Modjo built for one deal across its calls, as typed sections. In French: résumé d'une affaire, synthèse ia d'une opportunité.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -791,7 +791,7 @@ export const listTags = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the call tags of the Modjo workspace.",
+  description: "List the call tags of the Modjo workspace. In French: tags modjo, lister les tags d'appel modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -820,7 +820,7 @@ export const listTopics = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the topics Modjo detects in calls (saidBy: by a user, by a contact, or by anyone).",
+  description: "List the topics Modjo detects in calls (saidBy: by a user, by a contact, or by anyone). In French: sujets détectés dans les appels, thèmes abordés en appel.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -849,7 +849,7 @@ export const listUsers = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the members of the Modjo workspace (role user, manager or admin). email finds one person, whose id filters list_calls.",
+  description: "List the members of the Modjo workspace (role user, manager or admin). email finds one person, whose id filters list_calls. In French: utilisateurs modjo, commerciaux de l'espace modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -879,7 +879,7 @@ export const getUser = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get one member of the Modjo workspace.",
+  description: "Get one member of the Modjo workspace. In French: détail d'un utilisateur modjo, fiche d'un commercial modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -908,7 +908,7 @@ export const listTeams = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the teams of the Modjo workspace.",
+  description: "List the teams of the Modjo workspace. In French: équipes modjo, lister les équipes commerciales.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -938,7 +938,7 @@ export const getTeam = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get one team of the Modjo workspace.",
+  description: "Get one team of the Modjo workspace. In French: détail d'une équipe modjo, lire une équipe modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -967,7 +967,7 @@ export const listTeamMembers = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the members of one Modjo team.",
+  description: "List the members of one Modjo team. In French: membres d'une équipe modjo, commerciaux d'une équipe.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1000,7 +1000,7 @@ export const listCrmFillingTemplates = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the CRM filling templates: which calls (duration, providers, teams, tags) get CRM fields filled by Modjo's AI.",
+  description: "List the CRM filling templates: which calls (duration, providers, teams, tags) get CRM fields filled by Modjo's AI. In French: modèles de remplissage du crm, modèles de remplissage modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1030,7 +1030,7 @@ export const getCrmFillingTemplate = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "Get one CRM filling template.",
+  description: "Get one CRM filling template. In French: détail d'un modèle de remplissage du crm, lire un modèle de remplissage modjo.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1064,7 +1064,7 @@ export const listCrmFillingTemplateFields = defineFunction({
   connector: "modjo",
   class: "read",
   act: false,
-  description: "List the fields of one CRM filling template: the prompt, the CRM field it fills (entity, key, type) and whether it is pushed automatically.",
+  description: "List the fields of one CRM filling template: the prompt, the CRM field it fills (entity, key, type) and whether it is pushed automatically. In French: champs d'un modèle de remplissage du crm, questions d'un modèle de remplissage.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -1099,7 +1099,7 @@ export const connector = defineConnector({
   name: "modjo",
   label: "Modjo",
   namespace: "modjo",
-  version: "2.0.0",
+  version: "2.0.1",
   apiVersion: "v2",
   baseUrl: "https://api.modjo.ai/v2",
   auth: {"kind": "bearer", "token": "api_key"},

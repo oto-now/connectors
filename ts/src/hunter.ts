@@ -6,7 +6,7 @@ export const domainSearch = defineFunction({
   connector: "hunter",
   class: "write",
   act: true,
-  description: "List the public emails Hunter found on a company domain: for each, the address, its type (personal or generic), a confidence score, the person's name, position, seniority, department, LinkedIn and Twitter when known, the pages where it was seen and its verification; with the domain's email pattern (such as first.last) and organization. Spends Hunter credits: 1 per 1 to 10 emails returned, none when nothing is found. limit caps the emails returned, at most 10.",
+  description: "List the public emails Hunter found on a company domain: for each, the address, its type (personal or generic), a confidence score, the person's name, position, seniority, department, LinkedIn and Twitter when known, the pages where it was seen and its verification; with the domain's email pattern (such as first.last) and organization. Spends Hunter credits: 1 per 1 to 10 emails returned, none when nothing is found. limit caps the emails returned, at most 10. In French: emails d'une entreprise, adresses email d'un domaine, contacts d'une société.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -42,7 +42,7 @@ export const emailFinder = defineFunction({
   connector: "hunter",
   class: "write",
   act: true,
-  description: "Find the professional email of one person at a company, from the company domain and the person's name (first_name and last_name, or full_name). Answers the email, a confidence score, the person's position, LinkedIn and Twitter when known, the pages where it was seen and its verification. Spends 1 Hunter credit when an email is found, none otherwise. 451 claimed_email: the person asked Hunter to stop processing their data.",
+  description: "Find the professional email of one person at a company, from the company domain and the person's name (first_name and last_name, or full_name). Answers the email, a confidence score, the person's position, LinkedIn and Twitter when known, the pages where it was seen and its verification. Spends 1 Hunter credit when an email is found, none otherwise. 451 claimed_email: the person asked Hunter to stop processing their data. In French: trouver l'email d'une personne, deviner une adresse email, email professionnel d'un contact.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -91,7 +91,7 @@ export const emailVerifier = defineFunction({
   connector: "hunter",
   class: "write",
   act: true,
-  description: "Verify that an email address is deliverable: status (valid, invalid, accept_all, webmail, disposable, unknown), a score, and the checks behind it (format, gibberish, disposable, webmail, MX records, SMTP server and check, accept-all, blocked), with the pages where the address was seen. Spends a Hunter verification (0.5 credit on a single credits pool). A 202 answer means the verification is still running: call again later, a repeated call is billed once. 451 claimed_email: the person asked Hunter to stop processing their data.",
+  description: "Verify that an email address is deliverable: status (valid, invalid, accept_all, webmail, disposable, unknown), a score, and the checks behind it (format, gibberish, disposable, webmail, MX records, SMTP server and check, accept-all, blocked), with the pages where the address was seen. Spends a Hunter verification (0.5 credit on a single credits pool). A 202 answer means the verification is still running: call again later, a repeated call is billed once. 451 claimed_email: the person asked Hunter to stop processing their data. In French: vérifier un email, adresse email valide, tester une adresse email.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -120,7 +120,7 @@ export const accountInfo = defineFunction({
   connector: "hunter",
   class: "read",
   act: false,
-  description: "The Hunter account behind this key: plan, reset date of its quotas, and the period's requests: searches and verifications (used, available, remaining), and credits on a single credits pool. Free.",
+  description: "The Hunter account behind this key: plan, reset date of its quotas, and the period's requests: searches and verifications (used, available, remaining), and credits on a single credits pool. Free. In French: crédits hunter restants, quota hunter, compte hunter.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "The account and its remaining credits", input: {} },
@@ -140,7 +140,7 @@ export const connector = defineConnector({
   name: "hunter",
   label: "Hunter.io",
   namespace: "hunter",
-  version: "1.0.0",
+  version: "1.0.1",
   apiVersion: "v2",
   baseUrl: "https://api.hunter.io/v2",
   auth: {"kind": "bearer", "token": "api_key"},

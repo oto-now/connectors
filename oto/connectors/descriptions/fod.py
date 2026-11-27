@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'fod',
                'label': 'France Open Data',
                'namespace': 'fod',
-               'version': '3.0.0',
+               'version': '3.0.1',
                'api_version': 'france-opendata-service 4d9f735 (routes unversioned)',
                'base_url': 'https://data.oto.zone',
                'accesses': [{'name': 'key',
@@ -68,7 +68,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get the account FOD recognises for this call. For a person signed in: {type: '
                                '"oauth", sub, email}, email only when the sign-in token carries it. For an '
                                'organization key: {type: "cle", consommateur: "cle:<fingerprint>"}, the '
-                               'fingerprint naming the key, never the key. Nothing of the data is read.',
+                               'fingerprint naming the key, never the key. Nothing of the data is read. In '
+                               'French: compte france open data, identité du compte fod.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Who the call acts as', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/moi'},
@@ -87,7 +88,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'office (siege), officers (dirigeants), labels (complements) and matching '
                                'establishments are left out, to keep a page of a common name readable; '
                                'company_get on the SIREN chosen gives the full record. A name also matches '
-                               'officers, who are not shown here. At least one criterion is required.',
+                               'officers, who are not shown here. At least one criterion is required. In '
+                               "French: trouver une entreprise, sociétés d'une commune.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['query']},
@@ -212,7 +214,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'form, registered office, activity, headcount band, VAT number, closure '
                                'status (etat_administratif, date_fermeture), latest summary accounts, '
                                'officers, collective agreements and some thirty labels. Use it to check that '
-                               'a contract party exists, is active, and is what the contract says it is.',
+                               'a contract party exists, is active, and is what the contract says it is. In '
+                               "French: fiche d'une entreprise par siren, infos légales d'une société, "
+                               'entreprise active ou fermée.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren'],
@@ -233,7 +237,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'officer is a natural person or a legal person (type_dirigeant "personne '
                                'morale", with its own siren): a subsidiary is often chaired by a company. '
                                'Use it to check who has power to sign for a company that is a contract '
-                               'party. Empty list when none is declared or the SIREN is unknown.',
+                               'party. Empty list when none is declared or the SIREN is unknown. In French: '
+                               "dirigeants d'une entreprise, gérant d'une société, mandataires sociaux.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren'],
@@ -251,7 +256,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'familleavis, familleavis_lib, tribunal, texte, ...}], total_count}. Use it '
                                'before contracting with a company: an insolvency proceeding (famille '
                                'collective) is the strongest signal read here, and the publication date is '
-                               'not the date of the judgment.',
+                               "not the date of the judgment. In French: annonces bodacc d'une entreprise, "
+                               'procédure collective, redressement judiciaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren'],
@@ -292,7 +298,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'filed with INPI, newest first: [{date_cloture_exercice, type_bilan, '
                                'confidentiality, chiffre_d_affaires, ...}]. A confidential filing has no '
                                'figures. Gives the exact closing date a balance sheet is read by. The first '
-                               'call after a restart of the service is slow.',
+                               'call after a restart of the service is slow. In French: exercices comptables '
+                               'déposés, comptes annuels disponibles.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren'],
@@ -309,7 +316,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'liasse, keyed by item code), with turnover and net result derived from them. '
                                'Use it to assess the financial standing of a contract party, such as a '
                                'customer, a supplier or a guarantor. date_cloture must be exactly one of the '
-                               "closing dates of this company's filed fiscal years.",
+                               "closing dates of this company's filed fiscal years. In French: bilan d'une "
+                               "entreprise, chiffre d'affaires d'une société, comptes annuels.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren', 'date_cloture'],
@@ -342,7 +350,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                "names (a sale names both parties); partie is that SIREN's role, indeterminee "
                                'when the notice does not say. The counts are not a verdict: whether a '
                                'company is in insolvency proceedings is read in texte, SIREN by SIREN. '
-                               'Without famille, every family comes back.',
+                               'Without famille, every family comes back. In French: surveiller les annonces '
+                               "bodacc, procédures collectives d'un portefeuille.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sirens'],
@@ -395,7 +404,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'is the exact headcount declared, where the company register only gives a '
                                'band. Only companies of 50 employees or more must declare: no declaration is '
                                'not a bad score. When the latest year is unknown, use the latest declaration '
-                               'instead.',
+                               "instead. In French: index égalité femmes hommes, index egapro d'une année.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren', 'year'],
@@ -423,7 +432,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                "looking back up to five years from the current one: same shape as one year's "
                                "declaration, annee saying which. Use it to qualify a company's exact "
                                'headcount (entreprise.effectif.total) and to confirm it employs 50 people or '
-                               'more.',
+                               'more. In French: dernier index égalité, dernier index egapro.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren'],
@@ -452,7 +461,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'reading the text. To check one company, search by siren without themes: an '
                                'agreement is filed under the establishment that deposits it. When '
                                'effectifs_filter.truncated is true, the answer is not exhaustive: raise '
-                               'scan_cap.',
+                               "scan_cap. In French: accords d'entreprise, chercher un accord collectif "
+                               "d'entreprise.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -613,7 +623,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                '(ACCOTEXT...) or its filing number (T...): who signed it (siret, '
                                'raison_sociale, syndicats_libelle), when (date_texte, date_effet, date_fin), '
                                'its branch, themes and title, and permalien. The body is not here: it is '
-                               'read with the agreement text, by the DILA id.',
+                               "read with the agreement text, by the DILA id. In French: détail d'un accord "
+                               "d'entreprise, signataires d'un accord.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['id_or_numero'],
@@ -637,7 +648,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'List the theme codes of company agreements with their label and how many '
                                'agreements carry each: [{code, libelle, count}]. Read it before filtering '
                                'agreements by theme: the codes cannot be guessed. A count says how often the '
-                               'code was applied, not how many agreements cover the topic.',
+                               'code was applied, not how many agreements cover the topic. In French: thèmes '
+                               "des accords d'entreprise, codes thèmes des accords.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Theme codes', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/fr/accords/themes'},
@@ -650,7 +662,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'next_offset, permalien}. texte may be empty when no full version was '
                                'published. A long text comes in slices: when tronque is true, call again '
                                'with offset set to next_offset (health, provident and final provisions often '
-                               'sit at the end).',
+                               "sit at the end). In French: texte d'un accord d'entreprise, lire un accord "
+                               "d'entreprise.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['acco_id'],
@@ -690,7 +703,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'FOD built its copy; build_info "absent" means the vintage is unknown. The '
                                'stock functions answer as of that file, not live: a company created or '
                                'closed since is not in it, the live register (company_get) is. Quote the '
-                               'vintage with a figure drawn from the stock.',
+                               'vintage with a figure drawn from the stock. In French: date du stock sirene, '
+                               'fraîcheur des données sirene.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Vintage of the stock', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/sirene/info'},
@@ -698,20 +712,20 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'cost': {'per': 'request'}},
                {'name': 'company_search_establishments',
                 'class': 'read',
-                'description': 'Enumerate French establishments in the SIRENE stock (every establishment, '
-                               'head offices and branches, active or closed) by cumulative filters, ordered '
-                               'by SIRET: {items: [{siren, siret, nic, is_siege, etat, date_creation, '
-                               'denomination, enseigne_1, naf, tranche_effectifs, annee_effectifs, '
-                               'caractere_employeur, numero_voie, type_voie, libelle_voie, code_postal, '
-                               'libelle_commune, code_commune, ...}], count, limit, offset}. Use it for '
-                               'exhaustive lists a search engine caps: every bakery of a department, every '
-                               'site of a brand, head offices of 100 to 499 employees in a department. The '
-                               "company's name is not in this stock: denomination is the establishment's "
-                               'usual name, empty for most; read the names by listing the legal units of the '
-                               'SIRENs. To find a company by its name, use the company search. count equal '
-                               'to limit: more may follow, pass offset + limit. A department or a postal '
-                               'code narrows the scan to one part of the stock; without one the scan reads '
-                               'all of France and may be stopped.',
+                'description': 'Enumerate French establishments in the SIRENE stock (head offices and '
+                               'branches, active or closed) by cumulative filters, ordered by SIRET: {items: '
+                               '[{siren, siret, nic, is_siege, etat, date_creation, denomination, '
+                               'enseigne_1, naf, tranche_effectifs, annee_effectifs, caractere_employeur, '
+                               'code_postal, libelle_commune, code_commune, ...}], count, limit, offset}. '
+                               'Use it for exhaustive lists a search engine caps: every bakery of a '
+                               'department, every site of a brand, head offices of 100 to 499 employees in a '
+                               "department. The company's name is not in this stock: denomination is the "
+                               "establishment's usual name, empty for most; read the names by listing the "
+                               'legal units of the SIRENs. To find a company by its name, use the company '
+                               'search. count equal to limit: more may follow, pass offset + limit. A '
+                               'department or a postal code narrows the scan to one part of the stock; '
+                               'without one the scan reads all of France and may be stopped. In French: '
+                               "liste d'établissements, sites d'une enseigne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['naf']},
@@ -829,7 +843,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'is active or closed. A SIREN without a head office in the stock is absent '
                                'from the answer. Use it to enrich a list of companies (address, activity, '
                                'size of the head office) far faster than one lookup each; the company names '
-                               'come from the legal units.',
+                               'come from the legal units. In French: adresses des sièges, adresse du siège '
+                               'de plusieurs sociétés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sirens'],
@@ -859,7 +874,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'code_commune, code_cedex, lambert_x, lambert_y, date_dernier_traitement, '
                                '...}}. etat A is active, F closed. A SIREN without a head office in the '
                                'stock is absent. The head office addresses give the same companies in a '
-                               'shorter form.',
+                               'shorter form. In French: sièges de plusieurs entreprises, fiches siège en '
+                               'masse.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sirens'],
@@ -892,7 +908,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'headcount band shows. An unknown SIREN is absent, never an empty entry; '
                                'categorie_entreprise null is a category not given. A unit with '
                                'statut_diffusion P is under partial diffusion: its data must not be '
-                               'redistributed whole nor used for prospecting.',
+                               'redistributed whole nor used for prospecting. In French: unités légales en '
+                               'masse, plusieurs entreprises par siren.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sirens'],
@@ -928,7 +945,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                "establishment's INSEE headcount band for the year annee_effectifs, null when "
                                'not filled; caractere_employeur O (employs staff) or N. Errors are per '
                                'SIRET, never for the list: siret_invalide (not 14 digits), introuvable (not '
-                               'in the stock). A SIRET given twice is read once.',
+                               'in the stock). A SIRET given twice is read once. In French: établissements '
+                               'par siret, plusieurs siret à la fois.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['sirets'],
@@ -953,7 +971,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get the head office of one French company from the SIRENE stock, with every '
                                'column the stock holds (same record as the head office records of many). The '
                                'head office whose period is still open is kept. For many companies, read '
-                               'them in one call.',
+                               "them in one call. In French: siège d'une entreprise, siège social d'une "
+                               'société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren'],
@@ -980,7 +999,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'enseigne_1, naf, tranche_effectifs, code_postal, libelle_commune, '
                                'code_commune, ...}]. Use it to map the sites, branches or shops of a '
                                'company. Empty list when the SIREN is unknown or, with active_only, has no '
-                               'open establishment.',
+                               "open establishment. In French: établissements d'une entreprise, sites d'une "
+                               'société, liste des siret.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siren'],
@@ -1007,7 +1027,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get one French establishment from the SIRENE stock by its SIRET, with every '
                                'column the stock holds: activity, headcount band and its year, employer '
                                'status, address, state (etat A active, F closed). The name of the company is '
-                               'not in it: read its legal unit.',
+                               "not in it: read its legal unit. In French: fiche d'un établissement, "
+                               'établissement par siret.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['siret'],
@@ -1034,7 +1055,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'is the INSEE code of the commune (an arrondissement code in Paris, Lyon and '
                                'Marseille). Use it to normalise the address of a property and get the point '
                                'and commune code that parcel, zoning and risk lookups take. A score under '
-                               'about 0.5 is a doubtful match.',
+                               'about 0.5 is a doubtful match. In French: géocoder une adresse, coordonnées '
+                               "d'une adresse.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['adresse'],
@@ -1065,7 +1087,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                {'name': 'property_reverse_geocode',
                 'class': 'read',
                 'description': 'Give the nearest BAN address of a point: {label, score, lon, lat, citycode, '
-                               'city, postcode}.',
+                               "city, postcode}. In French: adresse d'un point gps, adresse la plus proche.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lat', 'lon'],
@@ -1095,7 +1117,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'section, numero, contenance_m2, geometry}. Use it to check the cadastral '
                                'references and area a document gives for a property. A geocoded house number '
                                'often falls on the street, outside any parcel: the point must lie inside the '
-                               'plot.',
+                               "plot. In French: parcelle cadastrale, référence cadastrale d'un terrain.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lat', 'lon'],
@@ -1128,7 +1150,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'annee_construction, type_batiment, adresse, date_dpe, distance_m}]}. Use it '
                                'to check the DPE a sale or a lease must carry. In a block of flats a '
                                'building has many DPE: match by address, surface and date, never by '
-                               'proximity alone.',
+                               "proximity alone. In French: diagnostics dpe autour d'une adresse, étiquette "
+                               "énergie d'un logement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['adresse'],
@@ -1187,7 +1210,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'vefa, id_parcelle, adresse, distance_m}]}. Use it to check a price against '
                                'the local market or to value an estate property. Every kind of sale is '
                                'listed (outbuildings, land, mixed premises) unless filtered. DVF does not '
-                               'cover Alsace-Moselle and Mayotte.',
+                               'cover Alsace-Moselle and Mayotte. In French: ventes immobilières autour '
+                               "d'une adresse, prix de vente dvf, ventes comparables.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['adresse'],
@@ -1244,7 +1268,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'median_prix_m2, mean_prix_m2, min_prix_m2, max_prix_m2, by_year: {year: '
                                '{count, median_prix_m2}}}. Only single flats and houses are counted, and '
                                'outliers (under 100 or over 50,000 €/m²) are left out. Use it to place a '
-                               'price within its commune.',
+                               "price within its commune. In French: prix au mètre carré d'une commune, prix "
+                               'immobilier moyen.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code_commune'],
@@ -1278,7 +1303,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'creating dwellings), locaux (non-residential premises), amenager '
                                '(development permits). Use it to check the permits on a property or a plot: '
                                'the parcel is not a filter, so search the commune and read the parcelles of '
-                               'each permit. Applicants who are natural persons are not published.',
+                               'each permit. Applicants who are natural persons are not published. In '
+                               "French: permis de construire, permis d'aménager, autorisations d'urbanisme.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'kind': {'type': 'string',
@@ -1334,7 +1360,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'returns them. A building counts for the parcel when its centroid falls '
                                'inside it. ces_reel (built footprint over parcel area) is null without '
                                'contenance_m2; a low ratio in a dense zone flags under-used land. No '
-                               'building is an answer, not a failure.',
+                               "building is an answer, not a failure. In French: bâti d'une parcelle, "
+                               'emprise au sol, surface construite.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['geometry'],
@@ -1376,7 +1403,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'point (PVGIS 5.3, European Commission JRC), at the optimal tilt and azimuth: '
                                '{productible_kwh_an, irradiance_kwh_m2_an, pertes_pct, optimal_slope_deg, '
                                'optimal_azimuth_deg, inputs}. Physical data only, with 14% system losses '
-                               "assumed: tariffs, self-consumption and savings are the caller's assumptions.",
+                               "assumed: tariffs, self-consumption and savings are the caller's assumptions. "
+                               "In French: production solaire d'une toiture, rendement photovoltaïque, "
+                               'productible pvgis.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lat', 'lon', 'kwc'],
@@ -1415,7 +1444,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'bbox, profile, direction, minutes, metres}. Exactly one of minutes and '
                                'metres. The primitive of a catchment area: to know what lies within ten '
                                "minutes' walk of a site, test points against the polygon. By car, departure "
-                               'and arrival differ (one-way streets).',
+                               'and arrival differ (one-way streets). In French: zone accessible en voiture, '
+                               'temps de trajet, isochrone à pied.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lat', 'lon'],
@@ -1474,7 +1504,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                "in the dataset's order (commune code), not by consumption: when tronque is "
                                'true, raise min_mwh or pass limit -1. Sites on the transmission grid, the '
                                'largest consumers, are not here. Rows without an address are counted in '
-                               'lignes_ignorees.',
+                               'lignes_ignorees. In French: consommation électrique des entreprises, '
+                               "consommation d'électricité par adresse.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['annee'],
@@ -1549,7 +1580,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'min_mwh applies after the sum: the grain almost every question means. limit '
                                "caps the rows read before the sum, in the dataset's order: with min_mwh, "
                                'leave limit at -1 or read total as a floor. Sites on the transmission grid, '
-                               'the largest consumers, are read apart.',
+                               'the largest consumers, are read apart. In French: sites professionnels '
+                               "raccordés, gros consommateurs d'électricité.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['annee'],
@@ -1615,7 +1647,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'one site; iris_agrege: a sum. site_unique (true by default) keeps '
                                'single-site IRIS only and hides the aggregates, where the largest consumers '
                                'often are. The data lags a year behind Enedis: an empty answer comes with '
-                               'annees_disponibles, and is no proof of absence. No NAF code here.',
+                               'annees_disponibles, and is no proof of absence. No NAF code here. In French: '
+                               'consommation sur le réseau rte, gros sites industriels consommateurs.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['annee'],
@@ -1660,7 +1693,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'class': 'read',
                 'description': 'List the years the transmission grid consumption data (ODRÉ) carries, newest '
                                'first: ["2023", ...]. It lags a year behind the distribution data: read it '
-                               'before crossing the two.',
+                               'before crossing the two. In French: années disponibles rte, années de '
+                               'consommation odré.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Years available', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/foncier/odre/annees'},
@@ -1677,7 +1711,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                "for a single flat or house. For a clean price per m², read the commune's "
                                'price statistics. DVF does not cover Alsace-Moselle and Mayotte. A dense '
                                'commune (a Paris arrondissement) may time out on a first call while the '
-                               'source warms up: retry before concluding.',
+                               'source warms up: retry before concluding. In French: ventes immobilières '
+                               "d'une commune, transactions dvf d'une commune.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code_commune'],
@@ -1719,7 +1754,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get the distribution of the energy labels (DPE, A to G, ADEME) of a '
                                "commune's dwellings: {code_commune, type_batiment, total, "
                                'repartition_etiquettes: {A: count, ...}}. Counts diagnoses made since July '
-                               '2021, not dwellings.',
+                               "2021, not dwellings. In French: répartition des dpe d'une commune, "
+                               "étiquettes énergie d'une commune.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code_commune'],
@@ -1747,7 +1783,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'much. lambert_x and lambert_y are Lambert 93, the projection of the company '
                                "register's establishments; sans_position counts the diagnoses without a "
                                'position. total counts what came back: equal to size, more exist. A missing '
-                               'label is not a G.',
+                               'label is not a G. In French: dpe tertiaire, diagnostic énergie des bureaux.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['code_commune']}, {'required': ['departement']}],
@@ -1841,7 +1877,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'what was declared. electricite is a MWh estimate inferred from post 2.1 with '
                                'the French average factor (certitude infere), never metered. contact is the '
                                'declared officer, null when masked at source. The reporting year is not the '
-                               'publication year. total counts what came back: equal to size, more exist.',
+                               'publication year. total counts what came back: equal to size, more exist. In '
+                               "French: bilan carbone d'une entreprise, bilan des émissions de gaz à effet "
+                               'de serre.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'siren': {'type': 'string',
@@ -1894,7 +1932,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'large buildings. Natural persons are anonymised at source: a missing '
                                'building is not one without an owner. No offset: rows come by ascending '
                                'owner SIREN, not by size; tronque true means more exist, narrow before '
-                               'concluding on a territory.',
+                               "concluding on a territory. In French: propriétaire d'un bâtiment, bâtiments "
+                               "d'une société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['code_commune']},
@@ -1951,7 +1990,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'the site. Without polluant, fossil CO2 to air. A quantity declared below the '
                                'reporting threshold comes back as quantite null with sous_seuil true, after '
                                'the known ones: neither zero nor absence. CO2 has three labels (fossil, '
-                               'biomass, total): do not read the total as fossil.',
+                               'biomass, total): do not read the total as fossil. In French: émetteurs de '
+                               'polluants, rejets polluants des usines.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'annee': {'type': 'integer',
@@ -2019,7 +2059,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'osm_id, name, lat, lon, postcode, tags}]}. selector is an OSM tag, key=value '
                                '(amenity=parking, shop=laundry) or a bare key (shop). count equal to limit: '
                                'more exist. Infrastructure (parking, schools, transport, public facilities) '
-                               'is well mapped; shops and businesses less so: a count of shops is a floor.',
+                               'is well mapped; shops and businesses less so: a count of shops is a floor. '
+                               "In French: points d'intérêt d'une commune, commerces d'une zone.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['selector'],
@@ -2076,7 +2117,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                '(PLU, PLUi), easements of public interest, pre-emption perimeters. '
                                'zone.idurba and zone.libelle lead to the written regulation of the zone. '
                                'zone and document are null when the commune has no digitised plan (national '
-                               'planning rules apply, or the plan is not published).',
+                               'planning rules apply, or the plan is not published). In French: zonage plu, '
+                               'zone du plu à une adresse, zone urbaine ou agricole.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lon', 'lat'],
@@ -2100,18 +2142,18 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'class': 'read',
                 'description': 'Read the written regulation (règlement écrit) of a local plan (PLU, PLUi, '
                                'PSMV): height, footprint, setbacks, prohibited uses, parking. idurba and '
-                               'zone come from the zoning at the point (zone.idurba, zone.libelle, case '
-                               "kept). With zone alone, the zone's chapter in extraits[0], cut at max_chars "
-                               "(tronque); a sector without its own chapter (UAa) gets its parent zone's "
+                               'zone come from the zoning at the point (zone.idurba, zone.libelle). With '
+                               "zone alone, the zone's chapter in extraits[0], cut at max_chars (tronque); a "
+                               "sector without its own chapter (UAa) gets its parent zone's "
                                '(section.zone_chapitre UA). With query too, the passages of that chapter '
                                'holding it, case and accents ignored, in French (hauteur, emprise au sol, '
-                               'recul). With query alone, passages of the whole document, general provisions '
-                               'included. Returns {idurba, cached, titre, section, nb_occurrences, extraits, '
-                               'note}; section is null when no chapter of the zone is found. Quote the raw '
-                               'extracts, never a figure they do not hold: rules drawn on a graphic document '
-                               'are not in the text. cached false comes with a statut: start the ingestion, '
-                               'then read its state until pret. scanne_probable true means a scanned PDF, '
-                               'unreadable without OCR.',
+                               'recul). With query alone, passages of the whole document. Returns {idurba, '
+                               'cached, titre, section, nb_occurrences, extraits, note}; section is null '
+                               'when the zone has no chapter. Quote the raw extracts, never a figure they do '
+                               'not hold: rules drawn on a graphic document are not in the text. cached '
+                               'false comes with a statut: start the ingestion, then read its state until '
+                               'pret. scanne_probable true means a scanned PDF, unreadable without OCR. In '
+                               "French: règlement du plu, règles d'urbanisme.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['idurba'],
@@ -2176,7 +2218,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'Then read the ingestion state every 20 to 30 seconds until pret, scanne or '
                                'echec. FOD ingests one regulation at a time: a busy answer asks to retry in '
                                'a minute. A document replaced on the portal is not swapped for its '
-                               'successor; the refusal names the documents published for the same territory.',
+                               'successor; the refusal names the documents published for the same territory. '
+                               "In French: charger le règlement d'un plu, indexer un règlement d'urbanisme.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['idurba'],
@@ -2204,7 +2247,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                '(with depuis), pret (readable; titre, doc_type, text_chars, and sources, the '
                                'PDF addresses on the portal), scanne (a scanned PDF, unreadable without OCR: '
                                'say so and give the source) or echec (erreur gives the cause, '
-                               'relance_possible_apres when a new attempt is allowed).',
+                               'relance_possible_apres when a new attempt is allowed). In French: état du '
+                               "chargement d'un plu, avancement de l'indexation du règlement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['idurba'],
@@ -2224,7 +2268,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'clay shrink-swell, earthquake, radon, industrial risk. Use it to prepare the '
                                'risk and pollution statement (ERP) annexed to a sale or lease. Takes the '
                                'commune code: in Paris, Lyon and Marseille the whole city (75056, 69123, '
-                               '13055), not an arrondissement, whose list comes back empty.',
+                               '13055), not an arrondissement, whose list comes back empty. In French: '
+                               "risques naturels d'une commune, risque inondation, risques technologiques.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code_insee'],
@@ -2239,7 +2284,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'class': 'read',
                 'description': 'Get the clay shrink-swell exposure at a point (Géorisques): '
                                '{code_exposition, exposition}, from no exposure to strong. In a medium or '
-                               'strong zone, the sale of building land requires a soil study.',
+                               'strong zone, the sale of building land requires a soil study. In French: '
+                               "retrait gonflement des argiles, risque argile d'un terrain.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lon', 'lat'],
@@ -2266,7 +2312,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'total_pages, data: [{raisonSociale, adresse1, codeInsee, commune, regime, '
                                'statutSeveso, etatActivite, longitude, latitude, inspections, ...}]}, 20 per '
                                'page. Use it to spot an industrial site on or near a property, or to check a '
-                               "company's environmental obligations. A SIRET or a commune code is required.",
+                               "company's environmental obligations. A SIRET or a commune code is required. "
+                               "In French: installations classées, sites icpe d'une commune.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['siret']}, {'required': ['code_insee']}],
@@ -2293,7 +2340,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'type_service, siren, siret, code_commune, telephone, courriel, '
                                'site_internet, adresse, affectation_personne, ...}]}. Use it to find the '
                                'town hall for a pre-emption notice (DIA) or a planning certificate, or the '
-                               'land registration office. A SIREN or a commune code is required.',
+                               'land registration office. A SIREN or a commune code is required. In French: '
+                               "mairie d'une commune, services publics proches, centre des impôts.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['siren']}, {'required': ['code_commune']}],
@@ -2330,7 +2378,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'every FOD consumer and filled on demand: a plan absent from it is not '
                                'missing from the national town-planning portal; start its ingestion. scanne '
                                'true means a scanned PDF, unreadable without OCR. No filter: the whole list '
-                               'comes back.',
+                               'comes back. In French: règlements plu disponibles, plu déjà chargés.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Regulations FOD holds', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/reglements'},
@@ -2345,7 +2393,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'of a zone or the passages of a query do not answer: a zone whose chapter is '
                                'not found, general provisions, definitions, a table of contents. The plan '
                                'must be held: read the ingestion state, or start the ingestion, first. A '
-                               'scanned PDF holds no text: no file comes back.',
+                               'scanned PDF holds no text: no file comes back. In French: texte complet du '
+                               "règlement plu, télécharger le règlement d'urbanisme.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['idurba'],
@@ -2373,7 +2422,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'most. Being in a QPV, or within 300 m of one, is the geographic condition of '
                                'several incentives, such as the reduced 5.5% VAT on a new home purchase; '
                                'never the whole eligibility, price and buyer income caps also apply. For one '
-                               'address, list the districts near its point.',
+                               'address, list the districts near its point. In French: quartiers '
+                               "prioritaires d'une commune, quartiers qpv.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code_insee'],
@@ -2392,7 +2442,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'is true when at least one district lies within the radius; 300 m, the '
                                'default, is the perimeter of the reduced 5.5% VAT on a new home purchase. It '
                                'is the geographic condition only: the price and buyer income caps are the '
-                               "caller's to check. Geocode the address first.",
+                               "caller's to check. Geocode the address first. In French: quartiers "
+                               "prioritaires autour d'un point, qpv à proximité.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['lon', 'lat'],
@@ -2427,7 +2478,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'pre-emption often delegated to the agency: a public operator to reckon with, '
                                'not neutral land. secteur_epfif false: no known intervention, or a commune '
                                "outside Île-de-France. Read from the agency's map page, refreshed weekly; "
-                               'stale true means the last refresh failed and the previous copy is served.',
+                               'stale true means the last refresh failed and the previous copy is served. In '
+                               "French: intervention de l'epfif, établissement public foncier "
+                               "d'île-de-france.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code_insee'],
@@ -2458,7 +2511,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'logements_secondaires, taux_vacance_pct, statut_occupation: {effectifs, '
                                'parts_pct, part_social_pct}}. A missing figure is null, never zero. Paris, '
                                'Lyon and Marseille answer for the whole city or an arrondissement (75112, '
-                               '13201). Inside a commune, the IRIS census gives the districts.',
+                               '13201). Inside a commune, the IRIS census gives the districts. In French: '
+                               "population d'une commune, statistiques insee d'une commune, revenus des "
+                               'habitants.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code_insee', 'block'],
@@ -2488,7 +2543,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'rp_en_appartement}. typ_iris: H housing, A business, D other, Z a commune '
                                "not split into IRIS. lab_iris is INSEE's label, often a number, not a "
                                'district name. One census year: no trend here; the commune statistics give '
-                               'it.',
+                               "it. In French: recensement d'un quartier iris, population d'un iris.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code'],
@@ -2512,7 +2567,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'rp_en_appartement}, iris: [{iris, typ_iris, lab_iris, pop, pop_0_19, '
                                'pop_20_64, pop_65p, ...}]}, 200 IRIS at most. A commune not split into IRIS '
                                'has one row, typ_iris Z. Paris, Lyon and Marseille are read by '
-                               'arrondissement.',
+                               "arrondissement. In French: recensement par quartier, iris d'une commune.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code'],
@@ -2540,7 +2595,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'name: Sainte-Marie exists dozens of times. debut_fonction tells whether the '
                                'mayor changed since a past contact. total counts the rows returned; tronque '
                                'true means more matched than limit. Birth date and sex, in the source, are '
-                               'not returned. A commune code or a department is required.',
+                               'not returned. A commune code or a department is required. In French: maire '
+                               "d'une commune, liste des maires.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['code_commune']}, {'required': ['departement']}],
@@ -2576,7 +2632,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'councillors. An EPCI has a SIREN, no commune code: code_commune is the '
                                'commune the register attaches the president to. total counts the rows '
                                'returned; tronque true means more matched than limit. Birth date and sex are '
-                               'not returned. Without siren or departement, every president up to limit.',
+                               'not returned. Without siren or departement, every president up to limit. In '
+                               "French: président d'une intercommunalité, président de la communauté de "
+                               'communes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'siren': {'type': 'string',
@@ -2602,7 +2660,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'List the consolidated French codes covered, with the short alias the law '
                                'functions take: {codes: [{alias, legitext, libelle}]}, such as CC (Code '
                                "civil), CGI (Code général des impôts), CU (Code de l'urbanisme), CCH (Code "
-                               "de la construction et de l'habitation).",
+                               "de la construction et de l'habitation). In French: liste des codes "
+                               'juridiques, codes de loi disponibles.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Codes covered', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/loi/codes'},
@@ -2613,7 +2672,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'date (today by default): {id, titre_texte, num, etat, date_debut, date_fin, '
                                'texte, nota, source_url}. Use it to quote the exact text that applied on a '
                                'given day, such as the day a contract was signed. source_url points to that '
-                               'version on Légifrance.',
+                               'version on Légifrance. In French: article du code civil, article de loi en '
+                               'vigueur, lire un article de code.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code', 'num'],
@@ -2649,7 +2709,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'articles: [{id, num, etat, date_debut, date_fin, titre_texte, extrait, '
                                'source_url}]}. The query takes web-search syntax: "quoted phrase", OR, '
                                '-excluded. By default only the versions in force today are searched. Use it '
-                               'to find the article that governs a question when its number is unknown.',
+                               'to find the article that governs a question when its number is unknown. In '
+                               'French: chercher dans les codes, rechercher un article de loi.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['query'],
@@ -2683,7 +2744,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'List every version of one code article, oldest first: {count, versions: '
                                '[{id, etat, date_debut, date_fin, apercu, source_url}]}. Use it to see when '
                                'an article changed, before reading the version in force at a given date. '
-                               'Empty when the article is unknown.',
+                               "Empty when the article is unknown. In French: versions d'un article de loi, "
+                               "historique d'un article de code.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code', 'num'],
@@ -2712,7 +2774,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'courts), constit (Conseil constitutionnel), cnil, cedh (European Court of '
                                'Human Rights), cjue (Court of Justice of the EU), jade_live (recent '
                                'administrative decisions), judilibre (recent judicial decisions). Use it to '
-                               'find the case law on a question of succession, property or contract law.',
+                               'find the case law on a question of succession, property or contract law. In '
+                               'French: chercher une jurisprudence, décisions de justice, arrêts de la cour '
+                               'de cassation.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['query'],
@@ -2770,7 +2834,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get the full text of one court decision by its id, as case-law search '
                                'returns it: {id, fond, titre, juridiction, numero, date_dec, solution, '
                                'formation, ecli, texte, texte_chars, source_url}. The text is cut at '
-                               'max_chars (tronque true); source_url leads to the whole decision.',
+                               'max_chars (tronque true); source_url leads to the whole decision. In French: '
+                               "texte d'une décision de justice, lire un arrêt.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['decision_id'],
@@ -2806,7 +2871,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'a professional agreement outside a branch. Use it to resolve which agreement '
                                'an IDCC is (from a payslip or a company record) before searching its '
                                "articles. These are the sector's law; an agreement signed by one company is "
-                               'a company agreement, read apart.',
+                               'a company agreement, read apart. In French: conventions collectives, '
+                               'convention collective par idcc.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'idcc': {'type': 'string',
@@ -2842,7 +2908,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'date first: for a salary scale the latest amendment prevails, not the '
                                'densest match. permalien is a verifiable FOD link; lien_construit a '
                                'Légifrance address built by pattern, not guaranteed. Read an article whole '
-                               'by its id.',
+                               'by its id. In French: chercher dans une convention collective, grille de '
+                               'salaires conventionnelle.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['query'],
@@ -2889,7 +2956,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'source_archive_date}. texte_titre is the amendment or agreement that carries '
                                'it, convention and idcc the agreement it belongs to: quote them with the '
                                'article. The text is cut at max_chars (tronque true); texte_chars gives its '
-                               'whole length, permalien the whole article.',
+                               'whole length, permalien the whole article. In French: article de convention '
+                               "collective, texte d'un avenant.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['kali_id'],
@@ -2926,7 +2994,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'characters around the first word found; total_count counts every match, '
                                'beyond limit. Use it to find how the administration reads a tax rule, then '
                                'read the commentary by its identifiant_juridique. Doctrine is the '
-                               "administration's reading of the law, not the law itself.",
+                               "administration's reading of the law, not the law itself. In French: doctrine "
+                               'fiscale bofip, chercher dans le bofip, règle fiscale.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['query'],
@@ -2954,7 +3023,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'serie, type, debut_de_validite, permalien, contenu, contenu_chars, tronque, '
                                'source}. The text is cut at max_chars (tronque true, contenu_chars gives its '
                                'whole length); permalien is the official page on bofip.impots.gouv.fr. The '
-                               'version suffix of a permalink (-20240319) is accepted and dropped.',
+                               'version suffix of a permalink (-20240319) is accepted and dropped. In '
+                               'French: lire un commentaire bofip, document bofip.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['identifiant'],
@@ -2994,7 +3064,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'naissance, fondement}], source}; limit bounds the list, never the counts: '
                                'total above the list length means more matches to read. A match on a common '
                                'name is not a confirmed freeze: compare first names and date of birth. The '
-                               'name travels in the request body and FOD does not keep it.',
+                               'name travels in the request body and FOD does not keep it. In French: gel '
+                               'des avoirs, liste des sanctions, personne sous sanctions.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['nom'],
@@ -3047,7 +3118,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'a null field is to fill in by hand. Read every figure from the payslips, '
                                'never estimate one. Mark a month neutralise WITHOUT its reason (it would be '
                                'health data), and send enough earlier months that 12 not neutralised remain. '
-                               'The amounts travel in the request body and FOD keeps nothing.',
+                               'The amounts travel in the request body and FOD keeps nothing. In French: '
+                               'départ négocié, fin de cdi.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['date_entree',
@@ -3267,7 +3339,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                "limit. alerte is the database's warning on the medicine, if any. Pass cis to "
                                'health_get_medicine for its full record and safety information. '
                                'source.mise_a_jour is the date of the database, which its licence asks to '
-                               'quote. The first call after a restart of the service takes about 10 s.',
+                               'quote. The first call after a restart of the service takes about 10 s. In '
+                               'French: chercher un médicament, base des médicaments, substance active.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['q'],
@@ -3300,7 +3373,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'dates, link), supply shortages and tensions (disponibilite), and whether it '
                                'is a medicine of major therapeutic interest (interet_therapeutique_majeur, '
                                'with its ATC code). Also date_amm, procedure_amm, surveillance_renforcee and '
-                               'source (with mise_a_jour, the date of the database).',
+                               "source (with mise_a_jour, the date of the database). In French: fiche d'un "
+                               "médicament, prix et remboursement d'un médicament.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['cis'],
@@ -3328,7 +3402,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'the legal entity that runs it; siret links to the company register. count is '
                                'the number returned, never the total: count equal to limit means more match, '
                                'narrow by department or category. The first call after a restart of the '
-                               'service loads the file, up to a minute.',
+                               'service loads the file, up to a minute. In French: établissements de santé, '
+                               'chercher un hôpital, annuaire finess.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['q'],
@@ -3374,7 +3449,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'class': 'read',
                 'description': 'Get one establishment of the FINESS directory by its exact code, as an '
                                'establishment (finess_et) or as the legal entity that runs it (finess_ej, '
-                               'the first of its establishments then): same fields as a search result.',
+                               'the first of its establishments then): same fields as a search result. In '
+                               "French: fiche finess, détail d'un établissement de santé.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['code'],
@@ -3403,7 +3479,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'indice_qualite}]}. total counts every match, beyond limit. finess_geo is the '
                                'FINESS code of the establishment. Labels match exactly: read the values '
                                'first (regions are upper case without accents, ILE DE FRANCE). Without a '
-                               'filter, every evaluation.',
+                               "filter, every evaluation. In French: évaluation qualité d'un ehpad, "
+                               'évaluations des établissements médico-sociaux.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'region_libelle': {'type': 'string',
@@ -3457,7 +3534,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'with its number of rows: {region_libelle, essms_secteur, '
                                'essms_type_structure, essms_statut_juridique, essms_categ_finess_libelle, '
                                'annees}, each a list of [value, count], largest first (annees by year). Read '
-                               'it before a search: the filters take these labels exactly.',
+                               'it before a search: the filters take these labels exactly. In French: '
+                               'filtres des évaluations essms, valeurs des évaluations qualité.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Filter values of the ESSMS evaluations', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/api/sante/essms/dimensions'},
@@ -3473,7 +3551,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'phases, effectif, promoteur, collaborateurs, conditions, interventions, '
                                'dates, a_des_resultats, nb_sites_pays, villes_pays, lien}], page_suivante, '
                                'source}; a date carries estimee true when it is planned. Site contacts are '
-                               'never returned.',
+                               'never returned. In French: essais cliniques, chercher un essai clinique.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['condition']},
@@ -3564,7 +3642,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get one trial of the ClinicalTrials.gov registry by its NCT id: the fields '
                                'of a search result, plus its brief summary (resume) and each site in the '
                                'country asked (sites_pays: [{etablissement, ville, code_postal, statut}], '
-                               'France by default). Site contacts are never returned.',
+                               "France by default). Site contacts are never returned. In French: détail d'un "
+                               'essai clinique, essai par numéro nct.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['nct'],
@@ -3596,7 +3675,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'type_promoteur, pays, effectif_prevu, date_decision, date_debut_ue, '
                                'date_fin_ue, lien}], source}. Next page: page + 1 while page is below pages. '
                                'The portal API is not documented by the EMA: an answer out of shape is '
-                               'refused, never read as an empty list.',
+                               'refused, never read as an empty list. In French: essais cliniques européens, '
+                               'registre européen des essais.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['texte']},
@@ -3697,7 +3777,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'its status in the country asked (statut_pays: statut, date_decision, '
                                'recrutement_commence, effectif_prevu) and the sites there (sites_pays: '
                                '[{etablissement, service, ville, code_postal}]), France by default. Site '
-                               'contacts are never returned.',
+                               "contacts are never returned. In French: détail d'un essai européen, essai "
+                               'ctis.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['numero'],
@@ -3760,7 +3841,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'relevance. Returns {total, offset, traduction, articles: [{pmid, doi, pmcid, '
                                'titre, revue, date, volume, numero, pages, types, langues, auteurs, lien}], '
                                'source}; traduction is the query as PubMed understood it. No abstract here: '
-                               'health_get_europepmc_article with pmid gives it. Next page: offset + limit.',
+                               'health_get_europepmc_article with pmid gives it. Next page: offset + limit. '
+                               'In French: chercher sur pubmed, articles scientifiques, publications '
+                               'médicales.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['query'],
@@ -3805,7 +3888,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get one PubMed record by its PMID: {pmid, doi, pmcid, titre, revue, '
                                'revue_abregee, date, volume, numero, pages, types, langues, auteurs, lien, '
                                'source}. No abstract: health_get_europepmc_article with the same pmid gives '
-                               'it.',
+                               "it. In French: article pubmed, résumé d'une publication médicale.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['pmid'],
@@ -3825,7 +3908,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'PMC syntax (glioblastoma AND AFF:"France", AUTH:, PUB_YEAR:...). Returns '
                                '{total, articles: [{id, base, pmid, pmcid, doi, titre, auteurs, revue, '
                                'annee, date_publication, acces_libre, citations, lien}], curseur_suivant, '
-                               'source}. A malformed query returns zero results, like a query without match.',
+                               'source}. A malformed query returns zero results, like a query without match. '
+                               'In French: chercher sur europe pmc, littérature scientifique européenne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['query'],
@@ -3867,7 +3951,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get one full Europe PMC record by pmid or by doi (exactly one): the fields '
                                'of a search result plus resume (the abstract), affiliation, langue, types, '
                                'mots_cles and textes_integraux: [{acces, format, site, url}], each full-text '
-                               'link saying whether it is open access or needs a subscription.',
+                               'link saying whether it is open access or needs a subscription. In French: '
+                               "article europe pmc, résumé d'un article scientifique.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'oneOf': [{'required': ['pmid']}, {'required': ['doi']}],
@@ -3901,7 +3986,9 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'licence CC BY-NC-SA 4.0, reuse restricted to transparency of links of '
                                'interest (no strictly commercial use); credit required: "Source : base '
                                'Transparence - Santé (Direction Générale de la Santé), '
-                               'transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0." (source.attribution).',
+                               'transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0." (source.attribution). '
+                               "In French: liens d'intérêt, transparence santé, avantages versés aux "
+                               'médecins.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['entreprise']},
@@ -3996,7 +4083,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'restricted to transparency of links of interest (no strictly commercial '
                                'use); credit required: "Source : base Transparence - Santé (Direction '
                                'Générale de la Santé), transparence.sante.gouv.fr, licence CC BY-NC-SA 4.0." '
-                               '(source.attribution).',
+                               "(source.attribution). In French: montants des liens d'intérêt par "
+                               'laboratoire, total transparence santé.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['entreprise']},
@@ -4085,7 +4173,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'type_avis_famille, statut, descripteurs, synthese, url}], total_count}. A '
                                'notice says a need and a deadline, not who wins: the outcome is in the '
                                'awarded contracts. Without any filter, the latest notices of all France come '
-                               'back.',
+                               "back. In French: appels d'offres, marchés publics ouverts, avis boamp.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -4146,7 +4234,7 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'description': 'Get one French public tender notice (BOAMP) by its id: buyer (organisme), '
                                'subject, publication date, response deadline (date_limite_reponse), '
                                'procedure, descriptors, summary (synthese) and the address of the full '
-                               'notice (url).',
+                               "notice (url). In French: détail d'un appel d'offres, avis de marché boamp.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['idweb'],
@@ -4173,7 +4261,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                "place, winners), and before 2024 never the main winner's: a null name is the "
                                "source's shape, resolve it by SIRET. At least one of mot_cle, "
                                'titulaire_siret, acheteur_siret, lieu. tronque true: more contracts match '
-                               'than were returned.',
+                               'than were returned. In French: marchés publics attribués, titulaires de '
+                               'marchés publics.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'anyOf': [{'required': ['mot_cle']},
@@ -4229,7 +4318,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'funnel counts what each step kept. Sector relevance cannot come from the '
                                'base, whose tagging covers almost every sector: rank the shortlist by '
                                'reading it, then get each kept scheme by its id and quote it, never from '
-                               'memory. The first call after a restart of the service is slow.',
+                               'memory. The first call after a restart of the service is slow. In French: '
+                               'aides publiques, subventions pour une entreprise, financements publics.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'insee': {'type': 'string',
@@ -4293,7 +4383,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'purpose, amount, conditions and beneficiaries (aid_nom, aid_objet, '
                                'aid_montant, aid_conditions, aid_benef, decoded text), date_fin, niveau, '
                                'natures, funders, territories, contacts, official sources and forms. The '
-                               'source of truth to quote a scheme kept from a search.',
+                               'source of truth to quote a scheme kept from a search. In French: détail '
+                               "d'une aide publique, conditions d'une subvention.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['id_aid'],
@@ -4321,7 +4412,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'declared once by the company and not kept up to date. Without all_results, '
                                'the first page only (per_page entries), and ville filters that page; total '
                                'counts what is returned. secteur and type_annuaire take a term exactly as '
-                               'the results name it in secteurs and type.',
+                               'the results name it in secteurs and type. In French: annuaire french tech, '
+                               "startups de la région, structures d'accompagnement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -4381,7 +4473,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                 'class': 'read',
                 'description': 'Get one entry of the French Tech Aix-Marseille directory by its slug, the '
                                'slug of a search result: same fields as a result (pitch, director, contact, '
-                               'sectors, figures declared by the company, needs).',
+                               "sectors, figures declared by the company, needs). In French: fiche d'une "
+                               "startup, fiche de l'annuaire french tech.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['slug'],
@@ -4404,7 +4497,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'persons: {total, results: [{slug, titre, date, resume, link, '
                                "localisation}]}. titre is the person's name, resume the start of the page. "
                                'Personal data published by the site: reuse within the GDPR. Without '
-                               'all_results, the latest 100; total counts what is returned.',
+                               'all_results, the latest 100; total counts what is returned. In French: '
+                               'membres de la communauté french tech, membres french tech.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -4429,7 +4523,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'conferences), newest publication first: {total, results: [{slug, titre, '
                                'date, resume, link, localisation}]}. date is when the page was published, '
                                'not when the event takes place: read it in resume or on the page. Without '
-                               'all_results, the latest 50.',
+                               'all_results, the latest 50. In French: événements french tech, agenda french '
+                               'tech.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -4452,7 +4547,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'for projects, competitions, calls for expressions of interest), newest '
                                'publication first: {total, results: [{slug, titre, date, resume, link, '
                                'localisation}]}. The deadline is in the text, not in a field: read resume or '
-                               'the page before saying a call is open. Without all_results, the latest 50.',
+                               'the page before saying a call is open. Without all_results, the latest 50. '
+                               'In French: appels à projets, appels à candidatures french tech.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -4476,7 +4572,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'montant_maximum, critere_elegibilite, stade, localisation}]}, the last five '
                                'lists of labels. A selection by the site, not the State reference base of '
                                'public funding schemes, which the funding search covers. Without '
-                               'all_results, the latest 100.',
+                               'all_results, the latest 100. In French: financements pour startups, aides '
+                               'french tech.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'query': {'type': 'string',
@@ -4500,7 +4597,8 @@ DESCRIPTION = {'connector': {'name': 'fod',
                                'procurement, export, European and national funding, business and labour '
                                'law...), read live from its booking page: {company, scenarios: [{name, '
                                'duration, price}]}. Gives who a start-up can meet, not the free slots: '
-                               'booking is done on the page.',
+                               'booking is done on the page. In French: rendez-vous french tech central, '
+                               "correspondants de l'état.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Appointments offered', 'input': {}}],
                 'refusals': [{'code': 'central_services_unavailable',

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'allo',
                'label': 'Allo',
                'namespace': 'allo',
-               'version': '1.2.0',
+               'version': '1.2.1',
                'api_version': 'v2 (SMS on v1)',
                'base_url': 'https://api.withallo.com',
                'auth': {'kind': 'api_key',
@@ -53,13 +53,15 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'read',
                 'description': 'The API key itself: its scopes, the endpoints it may call, the team (id, '
                                'name) and the rate limits. Needs no scope: read it first to know what the '
-                               'key can do.',
+                               "key can do. In French: clé api allo, droits de la clé api, limites d'appels "
+                               "de l'api allo.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'What can this key do', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/api/me'}},
                {'name': 'list_users',
                 'class': 'read',
-                'description': "The team's members (id, name, email, role, status).",
+                'description': "The team's members (id, name, email, role, status). In French: lister les "
+                               "membres de l'équipe allo, utilisateurs allo, collaborateurs de l'équipe.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'role': {'type': 'string', 'enum': ['ADMIN', 'MANAGER', 'MEMBER']},
@@ -70,7 +72,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'query': {'role': 'role', 'status': 'status'}}},
                {'name': 'get_user',
                 'class': 'read',
-                'description': 'One member of the team (id, name, email, role, status).',
+                'description': 'One member of the team (id, name, email, role, status). In French: fiche '
+                               "d'un membre de l'équipe, détails d'un utilisateur allo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['user_id'],
@@ -82,7 +85,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'list_numbers',
                 'class': 'read',
                 'description': "The team's phone numbers and sender ids: number (E.164), name, country, "
-                               'type, capabilities and the members on each line.',
+                               'type, capabilities and the members on each line. In French: numéros de '
+                               "téléphone de l'équipe, lister les lignes allo, numéros d'appel disponibles.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': "The team's lines", 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/api/numbers'}},
@@ -92,7 +96,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                'activity first, each with its last call or text (last_item). '
                                'last_activity_since (ISO 8601) reads only what changed. extend=transcript '
                                'adds the call transcripts (large). The audio of a call is never a link: get '
-                               'it as a file with get_call_recording.',
+                               "it as a file with get_call_recording. In French: conversations d'une ligne, "
+                               'lister les conversations téléphoniques, derniers échanges avec les contacts.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['allo_number'],
@@ -127,7 +132,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                '({from, to}, both dates); search is a keyword over transcripts, summaries '
                                'and message content. Each item: id (cll-* call, msg-* text), date, duration, '
                                'result, member, contact, summary, tags. The audio of a call is never a link: '
-                               'get it as a file with get_call_recording.',
+                               'get it as a file with get_call_recording. In French: chercher un appel, '
+                               'rechercher des sms, historique des appels, appels manqués.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'allo_number': {'type': 'string',
@@ -189,7 +195,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'description': 'One call (cll-*) or text (msg-*): date, duration, result, member, contact, '
                                'AI summary, tags, extracted data, content of a text. extend=transcript adds '
                                'the transcript. The audio of a call is never a link: get it as a file with '
-                               'get_call_recording.',
+                               "get_call_recording. In French: détail d'un appel, résumé d'un appel, détail "
+                               "d'un sms.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['item_id'],
@@ -208,7 +215,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'get_conversation_items',
                 'class': 'read',
                 'description': 'Several calls or texts by id in one request, full details. The audio of a '
-                               'call is never a link: get it as a file with get_call_recording.',
+                               'call is never a link: get it as a file with get_call_recording. In French: '
+                               'détails de plusieurs appels, récupérer plusieurs appels par id.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['ids'],
@@ -228,7 +236,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                'hours: the answer gives its file id, to pass as is to a function that takes '
                                'a file (a transcription). Never a link. A text (msg-*) or an unrecorded call '
                                'has none; only a user who may play the call in Allo gets it, and never on a '
-                               'HIPAA-enabled team.',
+                               "HIPAA-enabled team. In French: enregistrement d'un appel, télécharger "
+                               "l'audio d'un appel, écouter un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['item_id'],
@@ -263,7 +272,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'update_call_summary',
                 'class': 'write',
                 'description': "Replace the markdown of a call's AI summary (calls only). template_key picks "
-                               'the summary when the call has several.',
+                               "the summary when the call has several. In French: modifier le résumé d'un "
+                               "appel, corriger le compte rendu d'un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['item_id', 'content'],
@@ -282,7 +292,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'content': 'content', 'template_key': 'template_key'}}},
                {'name': 'update_conversation',
                 'class': 'write',
-                'description': 'Mark a conversation read or unread, archive or unarchive it.',
+                'description': 'Mark a conversation read or unread, archive or unarchive it. In French: '
+                               'marquer une conversation comme lue, archiver une conversation, désarchiver '
+                               'une conversation.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_number', 'action'],
@@ -302,13 +314,15 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'action': 'action', 'allo_number': 'allo_number'}}},
                {'name': 'list_tags',
                 'class': 'read',
-                'description': "The team's tags (key, name, color).",
+                'description': "The team's tags (key, name, color). In French: lister les étiquettes "
+                               "d'appel, tags de l'équipe allo.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The tags', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/api/tags'}},
                {'name': 'create_tag',
                 'class': 'write',
-                'description': 'A new team tag; its key is the slug of its name.',
+                'description': 'A new team tag; its key is the slug of its name. In French: créer une '
+                               "étiquette d'appel, nouveau tag d'appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -321,7 +335,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'delete_tag',
                 'class': 'sensitive',
                 'description': 'Delete a team tag by its key; it disappears from the tag list. A tag synced '
-                               'from a CRM integration cannot be deleted.',
+                               'from a CRM integration cannot be deleted. In French: supprimer une étiquette '
+                               "d'appel, supprimer un tag allo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['tag_id'],
@@ -333,7 +348,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'confirm': {'summary': 'Delete Allo tag {tag_id} for the whole team.'}},
                {'name': 'add_item_tags',
                 'class': 'write',
-                'description': 'Tag a call with one or more tag keys.',
+                'description': 'Tag a call with one or more tag keys. In French: étiqueter un appel, ajouter '
+                               'un tag à un appel.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['item_id', 'tags'],
@@ -350,7 +366,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'tags': 'tags'}}},
                {'name': 'remove_item_tag',
                 'class': 'write',
-                'description': 'Remove one tag from a call.',
+                'description': "Remove one tag from a call. In French: retirer un tag d'un appel, enlever "
+                               "une étiquette d'un appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['item_id', 'tag'],
@@ -365,7 +382,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'call': {'method': 'DELETE', 'path': '/v2/api/conversations/items/{item_id}/tags/{tag}'}},
                {'name': 'list_conversation_notes',
                 'class': 'read',
-                'description': 'The internal team notes on a conversation, never shown to the contact.',
+                'description': 'The internal team notes on a conversation, never shown to the contact. In '
+                               "French: notes internes d'une conversation, lister les notes d'une "
+                               'conversation.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_number', 'allo_number'],
@@ -388,7 +407,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'query': {'allo_number': 'allo_number', 'page': 'page', 'size': 'size'}}},
                {'name': 'create_conversation_note',
                 'class': 'write',
-                'description': 'Add an internal team note to a conversation; the contact never sees it.',
+                'description': 'Add an internal team note to a conversation; the contact never sees it. In '
+                               'French: ajouter une note interne à une conversation, noter un appel.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['contact_number', 'content'],
@@ -413,7 +433,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'sender_id': 'sender_id'}}},
                {'name': 'get_conversation_note',
                 'class': 'read',
-                'description': 'One internal note on a conversation, by id.',
+                'description': 'One internal note on a conversation, by id. In French: lire une note de '
+                               "conversation, détail d'une note interne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -425,7 +446,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'update_conversation_note',
                 'class': 'write',
                 'description': 'Replace the content of a note on a conversation; only its author may. '
-                               'Mention a teammate inline with @[Name](usr-...).',
+                               'Mention a teammate inline with @[Name](usr-...). In French: modifier une '
+                               'note de conversation, corriger une note interne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id', 'content'],
@@ -440,7 +462,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'content': 'content'}}},
                {'name': 'delete_conversation_note',
                 'class': 'sensitive',
-                'description': 'Delete a note on a conversation; only its author may.',
+                'description': 'Delete a note on a conversation; only its author may. In French: supprimer '
+                               'une note de conversation, effacer une note interne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -452,7 +475,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'confirm': {'summary': 'Delete Allo note {note_id}.'}},
                {'name': 'list_person_notes',
                 'class': 'read',
-                'description': "The notes on a person's CRM profile.",
+                'description': "The notes on a person's CRM profile. In French: notes d'un contact, lister "
+                               "les notes d'une fiche contact.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id'],
@@ -470,7 +494,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'query': {'page': 'page', 'size': 'size'}}},
                {'name': 'create_person_note',
                 'class': 'write',
-                'description': "Add a note to a person's CRM profile.",
+                'description': "Add a note to a person's CRM profile. In French: ajouter une note à un "
+                               'contact, noter sur la fiche contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id', 'content'],
@@ -487,7 +512,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'update_person_note',
                 'class': 'write',
                 'description': "Replace the content of a note on a person's CRM profile; only its author "
-                               'may.',
+                               'may. In French: modifier une note de contact, corriger une note de fiche '
+                               'contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id', 'note_id', 'content'],
@@ -507,7 +533,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'content': 'content'}}},
                {'name': 'delete_person_note',
                 'class': 'sensitive',
-                'description': "Delete a note on a person's CRM profile; only its author may.",
+                'description': "Delete a note on a person's CRM profile; only its author may. In French: "
+                               'supprimer une note de contact, effacer une note de fiche contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id', 'note_id'],
@@ -524,7 +551,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'find_thread',
                 'class': 'read',
                 'description': 'The discussion thread of one call, text or conversation note, if it has one '
-                               "(an item has one thread at most): the team's comments on it.",
+                               "(an item has one thread at most): the team's comments on it. In French: fil "
+                               "de discussion d'un appel, trouver le fil de commentaires.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_type', 'entity_id'],
@@ -543,7 +571,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'query': {'entity_type': 'entity_type', 'entity_id': 'entity_id'}}},
                {'name': 'get_thread',
                 'class': 'read',
-                'description': 'A thread with all its comments, its item and whether it is resolved.',
+                'description': 'A thread with all its comments, its item and whether it is resolved. In '
+                               "French: lire un fil de discussion, commentaires d'un fil.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['thread_id'],
@@ -556,7 +585,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'Start the discussion thread of a call, text or conversation note with a '
                                'first comment; an item has one thread at most. Mention a teammate inline '
-                               'with @[Name](usr-...).',
+                               'with @[Name](usr-...). In French: ouvrir un fil de discussion, commenter un '
+                               'appel.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_type', 'entity_id', 'content'],
@@ -580,7 +610,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'content': 'content'}}},
                {'name': 'add_thread_comment',
                 'class': 'write',
-                'description': 'Add a comment to a thread.',
+                'description': 'Add a comment to a thread. In French: ajouter un commentaire au fil, '
+                               'répondre dans un fil de discussion.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['thread_id', 'content'],
@@ -595,7 +626,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'content': 'content'}}},
                {'name': 'update_thread_comment',
                 'class': 'write',
-                'description': 'Replace the content of a comment; only its author may.',
+                'description': 'Replace the content of a comment; only its author may. In French: modifier '
+                               'un commentaire, corriger un commentaire du fil.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['comment_id', 'content'],
@@ -611,7 +643,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'content': 'content'}}},
                {'name': 'resolve_thread',
                 'class': 'write',
-                'description': 'Mark a thread resolved.',
+                'description': 'Mark a thread resolved. In French: résoudre un fil de discussion, clore une '
+                               'discussion.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['thread_id'],
@@ -622,7 +655,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'call': {'method': 'POST', 'path': '/v2/api/threads/{thread_id}/resolve'}},
                {'name': 'unresolve_thread',
                 'class': 'write',
-                'description': 'Reopen a resolved thread.',
+                'description': 'Reopen a resolved thread. In French: rouvrir un fil de discussion, rouvrir '
+                               'une discussion résolue.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['thread_id'],
@@ -634,7 +668,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'search_people',
                 'class': 'read',
                 'description': 'People of the contacts CRM, filtered (name, last_name, job_title, website, '
-                               'company, phone_number, email, deal_status) or by a free search.',
+                               'company, phone_number, email, deal_status) or by a free search. In French: '
+                               'chercher un contact, rechercher une personne dans le crm, contact par numéro '
+                               'de téléphone.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filters': {'type': 'object',
@@ -674,7 +710,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'size': 'size'}}},
                {'name': 'get_person',
                 'class': 'read',
-                'description': 'One person of the CRM, with company, numbers, emails and custom attributes.',
+                'description': 'One person of the CRM, with company, numbers, emails and custom attributes. '
+                               "In French: fiche d'un contact, détails d'une personne du crm.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id'],
@@ -686,7 +723,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'create_person',
                 'class': 'write',
                 'description': 'A person in the CRM, with at least one phone number. custom_attributes takes '
-                               'the keys list_person_attributes returns.',
+                               'the keys list_person_attributes returns. In French: créer un contact, '
+                               'ajouter une personne au crm.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['numbers'],
@@ -724,7 +762,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'custom_attributes': 'custom_attributes'}}},
                {'name': 'update_person',
                 'class': 'write',
-                'description': 'Update a person of the CRM; only the fields given change.',
+                'description': 'Update a person of the CRM; only the fields given change. In French: '
+                               'modifier un contact, mettre à jour une fiche contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id'],
@@ -760,7 +799,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'custom_attributes': 'custom_attributes'}}},
                {'name': 'search_companies',
                 'class': 'read',
-                'description': 'Companies of the CRM, filtered by name, website or industry.',
+                'description': 'Companies of the CRM, filtered by name, website or industry. In French: '
+                               'chercher une entreprise, rechercher une société dans le crm.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filters': {'type': 'object',
@@ -786,7 +826,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'filters': 'filters', 'sort': 'sort', 'page': 'page', 'size': 'size'}}},
                {'name': 'get_company',
                 'class': 'read',
-                'description': 'One company of the CRM, with its people count and custom attributes.',
+                'description': 'One company of the CRM, with its people count and custom attributes. In '
+                               "French: fiche d'une entreprise, détails d'une société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -797,7 +838,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'call': {'method': 'GET', 'path': '/v2/api/crm/companies/{company_id}'}},
                {'name': 'create_company',
                 'class': 'write',
-                'description': 'A company in the CRM.',
+                'description': 'A company in the CRM. In French: créer une entreprise, ajouter une société '
+                               'au crm.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -815,7 +857,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'custom_attributes': 'custom_attributes'}}},
                {'name': 'update_company',
                 'class': 'write',
-                'description': 'Update a company of the CRM; only the fields given change.',
+                'description': 'Update a company of the CRM; only the fields given change. In French: '
+                               'modifier une entreprise, mettre à jour une société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -836,7 +879,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'custom_attributes': 'custom_attributes'}}},
                {'name': 'search_deals',
                 'class': 'read',
-                'description': 'Deals of the CRM, filtered by stage or by a free search.',
+                'description': 'Deals of the CRM, filtered by stage or by a free search. In French: chercher '
+                               'une affaire, lister les opportunités, affaires par étape.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filters': {'type': 'object',
@@ -865,7 +909,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'size': 'size'}}},
                {'name': 'get_deal',
                 'class': 'read',
-                'description': 'One deal (name, status, amount, currency, company, closing date).',
+                'description': 'One deal (name, status, amount, currency, company, closing date). In French: '
+                               "détail d'une affaire, fiche d'une opportunité.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['deal_id'],
@@ -876,7 +921,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'call': {'method': 'GET', 'path': '/v2/api/crm/deals/{deal_id}'}},
                {'name': 'list_person_attributes',
                 'class': 'read',
-                'description': 'The custom fields of people, created or synced from a CRM integration.',
+                'description': 'The custom fields of people, created or synced from a CRM integration. In '
+                               'French: champs personnalisés des contacts, attributs des personnes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -890,7 +936,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'query': {'page': 'page', 'size': 'size'}}},
                {'name': 'list_company_attributes',
                 'class': 'read',
-                'description': 'The custom attributes of companies.',
+                'description': 'The custom attributes of companies. In French: champs personnalisés des '
+                               'entreprises, attributs des sociétés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -908,7 +955,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                'accents, _ between words, 64 characters). A DROPDOWN field needs options, '
                                'any other type takes none. Idempotent: the same label and type again return '
                                'the existing field with already_existed=true, and the label of a deleted '
-                               'field restores it with its stored values.',
+                               'field restores it with its stored values. In French: créer un champ '
+                               'personnalisé de contact, nouvel attribut de personne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['label', 'type'],
@@ -942,7 +990,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'Change a custom field of people: only the fields given change; its key and '
                                'type never do. options replaces the whole list (DROPDOWN only). A field '
-                               'synced from a CRM integration cannot be edited.',
+                               'synced from a CRM integration cannot be edited. In French: modifier un champ '
+                               "personnalisé de contact, changer les options d'un attribut de personne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['key'],
@@ -974,7 +1023,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'description': 'Remove a custom field of people: it leaves the list and the people, and '
                                'writing it is refused. Its stored values are kept: creating a field with the '
                                'same label and type restores it with them. Built-in fields and fields synced '
-                               'from a CRM integration cannot be deleted.',
+                               'from a CRM integration cannot be deleted. In French: supprimer un champ '
+                               'personnalisé de contact, retirer un attribut de personne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['key'],
@@ -991,7 +1041,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                'DROPDOWN attribute needs options, any other type takes none. prompt tells '
                                "Allo's AI how to fill it from calls, should_prompt_override whether it may "
                                'overwrite a value already set. Idempotent: the same key and type again '
-                               'return the existing attribute with already_existed=true.',
+                               'return the existing attribute with already_existed=true. In French: créer un '
+                               "champ personnalisé d'entreprise, nouvel attribut de société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['label', 'type'],
@@ -1034,7 +1085,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'description': 'Change a custom attribute of companies: only the fields given change; its '
                                'key and type never do. options replaces the whole list (DROPDOWN only). An '
                                'attribute synced from a CRM integration only takes prompt, '
-                               'should_prompt_override and is_visible.',
+                               'should_prompt_override and is_visible. In French: modifier un champ '
+                               "personnalisé d'entreprise, changer les options d'un attribut de société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['key'],
@@ -1073,7 +1125,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'sensitive',
                 'description': 'Delete a custom attribute of companies and clear its value on every company. '
                                'Irreversible: unlike a field of people, nothing restores the values. An '
-                               'attribute synced from a CRM integration cannot be deleted.',
+                               'attribute synced from a CRM integration cannot be deleted. In French: '
+                               "supprimer un champ personnalisé d'entreprise, retirer un attribut de "
+                               'société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['key'],
@@ -1087,7 +1141,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'get_dialing_queue',
                 'class': 'read',
                 'description': "The numbers of a Power Dialer queue by position, with the queue's name and "
-                               "settings: the key owner's queue, or a teammate's by user_id or email.",
+                               "settings: the key owner's queue, or a teammate's by user_id or email. In "
+                               "French: file d'appels en cours, numéros à appeler du power dialer, ma file "
+                               "d'appels.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'user_id': {'type': 'string',
@@ -1109,7 +1165,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'reset_dialing_queue',
                 'class': 'write',
                 'description': 'A fresh, empty Power Dialer queue for the key owner or a teammate; the '
-                               'previous queue is no longer the current one.',
+                               'previous queue is no longer the current one. In French: vider la file '
+                               "d'appels, nouvelle file d'appels vide, réinitialiser le power dialer.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string', 'minLength': 1},
@@ -1128,7 +1185,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'update_dialing_queue',
                 'class': 'write',
                 'description': 'The settings of the current queue, made if none: name, voicemail handling '
-                               '(SKIP or NO_SKIP), do not disturb while dialing.',
+                               '(SKIP or NO_SKIP), do not disturb while dialing. In French: réglages de la '
+                               "file d'appels, paramétrer le power dialer.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string', 'minLength': 1},
@@ -1155,7 +1213,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'Append numbers to the current Power Dialer queue, made if none exists; each '
                                "entry a number (E.164) and optionally the contact's details. The answer "
-                               'lists the entries added and skipped.',
+                               'lists the entries added and skipped. In French: ajouter des numéros à la '
+                               "file d'appels, charger des numéros dans le power dialer.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['numbers'],
@@ -1199,7 +1258,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'Remove entries from the current queue: by number (every occurrence), by '
                                'position (0-based), both (one occurrence), or unassigned=true (every entry '
-                               'not yet called).',
+                               "not yet called). In French: retirer des numéros de la file d'appels, enlever "
+                               'un numéro du power dialer.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'number': {'type': 'string', 'minLength': 1, 'personal': True},
@@ -1223,7 +1283,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'delete_current_dialing_queue',
                 'class': 'sensitive',
                 'description': 'Delete the current Power Dialer queue of the key owner, or of a teammate by '
-                               'user_id or email, with its numbers.',
+                               "user_id or email, with its numbers. In French: supprimer ma file d'appels, "
+                               "supprimer la file d'appels courante.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'user_id': {'type': 'string',
@@ -1241,7 +1302,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'list_dialing_queues',
                 'class': 'read',
                 'description': "The team's Power Dialer queues (pdl-*) the key may see, with their name, "
-                               'creator, assignee and settings.',
+                               "creator, assignee and settings. In French: lister les files d'appels, files "
+                               'du power dialer.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'page': {'type': 'integer',
@@ -1256,7 +1318,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'create_dialing_queue',
                 'class': 'write',
                 'description': 'A new, empty Power Dialer queue, assigned to the key owner or to a teammate '
-                               '(user_id or email); the key owner is its creator.',
+                               '(user_id or email); the key owner is its creator. In French: créer une file '
+                               "d'appels, nouvelle file du power dialer.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'name': {'type': 'string', 'minLength': 1, 'maxLength': 255},
@@ -1274,7 +1337,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'get_dialing_queue_by_id',
                 'class': 'read',
                 'description': 'The numbers of one Power Dialer queue by position, with its name and '
-                               'settings.',
+                               "settings. In French: détail d'une file d'appels, numéros d'une file "
+                               "d'appels.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['queue_id'],
@@ -1293,7 +1357,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'update_dialing_queue_by_id',
                 'class': 'write',
                 'description': 'The settings of one Power Dialer queue: name, voicemail handling (SKIP or '
-                               'NO_SKIP), do not disturb while dialing. Only the fields given change.',
+                               'NO_SKIP), do not disturb while dialing. Only the fields given change. In '
+                               "French: modifier une file d'appels, renommer une file d'appels.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['queue_id'],
@@ -1314,7 +1379,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'do_not_disturb': 'do_not_disturb'}}},
                {'name': 'delete_dialing_queue',
                 'class': 'sensitive',
-                'description': 'Delete one Power Dialer queue and its numbers.',
+                'description': 'Delete one Power Dialer queue and its numbers. In French: supprimer une file '
+                               "d'appels, effacer une file du power dialer.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['queue_id'],
@@ -1328,7 +1394,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'Append numbers to one Power Dialer queue; each entry a number (E.164) and '
                                "optionally the contact's details. The answer lists the entries added and "
-                               'skipped.',
+                               "skipped. In French: ajouter des numéros à une file d'appels, remplir une "
+                               'file du power dialer.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['queue_id', 'numbers'],
@@ -1367,7 +1434,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'Remove entries from one Power Dialer queue: by number (every occurrence), by '
                                'position (0-based), both (one occurrence), or unassigned=true (every entry '
-                               'not yet called).',
+                               "not yet called). In French: retirer des numéros d'une file d'appels, enlever "
+                               "un numéro d'une file.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['queue_id'],
@@ -1386,7 +1454,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'Hand a Power Dialer queue, numbers and creator kept, to another member of '
                                'the team, by user_id or email (user_id wins). Only the key of an admin or a '
-                               'manager who created the queue or runs it may.',
+                               'manager who created the queue or runs it may. In French: attribuer une file '
+                               "d'appels, confier une file d'appels à un collègue.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['queue_id'],
@@ -1409,7 +1478,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                          'body': {'user_id': 'user_id', 'email': 'email'}}},
                {'name': 'get_dialer_session',
                 'class': 'read',
-                'description': 'One Power Dialer session, by id.',
+                'description': 'One Power Dialer session, by id. In French: session de power dialer, détail '
+                               "d'une session d'appels.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['session_id'],
@@ -1420,7 +1490,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'read',
                 'description': 'Team KPIs over a date range (total calls, talk time, calls over a minute, '
                                'answer rate), against compare_date, with a per-member breakdown; inbound and '
-                               'outbound.',
+                               "outbound. In French: statistiques d'appels de l'équipe, taux de décroché, "
+                               'temps de conversation.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['date'],
@@ -1452,7 +1523,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'description': 'The outbound funnel over a date range (dials, connected, conversations, '
                                'conversions: a conversion is a call carrying one of tags), its time series '
                                'by granularity, heatmap, leaderboard and time spent. extend=items with a '
-                               'stage lists the calls behind that stage, paged.',
+                               'stage lists the calls behind that stage, paged. In French: statistiques '
+                               "d'appels sortants, entonnoir de prospection téléphonique, taux de conversion "
+                               'des appels.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['date'],
@@ -1505,7 +1578,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                'recipient in the same country), or from a Sender ID verified by Allo '
                                '(sender_id, France). Give exactly one of the two. Billed per segment: 160 '
                                'characters (153 once split), or 70 (67) as soon as one character is outside '
-                               'the standard SMS alphabet (ç, ê, â, a curly quote, an emoji).',
+                               'the standard SMS alphabet (ç, ê, â, a curly quote, an emoji). In French: '
+                               'envoyer un sms, envoyer un texto.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['to', 'message'],
@@ -1539,13 +1613,15 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'confirm': {'summary': 'Send a text to {to} now: it cannot be recalled.'}},
                {'name': 'list_summary_templates',
                 'class': 'read',
-                'description': "The team's call summary templates (tst-*), each with its sections.",
+                'description': "The team's call summary templates (tst-*), each with its sections. In "
+                               "French: modèles de résumé d'appel, lister les modèles de compte rendu.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The summary templates', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/api/summary_templates'}},
                {'name': 'get_summary_template',
                 'class': 'read',
-                'description': 'One call summary template, with its context, icon and sections.',
+                'description': 'One call summary template, with its context, icon and sections. In French: '
+                               "détail d'un modèle de résumé d'appel, sections d'un modèle de compte rendu.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_id'],
@@ -1558,7 +1634,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'A call summary template for the team: its name, the context that helps the '
                                'AI summarize (4000 characters at most), an icon, and up to 10 ordered '
-                               'sections, each a title and instructions.',
+                               'sections, each a title and instructions. In French: créer un modèle de '
+                               "résumé d'appel, nouveau modèle de compte rendu.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -1597,7 +1674,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'update_summary_template',
                 'class': 'write',
                 'description': 'Replace a call summary template whole: name, context, icon and sections; '
-                               'what is left out is cleared, so read it first and send it all back.',
+                               'what is left out is cleared, so read it first and send it all back. In '
+                               "French: modifier un modèle de résumé d'appel, changer un modèle de compte "
+                               'rendu.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_id', 'name'],
@@ -1634,7 +1713,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                   'sections': 'sections'}}},
                {'name': 'delete_summary_template',
                 'class': 'sensitive',
-                'description': 'Deactivate a call summary template; it is no longer offered for summaries.',
+                'description': 'Deactivate a call summary template; it is no longer offered for summaries. '
+                               "In French: supprimer un modèle de résumé d'appel, désactiver un modèle de "
+                               'compte rendu.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['template_id'],
@@ -1647,7 +1728,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'set_default_summary_template',
                 'class': 'write',
                 'description': "The summary template a line's call summaries use by default. Without "
-                               "summary_template_id, the line's default is cleared.",
+                               "summary_template_id, the line's default is cleared. In French: modèle de "
+                               "résumé par défaut, choisir le modèle de résumé d'une ligne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number'],
@@ -1665,7 +1747,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'list_webhooks',
                 'class': 'read',
                 'description': 'The webhook endpoints of the account (url, topics, label, enabled). The '
-                               'signing secret of an endpoint is never given: it is read in Allo.',
+                               'signing secret of an endpoint is never given: it is read in Allo. In French: '
+                               'lister les webhooks allo, webhooks du compte allo.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The webhooks', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/api/webhooks'},
@@ -1673,7 +1756,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'get_webhook',
                 'class': 'read',
                 'description': 'One webhook endpoint (url, topics, label, enabled). Its signing secret, '
-                               'which verifies the deliveries, is never given: it is read in Allo.',
+                               'which verifies the deliveries, is never given: it is read in Allo. In '
+                               "French: détail d'un webhook allo, adresse d'un webhook allo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],
@@ -1685,7 +1769,7 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'A webhook endpoint: Allo posts the events of topics to url (https). The '
                                'signing secret that verifies the deliveries is never given: it is read in '
-                               'Allo.',
+                               "Allo. In French: créer un webhook allo, recevoir les événements d'appel.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['url', 'topics'],
@@ -1721,7 +1805,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'write',
                 'description': 'Change a webhook endpoint: only the fields given change; topics replaces the '
                                'whole set; enabled=false stops the deliveries. Its signing secret is never '
-                               'given: it is read in Allo.',
+                               'given: it is read in Allo. In French: modifier un webhook allo, désactiver '
+                               'un webhook allo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],
@@ -1759,7 +1844,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'output': {'strip': ['data.signing_secret']}},
                {'name': 'delete_webhook',
                 'class': 'sensitive',
-                'description': 'Delete a webhook endpoint and its delivery history, for good.',
+                'description': 'Delete a webhook endpoint and its delivery history, for good. In French: '
+                               'supprimer un webhook allo, effacer un webhook allo.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['webhook_id'],
@@ -1769,7 +1855,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'confirm': {'summary': 'Delete Allo webhook {webhook_id} and its delivery history.'}},
                {'name': 'list_webhook_event_types',
                 'class': 'read',
-                'description': 'The event topics a webhook may subscribe to, with what each sends.',
+                'description': 'The event topics a webhook may subscribe to, with what each sends. In '
+                               "French: événements de webhook allo, types d'événements allo.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The event topics', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/api/webhooks/event_types'}},
@@ -1777,7 +1864,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'read',
                 'description': 'The call flow of a line (the tree that routes its inbound calls): the '
                                'published one by default, or status=draft for the working draft (the '
-                               'published one when there is no draft), with its lock_version.',
+                               'published one when there is no draft), with its lock_version. In French: '
+                               "scénario d'appel d'une ligne, routage des appels entrants, standard "
+                               'téléphonique.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number'],
@@ -1792,7 +1881,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'get_call_flow_draft',
                 'class': 'read',
                 'description': "The working draft of a line's call flow only, with its lock_version to pass "
-                               'when saving or publishing; never the published flow.',
+                               'when saving or publishing; never the published flow. In French: brouillon du '
+                               "scénario d'appel, brouillon du routage des appels.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number'],
@@ -1813,7 +1903,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                "schema_version the server's current one. lock_version (from the last read) "
                                'and base_published_version detect a concurrent edit or publish (409). '
                                'engine_subset FULL_FLOW runs the whole tree: send it for a flow built '
-                               'through the API.',
+                               "through the API. In French: modifier le scénario d'appel, enregistrer le "
+                               'brouillon du routage des appels.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'definition', 'schema_version'],
@@ -1847,7 +1938,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'sensitive',
                 'description': "Publish the working draft of a line's call flow: it routes the line's live "
                                'inbound calls at once. Validation is stricter than on save, and a failure '
-                               'publishes nothing; the draft is consumed.',
+                               'publishes nothing; the draft is consumed. In French: publier le scénario '
+                               "d'appel, mettre en ligne le routage des appels.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'lock_version'],
@@ -1873,7 +1965,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'description': "The whole configuration of a line's AI receptionist: business details, voice "
                                'and language, prompt, capabilities, business hours, transfer rules, '
                                'calendars and knowledge sources, status. Read it before any write: '
-                               'collections are replaced whole.',
+                               'collections are replaced whole. In French: configuration du standardiste ia, '
+                               'réglages de la réceptionniste virtuelle.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number'],
@@ -1889,7 +1982,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                'given changes, one left out stays; capabilities, business_hours, '
                                'transfer_rules and scheduling.calendars given replace the configured set '
                                'whole (a capability left out is turned off), so read get_receptionist first. '
-                               'Does not put the receptionist on the line.',
+                               'Does not put the receptionist on the line. In French: modifier le '
+                               'standardiste ia, changer la voix de la réceptionniste virtuelle.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number'],
@@ -2086,7 +2180,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'sensitive',
                 'description': "Put a line's AI receptionist on the line (ACTIVE) or take it off "
                                '(FORWARDING: calls go to the business phone). Changes how the live line '
-                               'routes real calls at once.',
+                               'routes real calls at once. In French: activer le standardiste ia, désactiver '
+                               'la réceptionniste virtuelle, renvoyer les appels vers le téléphone.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'status'],
@@ -2107,7 +2202,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                                'the unchanged ones too (read get_receptionist first). objective, personality '
                                'and behaviors are required, each section once; a content holds 3000 '
                                'characters at most; required_fields takes fields instead. Facts about the '
-                               'business belong in its knowledge, not here.',
+                               'business belong in its knowledge, not here. In French: modifier le prompt du '
+                               'standardiste ia, consignes de la réceptionniste virtuelle.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'sections'],
@@ -2153,7 +2249,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'description': "Add a public website to the knowledge of a line's AI receptionist. Allo "
                                'crawls it in the background and answers at once; the receptionist uses it '
                                'once indexed, and a failed crawl is not reported. A site another line '
-                               'already has is linked, not crawled again.',
+                               'already has is linked, not crawled again. In French: ajouter un site web à '
+                               'la base de connaissances, apprendre un site au standardiste ia.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'url'],
@@ -2171,7 +2268,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'update_receptionist_website',
                 'class': 'write',
                 'description': 'Turn a website on (ACTIVE) or off (DISABLED) for this line, its crawled '
-                               "content kept; ACTIVE on a website of the team's library adds it to the line.",
+                               "content kept; ACTIVE on a website of the team's library adds it to the line. "
+                               'In French: activer un site web du standardiste ia, désactiver un site de la '
+                               'base de connaissances.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'website_id', 'status'],
@@ -2193,7 +2292,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'delete_receptionist_website',
                 'class': 'sensitive',
                 'description': "Delete a website from the team's knowledge library, for every line of the "
-                               'team; to stop one line using it, turn it off instead.',
+                               'team; to stop one line using it, turn it off instead. In French: supprimer '
+                               'un site de la base de connaissances, retirer un site du standardiste ia.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'website_id'],
@@ -2213,7 +2313,9 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'delete_receptionist_file',
                 'class': 'sensitive',
                 'description': "Delete an uploaded document from the team's knowledge library, for every "
-                               'line of the team. Documents are uploaded in the Allo app only.',
+                               'line of the team. Documents are uploaded in the Allo app only. In French: '
+                               'supprimer un document de la base de connaissances, retirer un fichier du '
+                               'standardiste ia.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['number', 'file_id'],
@@ -2234,14 +2336,16 @@ DESCRIPTION = {'connector': {'name': 'allo',
                 'class': 'read',
                 'description': "The calendars connected to the workspace that the key's user can see (all of "
                                'them for an admin), booked on by a receptionist or not. Connecting one is '
-                               'done in the Allo app.',
+                               'done in the Allo app. In French: calendriers connectés, agendas pour la '
+                               'prise de rendez-vous.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The calendars', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/api/calendars'}},
                {'name': 'get_calendar',
                 'class': 'read',
                 'description': 'One connected calendar with the event types its provider offers now, read '
-                               'live.',
+                               "live. In French: détail d'un calendrier connecté, types de rendez-vous d'un "
+                               'agenda.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['calendar_id'],
@@ -2251,7 +2355,8 @@ DESCRIPTION = {'connector': {'name': 'allo',
                {'name': 'list_voices',
                 'class': 'read',
                 'description': 'The voices an AI receptionist may speak with, by language; each id is a '
-                               'voice_id.',
+                               'voice_id. In French: voix du standardiste ia, lister les voix de la '
+                               'réceptionniste virtuelle.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The voices', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/api/voices'},

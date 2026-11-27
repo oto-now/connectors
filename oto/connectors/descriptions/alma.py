@@ -8,7 +8,7 @@ DESCRIPTION = {'connector': {'name': 'alma',
                               'only; customer identity and addresses never reach the agent.',
                'logo_domain': 'almapay.com',
                'namespace': 'alma',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1',
                'base_url': 'https://api.getalma.eu/v1',
                'auth': {'kind': 'api_key',
@@ -54,7 +54,8 @@ DESCRIPTION = {'connector': {'name': 'alma',
                                'created_before (POSIX seconds, inclusive), state. Up to limit payments per '
                                'page (100 at most); when has_more is true, pass the id of the last payment '
                                'as starting_after. Customer identity, addresses, the seller and the '
-                               "merchant's free-form data are never given.",
+                               "merchant's free-form data are never given. In French: lister les paiements "
+                               'alma, paiements en plusieurs fois, paiements fractionnés des clients.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'created_after': {'type': 'integer',
@@ -117,7 +118,8 @@ DESCRIPTION = {'connector': {'name': 'alma',
                                'capture, orders (merchant_reference), refunds (amount_already_refunded, '
                                'is_completely_refunded), payout. Customer identity, addresses, the seller, '
                                "the merchant's free-form data (custom_data, cart) and the payment page "
-                               'address are never given.',
+                               "address are never given. In French: détail d'un paiement alma, échéancier "
+                               "d'un paiement, échéances d'un paiement en plusieurs fois.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['payment_id'],
@@ -146,7 +148,9 @@ DESCRIPTION = {'connector': {'name': 'alma',
                                'settled it), available_on, created. merchant: a merchant id, or all to '
                                "include the child accounts the key reaches (the key's own account by "
                                'default). kind filters by type. Up to limit per page (100 at most); when '
-                               'has_more is true, pass the id of the last transaction as starting_after.',
+                               'has_more is true, pass the id of the last transaction as starting_after. In '
+                               'French: mouvements du solde alma, virements alma reçus, frais alma prélevés, '
+                               'transactions du solde marchand.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'merchant': {'type': 'string',

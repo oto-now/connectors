@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'affinity',
                'label': 'Affinity',
                'namespace': 'affinity',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'v1 and v2 (2026-09-17)',
                'base_url': 'https://api.affinity.co',
                'auth': {'kind': 'bearer', 'token': 'api_key'},
@@ -46,14 +46,16 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'description': 'Get the tenant, the user and the grant (type, scopes) of the API key, '
                                'through API v2. The key acts as this user: what it writes is attributed to '
                                'them and their sharing rules decide what it sees. Free of the monthly '
-                               'account quota.',
+                               'account quota. In French: utilisateur de la clé affinity, compte affinity '
+                               'connecté, droits de la clé api.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Who the key acts as', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/v2/auth/whoami'}},
                {'name': 'get_current_user_v1',
                 'class': 'read',
                 'description': 'Get the same identity through API v1, which most writes use: proves the key '
-                               'is accepted by v1 too. Free of the monthly account quota.',
+                               'is accepted by v1 too. Free of the monthly account quota. In French: tester '
+                               'la clé api v1, identité de la clé affinity.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Who the key acts as, through v1', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/auth/whoami'}},
@@ -61,7 +63,9 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'read',
                 'description': 'Search persons whose name or email contains term (API v1). Paged by '
                                'page_size and page_token; the answer carries next_page_token. With '
-                               'with_interaction_dates, persons without any interaction are left out.',
+                               'with_interaction_dates, persons without any interaction are left out. In '
+                               'French: chercher une personne, trouver un contact par email, rechercher un '
+                               'contact par nom.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'term': {'type': 'string',
@@ -86,7 +90,9 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'search_organizations',
                 'class': 'read',
                 'description': 'Search organizations (companies) whose name or domain contains term (API '
-                               'v1). Paged by page_size and page_token; the answer carries next_page_token.',
+                               'v1). Paged by page_size and page_token; the answer carries next_page_token. '
+                               'In French: chercher une entreprise, trouver une société par domaine, '
+                               'rechercher une organisation.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'term': {'type': 'string',
@@ -111,7 +117,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'read',
                 'description': 'Get one person by id (API v2). No field data comes back unless field_ids or '
                                'field_types is given; list-specific fields are readable only through list '
-                               'entries.',
+                               "entries. In French: fiche d'une personne, détail d'un contact, champs d'un "
+                               'contact.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id'],
@@ -138,7 +145,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'get_company',
                 'class': 'read',
                 'description': 'Get one company by id (API v2). No field data comes back unless field_ids or '
-                               'field_types is given.',
+                               "field_types is given. In French: fiche d'une entreprise, détail d'une "
+                               "société, champs d'une organisation.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['company_id'],
@@ -165,7 +173,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'get_opportunity',
                 'class': 'read',
                 'description': 'Get one opportunity by id (API v2): name and list. Opportunities have no '
-                               'global fields: their field values live on their list entry.',
+                               'global fields: their field values live on their list entry. In French: fiche '
+                               "d'une opportunité, détail d'un deal.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['opportunity_id'],
@@ -179,7 +188,9 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'read',
                 'description': 'Get a person, organization or opportunity through API v1: the record with '
                                'its association ids (organization_ids, person_ids), which v2 does not '
-                               'return. Read it before a v1 update, since v1 updates REPLACE those arrays.',
+                               'return. Read it before a v1 update, since v1 updates REPLACE those arrays. '
+                               "In French: associations d'un contact, sociétés liées à une personne, "
+                               'contacts liés à une opportunité.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_type', 'entity_id'],
@@ -195,7 +206,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'description': 'List every list a person or company is on, with ALL its field values (list '
                                'fields included), through API v2. Paged by limit and cursor; the next cursor '
                                'is in the query string of pagination.nextUrl. An opportunity has a single '
-                               'list entry: read it from its list.',
+                               "list entry: read it from its list. In French: listes d'un contact, listes où "
+                               "figure une entreprise, champs de liste d'un contact.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_type', 'entity_id'],
@@ -212,7 +224,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'read',
                 'description': 'List the connections of a person or company with their interactionScore (0 '
                                'to 1, 0.7 and above is regular contact), strongest first, through API v2. '
-                               'Persons and companies only. Paged by limit and cursor.',
+                               'Persons and companies only. Paged by limit and cursor. In French: relations '
+                               "d'un contact, force des relations, qui connaît cette personne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_type', 'entity_id'],
@@ -229,7 +242,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'read',
                 'description': 'List the global and enriched fields of persons or companies with their '
                                'valueType, through API v2. Opportunities have no global fields: read the '
-                               'fields of their list. Paged by limit and cursor.',
+                               'fields of their list. Paged by limit and cursor. In French: champs globaux '
+                               'affinity, champs des contacts, champs des entreprises.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_type'],
@@ -244,7 +258,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'list_global_field_dropdown_options',
                 'class': 'read',
                 'description': 'List the options of a dropdown global field of persons or companies, through '
-                               'API v2. A dropdown is written with an option id, never the option text.',
+                               'API v2. A dropdown is written with an option id, never the option text. In '
+                               "French: options d'un menu déroulant, valeurs possibles d'un champ global.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_type', 'field_id'],
@@ -262,7 +277,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'create_person',
                 'class': 'write',
                 'description': 'Create a person (API v1). Fails if one of the emails already belongs to '
-                               'another person: search first.',
+                               'another person: search first. In French: créer un contact, ajouter une '
+                               'personne, nouveau contact affinity.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['first_name', 'last_name'],
@@ -288,7 +304,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'write',
                 'description': "Change a person's name, emails or organizations (API v1). emails and "
                                'organization_ids REPLACE the current sets: send the existing values too to '
-                               'add one (get_entity_v1 returns them).',
+                               'add one (get_entity_v1 returns them). In French: modifier un contact, '
+                               "changer l'email d'un contact, rattacher un contact à une société.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['person_id'],
@@ -318,7 +335,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'create_organization',
                 'class': 'write',
                 'description': 'Create an organization (company) through API v1. Affinity does NOT refuse a '
-                               'duplicate domain: search first.',
+                               'duplicate domain: search first. In French: créer une entreprise, ajouter une '
+                               'société, nouvelle organisation affinity.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name'],
@@ -334,7 +352,9 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'update_organization',
                 'class': 'write',
                 'description': "Change an organization's name, domain or persons (API v1). person_ids "
-                               'REPLACES the current set. Global organizations cannot be changed.',
+                               'REPLACES the current set. Global organizations cannot be changed. In French: '
+                               'modifier une entreprise, renommer une société, rattacher des contacts à une '
+                               'société.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['organization_id'],
@@ -357,7 +377,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'create_opportunity',
                 'class': 'write',
                 'description': 'Create an opportunity in an opportunity-type list (API v1): the only way an '
-                               'opportunity joins its list.',
+                               'opportunity joins its list. In French: créer une opportunité, nouveau deal, '
+                               'ajouter une affaire au pipeline.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['name', 'list_id'],
@@ -382,7 +403,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'update_opportunity',
                 'class': 'write',
                 'description': "Change an opportunity's name, persons or organizations (API v1). The "
-                               'association arrays REPLACE the current sets.',
+                               'association arrays REPLACE the current sets. In French: modifier une '
+                               'opportunité, renommer un deal, rattacher un contact à une affaire.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['opportunity_id'],
@@ -410,7 +432,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'list_lists',
                 'class': 'read',
                 'description': "List the lists the key's user can see (API v2), optionally by name. Paged by "
-                               'limit and cursor.',
+                               'limit and cursor. In French: lister les listes affinity, voir mes listes, '
+                               'listes de deals.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'term': {'type': 'string', 'description': 'Part of a list name.'},
@@ -422,7 +445,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                          'query': {'term': 'term', 'cursor': 'cursor', 'limit': 'limit'}}},
                {'name': 'get_list',
                 'class': 'read',
-                'description': 'Get one list (API v2): name, type (person, company or opportunity), owner.',
+                'description': 'Get one list (API v2): name, type (person, company or opportunity), owner. '
+                               "In French: détail d'une liste, type d'une liste affinity.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -435,7 +459,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'list_list_fields',
                 'class': 'read',
                 'description': 'List every field shown on a list (list, global, enriched…) with its '
-                               'valueType and isRequired (API v2). Paged by limit and cursor.',
+                               'valueType and isRequired (API v2). Paged by limit and cursor. In French: '
+                               "colonnes d'une liste, champs d'une liste affinity.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -449,7 +474,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'list_list_field_dropdown_options',
                 'class': 'read',
                 'description': 'List the options of a dropdown field of a list (API v2). A dropdown is '
-                               'written with an option id, never the option text.',
+                               "written with an option id, never the option text. In French: options d'une "
+                               "colonne de liste, valeurs possibles d'un statut de liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'field_id'],
@@ -466,7 +492,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                          'query': {'cursor': 'cursor', 'limit': 'limit'}}},
                {'name': 'list_saved_views',
                 'class': 'read',
-                'description': 'List the saved views of a list (API v2). Paged by limit and cursor.',
+                'description': 'List the saved views of a list (API v2). Paged by limit and cursor. In '
+                               "French: vues enregistrées d'une liste, vues sauvegardées affinity.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -482,7 +509,9 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'description': 'List the rows (entries) of a list with their entity (API v2). Needs the '
                                'Export data from Lists permission. No field data comes back unless field_ids '
                                'or field_types is given. Paged by limit and cursor; the next cursor is in '
-                               'the query string of pagination.nextUrl. A list entry id is not an entity id.',
+                               'the query string of pagination.nextUrl. A list entry id is not an entity id. '
+                               "In French: lignes d'une liste, contenu d'une liste, deals du pipeline, "
+                               'exporter une liste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -510,7 +539,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'list_saved_view_entries',
                 'class': 'read',
                 'description': 'List the rows of a saved view, with the filters and columns saved in the app '
-                               '(API v2). Paged by limit and cursor.',
+                               "(API v2). Paged by limit and cursor. In French: lignes d'une vue "
+                               "enregistrée, contenu d'une vue sauvegardée.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'view_id'],
@@ -525,7 +555,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'get_list_entry',
                 'class': 'read',
                 'description': 'Get one row of a list with its entity (API v2). No field data comes back '
-                               'unless field_ids or field_types is given.',
+                               "unless field_ids or field_types is given. In French: ligne d'une liste, "
+                               "détail d'une entrée de liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'entry_id'],
@@ -552,7 +583,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'write',
                 'description': 'Add a person or organization to a list (API v1). Opportunities cannot be '
                                'added: create them with create_opportunity. The same entity can be added '
-                               'twice: check its list entries first.',
+                               'twice: check its list entries first. In French: ajouter un contact à une '
+                               'liste, ajouter une société à une liste, inscrire dans une liste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'entity_id'],
@@ -573,7 +605,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'sensitive',
                 'description': "Remove a row from a list (API v1). Also deletes the entry's list-field "
                                'values; on an OPPORTUNITY list, deletes the opportunity itself. '
-                               'Irreversible.',
+                               "Irreversible. In French: retirer d'une liste, supprimer une ligne de liste, "
+                               "enlever un contact d'une liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'entry_id'],
@@ -592,7 +625,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                {'name': 'list_notes',
                 'class': 'read',
                 'description': "List the notes visible to the key's user (API v2). filter supports "
-                               'creator.id=, createdAt>… and updatedAt<…. Paged by limit and cursor.',
+                               'creator.id=, createdAt>… and updatedAt<…. Paged by limit and cursor. In '
+                               "French: lister les notes, notes récentes affinity, notes d'un collègue.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'string',
@@ -608,7 +642,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'class': 'read',
                 'description': 'List the notes of one person, company or opportunity (API v2): direct notes, '
                                'notes on its meetings, mentions. Same filter as list_notes. Paged by limit '
-                               'and cursor.',
+                               "and cursor. In French: notes d'un contact, notes d'une entreprise, notes "
+                               "d'une opportunité.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['entity_type', 'entity_id'],
@@ -624,7 +659,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                          'query': {'filter': 'filter', 'cursor': 'cursor', 'limit': 'limit'}}},
                {'name': 'get_note',
                 'class': 'read',
-                'description': 'Get one note by id (API v2).',
+                'description': "Get one note by id (API v2). In French: lire une note, détail d'une note "
+                               'affinity.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -638,7 +674,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'call': {'method': 'GET', 'path': '/v2/notes/{note_id}'}},
                {'name': 'delete_note',
                 'class': 'sensitive',
-                'description': 'Delete one note by id (API v2). Irreversible.',
+                'description': 'Delete one note by id (API v2). Irreversible. In French: supprimer une note, '
+                               'effacer une note affinity.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['note_id'],
@@ -656,7 +693,8 @@ DESCRIPTION = {'connector': {'name': 'affinity',
                 'description': 'List the emails, meetings, calls or chat messages with ONE external person, '
                                'organization or opportunity (API v1), within a window of at most one year. '
                                'The answer is keyed by type (emails, events…) and paged by page_size and '
-                               'page_token.',
+                               'page_token. In French: échanges avec un contact, historique des emails, '
+                               'réunions avec une entreprise, derniers appels.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['type', 'start_time', 'end_time'],

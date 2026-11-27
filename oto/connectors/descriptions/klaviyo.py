@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'klaviyo',
                'label': 'Klaviyo',
                'namespace': 'klaviyo',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': '2026-07-15',
                'base_url': 'https://a.klaviyo.com/api',
                'auth': {'kind': 'api_key',
@@ -63,7 +63,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'default_sender_name, default_sender_email, website_url, street_address}, '
                                'industry, timezone, preferred_currency, public_api_key, locale}}]}, always '
                                'one account. Checks that the key works and which account it reaches. Scope '
-                               'accounts:read; at most 1 call per second and 15 per minute.',
+                               'accounts:read; at most 1 call per second and 15 per minute. In French: '
+                               'compte klaviyo, informations du compte klaviyo.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'The account of the key', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/accounts'},
@@ -78,7 +79,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'To find one person, filter equals(email,"jane@example.com") rather than '
                                'paging. links.next is a full URL: for the next page, pass the value of its '
                                'page[cursor] parameter as page_cursor; no links.next means the last page. '
-                               'Scope profiles:read.',
+                               'Scope profiles:read. In French: lister les profils klaviyo, chercher un '
+                               'abonné, chercher un profil par email.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'string',
@@ -155,7 +157,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'first_name, last_name, organization, title, locale, location, properties, '
                                'created, updated, last_event_date}}, included}. include: [lists, segments] '
                                'adds the lists and segments it belongs to in included. Scopes profiles:read, '
-                               'plus lists:read or segments:read for include.',
+                               "plus lists:read or segments:read for include. In French: fiche d'un profil "
+                               "klaviyo, détail d'un abonné.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['profile_id'],
@@ -201,7 +204,7 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'field left out stays unchanged, a field set to null is cleared; properties '
                                'merges custom properties. meta.patch_properties appends to, removes from or '
                                'unsets custom properties. This does not change marketing consent. Scope '
-                               'profiles:write.',
+                               'profiles:write. In French: créer un profil klaviyo, mettre à jour un abonné.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['data'],
@@ -348,7 +351,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'attributes: {name, created, updated, opt_in_process}}], links: {next}}. The '
                                'id (6 characters, e.g. Y6nRLr) is what get_list, list_profiles_in_list and '
                                'the membership and consent functions take. For the next page, pass the '
-                               'page[cursor] value of links.next as page_cursor. Scope lists:read.',
+                               'page[cursor] value of links.next as page_cursor. Scope lists:read. In '
+                               "French: listes klaviyo, listes d'abonnés.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'string',
@@ -387,7 +391,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'updated, opt_in_process}}}. opt_in_process is double_opt_in when subscribing '
                                'to it sends a confirmation message. additional_fields: [profile_count] adds '
                                'the member count, paced by Klaviyo at 1 call per second and 15 per minute. '
-                               'Scope lists:read.',
+                               "Scope lists:read. In French: détail d'une liste klaviyo, double opt-in d'une "
+                               'liste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -414,7 +419,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                 'description': 'List the profiles that belong to one list: {data: [{type: profile, id, '
                                'attributes: {email, phone_number, external_id, first_name, last_name, '
                                'properties, ...}}], links: {next}}. For the next page, pass the page[cursor] '
-                               'value of links.next as page_cursor. Scopes lists:read and profiles:read.',
+                               'value of links.next as page_cursor. Scopes lists:read and profiles:read. In '
+                               "French: abonnés d'une liste, profils d'une liste klaviyo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id'],
@@ -459,7 +465,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                '(create_or_update_profile returns it). Answers 204 without a body. This does '
                                'not give marketing consent: subscribe_profiles does. Flows triggered by this '
                                'list (Added to List) start for the added profiles and may send them '
-                               'messages. Scopes lists:write and profiles:write.',
+                               'messages. Scopes lists:write and profiles:write. In French: ajouter des '
+                               'abonnés à une liste, inscrire des profils dans une liste.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'data'],
@@ -495,7 +502,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                 'description': 'Remove profiles from a list, up to 1000 per call, by profile id. Answers 204 '
                                'without a body. Their consent is unchanged: they only stop receiving what '
                                'targets this list (unsubscribe_profiles changes consent). Scopes lists:write '
-                               'and profiles:write.',
+                               "and profiles:write. In French: retirer des abonnés d'une liste, enlever des "
+                               "profils d'une liste.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['list_id', 'data'],
@@ -530,7 +538,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'segment, id, attributes: {name, created, updated, is_active, is_processing, '
                                'is_starred}}], links: {next}}. A segment is computed from its definition: '
                                'its members cannot be added or removed directly. For the next page, pass the '
-                               'page[cursor] value of links.next as page_cursor. Scope segments:read.',
+                               'page[cursor] value of links.next as page_cursor. Scope segments:read. In '
+                               "French: segments klaviyo, lister les segments d'audience.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'string',
@@ -568,7 +577,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                 'description': 'Get one segment by its id: {data: {type: segment, id, attributes: {name, '
                                'definition, created, updated, is_active, is_processing, is_starred}}}. '
                                'additional_fields: [profile_count] adds the member count, paced by Klaviyo '
-                               'at 1 call per second and 15 per minute. Scope segments:read.',
+                               'at 1 call per second and 15 per minute. Scope segments:read. In French: '
+                               "détail d'un segment klaviyo, critères d'un segment.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['segment_id'],
@@ -595,7 +605,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                 'description': 'List the profiles that belong to one segment: {data: [{type: profile, id, '
                                'attributes: {email, phone_number, external_id, first_name, last_name, '
                                'properties, ...}}], links: {next}}. For the next page, pass the page[cursor] '
-                               'value of links.next as page_cursor. Scopes segments:read and profiles:read.',
+                               'value of links.next as page_cursor. Scopes segments:read and profiles:read. '
+                               "In French: profils d'un segment, abonnés d'un segment.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['segment_id'],
@@ -642,7 +653,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                "equals(messages.channel,'email'), 'sms' or 'mobile_push'. The id goes to "
                                'get_campaign and to the campaign_id grouping of query_campaign_values. For '
                                'the next page, pass the page[cursor] value of links.next as page_cursor. '
-                               'Scope campaigns:read.',
+                               'Scope campaigns:read. In French: campagnes klaviyo, campagnes emailing, '
+                               'campagnes sms.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['filter'],
@@ -699,7 +711,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'status, archived, audiences, send_options, tracking_options, send_strategy, '
                                'created_at, scheduled_at, updated_at, send_time}, relationships: '
                                '{campaign-messages, tags}}, included}. Read only: this connector neither '
-                               'sends nor edits a campaign. Scope campaigns:read.',
+                               "sends nor edits a campaign. Scope campaigns:read. In French: détail d'une "
+                               "campagne klaviyo, audience d'une campagne.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['campaign_id'],
@@ -731,7 +744,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                '[{type: flow, id, attributes: {name, status (draft, manual, live), archived, '
                                'trigger_type, created, updated}}], links: {next}}. For the next page, pass '
                                'the page[cursor] value of links.next as page_cursor. Scope flows:read; '
-                               'Klaviyo allows 3 calls per second and 60 per minute.',
+                               'Klaviyo allows 3 calls per second and 60 per minute. In French: flux '
+                               'klaviyo, automatisations klaviyo, scénarios automatiques.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'string',
@@ -780,7 +794,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                 'description': 'Get one flow by its id: {data: {type: flow, id, attributes: {name, status, '
                                'archived, trigger_type, created, updated}}}. additional_fields: [definition] '
                                'adds its full definition (triggers, actions, branches). Read only: this '
-                               'connector neither creates nor edits a flow. Scope flows:read.',
+                               'connector neither creates nor edits a flow. Scope flows:read. In French: '
+                               "détail d'un flux klaviyo, détail d'une automatisation.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['flow_id'],
@@ -809,7 +824,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'get_metric, to the metric_id filter of list_events, to '
                                'query_metric_aggregates, and to conversion_metric_id of the values reports '
                                '(usually the Placed Order metric). For the next page, pass the page[cursor] '
-                               'value of links.next as page_cursor. Scope metrics:read.',
+                               'value of links.next as page_cursor. Scope metrics:read. In French: métriques '
+                               "klaviyo, types d'événements suivis.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'string',
@@ -829,7 +845,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                {'name': 'get_metric',
                 'class': 'read',
                 'description': 'Get one metric by its id: {data: {type: metric, id, attributes: {name, '
-                               'created, updated, integration}}}. Scope metrics:read.',
+                               'created, updated, integration}}}. Scope metrics:read. In French: détail '
+                               "d'une métrique klaviyo, lire une métrique.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['metric_id'],
@@ -852,7 +869,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'returns the metric name and the profile in included. Filter by metric_id or '
                                'profile_id and a datetime range rather than paging the whole account. For '
                                'the next page, pass the page[cursor] value of links.next as page_cursor. '
-                               'Scope events:read.',
+                               "Scope events:read. In French: événements d'un profil, activité d'un abonné, "
+                               'commandes passées par un client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'filter': {'type': 'string',
@@ -898,7 +916,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'the attributes given). Answers 202 without a body: the event is queued, not '
                                'yet visible. A unique_id makes a retry idempotent. Flows triggered by this '
                                'metric start for the profile and may send messages, unless backfill is true. '
-                               'Scope events:write.',
+                               'Scope events:write. In French: enregistrer un événement klaviyo, suivre une '
+                               'action client.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['data'],
@@ -1099,7 +1118,9 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                '[...]}}]}}}, one value per date bucket and per grouping of by. filter must '
                                'bound datetime with greater-or-equal and less-than. For the figures shown in '
                                "Klaviyo's campaign and flow reports, prefer query_campaign_values and "
-                               'query_flow_values. Scope metrics:read; 3 calls per second and 60 per minute.',
+                               'query_flow_values. Scope metrics:read; 3 calls per second and 60 per minute. '
+                               "In French: total d'une métrique sur une période, nombre de commandes par "
+                               "jour, chiffre d'affaires par période.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['data'],
@@ -1279,7 +1300,9 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'of the Placed Order metric, from list_metrics. The time frame spans at most '
                                'one year. For the next page, pass the page_cursor value of links.next as '
                                'page_cursor. Scope campaigns:read; Klaviyo allows 1 call per second, 2 per '
-                               'minute and 225 per day: ask for every statistic needed in one call.',
+                               'minute and 225 per day: ask for every statistic needed in one call. In '
+                               "French: performance des campagnes, taux d'ouverture des campagnes, revenus "
+                               'des campagnes.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['data'],
@@ -1441,7 +1464,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                '{next}}. Same statistics, time frame and conversion_metric_id as '
                                'query_campaign_values. For the next page, pass the page_cursor value of '
                                'links.next as page_cursor. Scope flows:read; Klaviyo allows 1 call per '
-                               'second, 2 per minute and 225 per day.',
+                               'second, 2 per minute and 225 per day. In French: performance des flux, '
+                               'résultats des automatisations.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['data'],
@@ -1600,7 +1624,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'manual suppressions. historical_import: true records consent gathered '
                                'earlier (consented_at required on each channel), without confirmation '
                                "message and without starting the list's flows. Only for people who did "
-                               'consent. Scopes subscriptions:write, profiles:write, lists:write.',
+                               'consent. Scopes subscriptions:write, profiles:write, lists:write. In French: '
+                               'abonner des profils, inscrire à la newsletter, consentement marketing.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['data'],
@@ -1735,7 +1760,8 @@ DESCRIPTION = {'connector': {'name': 'klaviyo',
                                'given, is unsubscribed globally, from all marketing. Check membership with '
                                'list_profiles_in_list first. To only leave a list, use '
                                'remove_profiles_from_list. Scopes subscriptions:write, profiles:write, '
-                               'lists:write.',
+                               'lists:write. In French: désabonner des profils, désinscrire de la '
+                               'newsletter, retirer le consentement marketing.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['data'],

@@ -6,7 +6,7 @@ export const listModels = defineFunction({
   connector: "higgsfield",
   class: "read",
   act: false,
-  description: "The models this key can call: slug (the path a generation is sent to, e.g. higgsfield-ai/soul/v2/standard), title, description, output_type (image or video) and operation_type (text2image, image2video, video2video…). The parameters of each model are on its page of the API reference; none are listed here.",
+  description: "The models this key can call: slug (the path a generation is sent to, e.g. higgsfield-ai/soul/v2/standard), title, description, output_type (image or video) and operation_type (text2image, image2video, video2video…). The parameters of each model are on its page of the API reference; none are listed here. In French: modèles de génération disponibles, lister les modèles vidéo, modèles de génération d'image.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every model", input: {} },
@@ -28,7 +28,7 @@ export const getRequest = defineFunction({
   connector: "higgsfield",
   class: "read",
   act: false,
-  description: "One generation: status queued, in_progress, completed, failed (with error), nsfw or canceled. Once completed, the outputs as public addresses (images, video, audio, audios, each with url) and expires_at, when the files are deleted (seven days after the end by default). Failed, nsfw and canceled jobs are not charged.",
+  description: "One generation: status queued, in_progress, completed, failed (with error), nsfw or canceled. Once completed, the outputs as public addresses (images, video, audio, audios, each with url) and expires_at, when the files are deleted (seven days after the end by default). Failed, nsfw and canceled jobs are not charged. In French: résultat d'une génération, statut d'une génération vidéo, récupérer l'image générée.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -55,7 +55,7 @@ export const cancelRequest = defineFunction({
   connector: "higgsfield",
   class: "write",
   act: true,
-  description: "Cancel a generation that is still queued; it is refunded. A job that has started (in_progress) can no longer be canceled and answers 400. The answer has no body.",
+  description: "Cancel a generation that is still queued; it is refunded. A job that has started (in_progress) can no longer be canceled and answers 400. The answer has no body. In French: annuler une génération, annuler une génération en attente.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -82,7 +82,7 @@ export const deleteRequest = defineFunction({
   connector: "higgsfield",
   class: "sensitive",
   act: true,
-  description: "Delete a finished generation's input and output files, prompt and parameters now, before their retention ends; billing records stay. A job still queued or in progress answers 409. Repeating the call answers the same.",
+  description: "Delete a finished generation's input and output files, prompt and parameters now, before their retention ends; billing records stay. A job still queued or in progress answers 409. Repeating the call answers the same. In French: supprimer une génération, effacer les fichiers d'une génération.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -110,7 +110,7 @@ export const createUploadUrl = defineFunction({
   connector: "higgsfield",
   class: "write",
   act: false,
-  description: "A presigned address for one input file (an image, a video or an audio a model takes): PUT the bytes to upload_url within the hour, with every header of upload_headers and never the API key, then pass public_url in the model's parameters (image_url, video_url…). Content types: jpeg, png, webp, gif, wav, mp4.",
+  description: "A presigned address for one input file (an image, a video or an audio a model takes): PUT the bytes to upload_url within the hour, with every header of upload_headers and never the API key, then pass public_url in the model's parameters (image_url, video_url…). Content types: jpeg, png, webp, gif, wav, mp4. In French: envoyer une image source, téléverser un fichier pour une génération.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -150,7 +150,7 @@ export const connector = defineConnector({
   name: "higgsfield",
   label: "Higgsfield",
   namespace: "higgsfield",
-  version: "1.1.2",
+  version: "1.1.3",
   apiVersion: "2.0.0",
   baseUrl: "https://api.higgsfield.ai",
   auth: {"kind": "api_key", "in": "header", "name": "Authorization", "prefix": "Key ", "key": "api_key"},

@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'claap',
                'label': 'Claap',
                'namespace': 'claap',
-               'version': '1.0.1',
+               'version': '1.0.2',
                'api_version': 'v1',
                'base_url': 'https://api.claap.io/v1',
                'auth': {'kind': 'api_key', 'in': 'header', 'name': 'X-Claap-Key', 'key': 'api_key'},
@@ -47,7 +47,8 @@ DESCRIPTION = {'connector': {'name': 'claap',
                                "global search, colleagues' meetings included. view_id applies a saved view's "
                                'filters and sort; other filters narrow within it. Signed URLs in the result '
                                '(video, transcript files, thumbnail) expire after 24 hours: never store '
-                               'them.',
+                               'them. In French: lister les enregistrements claap, enregistrements de '
+                               'réunions, derniers appels enregistrés.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'dependentRequired': {'labels': ['channel_id']},
@@ -141,7 +142,9 @@ DESCRIPTION = {'connector': {'name': 'claap',
                                '(AI summary keyTakeaways and outlines, actionItems, aiFields, deal and '
                                'companies, analytics, transcripts); Empty, Uploaded and Failed return a thin '
                                'shape (id, title, author, upload). Signed URLs expire after 24 hours. A 404 '
-                               'can also mean the recording is private or hidden from global search.',
+                               'can also mean the recording is private or hidden from global search. In '
+                               "French: détail d'un enregistrement claap, résumé d'une réunion, points clés "
+                               "d'un appel enregistré.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['recording_id'],
@@ -161,7 +164,8 @@ DESCRIPTION = {'connector': {'name': 'claap',
                                'lines "mm:ss speaker: text", the readable choice; format json (the default) '
                                'returns timed segments with per-word detail and is very heavy. lang picks a '
                                'translation; the available languages are in transcripts[].langIso2 of '
-                               'get_recording.',
+                               "get_recording. In French: transcription d'une réunion, transcript d'un appel "
+                               "claap, verbatim d'un enregistrement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['recording_id'],
@@ -190,7 +194,8 @@ DESCRIPTION = {'connector': {'name': 'claap',
                {'name': 'delete_recording',
                 'class': 'sensitive',
                 'description': 'Delete one Claap recording. Permanent: Claap has no trash and no undo. Read '
-                               'it with get_recording first to be sure of what is deleted.',
+                               'it with get_recording first to be sure of what is deleted. In French: '
+                               'supprimer un enregistrement claap, effacer une réunion enregistrée.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['recording_id'],
@@ -210,14 +215,16 @@ DESCRIPTION = {'connector': {'name': 'claap',
                 'description': 'List the saved Claap recording views: public views first, then the built-in '
                                'defaults (isDefault true). Private views are invisible to the API. A view '
                                'filtering on Me matches the whole workspace here, since the key is nobody in '
-                               'particular. Pass a view id as view_id to list_recordings.',
+                               'particular. Pass a view id as view_id to list_recordings. In French: vues '
+                               "enregistrées claap, lister les vues d'enregistrements.",
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'All visible views', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/recordings/views'},
                 'cost': {'per': 'request'}},
                {'name': 'get_recording_view',
                 'class': 'read',
-                'description': 'Get one saved Claap recording view: its columns, filters and sort.',
+                'description': 'Get one saved Claap recording view: its columns, filters and sort. In '
+                               "French: détail d'une vue claap, filtres d'une vue d'enregistrements.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['view_id'],

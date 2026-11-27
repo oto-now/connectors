@@ -44,7 +44,7 @@ connector:
   name: dropcontact
   label: Dropcontact
   namespace: dropcontact
-  version: 1.0.0
+  version: 1.0.1
   api_version: v1
   base_url: https://api.dropcontact.com/v1
   auth: { kind: api_key, in: header, name: X-Access-Token, key: api_key }
@@ -81,6 +81,8 @@ functions:
       company website and LinkedIn; with siren, French company data (SIREN,
       SIRET, VAT, NAF, address, leader). Pay on success: 1 credit per contact
       whose verified email is returned, or whose email sent in is verified.
+      In French: enrichir des contacts, trouver l'email d'un contact, lancer un
+      enrichissement dropcontact.
     input:
       type: object
       additionalProperties: false
@@ -155,7 +157,8 @@ functions:
       linkedin, company_linkedin, country, with siren the company's siren,
       siret, address, vat, naf5_code, nb_employees, and custom_fields. A
       contact with nothing found comes back as sent. force_results returns the
-      partial result now, unprocessed contacts as sent. Free.
+      partial result now, unprocessed contacts as sent. Free. In French:
+      résultat d'un enrichissement, récupérer les contacts enrichis.
     input:
       type: object
       additionalProperties: false
@@ -178,7 +181,8 @@ functions:
     description: >-
       The credits left on the Dropcontact account behind this key:
       {credits_left}. Sends one empty contact, which Dropcontact does not
-      bill. Free.
+      bill. Free. In French: crédits restants dropcontact, solde de crédits
+      dropcontact.
     input: { type: object, additionalProperties: false, properties: {} }
     examples:
       - { title: The credits left, input: {} }

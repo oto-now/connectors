@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'mux',
                'label': 'Mux',
                'namespace': 'mux',
-               'version': '1.0.0',
+               'version': '1.0.1',
                'api_version': 'video v1',
                'base_url': 'https://api.mux.com',
                'auth': {'kind': 'basic', 'username': 'token_id', 'password': 'token_secret'},
@@ -47,7 +47,8 @@ DESCRIPTION = {'connector': {'name': 'mux',
                                '(preparing, ready, errored), duration in seconds, resolution, playback ids, '
                                'passthrough and title. next_cursor pages on. upload_id finds the asset a '
                                'direct upload made. A public playback id plays at '
-                               'https://stream.mux.com/<playback_id>.m3u8.',
+                               'https://stream.mux.com/<playback_id>.m3u8. In French: lister les vidéos, '
+                               'vidéos mux.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'limit': {'type': 'integer',
@@ -67,7 +68,8 @@ DESCRIPTION = {'connector': {'name': 'mux',
                 'class': 'read',
                 'description': 'One video: status (preparing until Mux has processed it, then ready or '
                                'errored, with errors), duration, resolution and max stored resolution, '
-                               'aspect ratio, playback ids with their policy, tracks, passthrough and title.',
+                               'aspect ratio, playback ids with their policy, tracks, passthrough and title. '
+                               "In French: détail d'une vidéo, statut d'une vidéo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['asset_id'],
@@ -79,7 +81,8 @@ DESCRIPTION = {'connector': {'name': 'mux',
                 'class': 'read',
                 'description': 'One direct upload: status (waiting until the file is sent, then '
                                'asset_created, or errored, cancelled, timed_out) and, once the file has '
-                               'arrived, the asset_id of the video it made.',
+                               "arrived, the asset_id of the video it made. In French: statut d'un envoi de "
+                               "vidéo, suivi d'un téléversement.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['upload_id'],
@@ -94,7 +97,8 @@ DESCRIPTION = {'connector': {'name': 'mux',
                                'authorisation). Mux then makes the video: read get_upload for its asset_id, '
                                'then get_asset until it is ready. The address expires after timeout seconds '
                                '(3600 by default). Playback is public unless new_asset_settings says signed. '
-                               'test makes a free 10-second watermarked video deleted after a day.',
+                               'test makes a free 10-second watermarked video deleted after a day. In '
+                               "French: téléverser une vidéo, envoyer une vidéo, adresse d'envoi de vidéo.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'properties': {'new_asset_settings': {'type': 'object',
@@ -141,7 +145,8 @@ DESCRIPTION = {'connector': {'name': 'mux',
                 'description': 'A video from a file Mux fetches itself at an https address (public or '
                                "pre-signed), instead of an upload. The answer's data.id is the asset: read "
                                'get_asset until it is ready. Playback is public unless playback_policy says '
-                               'signed.',
+                               'signed. In French: importer une vidéo depuis une adresse, créer une vidéo '
+                               'depuis un lien.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['inputs'],

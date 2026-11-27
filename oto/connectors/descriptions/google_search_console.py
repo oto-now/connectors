@@ -3,7 +3,7 @@
 DESCRIPTION = {'connector': {'name': 'google_search_console',
                'label': 'Google Search Console',
                'namespace': 'google_search_console',
-               'version': '2.0.0',
+               'version': '2.0.1',
                'api_version': 'v1',
                'base_url': 'https://searchconsole.googleapis.com',
                'accesses': [{'name': 'service_account',
@@ -132,7 +132,9 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                                'SITE_UNVERIFIED_USER): {siteEntry: [{siteUrl, permissionLevel}]}. siteUrl is '
                                'the name every other function takes: sc-domain:example.com for a Domain '
                                'property, a full URL with a trailing slash for a URL-prefix property. An '
-                               'empty answer means the account was added to no property yet. Free.',
+                               'empty answer means the account was added to no property yet. Free. In '
+                               'French: propriétés search console, sites suivis, mes sites dans search '
+                               'console.',
                 'input': {'type': 'object', 'additionalProperties': False, 'properties': {}},
                 'examples': [{'title': 'Every property shared with the account', 'input': {}}],
                 'call': {'method': 'GET', 'path': '/webmasters/v3/sites'},
@@ -147,7 +149,8 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                                'incomplete days (metadata says from when). Returns at most row_limit rows '
                                '(default 1,000, up to 25,000) and may hold back the long tail. For more '
                                'rows, call again with start_row = previous start_row + row_limit, until '
-                               'fewer rows come back. Free, bounded by quotas.',
+                               'fewer rows come back. Free, bounded by quotas. In French: clics et '
+                               'impressions, performances seo, requêtes google du site, position moyenne.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_url', 'start_date', 'end_date'],
@@ -310,7 +313,8 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                                'richResultsResult, ampResult, plus inspectionResultLink to the Search '
                                'Console screen. The URL must belong to the property. Free, but bounded to '
                                '2,000 inspections a day and 600 a minute per property: inspect the pages '
-                               'that matter, not a whole sitemap.',
+                               "that matter, not a whole sitemap. In French: statut d'indexation d'une page, "
+                               'page indexée par google, inspecter une url.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_url', 'inspection_url'],
@@ -349,7 +353,8 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                                '[{path, lastSubmitted, lastDownloaded, isPending, isSitemapsIndex, type, '
                                'warnings, errors, contents: [{type, submitted}]}]; warnings, errors and '
                                'submitted are counts written as strings. Read one sitemap with get_sitemap, '
-                               'submit one with add_sitemap. Free.',
+                               'submit one with add_sitemap. Free. In French: lister les sitemaps, sitemaps '
+                               'soumis.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_url'],
@@ -380,7 +385,7 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                                'lastDownloaded, isPending, isSitemapsIndex, type, warnings, errors, '
                                'contents: [{type, submitted}]}; warnings, errors and submitted are counts '
                                'written as strings. A sitemap never submitted for this property is not '
-                               'found. Free.',
+                               "found. Free. In French: détail d'un sitemap, erreurs du sitemap.",
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_url', 'feedpath'],
@@ -411,7 +416,8 @@ DESCRIPTION = {'connector': {'name': 'google_search_console',
                                'again. The sitemap must be reachable by Google and under the property; its '
                                'processing (isPending, errors, warnings) is read afterwards with '
                                'get_sitemap. The account must be an Owner or Full user of the property: '
-                               'Restricted only reads. Free.',
+                               'Restricted only reads. Free. In French: soumettre un sitemap, ajouter un '
+                               'sitemap.',
                 'input': {'type': 'object',
                           'additionalProperties': False,
                           'required': ['site_url', 'feedpath'],

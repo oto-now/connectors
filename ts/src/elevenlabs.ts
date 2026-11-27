@@ -6,7 +6,7 @@ export const getSubscription = defineFunction({
   connector: "elevenlabs",
   class: "read",
   act: false,
-  description: "The account's plan and credits: tier, credits used this period (character_count) against the allowance (character_limit), when they reset (next_character_count_reset_unix, UNIX seconds), and the voice slots used and allowed. Read it before a batch of generations. A key restricted without user_read cannot read it.",
+  description: "The account's plan and credits: tier, credits used this period (character_count) against the allowance (character_limit), when they reset (next_character_count_reset_unix, UNIX seconds), and the voice slots used and allowed. Read it before a batch of generations. A key restricted without user_read cannot read it. In French: abonnement elevenlabs, crédits elevenlabs restants, quota de caractères.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Credits left this period", input: {} },
@@ -28,7 +28,7 @@ export const listVoices = defineFunction({
   connector: "elevenlabs",
   class: "read",
   act: false,
-  description: "The voices the account can use: its own (cloned, designed, saved from the library) and the default ones, with each voice's id, name, category, labels (accent, age, gender, use case) and a preview URL. Paged by next_page_token while has_more is true. A voice id is what a generation takes.",
+  description: "The voices the account can use: its own (cloned, designed, saved from the library) and the default ones, with each voice's id, name, category, labels (accent, age, gender, use case) and a preview URL. Paged by next_page_token while has_more is true. A voice id is what a generation takes. In French: lister les voix elevenlabs, voix clonées, bibliothèque de voix.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -68,7 +68,7 @@ export const getVoice = defineFunction({
   connector: "elevenlabs",
   class: "read",
   act: false,
-  description: "One voice: name, category, labels, description, preview URL, its default settings (stability, similarity_boost, style, speed) and the models it was tuned for.",
+  description: "One voice: name, category, labels, description, preview URL, its default settings (stability, similarity_boost, style, speed) and the models it was tuned for. In French: détail d'une voix elevenlabs, réglages d'une voix.",
   schema: {
     "type": "object",
     "additionalProperties": false,
@@ -95,7 +95,7 @@ export const listModels = defineFunction({
   connector: "elevenlabs",
   class: "read",
   act: false,
-  description: "The models and what each can do: text to speech or not, languages, maximum characters per request, whether it takes style and speaker boost. A model id (eleven_multilingual_v2, eleven_v3…) is what a speech generation takes.",
+  description: "The models and what each can do: text to speech or not, languages, maximum characters per request, whether it takes style and speaker boost. A model id (eleven_multilingual_v2, eleven_v3…) is what a speech generation takes. In French: modèles elevenlabs, modèles de synthèse vocale, langues prises en charge.",
   schema: {"type": "object", "additionalProperties": false, "properties": {}},
   examples: [
     { title: "Every model", input: {} },
@@ -116,7 +116,7 @@ export const connector = defineConnector({
   name: "elevenlabs",
   label: "ElevenLabs",
   namespace: "elevenlabs",
-  version: "1.0.1",
+  version: "1.0.2",
   apiVersion: "v1 (voices on v2)",
   baseUrl: "https://api.elevenlabs.io",
   auth: {"kind": "api_key", "in": "header", "name": "xi-api-key", "key": "api_key"},
