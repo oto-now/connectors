@@ -11,6 +11,7 @@ import copy
 import pathlib
 import re
 import struct
+import zlib
 
 import pytest
 import yaml
@@ -261,10 +262,19 @@ def test_description_and_logo_domain_are_checked_by_the_schema(key, value):
         check(description, AIRCALL)
 
 
-def _png(width: int = 64, height: int = 64, size: int = 200) -> bytes:
-    """Un en-tête PNG (signature, puis `IHDR`) aux dimensions données, complété jusqu'à `size` octets."""
-    head = b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + struct.pack(">II", width, height) + b"\x08\x06\x00\x00\x00"
-    return head + b"\x00" * (size - len(head))
+def _chunk(kind: bytes, body: bytes) -> bytes:
+    return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body))
+
+
+def _png(width: int = 64, height: int = 64, size: int = 0, extra: bytes = b"") -> bytes:
+    """Un vrai PNG RGBA transparent aux dimensions données ; `extra` (des blocs) avant `IEND` ; un `IDAT` de bourrage
+    l'amène à `size` octets quand `size` est donné."""
+    ihdr = _chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
+    idat = _chunk(b"IDAT", zlib.compress(b"\x00" * ((width * 4 + 1) * height)))
+    png = b"\x89PNG\r\n\x1a\n" + ihdr + idat + extra
+    if size:
+        png += _chunk(b"IDAT", b"\x00" * (size - len(png) - 12 - 12))
+    return png + _chunk(b"IEND", b"")
 
 
 def _aircall_with_logo(tmp_path: pathlib.Path, logo: bytes) -> pathlib.Path:
@@ -302,8 +312,15 @@ def test_without_logo_png_neither_output_carries_a_logo():
     (b"GIF89a" + b"\x00" * 100, "not a PNG"),
     (_png(width=64, height=48), "expected a square 64x64"),
     (_png(width=128, height=128), "expected a square 64x64"),
+    (_png() + b"\x00" * 40, "40 bytes after IEND"),
+    (_png()[:-12], "no IEND"),
+    (_png()[:-3], "truncated chunk"),
+    (_png()[:40] + bytes([_png()[40] ^ 1]) + _png()[41:], "bad CRC"),
+    (_png(extra=_chunk(b"tEXt", b"Comment\x00hello")), "chunk tEXt not allowed"),
+    (_png(extra=_chunk(b"eXIf", b"MM\x00*")), "chunk eXIf not allowed"),
+    (b"\x89PNG\r\n\x1a\n" + _chunk(b"IDAT", b"") + _chunk(b"IEND", b""), "IHDR of 13 bytes must come first"),
 ])
-def test_logo_png_is_refused_when_not_a_64_pixel_square_png_of_16_kb(tmp_path, logo, reason):
+def test_logo_png_is_refused_when_not_a_sound_64_pixel_square_png_of_16_kb(tmp_path, logo, reason):
     path = _aircall_with_logo(tmp_path, logo)
     with pytest.raises(DescriptionError, match=reason):
         check(_load(path), path)

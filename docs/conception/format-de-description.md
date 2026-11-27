@@ -50,7 +50,7 @@ Un connecteur partagé se décrit dans un fichier YAML, `connectors/<nom>/connec
 - YAML, déclaré en version 1.2, validé par un schéma JSON 2020-12 que les deux langages savent lire. Le fichier porte en tête `# yaml-language-server: $schema=../connector.schema.json`, puis un commentaire d'en-tête : sources relues et leurs dates, choix et leurs raisons, écarts nommés avec le client Python, ce qui reste hors du fichier et pourquoi.
 - Trois blocs : `connector` (un par fichier), `functions` (au moins une), `exposure` (facultatif). Toute clé inconnue fait refuser le fichier.
 - Chaque valeur vient du client Python ou de la référence publique de l'éditeur ; quand les deux divergent, le fichier suit le client, et l'écart se nomme dans l'en-tête.
-- À côté du fichier, facultatif, `logo.png` : l'icône du produit, PNG carré de 64 × 64 pixels, 16 Ko au plus, que la fabrique porte en base64 dans les deux sorties (`logo`) ; un fichier qui n'en est pas un fait refuser la description (`fabrique/logo.py`). Un écran l'affiche sans lire aucun site tiers ; `logo_domain` reste.
+- À côté du fichier, facultatif, `logo.png` : l'icône du produit, PNG carré de 64 × 64 pixels, 16 Ko au plus, que la fabrique porte en base64 dans les deux sorties (`logo`) ; un fichier qui n'en est pas un fait refuser la description (`fabrique/logo.py`), comme un bloc au CRC faux, un octet après `IEND` ou un bloc hors de ceux d'une image (texte, EXIF) : rien que personne ne relit ne passe en base64 dans les sorties publiées. Le logo reste la marque de son propriétaire. Un écran l'affiche sans lire aucun site tiers ; `logo_domain` reste.
 
 ### Le bloc `connector`
 
