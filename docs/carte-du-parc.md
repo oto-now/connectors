@@ -77,11 +77,12 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | `sivan` | Sivan | 1.1.0 | clé | non | 7 | 7 | 0 | 0 | oui | 7 | non | 0 |
 | `slack` | Slack | 1.1.0 | clé | non | 16 | 9 | 3 | 4 | oui | 16 | non | 0 |
 | `slack_user` | Slack (personal token) | 1.1.0 | clé | non | 10 | 5 | 2 | 3 | non | 10 | non | 0 |
+| `snowflake` | Snowflake | 1.1.2 | clé | non | 5 | 3 | 0 | 2 | oui | 0 | non | 0 |
 | `threecx` | 3CX | 1.1.0 | application du client (OAuth entre machines) | non | 2 | 2 | 0 | 0 | non | 2 | non | 0 |
 | `typeform` | Typeform | 1.2.0 | clé | non | 12 | 6 | 1 | 5 | non | 12 | non | 0 |
 | `wttj_ats` | Welcome to the Jungle ATS | 1.0.0 | clé | non | 10 | 7 | 3 | 0 | non | 0 | non | 0 |
 | `yousign` | Yousign | 1.1.1 | clé | non | 13 | 5 | 7 | 1 | oui | 0 | non | 0 |
-| **total : 64** |  |  |  |  | 1563 | 1002 | 345 | 216 |  | 1070 |  | 0 |
+| **total : 65** |  |  |  |  | 1568 | 1005 | 345 | 218 |  | 1070 |  | 0 |
 
 ## Par type
 
@@ -92,4 +93,4 @@ Un connecteur à plusieurs accès (`accesses`) a le type de chacun, et compte da
 | compte de service (assertion signée) | 1 | 6 |
 | clé de l'hôte | 2 | 30 |
 | sans clé | 0 | 0 |
-| clé | 51 | 1450 |
+| clé | 52 | 1455 |

@@ -59,6 +59,7 @@ import * as sirene from "./sirene"
 import * as sivan from "./sivan"
 import * as slack from "./slack"
 import * as slackUser from "./slack_user"
+import * as snowflake from "./snowflake"
 import * as threecx from "./threecx"
 import * as typeform from "./typeform"
 import * as wttjAts from "./wttj_ats"
@@ -125,6 +126,7 @@ export { sirene }
 export { sivan }
 export { slack }
 export { slackUser }
+export { snowflake }
 export { threecx }
 export { typeform }
 export { wttjAts }
@@ -194,6 +196,7 @@ export const connectors: readonly Connector[] = [
   sivan.connector,
   slack.connector,
   slackUser.connector,
+  snowflake.connector,
   threecx.connector,
   typeform.connector,
   wttjAts.connector,
