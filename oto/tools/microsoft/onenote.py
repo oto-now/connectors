@@ -27,6 +27,8 @@ from __future__ import annotations
 from html import escape
 from typing import Any, Dict, Iterable, List, Optional
 
+import requests
+
 from ..common.credentials import require
 from ._transport import GraphBase, segment
 from .files import _odata_string
@@ -42,10 +44,11 @@ class OneNoteClient(GraphBase):
     (`group_id`) or a SharePoint site's (`site_id`)."""
 
     def __init__(self, access_token: Optional[str] = None, *,
-                 group_id: Optional[str] = None, site_id: Optional[str] = None):
+                 group_id: Optional[str] = None, site_id: Optional[str] = None,
+                 session: Optional[requests.Session] = None):
         if group_id and site_id:
             raise ValueError("name group_id or site_id, not both: a notebook has one root")
-        super().__init__(access_token)
+        super().__init__(access_token, session=session)
         if group_id:
             self.root = f"/groups/{segment(group_id, 'group_id')}/onenote"
         elif site_id:

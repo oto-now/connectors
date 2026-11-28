@@ -21,6 +21,8 @@ import requests
 
 from oto.tools.http.client import HttpConnectorClient
 from oto.tools.lighton.client import LightOnClient
+from oto.tools.microsoft import OneNoteClient
+from oto.tools.microsoft import auth as microsoft_auth
 from oto.tools.salesforce import client as salesforce_client
 from oto.tools.salesforce.client import SalesforceClient
 from oto.tools.threecx import ThreeCXClient
@@ -172,3 +174,34 @@ def test_without_a_session_nothing_changes_for_the_http_node(monkeypatch):
     client = HttpConnectorClient("https://api.example.test", "bearer", {"token": "t"})
     s = client._ready()
     assert type(s) is requests.Session and s.headers["Authorization"] == "Bearer t"
+
+
+def test_onenote_goes_through_the_given_session_and_the_token_stays_off_it():
+    s = _Recording(lambda m, u: _Resp({"value": [{"id": "nb1"}]}))
+    assert OneNoteClient("AT", group_id="g-1", session=s).list_notebooks() == [{"id": "nb1"}]
+    assert s.seen and all(u.startswith("https://graph.microsoft.com/v1.0/groups/g-1/onenote/")
+                          for _, u in s.seen)
+    assert "Authorization" not in s.headers, "the token travels with each request only"
+
+
+@pytest.mark.parametrize("call", [
+    lambda s: microsoft_auth.exchange_code("id", "secret", "code", "https://app.example.test/cb",
+                                           scopes=("User.Read",), session=s),
+    lambda s: microsoft_auth.refresh("id", "secret", "rt", session=s),
+])
+def test_microsoft_token_requests_go_through_the_given_session(call):
+    s = _Recording(lambda m, u: _Resp({"access_token": "a", "refresh_token": "r",
+                                       "expires_in": 3600}))
+    assert call(s).access_token == "a"
+    assert [m for m, _ in s.seen] == ["POST"]
+    assert s.seen[0][1].endswith("/oauth2/v2.0/token")
+
+
+def test_microsoft_package_has_no_module_level_requests_call():
+    import pathlib
+    import re
+    import oto.tools.microsoft as pkg
+    verbs = re.compile(r"\brequests\.(get|post|put|patch|delete|head|request)\(")
+    offenders = [f"{f.name}:{n}" for f in pathlib.Path(pkg.__file__).parent.glob("*.py")
+                 for n, line in enumerate(f.read_text().splitlines(), 1) if verbs.search(line)]
+    assert offenders == [], "reach the network through a session (injected or not)"

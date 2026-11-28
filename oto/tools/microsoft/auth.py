@@ -158,11 +158,12 @@ def admin_consent_url(client_id: str, redirect_uri: str, state: str, *,
     return f"{_LOGIN}/{_tenant(tenant)}/v2.0/adminconsent?{urlencode(params)}"
 
 
-def _token(data: dict, tenant: str) -> Grant:
+def _token(data: dict, tenant: str, session: Optional[requests.Session] = None) -> Grant:
     # Never follow a redirect: a 307/308 would replay the body — client secret, code or
     # refresh token — to the host named by `Location`.
-    resp = requests.post(f"{_authority(tenant)}/token", data=data, timeout=_HTTP_TIMEOUT,
-                         allow_redirects=False)
+    resp = (session or requests).post(
+        f"{_authority(tenant)}/token", data=data, timeout=_HTTP_TIMEOUT,
+        allow_redirects=False)
     refuse_redirect(resp)
     try:
         payload = resp.json()
@@ -185,9 +186,12 @@ def _token(data: dict, tenant: str) -> Grant:
 
 
 def exchange_code(client_id: str, client_secret: str, code: str, redirect_uri: str, *,
-                  scopes: tuple[str, ...], tenant: str = DEFAULT_TENANT) -> Grant:
+                  scopes: tuple[str, ...], tenant: str = DEFAULT_TENANT,
+                  session: Optional[requests.Session] = None) -> Grant:
     """The code brought back by the browser in exchange for a `Grant` (with refresh
-    token). `scopes` and `tenant` are the ones of the `authorize_url` call."""
+    token). `scopes` and `tenant` are the ones of the `authorize_url` call. `session`:
+    the `requests.Session` the request goes out through (module-level `requests` by
+    default)."""
     return _token({  # ⚠️ `data=`, JAMAIS `params=`
         "grant_type": "authorization_code",
         "client_id": require(client_id, "MICROSOFT_CLIENT_ID"),
@@ -195,12 +199,13 @@ def exchange_code(client_id: str, client_secret: str, code: str, redirect_uri: s
         "code": require(code, "code"),
         "redirect_uri": redirect_uri,
         "scope": _scope_param(scopes),
-    }, tenant)
+    }, tenant, session)
 
 
 def refresh(client_id: str, client_secret: str, refresh_token: str, *,
             scopes: tuple[str, ...] = _scopes.REFRESH,
-            tenant: str = DEFAULT_TENANT) -> Grant:
+            tenant: str = DEFAULT_TENANT,
+            session: Optional[requests.Session] = None) -> Grant:
     """A fresh `Grant`. ⚠️ Its `refresh_token` replaces the one passed in: store it.
 
     `scopes` defaults to `scopes.REFRESH`: everything already consented, without
@@ -213,4 +218,4 @@ def refresh(client_id: str, client_secret: str, refresh_token: str, *,
         "client_secret": require(client_secret, "MICROSOFT_CLIENT_SECRET"),
         "refresh_token": require(refresh_token, "MICROSOFT_REFRESH_TOKEN"),
         "scope": _scope_param(scopes),
-    }, tenant)
+    }, tenant, session)
