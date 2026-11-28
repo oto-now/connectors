@@ -31,23 +31,36 @@ def segment(value: str, name: str) -> str:
 class GraphBase:
     """Microsoft Graph v1.0 on behalf of one person."""
 
-    def __init__(self, access_token: Optional[str] = None):
+    def __init__(self, access_token: Optional[str] = None, *,
+                 session: Optional[requests.Session] = None):
         """
         Args:
             access_token: a delegated access token of the signed-in person (see
                 `auth.exchange_code` / `auth.refresh`).
+            session: the `requests.Session` every request goes out through (a
+                transport the consumer controls); a new one by default. The token
+                travels with each request, never set on a session given here.
 
         A missing token raises `MissingCredential`: the library never reads
         secrets on its own.
         """
-        self.session = requests.Session()
-        self.session.headers["Accept"] = "application/json"
-        self.session.headers["Authorization"] = (
-            f"Bearer {require(access_token, 'MICROSOFT_ACCESS_TOKEN')}")
+        self._headers = {
+            "Accept": "application/json",
+            "Authorization": f"Bearer {require(access_token, 'MICROSOFT_ACCESS_TOKEN')}"}
+        self.session = session if session is not None else requests.Session()
+
+    def _url(self, path_or_url: str) -> str:
+        return path_or_url if path_or_url.startswith("https://") else f"{BASE_URL}{path_or_url}"
+
+    def _send(self, method: str, path_or_url: str, **kwargs: Any) -> requests.Response:
+        """One request through `self.session`, the person's token with it; the answer
+        as is, whatever its status (the caller checks it and closes a stream)."""
+        headers = {**self._headers, **(kwargs.pop("headers", None) or {})}
+        return self.session.request(method, self._url(path_or_url), headers=headers,
+                                    timeout=_HTTP_TIMEOUT, **kwargs)
 
     def _request(self, method: str, path_or_url: str, **kwargs: Any) -> requests.Response:
-        url = path_or_url if path_or_url.startswith("https://") else f"{BASE_URL}{path_or_url}"
-        resp = self.session.request(method, url, timeout=_HTTP_TIMEOUT, **kwargs)
+        resp = self._send(method, path_or_url, **kwargs)
         raise_for_upstream(resp, service="microsoft")
         return resp
 
